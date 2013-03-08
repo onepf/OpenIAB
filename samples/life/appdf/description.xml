@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<application-description-file version="1">
+
+<application package="org.onepf.life">
+
+  <category>
+    <type>game</type>
+    <category>educational</category>
+  </category>
+
+  <description language="en">
+    <title>Life</title>
+    <keywords>Life,cellular automaton,John Horton Conway,Game of Life</keywords>
+    <short-description>Classical game on a cellular plane where simple rules create variety of life forms</short-description>
+    <full-description>This game also known as Game of Life is a classic and original sample of cellular automaton. 
+The universe of the Game of Life is a two-dimensional grid of square cells, each of which is in one of two possible states, alive or dead. Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent. At each step in time, the following transitions occur:
+* Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+* Any live cell with two or three live neighbours lives on to the next generation.
+* Any live cell with more than three live neighbours dies, as if by overcrowding.
+* Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+Don't be fooled by these simple rules, they create many different life forms including space ships, fabrics, guns, etc. Indeed any computer program can be simulated in the Life game.
+    </full-description>
+  </description>
+
+  <images language="en">
+    <app-icon>images/icon.png</app-icon>
+    <promo>images/promo.png</promo>
+    <feature>images/feature.png</feature>
+    <!--Minimum two screenshots should be presented-->
+    <screenshot>screenshot01_en.png</screenshot>
+    <screenshot>screenshot02_en.png</screenshot>
+    <screenshot>screenshot03_en.png</screenshot>
+  </images>
+
+  <!--All sub-tags are required, possible options are "no", "light", "strong"-->
+  <content-rating>
+    <age-restrictions>
+      <minimum-age>0</minimum-age>
+    </age-restrictions>
+    <trial-version>no</trial-version>
+    <gambling>no</gambling>
+    <advertising>no</advertising>
+    <user-generated-content>no</user-generated-content>
+    <user-to-user-communications>no</user-to-user-communications>
+    <account-creation>no</account-creation>
+    <personal-information-collection>no</personal-information-collection>
+    <content-properties>
+      <cartoon-violence>no</cartoon-violence>
+      <realistic-violence>no</realistic-violence>
+      <bad-language>no</bad-language>
+      <fear>no</fear>
+      <sexual-content>no</sexual-content>
+      <drugs>no</drugs>
+      <gambling-refference>no</gambling-refference>
+      <alcohol>no</alcohol>
+      <smoking>no</smoking>
+      <discrimination>no</discrimination>
+    </content-properties>
+  </content-rating>
+
+  <price free="false"/>
+
+  <apk-files>
+    <apk-file>bin/Life.apk</apk-file>
+  </apk-files>
+
+  <consent>
+    <google-android-content-guidelines>yes</google-android-content-guidelines>
+    <us-export-laws>yes</us-export-laws>
+  </consent>
+
+</application>
