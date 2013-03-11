@@ -5,6 +5,7 @@ import org.onepf.lifeandroidmarket.R;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -35,6 +36,18 @@ public class GameActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_game, menu);
         return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.buy_subscription:
+                lifeView.onBuySubscriptionEvent();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
     
 	@Override

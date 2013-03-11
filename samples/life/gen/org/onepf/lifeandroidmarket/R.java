@@ -15,13 +15,14 @@ public final class R {
     }
     public static final class drawable {
         public static final int cell_active=0x7f020000;
-        public static final int cell_empty=0x7f020001;
-        public static final int ic_action_search=0x7f020002;
-        public static final int ic_launcher=0x7f020003;
+        public static final int cell_active_orange=0x7f020001;
+        public static final int cell_empty=0x7f020002;
+        public static final int ic_action_search=0x7f020003;
+        public static final int ic_launcher=0x7f020004;
     }
     public static final class id {
+        public static final int buy_subscription=0x7f080002;
         public static final int life_view=0x7f080001;
-        public static final int menu_settings=0x7f080002;
         public static final int start_button=0x7f080000;
     }
     public static final class layout {
@@ -35,6 +36,7 @@ public final class R {
         public static final int edit_button=0x7f050003;
         public static final int menu_settings=0x7f050001;
         public static final int start_button=0x7f050004;
+        public static final int subscribe=0x7f050005;
         public static final int title_activity_game=0x7f050002;
     }
     public static final class style {

@@ -25,10 +25,13 @@ public class LifeView extends SurfaceView implements Runnable {
 
 	IabHelper mHelper;
 	boolean isPremium = false;
+	boolean isSubscribed = false;
 	boolean loadedFromMarket = false;
 	// for testing
 	// static final String SKU_PREMIUM = "android.test.purchased";
+	// static final String SKU_SUBSCRIBED = "android.test.purchased";
 	static final String SKU_PREMIUM = "premium_account";
+	static final String SKU_SUBSCRIBED = "orange_cells_subscription";
 	static final String TAG = "Life";
 	// (arbitrary) request code for the purchase flow
 	static final int RC_REQUEST = 10001;
@@ -37,8 +40,6 @@ public class LifeView extends SurfaceView implements Runnable {
 
 	// ------- End of billing parameters
 
-	
-	
 	// SurfaceView login related members
 	SurfaceHolder holder;
 	Thread thread = null;
@@ -89,7 +90,7 @@ public class LifeView extends SurfaceView implements Runnable {
 		cellHeight = activeCellBitmap.getHeight();
 	}
 
-	// -------  Start of billing part
+	// ------- Start of billing part
 
 	boolean verifyDeveloperPayload(Purchase p) {
 		String payload = p.getDeveloperPayload();
@@ -117,6 +118,11 @@ public class LifeView extends SurfaceView implements Runnable {
 				alert("Thank you for upgrading to premium!");
 				isPremium = true;
 			}
+			if (purchase.getSku().equals(SKU_SUBSCRIBED)) {
+				alert("Thank you for subscribing!");
+				isSubscribed = true;
+				changeCellColor();
+			}
 			// check other options ...
 		}
 	};
@@ -124,6 +130,16 @@ public class LifeView extends SurfaceView implements Runnable {
 	private void onBuyUpgradeEvent() {
 		String payload = "";
 		mHelper.launchPurchaseFlow((Activity) context, SKU_PREMIUM, RC_REQUEST,
+				mPurchaseFinishedListener, payload);
+	}
+	
+	public void onBuySubscriptionEvent() {
+		if (isSubscribed) {
+			alert("You have already subscribed!");
+			return;
+		}
+		String payload = "";
+		mHelper.launchPurchaseFlow((Activity) context, SKU_SUBSCRIBED, RC_REQUEST,
 				mPurchaseFinishedListener, payload);
 	}
 
@@ -137,11 +153,22 @@ public class LifeView extends SurfaceView implements Runnable {
 			Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
 			isPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
 			loadedFromMarket = true;
+
+			Purchase subsctiption = inventory.getPurchase(SKU_SUBSCRIBED);
+			isSubscribed = (subsctiption != null && verifyDeveloperPayload(subsctiption));
+			if (isSubscribed) {
+				changeCellColor();
+			}
 		}
 	};
 
 	// ------- End of billing part
 
+	private void changeCellColor() {
+		activeCellBitmap = BitmapFactory.decodeResource(getResources(),
+				R.drawable.cell_active_orange);
+	}
+	
 	public void setEditMode(boolean editMode) {
 		this.editMode = editMode;
 	}
