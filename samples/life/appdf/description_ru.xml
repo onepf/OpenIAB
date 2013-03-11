@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+  <description language="en">
+    <title>Life</title>
+    <keywords>Life,cellular automaton,John Horton Conway,Game of Life</keywords>
+    <short-description>Classical game on a cellular plane where simple rules create variety of life forms</short-description>
+    <full-description>This game also known as Game of Life is a classic and original sample of cellular automaton. 
+The universe of the Game of Life is a two-dimensional grid of square cells, each of which is in one of two possible states, alive or dead. Every cell interacts with its eight neighbours, which are the cells that are horizontally, vertically, or diagonally adjacent. At each step in time, the following transitions occur:
+* Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+* Any live cell with two or three live neighbours lives on to the next generation.
+* Any live cell with more than three live neighbours dies, as if by overcrowding.
+* Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+Don't be fooled by these simple rules, they create many different life forms including space ships, fabrics, guns, etc. Indeed any computer program can be simulated in the Life game.
+    </full-description>
+  </description>
