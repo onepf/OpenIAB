@@ -34,8 +34,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      * Invoked once the observer is registered with the Puchasing Manager If the boolean is false, the application is
      * receiving responses from the SDK Tester. If the boolean is true, the application is live in production.
      *
-     * @param isSandboxMode
-     *            Boolean value that shows if the app is live or not.
+     * @param isSandboxMode Boolean value that shows if the app is live or not.
      */
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
@@ -48,8 +47,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      * On a successful response, a response object is passed which contains the request id, request status, and the
      * userid generated for your application.
      *
-     * @param getUserIdResponse
-     *            Response object containing the UserID
+     * @param getUserIdResponse Response object containing the UserID
      */
     @Override
     public void onGetUserIdResponse(final GetUserIdResponse getUserIdResponse) {
@@ -65,8 +63,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      * item data for the requested skus. Items that have been suppressed or are unavailable will be returned in a
      * set of unavailable skus.
      *
-     * @param itemDataResponse
-     *            Response object containing a set of purchasable/non-purchasable items
+     * @param itemDataResponse Response object containing a set of purchasable/non-purchasable items
      */
     @Override
     public void onItemDataResponse(final ItemDataResponse itemDataResponse) {
@@ -81,8 +78,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      * On a successful response, a response object is passed which contains the request id, request status, and the
      * receipt of the purchase.
      *
-     * @param purchaseResponse
-     *            Response object containing a receipt of a purchase
+     * @param purchaseResponse Response object containing a receipt of a purchase
      */
     @Override
     public void onPurchaseResponse(final PurchaseResponse purchaseResponse) {
@@ -97,8 +93,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      * previously purchased receipts, a set of revoked skus, and the next offset if applicable. If a user downloads your
      * application to another device, this call is used to sync up this device with all the user's purchases.
      *
-     * @param purchaseUpdatesResponse
-     *            Response object containing the user's recent purchases.
+     * @param purchaseUpdatesResponse Response object containing the user's recent purchases.
      */
     @Override
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
@@ -138,7 +133,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
         return baseActivity.getSharedPreferences(baseActivity.getCurrentUser(), Context.MODE_PRIVATE);
     }
 
-    private SharedPreferences.Editor getSharedPreferencesEditor(){
+    private SharedPreferences.Editor getSharedPreferencesEditor() {
         return getSharedPreferencesForCurrentUser().edit();
     }
 

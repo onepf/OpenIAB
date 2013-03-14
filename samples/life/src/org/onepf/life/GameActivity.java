@@ -1,17 +1,16 @@
 package org.onepf.life;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
-import android.util.Log;
-import android.view.MenuItem;
-import com.amazon.inapp.purchasing.PurchasingManager;
-
-import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life.amazon.PurchasingObserver;
 
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ import java.util.Map;
 
 public class GameActivity extends Activity {
     // UI elements
-	LifeView lifeView;
+    LifeView lifeView;
     MenuItem ab_buy_figures;
     MenuItem ab_buy_orange_cells;
     List<MenuItem> ab_menu_figures;
@@ -45,13 +44,13 @@ public class GameActivity extends Activity {
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_game);
         lifeView = (LifeView) findViewById(R.id.life_view);
-        
+
         final Button button = (Button) findViewById(R.id.start_button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 lifeView.setEditMode(!lifeView.getEditMode());
-        		Button button = (Button)findViewById(R.id.start_button);
-        		button.setText(lifeView.getEditMode() ? R.string.start_button : R.string.edit_button);
+                Button button = (Button) findViewById(R.id.start_button);
+                button.setText(lifeView.getEditMode() ? R.string.start_button : R.string.edit_button);
             }
         });
 
@@ -115,42 +114,42 @@ public class GameActivity extends Activity {
         PurchasingManager.registerObserver(purchasingObserver);
     }
 
-	@Override
-	public void onResume() {
-		super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
         PurchasingManager.initiateGetUserIdRequest();
-		lifeView.resume();
-	}
-	
-	@Override
-	public void onPause() {
-		super.onPause();
-		lifeView.pause();
-	}
+        lifeView.resume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        lifeView.pause();
+    }
 
     /**
      * Gets current logged in user
+     *
      * @return current user
      */
-    public String getCurrentUser(){
+    public String getCurrentUser() {
         return currentUser;
     }
 
     /**
      * Sets current logged in user
+     *
      * @param currentUser current user to set
      */
-    public void setCurrentUser(final String currentUser){
+    public void setCurrentUser(final String currentUser) {
         this.currentUser = currentUser;
     }
 
     /**
      * Helper method to associate request ids to shared preference keys
      *
-     * @param requestId
-     *            Request ID returned from a Purchasing Manager Request
-     * @param key
-     *            Key used in shared preferrences file
+     * @param requestId Request ID returned from a Purchasing Manager Request
+     * @param key       Key used in shared preferrences file
      */
     public void storeRequestId(String requestId, String key) {
         requestIds.put(requestId, key);
@@ -158,6 +157,7 @@ public class GameActivity extends Activity {
 
     /**
      * Get the SharedPreferences file for the current user.
+     *
      * @return SharedPreferences file for a user.
      */
     public SharedPreferences getSharedPreferencesForCurrentUser() {

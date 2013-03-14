@@ -3,6 +3,7 @@
     <style name="AppTheme" parent="@android:style/Theme.Holo.Light">
         <item name="android:actionButtonStyle">@style/ActionBarButton</item>
     </style>
+
     <style name="ActionBarButton" parent="android:style/Widget.ActionButton">
         <item name="android:minWidth">36dip</item>
     </style>

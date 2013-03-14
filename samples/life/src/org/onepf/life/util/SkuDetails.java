@@ -33,7 +33,7 @@ public class SkuDetails {
     public SkuDetails(String jsonSkuDetails) throws JSONException {
         this(IabHelper.ITEM_TYPE_INAPP, jsonSkuDetails);
     }
-    
+
     public SkuDetails(String itemType, String jsonSkuDetails) throws JSONException {
         mItemType = itemType;
         mJson = jsonSkuDetails;
@@ -45,11 +45,25 @@ public class SkuDetails {
         mDescription = o.optString("description");
     }
 
-    public String getSku() { return mSku; }
-    public String getType() { return mType; }
-    public String getPrice() { return mPrice; }
-    public String getTitle() { return mTitle; }
-    public String getDescription() { return mDescription; }
+    public String getSku() {
+        return mSku;
+    }
+
+    public String getType() {
+        return mType;
+    }
+
+    public String getPrice() {
+        return mPrice;
+    }
+
+    public String getTitle() {
+        return mTitle;
+    }
+
+    public String getDescription() {
+        return mDescription;
+    }
 
     @Override
     public String toString() {
