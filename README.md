@@ -20,7 +20,8 @@ The following Android application stores support in-app billing today:
  * Google Play
  * Amazon AppStore
  * Samsung Apps
- * SK-Telecom T-Store
+ * SK-Telecom T-Store  
+ 
 If you know about other Android appstores that support in-app purchasing please [let us know](http://groups.google.com/group/opf_openiab)
 
 How Can I Help?
