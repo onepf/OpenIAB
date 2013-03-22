@@ -19,6 +19,7 @@ package org.onepf.life;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -29,7 +30,6 @@ import android.view.View;
 import android.widget.Button;
 import com.amazon.inapp.purchasing.PurchasingManager;
 
-import org.onepf.life.R;
 import org.onepf.life.amazon.PurchasingObserver;
 import org.onepf.life.google.GooglePlayHelper;
 
@@ -281,6 +281,16 @@ public class GameActivity extends Activity {
 		lifeView.setActiveCellBitmap(BitmapFactory.decodeResource(
 				getResources(), hasOrangeCells ? R.drawable.cell_active_orange
 						: R.drawable.cell_active_green));
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (googlePlayHelper.isReady()) {
+			if (googlePlayHelper
+					.onActivityResult(requestCode, resultCode, data))
+				return;
+		}
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	public void alert(String message) {

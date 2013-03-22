@@ -16,7 +16,6 @@
 
 package org.onepf.life;
 
-import org.onepf.life.R;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;

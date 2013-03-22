@@ -9,6 +9,7 @@ import org.onepf.life.util.Purchase;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -44,6 +45,11 @@ public class GooglePlayHelper {
 			}
 		});
 	}
+	
+	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+		return mHelper.handleActivityResult(requestCode, resultCode, data);
+	}
+
 
 	public boolean isReady() {
 		return isReady;
