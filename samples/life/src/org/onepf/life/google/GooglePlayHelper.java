@@ -18,6 +18,8 @@ public class GooglePlayHelper {
 	GameActivity parent;
 	String publicKey;
 
+	private boolean isReady = false;
+
 	private final static String SKU_ORANGE_CELLS = "orange_cells_subscription";
 	private final static String SKU_FIGURES = "figures";
 	private final static String SKU_CHANGES = "changes";
@@ -37,9 +39,14 @@ public class GooglePlayHelper {
 							"Problem setting up In-app Billing: " + result);
 					return;
 				}
+				isReady = true;
 				mHelper.queryInventoryAsync(mGotInventoryListener);
 			}
 		});
+	}
+
+	public boolean isReady() {
+		return isReady;
 	}
 
 	private IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
@@ -78,25 +85,38 @@ public class GooglePlayHelper {
 		if (orangeCells) {
 			parent.alert("Orange cells has already bought!");
 		} else {
-			mHelper.launchSubscriptionPurchaseFlow((Activity) context, SKU_ORANGE_CELLS,
-					RC_REQUEST, mPurchaseFinishedListener, "");
+			try {
+				mHelper.launchSubscriptionPurchaseFlow((Activity) context,
+						SKU_ORANGE_CELLS, RC_REQUEST,
+						mPurchaseFinishedListener, "");
+			} catch (IllegalStateException e) {
+				Log.d(GameActivity.TAG, "too many async operations");
+			}
 		}
 	}
-	
+
 	public void onBuyFigures() {
 		final SharedPreferences settings = getSharedPreferencesForCurrentUser();
 		boolean figures = settings.getBoolean(GameActivity.FIGURES, false);
 		if (figures) {
 			parent.alert("Figures has already bought!");
 		} else {
-			mHelper.launchPurchaseFlow((Activity) context, SKU_FIGURES,
-					RC_REQUEST, mPurchaseFinishedListener, "");
+			try {
+				mHelper.launchPurchaseFlow((Activity) context, SKU_FIGURES,
+						RC_REQUEST, mPurchaseFinishedListener, "");
+			} catch (IllegalStateException e) {
+				Log.d(GameActivity.TAG, "too many async operations");
+			}
 		}
 	}
 
 	public void onBuyChanges() {
-		mHelper.launchPurchaseFlow((Activity) context, SKU_CHANGES, RC_REQUEST,
-				mPurchaseFinishedListener, "");
+		try {
+			mHelper.launchPurchaseFlow((Activity) context, SKU_CHANGES,
+					RC_REQUEST, mPurchaseFinishedListener, "");
+		} catch (IllegalStateException e) {
+			Log.d(GameActivity.TAG, "too many async operations");
+		}
 	}
 
 	IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
@@ -125,12 +145,13 @@ public class GooglePlayHelper {
 				editor.putBoolean(GameActivity.FIGURES, true);
 				editor.commit();
 			}
-			
+
 			if (purchase.getSku().equals(SKU_CHANGES)) {
 				mHelper.consumeAsync(purchase, new OnConsumeFinishedListener() {
-					
+
 					@Override
-					public void onConsumeFinished(Purchase purchase, IabResult result) {
+					public void onConsumeFinished(Purchase purchase,
+							IabResult result) {
 						if (result.isFailure()) {
 							Log.d(GameActivity.TAG, "Fail consuming item");
 							return;
@@ -142,8 +163,8 @@ public class GooglePlayHelper {
 						editor.commit();
 						parent.update();
 					}
-				});	
-				
+				});
+
 			}
 
 			// check other options ...
@@ -152,7 +173,6 @@ public class GooglePlayHelper {
 		}
 	};
 
-	
 	private SharedPreferences.Editor getSharedPreferencesEditor() {
 		return parent.getSharedPreferencesForCurrentUser().edit();
 	}

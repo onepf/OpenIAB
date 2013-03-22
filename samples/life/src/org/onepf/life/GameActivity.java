@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,9 +28,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import com.amazon.inapp.purchasing.PurchasingManager;
+
+import org.onepf.life.R;
 import org.onepf.life.amazon.PurchasingObserver;
 import org.onepf.life.google.GooglePlayHelper;
-import org.onepf.life.util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,6 +118,12 @@ public class GameActivity extends Activity {
 		ab_menu_figures.add(menu.findItem(R.id.menu_periodic));
 		ab_menu_figures.add(menu.findItem(R.id.menu_robot));
 
+		final SharedPreferences settings = getSharedPreferencesForCurrentUser();
+		boolean hasFigures = settings.getBoolean(FIGURES, false);
+		for (MenuItem figure : ab_menu_figures) {
+			figure.setVisible(hasFigures);
+		}
+
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -131,7 +137,7 @@ public class GameActivity extends Activity {
 				lifeView.onBuyUpgradeEvent();
 			} else {
 				if (market == Market.GOOGLE_PLAY) {
-					if (googlePlayHelper != null) {
+					if (googlePlayHelper.isReady()) {
 						googlePlayHelper.onBuyChanges();
 					}
 				} else {
@@ -147,7 +153,7 @@ public class GameActivity extends Activity {
 				storeRequestId(requestId, FIGURES);
 			} else {
 				if (market == Market.GOOGLE_PLAY) {
-					if (googlePlayHelper != null) {
+					if (googlePlayHelper.isReady()) {
 						googlePlayHelper.onBuyFigures();
 					}
 				} else {
@@ -163,7 +169,7 @@ public class GameActivity extends Activity {
 				storeRequestId(requestId, ORANGE_CELLS);
 			} else {
 				if (market == Market.GOOGLE_PLAY) {
-					if (googlePlayHelper != null) {
+					if (googlePlayHelper.isReady()) {
 						googlePlayHelper.onBuyOrangeCells();
 					}
 				} else {
@@ -262,10 +268,11 @@ public class GameActivity extends Activity {
 		if (ab_buy_figures != null) {
 			ab_buy_figures.setVisible(!hasFigures);
 		}
-		for (MenuItem figure : ab_menu_figures) {
-			figure.setVisible(hasFigures);
+		if (ab_menu_figures != null) {
+			for (MenuItem figure : ab_menu_figures) {
+				figure.setVisible(hasFigures);
+			}
 		}
-
 		boolean hasOrangeCells = settings.getBoolean(ORANGE_CELLS, false);
 		Log.d(TAG, hasOrangeCells + " ");
 		if (ab_buy_orange_cells != null) {
