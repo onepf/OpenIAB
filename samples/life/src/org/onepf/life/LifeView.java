@@ -32,26 +32,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 import com.amazon.inapp.purchasing.PurchasingManager;
-import org.onepf.life.util.IabHelper;
-import org.onepf.life.util.Purchase;
 
 public class LifeView extends SurfaceView implements Runnable {
-    // ------- Billing parameters
-
-    IabHelper mHelper;
-    //boolean isPremium = false;
-    boolean loadedFromMarket = false;
-    // for testing
-    // static final String SKU_PREMIUM = "android.test.purchased";
-    //static final String SKU_PREMIUM = "org.onepf.life.premium_account";
-    static final String TAG = "Life";
-    // (arbitrary) request code for the purchase flow
-    static final int RC_REQUEST = 10001;
-    // encryption?
-    String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
-
-    // ------- End of billing parameters
-
 
     // SurfaceView login related members
     SurfaceHolder holder;
@@ -84,18 +66,6 @@ public class LifeView extends SurfaceView implements Runnable {
         this.baseActivity = (GameActivity) context;
         final SharedPreferences settings = baseActivity.getSharedPreferencesForCurrentUser();
         changeCount = settings.getInt(GameActivity.CHANGES, 50);
-//		mHelper = new IabHelper(context, base64EncodedPublicKey);
-//		mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-//			public void onIabSetupFinished(IabResult result) {
-//				if (!result.isSuccess()) {
-//					Log.d("error", "Problem setting up In-app Billing: "
-//							+ result);
-//					return;
-//				}
-//				mHelper.queryInventoryAsync(mGotInventoryListener);
-//			}
-//		});
-
         backgroundColor = baseActivity.getResources().getColor(R.color.background);
         holder = getHolder();
         activeCellBitmap = BitmapFactory.decodeResource(getResources(),
@@ -106,61 +76,12 @@ public class LifeView extends SurfaceView implements Runnable {
         cellHeight = activeCellBitmap.getHeight();
     }
 
-    // -------  Start of billing part
-
-    boolean verifyDeveloperPayload(Purchase p) {
-        String payload = p.getDeveloperPayload();
-        // do smth
-        return true;
-    }
-
-    // Callback for when a purchase is finished
-//	IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-//		public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-//			Log.d(TAG, "Purchase finished: " + result + ", purchase: "
-//					+ purchase);
-//			if (result.isFailure()) {
-//				complain("Error purchasing: " + result);
-//				return;
-//			}
-//			if (!verifyDeveloperPayload(purchase)) {
-//				alert("Error purchasing. Authenticity verification failed.");
-//				return;
-//			}
-//
-//			Log.d(TAG, "Purchase successful.");
-//
-//			if (purchase.getSku().equals(SKU_PREMIUM)) {
-//				alert("Thank you for upgrading to premium!");
-//				isPremium = true;
-//			}
-//			// check other options ...
-//		}
-//	};
-
+   
     public void onBuyUpgradeEvent() {
-//		String payload = "";
-//		mHelper.launchPurchaseFlow((Activity) context, SKU_PREMIUM, RC_REQUEST,
-//				mPurchaseFinishedListener, payload);
         String requestId = PurchasingManager.initiatePurchaseRequest(getResources().getString(R.string.consumable_sku));
-        Log.d(TAG, "Buy requestId = " + requestId);
+        Log.d(GameActivity.TAG, "Buy requestId = " + requestId);
         baseActivity.storeRequestId(requestId, GameActivity.CHANGES);
     }
-
-//	IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-//		public void onQueryInventoryFinished(IabResult result,
-//				Inventory inventory) {
-//			if (result.isFailure()) {
-//				alert("Failed to load account information");
-//				return;
-//			}
-//			Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
-//			isPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
-//			loadedFromMarket = true;
-//		}
-//	};
-
-    // ------- End of billing part
 
     public void setActiveCellBitmap(Bitmap bitmap) {
         activeCellBitmap = bitmap;
@@ -215,11 +136,6 @@ public class LifeView extends SurfaceView implements Runnable {
             int action = event.getAction();
             if (action == MotionEvent.ACTION_DOWN && cellX >= 0 && cellY >= 0
                     && cellX < fieldWidth && cellY < fieldHeight) {
-//				if (!loadedFromMarket) {
-//					alert("Information about account hasn't loaded yet.");
-//					return true;
-//				}
-
                 if (getChangeCount() > 0) {
                     changeCount--;
                     final SharedPreferences.Editor editor = baseActivity.getSharedPreferencesForCurrentUser().edit();
@@ -322,7 +238,8 @@ public class LifeView extends SurfaceView implements Runnable {
         field = field2;
     }
 
-    @Override
+    @SuppressLint("ResourceAsColor")
+	@Override
     public synchronized void onDraw(Canvas canvas) {
         canvas.drawColor(backgroundColor);
         for (int x = 0; x < fieldWidth; x++) {
@@ -345,7 +262,7 @@ public class LifeView extends SurfaceView implements Runnable {
 
     @Override
     public synchronized void onSizeChanged(int w, int h, int oldW, int oldH) {
-        Log.d(TAG, "Old size: w = " + fieldWidth + ", h = " + fieldHeight);
+        Log.d(GameActivity.TAG, "Old size: w = " + fieldWidth + ", h = " + fieldHeight);
         if (field == null) {
             viewHeight = w;
             viewWidth = h;
@@ -355,7 +272,7 @@ public class LifeView extends SurfaceView implements Runnable {
         } else {
             int newFieldWidth = w / cellWidth;
             int newFieldHeight = h / cellHeight;
-            Log.d(TAG, "New size: w = " + newFieldWidth + ", h = " + newFieldHeight);
+            Log.d(GameActivity.TAG, "New size: w = " + newFieldWidth + ", h = " + newFieldHeight);
             int[][] newField = new int[newFieldWidth][newFieldHeight];
             for (int x = 0; x < newFieldWidth; x++) {
                 for (int y = 0; y < newFieldHeight; y++) {
