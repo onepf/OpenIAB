@@ -22,7 +22,6 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.amazon.inapp.purchasing.*;
-
 import org.onepf.life.GameActivity;
 import org.onepf.life.R;
 

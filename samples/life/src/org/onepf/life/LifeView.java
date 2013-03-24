@@ -77,7 +77,7 @@ public class LifeView extends SurfaceView implements Runnable {
         cellHeight = activeCellBitmap.getHeight();
     }
 
-   
+
     public void onBuyUpgradeEvent() {
         String requestId = PurchasingManager.initiatePurchaseRequest(getResources().getString(R.string.consumable_sku));
         Log.d(GameActivity.TAG, "Buy requestId = " + requestId);
@@ -240,7 +240,7 @@ public class LifeView extends SurfaceView implements Runnable {
     }
 
     @SuppressLint("ResourceAsColor")
-	@Override
+    @Override
     public synchronized void onDraw(Canvas canvas) {
         canvas.drawColor(backgroundColor);
         for (int x = 0; x < fieldWidth; x++) {
