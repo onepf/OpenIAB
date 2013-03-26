@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.onepf.life.util;
+package org.onepf.life.google.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -32,7 +32,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
-import com.amazon.inapp.purchasing.PurchasingManager;
 
 public class LifeView extends SurfaceView implements Runnable {
 
@@ -78,11 +77,11 @@ public class LifeView extends SurfaceView implements Runnable {
     }
 
 
-    public void onBuyUpgradeEvent() {
-        String requestId = PurchasingManager.initiatePurchaseRequest(getResources().getString(R.string.consumable_sku));
-        Log.d(GameActivity.TAG, "Buy requestId = " + requestId);
-        baseActivity.storeRequestId(requestId, GameActivity.CHANGES);
-    }
+//    public void onBuyUpgradeEvent() {
+//        String requestId = PurchasingManager.initiatePurchaseRequest(getResources().getString(R.string.consumable_sku));
+//        Log.d(GameActivity.TAG, "Buy requestId = " + requestId);
+//        baseActivity.storeRequestId(requestId, GameActivity.CHANGES);
+//    }
 
     public void setActiveCellBitmap(Bitmap bitmap) {
         activeCellBitmap = bitmap;
@@ -163,7 +162,7 @@ public class LifeView extends SurfaceView implements Runnable {
                             public void onClick(
                                     DialogInterface dialog,
                                     int which) {
-                                onBuyUpgradeEvent();
+                                baseActivity.getPurchaseHelper().onBuyChanges();
                             }
                         }).setNegativeButton(android.R.string.no, null).show();
     }
@@ -188,17 +187,8 @@ public class LifeView extends SurfaceView implements Runnable {
     }
 
     int getNeighbour(int x, int y, int dx, int dy) {
-        int x2 = x + dx;
-        int y2 = y + dy;
-        if (x2 < 0)
-            x2 += fieldWidth;
-        if (y2 < 0)
-            y2 += fieldHeight;
-        if (x2 >= fieldWidth)
-            x2 -= fieldWidth;
-        if (y2 >= fieldHeight)
-            y2 -= fieldHeight;
-
+        int x2 = (x + dx + fieldWidth) % fieldWidth;
+        int y2 = (y + dy + fieldHeight) % fieldHeight;
         return field[x2][y2];
     }
 

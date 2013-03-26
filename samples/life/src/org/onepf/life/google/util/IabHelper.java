@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.onepf.life.util;
+package org.onepf.life.google.util;
 
 import android.app.Activity;
 import android.app.PendingIntent;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.onepf.life.util;
+package org.onepf.life.google.util;
 
 /**
  * Exception thrown when encountering an invalid Base64 input character.
