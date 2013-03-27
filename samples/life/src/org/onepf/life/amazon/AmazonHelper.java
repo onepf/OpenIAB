@@ -32,10 +32,6 @@ public class AmazonHelper extends BasePurchaseHelper {
     public AmazonHelper(GameActivity parent, BillingHelper billingHelper) {
         this.parent = parent;
         this.billingHelper = billingHelper;
-        init(parent);
-    }
-
-    public void init(GameActivity parent) {
         PurchasingObserver purchasingObserver = new PurchasingObserver(parent, billingHelper, this);
         PurchasingManager.registerObserver(purchasingObserver);
     }
