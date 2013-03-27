@@ -22,6 +22,8 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.amazon.inapp.purchasing.*;
+import org.onepf.life.BasePurchaseHelper;
+import org.onepf.life.BillingHelper;
 import org.onepf.life.GameActivity;
 import org.onepf.life.R;
 
@@ -40,10 +42,14 @@ public class PurchasingObserver extends BasePurchasingObserver {
     private static final String OFFSET = "offset";
     private static final String TAG = "Life";
     private final GameActivity baseActivity;
+    private final BillingHelper billingHelper;
+    private final BasePurchaseHelper thisHelper;
 
-    public PurchasingObserver(GameActivity gameActivity) {
+    public PurchasingObserver(GameActivity gameActivity, BillingHelper billingHelper, BasePurchaseHelper thisHelper) {
         super(gameActivity);
         baseActivity = gameActivity;
+        this.billingHelper = billingHelper;
+        this.thisHelper = thisHelper;
     }
 
     /**
@@ -56,7 +62,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
     public void onSdkAvailable(final boolean isSandboxMode) {
         Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
         PurchasingManager.initiateGetUserIdRequest();
-        baseActivity.setPurchaseHelper(new AmazonHelper(baseActivity));
+        billingHelper.updateHelper(thisHelper);
     }
 
     /**

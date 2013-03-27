@@ -17,10 +17,7 @@
 package org.onepf.life.amazon;
 
 import com.amazon.inapp.purchasing.PurchasingManager;
-import org.onepf.life.BasePurchaseHelper;
-import org.onepf.life.GameActivity;
-import org.onepf.life.Market;
-import org.onepf.life.R;
+import org.onepf.life.*;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -28,13 +25,18 @@ import org.onepf.life.R;
  */
 public class AmazonHelper extends BasePurchaseHelper {
     GameActivity parent;
+    BillingHelper billingHelper;
 
-    public AmazonHelper(GameActivity parent) {
+    private final static int PRIORITY = 30;
+
+    public AmazonHelper(GameActivity parent, BillingHelper billingHelper) {
         this.parent = parent;
+        this.billingHelper = billingHelper;
+        init(parent);
     }
 
-    static public void init(GameActivity parent) {
-        PurchasingObserver purchasingObserver = new PurchasingObserver(parent);
+    public void init(GameActivity parent) {
+        PurchasingObserver purchasingObserver = new PurchasingObserver(parent, billingHelper, this);
         PurchasingManager.registerObserver(purchasingObserver);
     }
 
@@ -62,5 +64,10 @@ public class AmazonHelper extends BasePurchaseHelper {
     @Override
     public Market getMarket() {
         return Market.AMAZON_APP_STORE;
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
     }
 }

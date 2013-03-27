@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.util.Log;
 import org.onepf.life.BasePurchaseHelper;
+import org.onepf.life.BillingHelper;
 import org.onepf.life.GameActivity;
 import org.onepf.life.Market;
 import org.onepf.life.google.util.IabHelper;
@@ -15,9 +15,12 @@ import org.onepf.life.google.util.Inventory;
 import org.onepf.life.google.util.Purchase;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
-    IabHelper mHelper;
-    Context context;
-    GameActivity parent;
+    private final BillingHelper billingHelper;
+    private final BasePurchaseHelper thisHelper;
+
+    private final IabHelper mHelper;
+    private final Context context;
+    private final GameActivity parent;
 
     private boolean isReady = false;
 
@@ -26,12 +29,14 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     private final static String SKU_ORANGE_CELLS = "orange_cells_subscription";
     private final static String SKU_FIGURES = "figures";
     private final static String SKU_CHANGES = "changes";
-    private final static int RC_REQUEST = 10001; // i don't know what does it
-    // mean...
+    private final static int RC_REQUEST = 10001;
+    private final static int PRIORITY = 50;
 
-    public GooglePlayHelper(GameActivity context) {
+    public GooglePlayHelper(GameActivity context, BillingHelper billingHelper) {
         parent = context;
         this.context = context;
+        thisHelper = this;
+        this.billingHelper = billingHelper;
 
         mHelper = new IabHelper(context, publicKey);
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -41,14 +46,16 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                             "Problem setting up In-app Billing: " + result);
                     return;
                 }
+                GooglePlayHelper.this.billingHelper.updateHelper(thisHelper);
                 isReady = true;
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
     }
 
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        return mHelper.handleActivityResult(requestCode, resultCode, data);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mHelper.handleActivityResult(requestCode, resultCode, data);
     }
 
 
@@ -177,23 +184,18 @@ public class GooglePlayHelper extends BasePurchaseHelper {
 
             }
 
-            // check other options ...
-
             parent.update();
         }
     };
 
-    public static void init(GameActivity parent) {
-        PackageManager myapp = parent.getPackageManager();
-        String installer = myapp.getInstallerPackageName("org.onepf.life");
-        if (installer.equals("com.android.vending")) {
-            parent.setPurchaseHelper(new GooglePlayHelper(parent));
-        }
-    }
-
     @Override
     public Market getMarket() {
         return Market.GOOGLE_PLAY;
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
     }
 
     private SharedPreferences.Editor getSharedPreferencesEditor() {

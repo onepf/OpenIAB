@@ -16,6 +16,7 @@
 
 package org.onepf.life;
 
+import android.content.Intent;
 import android.util.Log;
 
 /**
@@ -23,10 +24,6 @@ import android.util.Log;
  * Date: 25.03.13
  */
 public class BasePurchaseHelper {
-
-    static public void init(GameActivity parent) {
-        Log.e(GameActivity.TAG, "Init call in BasePurchaseHelper");
-    }
 
     public void onBuyChanges() {
         Log.e(GameActivity.TAG, "onBuyChanges call in BasePurchaseHelper");
@@ -42,5 +39,13 @@ public class BasePurchaseHelper {
 
     public Market getMarket() {
         return Market.UNDEFINED;
+    }
+
+    public int getPriority() {
+        return 0;
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
     }
 }
