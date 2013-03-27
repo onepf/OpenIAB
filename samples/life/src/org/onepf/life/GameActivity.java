@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class GameActivity extends Activity {
 
-    private BillingHelper billingHelper;
+    public BillingHelper billingHelper;
 
     // UI elements
     LifeView lifeView;
@@ -221,4 +221,8 @@ public class GameActivity extends Activity {
         bld.create().show();
     }
 
+
+    public BillingHelper getPurchaseHelper() {
+        return billingHelper;
+    }
 }
