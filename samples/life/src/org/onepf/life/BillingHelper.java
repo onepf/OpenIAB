@@ -29,19 +29,19 @@ import org.onepf.life.google.GooglePlayHelper;
  */
 
 public class BillingHelper {
-    private GameActivity activity;
     private BasePurchaseHelper currentHelper;
 
     public BillingHelper(GameActivity activity) {
-        this.activity = activity;
         new GooglePlayHelper(activity, this);
         new AmazonHelper(activity, this);
     }
 
-    public void updateHelper(BasePurchaseHelper helper) {
+    public boolean updateHelper(BasePurchaseHelper helper) {
         if (currentHelper == null || currentHelper.getPriority() < helper.getPriority()) {
             currentHelper = helper;
+            return true;
         }
+        return false;
     }
 
     public void onBuyChanges() {
@@ -71,6 +71,10 @@ public class BillingHelper {
                 PurchasingManager.initiateGetUserIdRequest();
             }
         }
+    }
+
+    public boolean isMainMarket(BasePurchaseHelper helper) {
+        return helper == currentHelper;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
