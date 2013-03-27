@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,7 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import com.amazon.inapp.purchasing.PurchasingManager;
-import org.onepf.life.amazon.PurchasingObserver;
+import org.onepf.life.amazon.AmazonHelper;
 import org.onepf.life.google.GooglePlayHelper;
 
 import java.util.ArrayList;
@@ -38,15 +39,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GameActivity extends Activity {
-    public enum Market {
-        GOOGLE_PLAY, AMAZON_APP_STORE, UNDEFINED
-    }
 
-    Market market = Market.UNDEFINED;
-
-    // Google play parameters
-    String googleBase64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
-    GooglePlayHelper googlePlayHelper;
+    private BasePurchaseHelper purchaseHelper;
 
     // Amazon app store parameters
     // ... add something here
@@ -88,20 +82,17 @@ public class GameActivity extends Activity {
             }
         });
 
-        // TODO: define market
-        market = Market.GOOGLE_PLAY;
-        Log.d(TAG, market.toString());
 
-        if (market == Market.GOOGLE_PLAY) {
-            googlePlayHelper = new GooglePlayHelper(this,
-                    googleBase64EncodedPublicKey);
-        }
-        if (market == Market.AMAZON_APP_STORE) {
-            // TODO: amazon on start
-        }
-
-        requestIds = new HashMap<String, String>();
+        requestIds = new HashMap<>();
         context = this;
+
+        purchaseHelper = new BasePurchaseHelper();
+        GooglePlayHelper.init(this);
+        AmazonHelper.init(this);
+
+        PackageManager myapp = this.getPackageManager();
+        String installer = myapp.getInstallerPackageName("org.onepf.life");
+        Log.d(TAG, "installer name - " + installer);
     }
 
     @Override
@@ -110,7 +101,7 @@ public class GameActivity extends Activity {
         ab_buy_figures = menu.findItem(R.id.menu_buy_figures);
         ab_buy_orange_cells = menu.findItem(R.id.menu_buy_orange_cells);
 
-        ab_menu_figures = new ArrayList<MenuItem>();
+        ab_menu_figures = new ArrayList<>();
         ab_menu_figures.add(menu.findItem(R.id.menu_empty_field));
         ab_menu_figures.add(menu.findItem(R.id.menu_glider));
         ab_menu_figures.add(menu.findItem(R.id.menu_big_glider));
@@ -128,53 +119,15 @@ public class GameActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String requestId;
-        Log.d(TAG, market.toString());
         switch (item.getItemId()) {
             case R.id.menu_buy_changes:
-                if (market == Market.AMAZON_APP_STORE) {
-                    lifeView.onBuyUpgradeEvent();
-                } else {
-                    if (market == Market.GOOGLE_PLAY) {
-                        if (googlePlayHelper.isReady()) {
-                            googlePlayHelper.onBuyChanges();
-                        }
-                    } else {
-                        Log.d(TAG, "Buy 50 changes in " + market.toString());
-                    }
-                }
+                purchaseHelper.onBuyChanges();
                 break;
             case R.id.menu_buy_figures:
-                if (market == Market.AMAZON_APP_STORE) {
-                    requestId = PurchasingManager
-                            .initiatePurchaseRequest(getResources().getString(
-                                    R.string.figures_sku));
-                    storeRequestId(requestId, FIGURES);
-                } else {
-                    if (market == Market.GOOGLE_PLAY) {
-                        if (googlePlayHelper.isReady()) {
-                            googlePlayHelper.onBuyFigures();
-                        }
-                    } else {
-                        Log.d(TAG, "Buy figures in " + market.toString());
-                    }
-                }
+                purchaseHelper.onBuyFigures();
                 break;
             case R.id.menu_buy_orange_cells:
-                if (market == Market.AMAZON_APP_STORE) {
-                    requestId = PurchasingManager
-                            .initiatePurchaseRequest(getResources().getString(
-                                    R.string.subscription_sku));
-                    storeRequestId(requestId, ORANGE_CELLS);
-                } else {
-                    if (market == Market.GOOGLE_PLAY) {
-                        if (googlePlayHelper.isReady()) {
-                            googlePlayHelper.onBuyOrangeCells();
-                        }
-                    } else {
-                        Log.d(TAG, "Buy orange cells in " + market.toString());
-                    }
-                }
+                purchaseHelper.onBuyOrangeCells();
                 break;
             case R.id.menu_empty_field:
                 lifeView.drawFigure(null);
@@ -196,18 +149,9 @@ public class GameActivity extends Activity {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        if (market == Market.AMAZON_APP_STORE) {
-            PurchasingObserver purchasingObserver = new PurchasingObserver(this);
-            PurchasingManager.registerObserver(purchasingObserver);
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        if (market == Market.AMAZON_APP_STORE) {
+        if (purchaseHelper.getMarket() == Market.AMAZON_APP_STORE) {
             PurchasingManager.initiateGetUserIdRequest();
         }
         lifeView.resume();
@@ -281,10 +225,13 @@ public class GameActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (googlePlayHelper.isReady()) {
-            if (googlePlayHelper
-                    .onActivityResult(requestCode, resultCode, data))
-                return;
+        if (purchaseHelper.getMarket() == Market.GOOGLE_PLAY) {
+            GooglePlayHelper googlePlayHelper = (GooglePlayHelper)purchaseHelper;
+            if (googlePlayHelper.isReady()) {
+                if (googlePlayHelper
+                        .onActivityResult(requestCode, resultCode, data))
+                    return;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -294,5 +241,13 @@ public class GameActivity extends Activity {
         bld.setMessage(message);
         bld.setNeutralButton("OK", null);
         bld.create().show();
+    }
+
+    public BasePurchaseHelper getPurchaseHelper() {
+        return purchaseHelper;
+    }
+
+    public void setPurchaseHelper(BasePurchaseHelper purchaseHelper) {
+        this.purchaseHelper = purchaseHelper;
     }
 }

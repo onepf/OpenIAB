@@ -129,7 +129,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
         }
     }
 
-    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+    IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
             Log.d(GameActivity.TAG, "Purchase finished: " + result
                     + ", purchase: " + purchase);
