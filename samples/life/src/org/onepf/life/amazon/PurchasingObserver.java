@@ -54,8 +54,9 @@ public class PurchasingObserver extends BasePurchasingObserver {
      */
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
-        Log.v(TAG, "onSdkAvailable recieved: Response -" + isSandboxMode);
+        Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
         PurchasingManager.initiateGetUserIdRequest();
+        baseActivity.setPurchaseHelper(new AmazonHelper(baseActivity));
     }
 
     /**
