@@ -41,14 +41,14 @@ public class PurchasingObserver extends BasePurchasingObserver {
     private static final String START_DATE = "start_date";
     private static final String OFFSET = "offset";
     private static final String TAG = "Life";
-    private final GameActivity baseActivity;
-    private final BillingHelper billingHelper;
-    private final BasePurchaseHelper thisHelper;
+    private GameActivity baseActivity;
+    private BillingHelper mBillingHelper;
+    private BasePurchaseHelper thisHelper;
 
     public PurchasingObserver(GameActivity gameActivity, BillingHelper billingHelper, BasePurchaseHelper thisHelper) {
         super(gameActivity);
         baseActivity = gameActivity;
-        this.billingHelper = billingHelper;
+        mBillingHelper = billingHelper;
         this.thisHelper = thisHelper;
     }
 
@@ -61,8 +61,10 @@ public class PurchasingObserver extends BasePurchasingObserver {
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
         Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
-        PurchasingManager.initiateGetUserIdRequest();
-        billingHelper.updateHelper(thisHelper);
+        if (mBillingHelper.updateHelper(thisHelper)) {
+            PurchasingManager.initiateGetUserIdRequest();
+        }
+
     }
 
     /**
@@ -188,7 +190,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
         @Override
         protected void onPostExecute(final Boolean result) {
             super.onPostExecute(result);
-            if (result) {
+            if (result && mBillingHelper.isMainMarket(thisHelper)) {
                 baseActivity.update();
                 PurchasingManager.initiatePurchaseUpdatesRequest(Offset.fromString(baseActivity.getApplicationContext()
                         .getSharedPreferences(baseActivity.getCurrentUser(), Context.MODE_PRIVATE)
@@ -251,6 +253,10 @@ public class PurchasingObserver extends BasePurchasingObserver {
             }
             final SharedPreferences settings = getSharedPreferencesForCurrentUser();
             final SharedPreferences.Editor editor = getSharedPreferencesEditor();
+            if (!mBillingHelper.isMainMarket(thisHelper)) {
+                return false;
+            }
+
             switch (purchaseResponse.getPurchaseRequestStatus()) {
                 case SUCCESSFUL:
                 /*
@@ -311,7 +317,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
         @Override
         protected void onPostExecute(final Boolean success) {
             super.onPostExecute(success);
-            if (success) {
+            if (success && mBillingHelper.isMainMarket(thisHelper)) {
                 baseActivity.update();
             }
         }
@@ -335,6 +341,9 @@ public class PurchasingObserver extends BasePurchasingObserver {
              * If the customer for some reason had items revoked, the skus for these items will be contained in the
              * revoked skus set.
              */
+            if (!mBillingHelper.isMainMarket(thisHelper)) {
+                return false;
+            }
             for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
                 Log.v(TAG, "Revoked Sku:" + sku);
                 final String key = getKey(sku);
@@ -432,7 +441,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
         @Override
         protected void onPostExecute(final Boolean success) {
             super.onPostExecute(success);
-            if (success) {
+            if (success && mBillingHelper.isMainMarket(thisHelper)) {
                 baseActivity.update();
             }
         }

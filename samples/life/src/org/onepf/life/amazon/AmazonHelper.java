@@ -25,13 +25,13 @@ import org.onepf.life.*;
  */
 public class AmazonHelper extends BasePurchaseHelper {
     GameActivity parent;
-    BillingHelper billingHelper;
+    BillingHelper mBillingHelper;
 
     private final static int PRIORITY = 30;
 
     public AmazonHelper(GameActivity parent, BillingHelper billingHelper) {
         this.parent = parent;
-        this.billingHelper = billingHelper;
+        mBillingHelper = billingHelper;
         PurchasingObserver purchasingObserver = new PurchasingObserver(parent, billingHelper, this);
         PurchasingManager.registerObserver(purchasingObserver);
     }
