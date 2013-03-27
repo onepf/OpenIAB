@@ -21,7 +21,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,9 +28,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import com.amazon.inapp.purchasing.PurchasingManager;
-import org.onepf.life.amazon.AmazonHelper;
-import org.onepf.life.google.GooglePlayHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,10 +36,7 @@ import java.util.Map;
 
 public class GameActivity extends Activity {
 
-    private BasePurchaseHelper purchaseHelper;
-
-    // Amazon app store parameters
-    // ... add something here
+    private BillingHelper billingHelper;
 
     // UI elements
     LifeView lifeView;
@@ -86,13 +79,7 @@ public class GameActivity extends Activity {
         requestIds = new HashMap<>();
         context = this;
 
-        purchaseHelper = new BasePurchaseHelper();
-        GooglePlayHelper.init(this);
-        AmazonHelper.init(this);
-
-        PackageManager myapp = this.getPackageManager();
-        String installer = myapp.getInstallerPackageName("org.onepf.life");
-        Log.d(TAG, "installer name - " + installer);
+        billingHelper = new BillingHelper(this);
     }
 
     @Override
@@ -121,13 +108,13 @@ public class GameActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_buy_changes:
-                purchaseHelper.onBuyChanges();
+                billingHelper.onBuyChanges();
                 break;
             case R.id.menu_buy_figures:
-                purchaseHelper.onBuyFigures();
+                billingHelper.onBuyFigures();
                 break;
             case R.id.menu_buy_orange_cells:
-                purchaseHelper.onBuyOrangeCells();
+                billingHelper.onBuyOrangeCells();
                 break;
             case R.id.menu_empty_field:
                 lifeView.drawFigure(null);
@@ -151,9 +138,7 @@ public class GameActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
-        if (purchaseHelper.getMarket() == Market.AMAZON_APP_STORE) {
-            PurchasingManager.initiateGetUserIdRequest();
-        }
+        billingHelper.onResume();
         lifeView.resume();
     }
 
@@ -225,14 +210,7 @@ public class GameActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (purchaseHelper.getMarket() == Market.GOOGLE_PLAY) {
-            GooglePlayHelper googlePlayHelper = (GooglePlayHelper)purchaseHelper;
-            if (googlePlayHelper.isReady()) {
-                if (googlePlayHelper
-                        .onActivityResult(requestCode, resultCode, data))
-                    return;
-            }
-        }
+        billingHelper.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -243,11 +221,4 @@ public class GameActivity extends Activity {
         bld.create().show();
     }
 
-    public BasePurchaseHelper getPurchaseHelper() {
-        return purchaseHelper;
-    }
-
-    public void setPurchaseHelper(BasePurchaseHelper purchaseHelper) {
-        this.purchaseHelper = purchaseHelper;
-    }
 }
