@@ -222,7 +222,7 @@ public class GameActivity extends Activity {
     }
 
 
-    public BillingHelper getPurchaseHelper() {
+    public BillingHelper getBillingHelper() {
         return billingHelper;
     }
 }

@@ -162,7 +162,7 @@ public class LifeView extends SurfaceView implements Runnable {
                             public void onClick(
                                     DialogInterface dialog,
                                     int which) {
-                                baseActivity.getPurchaseHelper().onBuyChanges();
+                                baseActivity.getBillingHelper().onBuyChanges();
                             }
                         }).setNegativeButton(android.R.string.no, null).show();
     }
