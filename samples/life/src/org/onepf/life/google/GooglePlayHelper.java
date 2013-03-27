@@ -15,8 +15,8 @@ import org.onepf.life.google.util.Inventory;
 import org.onepf.life.google.util.Purchase;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
-    private final BillingHelper billingHelper;
-    private final BasePurchaseHelper thisHelper;
+    private BillingHelper mBillingHelper;
+    private BasePurchaseHelper thisHelper;
 
     private final IabHelper mHelper;
     private final Context context;
@@ -36,7 +36,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
         parent = context;
         this.context = context;
         thisHelper = this;
-        this.billingHelper = billingHelper;
+        mBillingHelper = billingHelper;
 
         mHelper = new IabHelper(context, publicKey);
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -46,9 +46,10 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                             "Problem setting up In-app Billing: " + result);
                     return;
                 }
-                GooglePlayHelper.this.billingHelper.updateHelper(thisHelper);
-                isReady = true;
-                mHelper.queryInventoryAsync(mGotInventoryListener);
+                if (mBillingHelper.updateHelper(thisHelper)) {
+                    isReady = true;
+                    mHelper.queryInventoryAsync(mGotInventoryListener);
+                }
             }
         });
     }
@@ -58,16 +59,15 @@ public class GooglePlayHelper extends BasePurchaseHelper {
         mHelper.handleActivityResult(requestCode, resultCode, data);
     }
 
-
-    public boolean isReady() {
-        return isReady;
-    }
-
     private IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result,
                                              Inventory inventory) {
             if (result.isFailure()) {
                 parent.alert("Failed to load account information");
+                return;
+            }
+
+            if (!mBillingHelper.isMainMarket(thisHelper)) {
                 return;
             }
 
