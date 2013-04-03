@@ -21,6 +21,7 @@ import android.util.Log;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life.amazon.AmazonHelper;
 import org.onepf.life.google.GooglePlayHelper;
+import org.onepf.life.samsung.SamsungHelper;
 
 /**
  * User: Boris Minaev
@@ -34,6 +35,7 @@ public class BillingHelper {
     public BillingHelper(GameActivity activity) {
         new GooglePlayHelper(activity, this);
         new AmazonHelper(activity, this);
+        new SamsungHelper(activity, this);
     }
 
     public boolean updateHelper(BasePurchaseHelper helper) {
