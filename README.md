@@ -49,7 +49,52 @@ The following Android application stores support in-app billing today:
 If you know about other Android appstores that support in-app purchasing 
 please [let us know](http://groups.google.com/group/opf_openiab).
 
-We are working on integrating their IAB APIs in one OpenIAB library.
+We are working on integrating their IAB APIs in one OpenIAB library. Here is information about
+Appstore IAB feature support:
+<table>
+  <tr>
+    <th></th>
+    <th><a href="https://play.google.com/apps/publish/">Google Play</a></th>
+    <th><a href="https://developer.amazon.com/welcome.html">Amazon AppStore</a></th>
+    <th><a href="http://seller.samsungapps.com/">Samsung Apps</a></th>
+    <th><a href="http://dev.tstore.co.kr/devpoc/main/main.omp">SK-Telecom T-Store</a></th>
+  </tr>
+  <tr>
+    <td>Link to IAB API description</td>
+    <td><a href="http://developer.android.com/google/play/billing/index.html">Google IAB API</a></td>
+    <td><a href="https://developer.amazon.com/sdk/in-app-purchasing.html">Amazon IAB API</a></td>
+    <td><a href="http://developer.samsung.com/android/tools-sdks/In-App-Purchase-Library">Samsung IAB API</a></td>
+    <td><a href="http://dev.tstore.co.kr/devpoc/guide/guideProd.omp#a1_5">T-Store IAB API</a></td>
+  </tr>
+  <tr>
+    <td>Processing code</td>
+    <td>Appstore</td>
+    <td>Appstore</td>
+    <td>Lib</td>
+    <td>Lib</td>
+  </tr>
+  <tr>
+    <td>Subscription</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>Consumable goods</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>Non-consumable goods</td>
+    <td>Yes</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>Yes</td>
+  </tr>
+</table>
 
 How Can I Help?
 =====
