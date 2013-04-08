@@ -49,21 +49,21 @@ public class BillingHelper {
     }
 
     public void onBuyChanges() {
-        Log.e(GameActivity.TAG, "onBuyChanges");
+        Log.d(GameActivity.TAG, "onBuyChanges in BillingHelper");
         if (currentHelper != null) {
             currentHelper.onBuyChanges();
         }
     }
 
     public void onBuyOrangeCells() {
-        Log.e(GameActivity.TAG, "onBuyOrangeCells");
+        Log.d(GameActivity.TAG, "onBuyOrangeCells in BillingHelper");
         if (currentHelper != null) {
             currentHelper.onBuyOrangeCells();
         }
     }
 
     public void onBuyFigures() {
-        Log.e(GameActivity.TAG, "onBuyFigures");
+        Log.d(GameActivity.TAG, "onBuyFigures in BillingHelper");
         if (currentHelper != null) {
             currentHelper.onBuyFigures();
         }
