@@ -39,22 +39,27 @@ public class GooglePlayHelper extends BasePurchaseHelper {
 
         PackageManager packageManager = parent.getPackageManager();
         String packageName = parent.getClass().getPackage().getName();
-        if (packageManager.getInstallerPackageName(packageName).equals("com.android.vending")) {
-            mBillingHelper.updateHelper(this);
-        }
-
-        mHelper = new IabHelper(context, publicKey);
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-                if (!result.isSuccess()) {
-                    Log.d(GameActivity.TAG,
-                            "Problem setting up In-app Billing: " + result);
-                    return;
-                }
-                // isReady = true;
-                mHelper.queryInventoryAsync(mGotInventoryListener);
+        String installerPackageName = packageManager.getInstallerPackageName(packageName);
+        if (installerPackageName != null && installerPackageName.equals("com.android.vending")) {
+            if (mBillingHelper.updateHelper(this)) {
+                mHelper = new IabHelper(context, publicKey);
+                mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                    public void onIabSetupFinished(IabResult result) {
+                        if (!result.isSuccess()) {
+                            Log.d(GameActivity.TAG,
+                                    "Problem setting up In-app Billing: " + result);
+                            return;
+                        }
+                        // isReady = true;
+                        mHelper.queryInventoryAsync(mGotInventoryListener);
+                    }
+                });
+            } else {
+                mHelper = null;
             }
-        });
+        } else {
+            mHelper = null;
+        }
     }
 
     @Override
