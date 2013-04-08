@@ -14,12 +14,16 @@
  *       limitations under the License.
  ******************************************************************************/
 
-package org.onepf.life;
+package org.onepf.life.tstore;
 
 /**
  * Author: Ruslan Sayfutdinov
- * Date: 25.03.13
+ * Date: 05.04.13
  */
-public enum Market {
-    GOOGLE_PLAY, AMAZON_APP_STORE, SAMSUNG_APPS, TSTORE, UNDEFINED
+public interface Converter {
+    public String toJson(final CommandRequest r);
+
+    public Response fromJson(final String json);
+
+    public VerifyReceipt fromJson2VerifyReceipt(final String json);
 }

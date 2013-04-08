@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.util.Log;
 import org.onepf.life.BasePurchaseHelper;
 import org.onepf.life.BillingHelper;
@@ -16,13 +17,12 @@ import org.onepf.life.google.util.Purchase;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
     private BillingHelper mBillingHelper;
-    private BasePurchaseHelper thisHelper;
 
     private final IabHelper mHelper;
     private final Context context;
     private final GameActivity parent;
 
-    private boolean isReady = false;
+    // private boolean isReady = false;
 
     private final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
 
@@ -35,8 +35,13 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     public GooglePlayHelper(GameActivity context, BillingHelper billingHelper) {
         parent = context;
         this.context = context;
-        thisHelper = this;
         mBillingHelper = billingHelper;
+
+        PackageManager packageManager = parent.getPackageManager();
+        String packageName = parent.getClass().getPackage().getName();
+        if (packageManager.getInstallerPackageName(packageName).equals("com.android.vending")) {
+            mBillingHelper.updateHelper(this);
+        }
 
         mHelper = new IabHelper(context, publicKey);
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -46,10 +51,8 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                             "Problem setting up In-app Billing: " + result);
                     return;
                 }
-                if (mBillingHelper.updateHelper(thisHelper)) {
-                    isReady = true;
-                    mHelper.queryInventoryAsync(mGotInventoryListener);
-                }
+                // isReady = true;
+                mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
     }
@@ -67,7 +70,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                 return;
             }
 
-            if (!mBillingHelper.isMainMarket(thisHelper)) {
+            if (!mBillingHelper.isMainMarket(GooglePlayHelper.this)) {
                 return;
             }
 

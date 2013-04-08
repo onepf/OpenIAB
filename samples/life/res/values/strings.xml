@@ -35,4 +35,9 @@
     <string name="subscription_sku">org.onepf.life.orange_cells.monthly</string>
     <string name="consumable_sku">org.onepf.life.fifty_changes</string>
     <string name="figures_sku">org.onepf.life.figures</string>
+
+    <string name="tstore_appid">OA00325110</string>
+    <string name="tstore_changes_pid">0901214308</string>
+    <string name="tstore_orange_cells_pid">0901214320</string>
+    <string name="tstore_figures_pid">0901214321</string>
 </resources>

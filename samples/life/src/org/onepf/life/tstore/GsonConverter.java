@@ -14,12 +14,30 @@
  *       limitations under the License.
  ******************************************************************************/
 
-package org.onepf.life;
+package org.onepf.life.tstore;
+
+import com.google.gson.Gson;
 
 /**
  * Author: Ruslan Sayfutdinov
- * Date: 25.03.13
+ * Date: 05.04.13
  */
-public enum Market {
-    GOOGLE_PLAY, AMAZON_APP_STORE, SAMSUNG_APPS, TSTORE, UNDEFINED
+public class GsonConverter implements Converter {
+    private final Gson mGson = new Gson();
+
+    @Override
+    public String toJson(CommandRequest r) {
+        return mGson.toJson(r);
+    }
+
+    @Override
+    public Response fromJson(String json) {
+        return mGson.fromJson(json, Response.class);
+    }
+
+    @Override
+    public VerifyReceipt fromJson2VerifyReceipt(String json) {
+        return mGson.fromJson(json, VerifyReceipt.class);
+    }
+
 }

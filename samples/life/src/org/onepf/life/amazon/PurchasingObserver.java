@@ -61,7 +61,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
         Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
-        if (mBillingHelper.updateHelper(thisHelper)) {
+        if (!isSandboxMode && mBillingHelper.updateHelper(thisHelper)) {
             PurchasingManager.initiateGetUserIdRequest();
         }
 
@@ -356,6 +356,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
                     SubscriptionPeriod latestSubscriptionPeriod = null;
                     final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<>();
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
+
                         final String sku = receipt.getSku();
                         final String key = getKey(sku);
                         switch (receipt.getItemType()) {
