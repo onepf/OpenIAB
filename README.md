@@ -28,6 +28,14 @@ We have just started. We are creating a [sample game](/onepf/OpenIAB/tree/master
 appstores that support in-app purchasing. In the same time, we are designing 
 Open In-App Billing API that appstores can use to easily integrate in-app billing functionality.
 
+Basic Principles
+=====
+* *As close to Google Play In-app Billing API as possible* - we optimize the OpenIAB library by the following parameter "lines on code you need to change in an app that already works in Google Play to make it working in all the appstores"
+* *No middle man*
+* *Modular architecture* - adding new appstore should be just adding one more class imeplementing a fixed interface
+* *One APK file to work in all appstores* - but OpenIAB should have an option to build separate APK files for appstores for developers who want to create APK without any overhead
+* *No additional functionality* - OpenIAB does not make in-app billing easier to use, we just make it working in all the appstores with single code
+
 No Middle Man
 =====
 OpenIAB is an open source library that wraps the already existing IAB APIs as well as an open API that 
