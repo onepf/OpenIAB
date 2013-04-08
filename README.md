@@ -40,11 +40,11 @@ each new store implement their own API and developers have to integrate all thes
 AppStores
 =====
 The following Android application stores support in-app billing today:
- * Google Play
- * Amazon AppStore
- * Samsung Apps
- * SK-Telecom T-Store  
- * NOOK (via Fortumo)
+ * [Google Play](https://play.google.com/apps/publish/)
+ * [Amazon AppStore](https://developer.amazon.com/welcome.html)
+ * [Samsung Apps](http://seller.samsungapps.com/)
+ * [SK-Telecom T-Store](http://dev.tstore.co.kr/devpoc/main/main.omp)
+ * [NOOK](https://nookdeveloper.barnesandnoble.com/) (via [Fortumo](http://smsfortumo.ru/))
  
 If you know about other Android appstores that support in-app purchasing 
 please [let us know](http://groups.google.com/group/opf_openiab).
