@@ -3,14 +3,15 @@ Summary
 
 [Description of open mobile services approach to be supplied.]
 
-Services 
+APIs
 -------------
-OpenIAB - Open In-App Billing
+OpenIAB API (Open In-App Billing API) - [short description here]
 
-OpenIAB 
+OpenIAB API
 -------------
 
 [Description of open IAB]
+OpenIAB API
 
 ### Interface
 
