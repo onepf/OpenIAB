@@ -42,19 +42,20 @@ interface Appstore {
     boolean isServiceSupported(AppstoreService appstoreService);
     AppstoreInAppBillingService getInAppBillingService();
     //... other methods that return different Appstore specific services
+
+    //a method to open application product page in this appstore
+    //a method to open the reviews page (aka "rate it") in this appstore
+    //a method that returns if the appstore allows links to developer website
 }
 
-@StoreImplementation
 class GooglePlayAppstore implements Appstore {
     
 }
 
-@StoreImplementation
 class AmazonAppstoreAppstore implements Appstore {
     
 }
 
-@StoreImplementation
 class YandexStoreAppstore implements Appstore {
     
 }
