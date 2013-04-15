@@ -1,0 +1,60 @@
+package org.onepf.oms;
+
+enum AppstoreService {
+    APPSTORE_SERVICE_IN_APP_BILLING,
+    APPSTORE_SERVICE_LICENSING,
+    APPSTORE_SERVICE_PUSH,
+    APPSTORE_SERVICE_BACKUP
+}
+
+class AppstoreServiceManager {
+    List<Appstore> appstores;
+    AppstoreServiceManager() {
+        appstores = new ArrayList<Appstore>();
+        appstores.add(new GooglePlayAppstore());
+        appstores.add(new AmazonAppstoreAppstore());
+        appstores.add(new YandexStoreAppstore());
+    }
+
+    AppstoreServiceManager instance;
+    public static AppstoreServiceManager getInstance() {
+        if (instance==null) {
+            instance = new AppstoreServiceManager();
+        }
+        return instance;
+    }
+
+    public Appstore getAppstoreForService(String packageName, AppstoreService appstoreService);
+    public Appstore getInstallerAppstore(String packageName) {
+        for (Appstore appstore : appstores) {
+            if (appstore.isInstaller(packageName)) {
+                return appstore;
+            }
+        }
+        return null;
+    }
+    public List<Appstore> getAppstoresSupportingAPI(String packageName, AppstoreService appstoreService);
+}
+
+interface Appstore {
+    boolean isAppPresented(String packageName);
+    boolean isInstaller(String packageName);
+    boolean isServiceSupported(AppstoreService appstoreService);
+    AppstoreInAppBillingService getInAppBillingService();
+    //... other methods that return different Appstore specific services
+}
+
+@StoreImplementation
+class GooglePlayAppstore implements Appstore {
+    
+}
+
+@StoreImplementation
+class AmazonAppstoreAppstore implements Appstore {
+    
+}
+
+@StoreImplementation
+class YandexStoreAppstore implements Appstore {
+    
+}
