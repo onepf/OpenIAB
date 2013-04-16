@@ -60,6 +60,7 @@ public class OpenIabHelper {
 
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         mAppstoreBillingService.startSetup(listener);
+        mSetupDone = true;
     }
 
     public void dispose() {
