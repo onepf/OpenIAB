@@ -10,5 +10,5 @@ public enum AppstoreName {
     APPSTORE_AMAZON,
     APPSTORE_SAMSUNG,
     APPSTORE_YANDEX,
-    APPTORE_TSTORE
+    APPSTORE_TSTORE
 }
