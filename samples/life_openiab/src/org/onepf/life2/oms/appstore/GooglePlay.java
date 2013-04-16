@@ -17,6 +17,7 @@
 package org.onepf.life2.oms.appstore;
 
 import org.onepf.life2.oms.Appstore;
+import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreService;
 
 /**

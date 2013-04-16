@@ -13,7 +13,7 @@ import java.util.List;
  * Date: 16.04.13
  * Time: 15:46
  */
-interface AppstoreInAppBillingService {
+public interface AppstoreInAppBillingService {
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
     void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);
