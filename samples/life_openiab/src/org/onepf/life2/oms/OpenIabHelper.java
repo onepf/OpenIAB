@@ -2,6 +2,7 @@ package org.onepf.life2.oms;
 
 import android.content.Context;
 import android.util.Log;
+import org.onepf.life2.oms.appstore.GooglePlayBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 
 /**
@@ -46,14 +47,8 @@ public class OpenIabHelper {
 
     public void dispose() {
         logDebug("Disposing.");
-        if (mAppstoreBillingService.get)
-            mSetupDone = false;
-        if (mServiceConn != null) {
-            logDebug("Unbinding from service.");
-            if (mContext != null) mContext.unbindService(mServiceConn);
-            mServiceConn = null;
-            mService = null;
-            mPurchaseListener = null;
+        if (mAppstore.getAppstoreName() == AppstoreName.APPSTORE_GOOGLE) {
+            ((GooglePlayBillingService) mAppstoreBillingService).dispose();
         }
     }
 

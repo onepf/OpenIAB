@@ -50,4 +50,9 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
     public void consume(Purchase itemInfo) throws IabException {
         mIabHelper.consume(itemInfo);
     }
+
+
+    public void dispose() {
+        mIabHelper.dispose();
+    }
 }
