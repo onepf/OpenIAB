@@ -16,6 +16,7 @@
 
 package org.onepf.life2.oms.appstore;
 
+import android.content.Context;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreName;
@@ -26,6 +27,14 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class AmazonAppstore implements Appstore {
+    private final Context mContext;
+    private final AmazonAppstoreBillingService mBillingService;
+
+    public AmazonAppstore(Context context) {
+        mContext = context;
+        mBillingService = new AmazonAppstoreBillingService(mContext);
+    }
+
     @Override
     public boolean isAppPresented(String packageName) {
         return false;
@@ -33,17 +42,21 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public boolean isInstaller() {
-        return false;
+        return mBillingService.getIsInstaller();
     }
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
-        return false;
+        if (appstoreService == AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
-        return null;
+        return mBillingService;
     }
 
     @Override
