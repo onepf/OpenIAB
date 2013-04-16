@@ -17,44 +17,30 @@
 package org.onepf.life2.oms.appstore;
 
 import android.content.Context;
-import org.onepf.life2.oms.Appstore;
-import org.onepf.life2.oms.AppstoreInAppBillingService;
-import org.onepf.life2.oms.AppstoreService;
+import android.util.Log;
+import com.amazon.inapp.purchasing.BasePurchasingObserver;
+import com.amazon.inapp.purchasing.PurchasingManager;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
-public class AmazonAppstore implements Appstore {
-    private final Context mContext;
+public class AmazonAppstoreObserver extends BasePurchasingObserver {
+
+    private final String TAG = "Life";
     private final AmazonAppstoreBillingService mBillingService;
 
-    public AmazonAppstore(Context context) {
-        mContext = context;
-        mBillingService = new AmazonAppstoreBillingService(mContext);
+    AmazonAppstoreObserver(Context context, AmazonAppstoreBillingService billingService) {
+        super(context);
+        mBillingService = billingService;
     }
 
     @Override
-    public boolean isAppPresented(String packageName) {
-        return false;
-    }
-
-    @Override
-    public boolean isInstaller() {
-        return mBillingService.getIsInstaller();
-    }
-
-    @Override
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING) {
-            return true;
-        } else {
-            return false;
+    public void onSdkAvailable(final boolean isSandboxMode) {
+        Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
+        if (!isSandboxMode) {
+            mBillingService.setIsInstaller(true);
+            PurchasingManager.initiateGetUserIdRequest();
         }
-    }
-
-    @Override
-    public AppstoreInAppBillingService getInAppBillingService() {
-        return mBillingService;
     }
 }
