@@ -616,7 +616,7 @@ public class IabHelper {
      * @param itemInfo The PurchaseInfo that represents the item to consume.
      * @throws IabException if there is a problem during consumption.
      */
-    void consume(Purchase itemInfo) throws IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
 
         if (!itemInfo.mItemType.equals(ITEM_TYPE_INAPP)) {

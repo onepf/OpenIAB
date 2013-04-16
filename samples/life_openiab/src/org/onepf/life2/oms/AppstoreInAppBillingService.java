@@ -2,6 +2,7 @@ package org.onepf.life2.oms;
 
 import android.app.Activity;
 import android.content.Intent;
+import org.onepf.life2.google.util.IabException;
 import org.onepf.life2.google.util.IabHelper;
 import org.onepf.life2.google.util.Inventory;
 import org.onepf.life2.google.util.Purchase;
@@ -20,7 +21,7 @@ public interface AppstoreInAppBillingService {
 
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 
-    Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus);
+    Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
 
-    void consume(Purchase itemInfo);
+    void consume(Purchase itemInfo) throws IabException;
 }
