@@ -35,6 +35,7 @@ public class GooglePlay implements Appstore {
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
+        mPublicKey = publicKey;
     }
 
     @Override
