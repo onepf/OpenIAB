@@ -1,0 +1,93 @@
+# Creating the JSON Data File
+#
+# The SDK Tester Uses a JavaScript Object Notation (JSON) text file to contain
+# the IAP item information used to respond to IAP API calls.  This file resides
+# on the device containing the app under test and the SDK Tester. Once created,
+# the file needs to reside on the device's file system under the path:
+#
+# /mnt/sdcard/amazon.sdktester.json
+#
+# The contents of the file is a list of JSON objects that should have the same
+# properties as the IAP items that you entered into the Developer Portal. This
+# ensures you are testing with the same item attributes that will be available
+# in the live environment.
+#
+# The overall format of the JSON file is (note the commas!):
+#
+# { IAP Item Definition 1 },
+# { IAP Item Definition 2 },
+# .
+# .
+# .
+# { IAP Item Definition n }
+#
+# Where "IAP Item Defintion" is:
+#
+# {
+#     SKU_1:{IAP_Item_1_Description},
+#     SKU_2:{IAP_Item_2_Description},
+#     .
+#     .
+#     .
+#     SKU_n:{IAP_Item_n_Description}
+# }
+#
+# Format for ENTITLED and CONSUMABLE Items:
+#
+# "SKU":{
+#   "itemType": "ENTITLED|CONSUMABLE",
+#   "price": item_price,
+#   "title": item_title,
+#   "description": item_description,
+#   "smallIconUrl": "http://path_to_image",
+# }
+#
+# examples:
+#
+{
+"org.onepf.life.fifty_changes" : {
+"itemType": "CONSUMABLE",
+"price": 0.99,
+"title": "More changes!",
+"description": "Fifty more changes!",
+"smallIconUrl": "http://some/image.jpg"
+},
+
+"org.onepf.life.figures" : {
+"itemType": "ENTITLED",
+"price": 4.99,
+"title": "Figures",
+"description": "Buy five ready figures",
+"smallIconUrl": "http://some/image.jpg"
+},
+"org.onepf.life.orange_cells.1mo" : {
+"itemType" : "SUBSCRIPTION",
+"price" : 1.49,
+"title": "Orange cells",
+"description": "Buy orange cells for a month",
+"smallIconUrl": "http://some/image.jpg",
+"subscriptionParent": "org.onepf.life.orange_cells"
+}
+}
+#
+# Format for Subscription Items:
+#
+# "SKU":{
+#   "itemType": "ENTITLED|CONSUMABLE",
+#   "price": item_price,
+#   "title": item_title,
+#   "description": item_description,
+#   "smallIconUrl": "http://path_to_image",
+#   "subscriptionParent": "parentSKU"
+# }
+#
+# example:
+#
+# "com.amazon.buttonclicker.subscription.1mo" : {
+#   "itemType" : "SUBSCRIPTION",
+#   "price" : 3.99,
+#   "title": "Button Clicker",
+#   "description": "Click your button!",
+#   "smallIconUrl": "http://some/image.jpg",
+#   "subscriptionParent": "com.amazon.buttonclicker.subscription"
+# }

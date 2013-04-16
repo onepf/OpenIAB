@@ -1,0 +1,4 @@
+*.iml
+*.class
+gen/
+\.idea/
