@@ -618,7 +618,7 @@ public class IabHelper {
      * @throws org.onepf.life2.oms.appstore.googleUtils.IabException
      *          if there is a problem during consumption.
      */
-    void consume(Purchase itemInfo) throws IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
 
         if (!itemInfo.mItemType.equals(ITEM_TYPE_INAPP)) {

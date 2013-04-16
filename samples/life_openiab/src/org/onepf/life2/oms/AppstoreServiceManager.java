@@ -47,7 +47,10 @@ class AppstoreServiceManager {
         return instance;
     }
 
-    public Appstore getAppstoreForService(String packageName, AppstoreService appstoreService) {
+    public Appstore getAppstoreForService(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING) {
+            return getInstallerAppstore();
+        }
         return null;
     }
 
