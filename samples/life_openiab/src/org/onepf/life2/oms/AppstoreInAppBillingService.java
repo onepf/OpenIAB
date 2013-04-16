@@ -2,10 +2,10 @@ package org.onepf.life2.oms;
 
 import android.app.Activity;
 import android.content.Intent;
-import org.onepf.life2.google.util.IabException;
-import org.onepf.life2.google.util.IabHelper;
-import org.onepf.life2.google.util.Inventory;
-import org.onepf.life2.google.util.Purchase;
+import org.onepf.life2.oms.appstore.googleUtils.IabException;
+import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
+import org.onepf.life2.oms.appstore.googleUtils.Inventory;
+import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
 import java.util.List;
 

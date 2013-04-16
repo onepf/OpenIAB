@@ -34,8 +34,8 @@ class AppstoreServiceManager {
     AppstoreServiceManager(Context context, String googlePublicKey) {
         appstores = new ArrayList<Appstore>();
         appstores.add(new GooglePlay(context, googlePublicKey));
-        appstores.add(new AmazonAppstore());
-        appstores.add(new YandexStore());
+        appstores.add(new AmazonAppstore(context));
+        appstores.add(new YandexStore(context));
     }
 
     private static AppstoreServiceManager instance;
@@ -51,7 +51,7 @@ class AppstoreServiceManager {
         return null;
     }
 
-    public Appstore getInstallerAppstore(String packageName) {
+    public Appstore getInstallerAppstore() {
         for (Appstore appstore : appstores) {
             if (appstore.isInstaller()) {
                 return appstore;
