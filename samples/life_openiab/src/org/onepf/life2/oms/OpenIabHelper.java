@@ -1,6 +1,8 @@
 package org.onepf.life2.oms;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import org.onepf.life2.oms.appstore.GooglePlayBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
@@ -34,6 +36,10 @@ public class OpenIabHelper {
     // The item type of the current purchase flow
     String mPurchasingItemType;
 
+    // Item types
+    public static final String ITEM_TYPE_INAPP = "inapp";
+    public static final String ITEM_TYPE_SUBS = "subs";
+
     public OpenIabHelper(Context context, String googlePublicKey) {
         mContext = context;
         mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey);
@@ -50,6 +56,38 @@ public class OpenIabHelper {
         if (mAppstore.getAppstoreName() == AppstoreName.APPSTORE_GOOGLE) {
             ((GooglePlayBillingService) mAppstoreBillingService).dispose();
         }
+    }
+
+    public boolean subscriptionsSupported() {
+        return true;
+    }
+
+    public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
+        launchPurchaseFlow(act, sku, requestCode, listener, "");
+    }
+
+    public void launchPurchaseFlow(Activity act, String sku, int requestCode,
+                                   IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        launchPurchaseFlow(act, sku, ITEM_TYPE_INAPP, requestCode, listener, extraData);
+    }
+
+    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+                                               IabHelper.OnIabPurchaseFinishedListener listener) {
+        launchSubscriptionPurchaseFlow(act, sku, requestCode, listener, "");
+    }
+
+    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+                                               IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        launchPurchaseFlow(act, sku, ITEM_TYPE_SUBS, requestCode, listener, extraData);
+    }
+
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
+                                   IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        mAppstoreBillingService.launchPurchaseFlow(act, sku, itemType, requestCode, listener, extraData);
+    }
+
+    public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+        return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
 
