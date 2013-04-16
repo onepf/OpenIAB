@@ -31,18 +31,18 @@ import java.util.List;
 class AppstoreServiceManager {
     List<Appstore> appstores;
 
-    AppstoreServiceManager(Context context) {
+    AppstoreServiceManager(Context context, String googlePublicKey) {
         appstores = new ArrayList<Appstore>();
-        appstores.add(new GooglePlay(context));
+        appstores.add(new GooglePlay(context, googlePublicKey));
         appstores.add(new AmazonAppstore());
         appstores.add(new YandexStore());
     }
 
     private static AppstoreServiceManager instance;
 
-    public static AppstoreServiceManager getInstance(Context context) {
+    public static AppstoreServiceManager getInstance(Context context, String publicKey) {
         if (instance == null) {
-            instance = new AppstoreServiceManager(context);
+            instance = new AppstoreServiceManager(context, publicKey);
         }
         return instance;
     }

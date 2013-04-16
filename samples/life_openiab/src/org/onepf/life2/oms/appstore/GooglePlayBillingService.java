@@ -17,11 +17,11 @@ import java.util.List;
  */
 public class GooglePlayBillingService implements AppstoreInAppBillingService {
     Context mContext;
+    private IabHelper mIabHelper;
 
-
-    public GooglePlayBillingService(Context context) {
+    public GooglePlayBillingService(Context context, String publicKey) {
         mContext = context;
-
+        mIabHelper = new IabHelper(context, publicKey);
     }
 
     @Override

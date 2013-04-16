@@ -21,7 +21,6 @@ import android.content.pm.PackageManager;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreService;
-import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -31,9 +30,9 @@ import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 public class GooglePlay implements Appstore {
     private Context mContext;
     private GooglePlayBillingService mBillingService;
-    private IabHelper mIabHelper;
+    private String mPublicKey;
 
-    public GooglePlay(Context context) {
+    public GooglePlay(Context context, String publicKey) {
         mContext = context;
     }
 
@@ -58,7 +57,7 @@ public class GooglePlay implements Appstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new GooglePlayBillingService(mContext);
+            mBillingService = new GooglePlayBillingService(mContext, mPublicKey);
         }
         return mBillingService;
     }
