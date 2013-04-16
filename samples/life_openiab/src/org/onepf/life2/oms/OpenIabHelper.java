@@ -52,6 +52,7 @@ public class OpenIabHelper {
         }
     }
 
+
     void logDebug(String msg) {
         if (mDebugLog) Log.d(mDebugTag, msg);
     }
