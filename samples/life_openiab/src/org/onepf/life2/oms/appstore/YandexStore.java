@@ -16,6 +16,7 @@
 
 package org.onepf.life2.oms.appstore;
 
+import android.content.Context;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreService;
@@ -25,6 +26,12 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class YandexStore implements Appstore {
+    private final Context mContext;
+
+    public YandexStore(Context context) {
+        mContext = context;
+    }
+
     @Override
     public boolean isAppPresented(String packageName) {
         return false;
