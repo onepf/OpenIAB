@@ -29,6 +29,9 @@ public interface Appstore {
     boolean isServiceSupported(AppstoreService appstoreService);
 
     AppstoreInAppBillingService getInAppBillingService();
+
+    AppstoreName getAppstoreName();
+
     //... other methods that return different Appstore specific services
 
     //a method to open application product page in this appstore

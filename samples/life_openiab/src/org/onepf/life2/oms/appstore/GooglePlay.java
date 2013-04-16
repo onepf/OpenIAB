@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
+import org.onepf.life2.oms.AppstoreName;
 import org.onepf.life2.oms.AppstoreService;
 
 /**
@@ -60,5 +61,10 @@ public class GooglePlay implements Appstore {
             mBillingService = new GooglePlayBillingService(mContext, mPublicKey);
         }
         return mBillingService;
+    }
+
+    @Override
+    public AppstoreName getAppstoreName() {
+        return AppstoreName.APPSTORE_GOOGLE;
     }
 }

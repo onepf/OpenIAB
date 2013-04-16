@@ -18,6 +18,7 @@ package org.onepf.life2.oms.appstore;
 
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
+import org.onepf.life2.oms.AppstoreName;
 import org.onepf.life2.oms.AppstoreService;
 
 /**
@@ -43,5 +44,10 @@ public class AmazonAppstore implements Appstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         return null;
+    }
+
+    @Override
+    public AppstoreName getAppstoreName() {
+        return AppstoreName.APPSTORE_AMAZON;
     }
 }
