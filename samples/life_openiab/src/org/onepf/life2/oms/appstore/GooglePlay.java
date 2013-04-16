@@ -16,9 +16,12 @@
 
 package org.onepf.life2.oms.appstore;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreService;
+import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -26,14 +29,25 @@ import org.onepf.life2.oms.AppstoreService;
  */
 
 public class GooglePlay implements Appstore {
+    private Context mContext;
+    private GooglePlayBillingService mBillingService;
+    private IabHelper mIabHelper;
+
+    public GooglePlay(Context context) {
+        mContext = context;
+    }
+
     @Override
     public boolean isAppPresented(String packageName) {
         return false;
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
-        return false;
+    public boolean isInstaller() {
+        PackageManager packageManager = mContext.getPackageManager();
+        String packageName = mContext.getClass().getPackage().getName();
+        String installerPackageName = packageManager.getInstallerPackageName(packageName);
+        return (installerPackageName != null && installerPackageName.equals("com.android.vending"));
     }
 
     @Override
@@ -43,6 +57,9 @@ public class GooglePlay implements Appstore {
 
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
-        return null;
+        if (mBillingService == null) {
+            mBillingService = new GooglePlayBillingService(mContext);
+        }
+        return mBillingService;
     }
 }

@@ -23,8 +23,11 @@ package org.onepf.life2.oms;
 
 public interface Appstore {
     boolean isAppPresented(String packageName);
-    boolean isInstaller(String packageName);
+
+    boolean isInstaller();
+
     boolean isServiceSupported(AppstoreService appstoreService);
+
     AppstoreInAppBillingService getInAppBillingService();
     //... other methods that return different Appstore specific services
 

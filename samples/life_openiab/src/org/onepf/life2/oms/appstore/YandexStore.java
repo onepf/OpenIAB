@@ -31,7 +31,7 @@ public class YandexStore implements Appstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
+    public boolean isInstaller() {
         return false;
     }
 

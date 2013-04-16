@@ -16,6 +16,7 @@
 
 package org.onepf.life2.oms;
 
+import android.content.Context;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
 import org.onepf.life2.oms.appstore.YandexStore;
@@ -29,18 +30,19 @@ import java.util.List;
  */
 class AppstoreServiceManager {
     List<Appstore> appstores;
-    AppstoreServiceManager() {
+
+    AppstoreServiceManager(Context context) {
         appstores = new ArrayList<Appstore>();
-        appstores.add(new GooglePlay());
+        appstores.add(new GooglePlay(context));
         appstores.add(new AmazonAppstore());
         appstores.add(new YandexStore());
     }
 
     private static AppstoreServiceManager instance;
 
-    public static AppstoreServiceManager getInstance() {
+    public static AppstoreServiceManager getInstance(Context context) {
         if (instance == null) {
-            instance = new AppstoreServiceManager();
+            instance = new AppstoreServiceManager(context);
         }
         return instance;
     }
@@ -51,12 +53,13 @@ class AppstoreServiceManager {
 
     public Appstore getInstallerAppstore(String packageName) {
         for (Appstore appstore : appstores) {
-            if (appstore.isInstaller(packageName)) {
+            if (appstore.isInstaller()) {
                 return appstore;
             }
         }
         return null;
     }
+
     public List<Appstore> getAppstoresSupportingAPI(String packageName, AppstoreService appstoreService) {
         return null;
     }
