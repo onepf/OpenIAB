@@ -19,10 +19,7 @@ package org.onepf.life2;
 import android.content.Intent;
 import android.util.Log;
 import com.amazon.inapp.purchasing.PurchasingManager;
-import org.onepf.life2.amazon.AmazonHelper;
 import org.onepf.life2.google.GooglePlayHelper;
-import org.onepf.life2.samsung.SamsungHelper;
-import org.onepf.life2.tstore.TstoreHelper;
 
 /**
  * User: Boris Minaev
@@ -34,10 +31,10 @@ public class BillingHelper {
     private BasePurchaseHelper currentHelper;
 
     public BillingHelper(GameActivity activity) {
-        new GooglePlayHelper(activity, this);
-        new AmazonHelper(activity, this);
-        new SamsungHelper(activity, this);
-        new TstoreHelper(activity, this);
+        currentHelper = new GooglePlayHelper(activity);
+        //new AmazonHelper(activity, this);
+        //new SamsungHelper(activity, this);
+        //new TstoreHelper(activity, this);
     }
 
     public boolean updateHelper(BasePurchaseHelper helper) {
@@ -48,25 +45,20 @@ public class BillingHelper {
         return false;
     }
 
-    public void onBuyChanges() {
+    public void
+    onBuyChanges() {
         Log.d(GameActivity.TAG, "onBuyChanges in BillingHelper");
-        if (currentHelper != null) {
-            currentHelper.onBuyChanges();
-        }
+        currentHelper.onBuyChanges();
     }
 
     public void onBuyOrangeCells() {
         Log.d(GameActivity.TAG, "onBuyOrangeCells in BillingHelper");
-        if (currentHelper != null) {
-            currentHelper.onBuyOrangeCells();
-        }
+        currentHelper.onBuyOrangeCells();
     }
 
     public void onBuyFigures() {
         Log.d(GameActivity.TAG, "onBuyFigures in BillingHelper");
-        if (currentHelper != null) {
-            currentHelper.onBuyFigures();
-        }
+        currentHelper.onBuyFigures();
     }
 
     public void onResume() {

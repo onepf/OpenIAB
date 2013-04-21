@@ -50,21 +50,31 @@ public class OpenIabHelper {
 
     // Billing response codes
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
+    public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
 
     public OpenIabHelper(Context context, String googlePublicKey) {
         mContext = context;
         mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey);
         mAppstore = mServiceManager.getAppstoreForService(AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING);
+        if (mAppstore == null) {
+            return;
+        }
         mAppstoreBillingService = mAppstore.getInAppBillingService();
+        mSetupDone = true;
     }
 
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+        if (!mSetupDone) {
+            IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
+            listener.onIabSetupFinished(iabResult);
+            return;
+        }
         mAppstoreBillingService.startSetup(listener);
-        mSetupDone = true;
     }
 
     public void dispose() {
         logDebug("Disposing.");
+        checkSetupDone("dispose");
         if (mAppstore.getAppstoreName() == AppstoreName.APPSTORE_GOOGLE) {
             ((GooglePlayBillingService) mAppstoreBillingService).dispose();
         }
@@ -95,7 +105,14 @@ public class OpenIabHelper {
 
     public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        mAppstoreBillingService.launchPurchaseFlow(act, sku, itemType, requestCode, listener, extraData);
+        checkSetupDone("launchPurchaseFlow");
+        OpenItem skuOpenItem = new OpenItem(sku);
+        String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+        if (skuCurrentStore == null) {
+            // TODO: throw an exception
+            return;
+        }
+        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
@@ -108,12 +125,58 @@ public class OpenIabHelper {
 
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
                                     List<String> moreSubsSkus) throws IabException {
-        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkus, moreSubsSkus);
+        checkSetupDone("queryInvenoty");
+        List<String> moreItemSkusCurrentStore = new ArrayList();
+        if (moreItemSkus == null) {
+            moreItemSkusCurrentStore = null;
+        } else {
+            for (String sku : moreItemSkus) {
+                OpenItem skuOpenItem = new OpenItem(sku);
+                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                if (skuCurrentStore == null) {
+                    // TODO: throw an exception
+                    return null;
+                }
+                moreItemSkusCurrentStore.add(skuCurrentStore);
+            }
+        }
+        List<String> moreSubsSkusCurrentStore = new ArrayList();
+        if (moreSubsSkus == null) {
+            moreSubsSkusCurrentStore = null;
+        } else {
+            for (String sku : moreSubsSkus) {
+                OpenItem skuOpenItem = new OpenItem(sku);
+                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                if (skuCurrentStore == null) {
+                    // TODO: throw an exception
+                    return null;
+                }
+                moreSubsSkusCurrentStore.add(skuCurrentStore);
+            }
+        }
+        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
+                moreSubsSkusCurrentStore);
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,
                                     final List<String> moreSkus,
                                     final IabHelper.QueryInventoryFinishedListener listener) {
+        final List<String> moreItemSkusCurrentStore;
+        if (moreSkus == null) {
+            moreItemSkusCurrentStore = null;
+        } else {
+            moreItemSkusCurrentStore = new ArrayList<>();
+            for (String sku : moreSkus) {
+                OpenItem skuOpenItem = new OpenItem(sku);
+                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                if (skuCurrentStore == null) {
+                    // TODO: throw an exception
+                    return;
+                }
+                moreItemSkusCurrentStore.add(skuCurrentStore);
+            }
+        }
+
         final Handler handler = new Handler();
         checkSetupDone("queryInventory");
         flagStartAsync("refresh inventory");
@@ -122,7 +185,7 @@ public class OpenIabHelper {
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {
-                    inv = queryInventory(querySkuDetails, moreSkus);
+                    inv = queryInventory(querySkuDetails, moreItemSkusCurrentStore);
                 } catch (IabException ex) {
                     result = ex.getResult();
                 }
@@ -149,18 +212,18 @@ public class OpenIabHelper {
     }
 
     public void consume(Purchase itemInfo) throws IabException {
+        // TODO: need to check store
+        checkSetupDone("consume");
         mAppstoreBillingService.consume(itemInfo);
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
-        checkSetupDone("consume");
         List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
 
     public void consumeAsync(List<Purchase> purchases, IabHelper.OnConsumeMultiFinishedListener listener) {
-        checkSetupDone("consume");
         consumeAsyncInternal(purchases, null, listener);
     }
 

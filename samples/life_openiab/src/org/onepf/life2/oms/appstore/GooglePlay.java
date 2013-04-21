@@ -32,6 +32,8 @@ public class GooglePlay implements Appstore {
     private Context mContext;
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
+    // isDebugMode = true |-> always returns app installed via Google Plasy
+    private final boolean isDebugMode = false;
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
@@ -45,6 +47,8 @@ public class GooglePlay implements Appstore {
 
     @Override
     public boolean isInstaller() {
+        if (isDebugMode)
+            return true;
         PackageManager packageManager = mContext.getPackageManager();
         String packageName = mContext.getClass().getPackage().getName();
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
