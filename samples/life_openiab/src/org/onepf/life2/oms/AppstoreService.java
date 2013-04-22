@@ -20,6 +20,7 @@ package org.onepf.life2.oms;
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
+
 public enum AppstoreService {
     APPSTORE_SERVICE_IN_APP_BILLING,
     APPSTORE_SERVICE_LICENSING,

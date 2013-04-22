@@ -19,6 +19,7 @@ package org.onepf.life2.oms;
 import android.content.Context;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
+import org.onepf.life2.oms.appstore.SamsungApps;
 import org.onepf.life2.oms.appstore.YandexStore;
 
 import java.util.ArrayList;
@@ -31,18 +32,19 @@ import java.util.List;
 class AppstoreServiceManager {
     List<Appstore> appstores;
 
-    AppstoreServiceManager(Context context, String googlePublicKey) {
+    AppstoreServiceManager(Context context, String googlePublicKey, String samsungGroupId) {
         appstores = new ArrayList<Appstore>();
         appstores.add(new GooglePlay(context, googlePublicKey));
         appstores.add(new AmazonAppstore(context));
         appstores.add(new YandexStore(context));
+        appstores.add(new SamsungApps(context, samsungGroupId));
     }
 
     private static AppstoreServiceManager instance;
 
-    public static AppstoreServiceManager getInstance(Context context, String publicKey) {
+    public static AppstoreServiceManager getInstance(Context context, String publicKey, String samsungGroupId) {
         if (instance == null) {
-            instance = new AppstoreServiceManager(context, publicKey);
+            instance = new AppstoreServiceManager(context, publicKey, samsungGroupId);
         }
         return instance;
     }

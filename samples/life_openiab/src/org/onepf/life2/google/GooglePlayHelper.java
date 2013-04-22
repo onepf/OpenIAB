@@ -16,8 +16,9 @@ import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
     private final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
+    private final String samsungGroupId = "100000031624";
 
-    private final static String SKU_ORANGE_CELLS = "orange_cells_subscription";
+    private final static String SKU_ORANGE_CELLS = "'Google Play' : 'orange_cells_subscription', 'Samsung Apps' : '000000063778'";
     private final static String SKU_FIGURES = "figures";
     private final static String SKU_CHANGES = "changes";
     private final static int RC_REQUEST = 10001;
@@ -30,7 +31,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     public GooglePlayHelper(Context context) {
         mContext = context;
         parent = (GameActivity) context;
-        mOpenIabHelper = new OpenIabHelper(context, publicKey);
+        mOpenIabHelper = new OpenIabHelper(context, publicKey, samsungGroupId);
         mOpenIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 if (!result.isSuccess()) {

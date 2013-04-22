@@ -52,9 +52,9 @@ public class OpenIabHelper {
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
 
-    public OpenIabHelper(Context context, String googlePublicKey) {
+    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
         mContext = context;
-        mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey);
+        mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey, samsungGroupId);
         mAppstore = mServiceManager.getAppstoreForService(AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING);
         if (mAppstore == null) {
             return;
