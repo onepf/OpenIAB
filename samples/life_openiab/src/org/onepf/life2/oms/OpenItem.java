@@ -45,7 +45,7 @@ public class OpenItem {
                 String storeName = parse[0].substring(1, parse[0].length() - 1);
                 AppstoreName appstore = null;
                 for (AppstoreName appstoreName : AppstoreName.values()) {
-                    if (appstoreName.toString().equals(storeName)) {
+                    if (appstoreName.toString().replaceAll("\\s", "").equals(storeName)) {
                         appstore = appstoreName;
                     }
                 }
