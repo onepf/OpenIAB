@@ -96,11 +96,11 @@ public class Inventory {
         return new ArrayList<Purchase>(mPurchaseMap.values());
     }
 
-    void addSkuDetails(SkuDetails d) {
+    public void addSkuDetails(SkuDetails d) {
         mSkuMap.put(d.getSku(), d);
     }
 
-    void addPurchase(Purchase p) {
+    public void addPurchase(Purchase p) {
         mPurchaseMap.put(p.getSku(), p);
     }
 }

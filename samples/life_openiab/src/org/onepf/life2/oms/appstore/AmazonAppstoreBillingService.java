@@ -19,6 +19,7 @@ package org.onepf.life2.oms.appstore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import com.amazon.inapp.purchasing.Offset;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
@@ -29,6 +30,7 @@ import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -37,8 +39,10 @@ import java.util.Map;
 public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
-    private boolean mIsInstaller = false;
     private String mCurrentUser;
+    private Inventory mInventory;
+
+    private CountDownLatch mInventoryRetrived;
 
     public AmazonAppstoreBillingService(Context context) {
         mContext = context;
@@ -65,7 +69,15 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
-        return null;
+        mInventory = new Inventory();
+        mInventoryRetrived = new CountDownLatch(1);
+        PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
+        try {
+            mInventoryRetrived.await();
+        } catch (InterruptedException e) {
+            return null;
+        }
+        return mInventory;
     }
 
     @Override
@@ -87,5 +99,13 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     public String getCurrentUser() {
         return mCurrentUser;
+    }
+
+    public Inventory getInventory() {
+        return mInventory;
+    }
+
+    public CountDownLatch getInventoryLatch() {
+        return mInventoryRetrived;
     }
 }

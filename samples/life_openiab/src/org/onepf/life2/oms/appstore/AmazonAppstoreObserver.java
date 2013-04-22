@@ -22,9 +22,9 @@ import android.util.Log;
 import com.amazon.inapp.purchasing.*;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.IabResult;
+import org.onepf.life2.oms.appstore.googleUtils.Inventory;
 import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
-import java.util.Date;
 import java.util.LinkedList;
 
 /**
@@ -106,10 +106,11 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             if (!purchaseUpdatesResponse.getUserId().equals(userId)) {
                 return false;
             }
+            Inventory inventory = mBillingService.getInventory();
+
+            // TODO: do something with this
             for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
                 Log.v(TAG, "Revoked Sku:" + sku);
-                //final String key = getKey(sku);
-                //editor.putBoolean(key, false);
             }
 
             switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
@@ -119,22 +120,31 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
                         final String sku = receipt.getSku();
-                        //final String key = getKey(sku);
+                        Purchase purchase;
                         switch (receipt.getItemType()) {
                             case ENTITLED:
-                                //editor.putBoolean(key, true);
+                                purchase = new Purchase();
+                                purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
+                                purchase.setSku(sku);
+                                inventory.addPurchase(purchase);
                                 break;
                             case SUBSCRIPTION:
                                 final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
-                                final Date startDate = subscriptionPeriod.getStartDate();
-                                if (latestSubscriptionPeriod == null ||
-                                        startDate.after(latestSubscriptionPeriod.getStartDate())) {
-                                    currentSubscriptionPeriods.clear();
-                                    latestSubscriptionPeriod = subscriptionPeriod;
-                                    currentSubscriptionPeriods.add(latestSubscriptionPeriod);
-                                } else if (startDate.equals(latestSubscriptionPeriod.getStartDate())) {
-                                    currentSubscriptionPeriods.add(receipt.getSubscriptionPeriod());
+                                if (subscriptionPeriod.getEndDate() == null) {
+                                    purchase = new Purchase();
+                                    purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
+                                    purchase.setSku(sku);
+                                    inventory.addPurchase(purchase);
                                 }
+//                                final Date startDate = subscriptionPeriod.getStartDate();
+//                                if (latestSubscriptionPeriod == null ||
+//                                        startDate.after(latestSubscriptionPeriod.getStartDate())) {
+//                                    currentSubscriptionPeriods.clear();
+//                                    latestSubscriptionPeriod = subscriptionPeriod;
+//                                    currentSubscriptionPeriods.add(latestSubscriptionPeriod);
+//                                } else if (startDate.equals(latestSubscriptionPeriod.getStartDate())) {
+//                                    currentSubscriptionPeriods.add(receipt.getSubscriptionPeriod());
+//                                }
 
                                 break;
 
@@ -145,27 +155,24 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                  * Check the latest subscription periods once all receipts have been read, if there is a subscription
                  * with an existing end date, then the subscription is not active.
                  */
-                    if (latestSubscriptionPeriod != null) {
-                        boolean hasSubscription = true;
-                        for (SubscriptionPeriod subscriptionPeriod : currentSubscriptionPeriods) {
-                            if (subscriptionPeriod.getEndDate() != null) {
-                                hasSubscription = false;
-                                break;
-                            }
-                        }
-                        //editor.putBoolean(GameActivity.ORANGE_CELLS, hasSubscription);
-                    }
+//                    if (latestSubscriptionPeriod != null) {
+//                        boolean hasSubscription = true;
+//                        for (SubscriptionPeriod subscriptionPeriod : currentSubscriptionPeriods) {
+//                            if (subscriptionPeriod.getEndDate() != null) {
+//                                hasSubscription = false;
+//                                break;
+//                            }
+//                        }
+//                        editor.putBoolean(GameActivity.ORANGE_CELLS, hasSubscription);
+//                    }
 
-                /*
-                 * Store the offset into shared preferences. If there has been more purchases since the
-                 * last time our application updated, another initiatePurchaseUpdatesRequest is called with the new
-                 * offset.
-                 */
                     final Offset newOffset = purchaseUpdatesResponse.getOffset();
                     mOffset = newOffset;
                     if (purchaseUpdatesResponse.isMore()) {
                         Log.v(TAG, "Initiating Another Purchase Updates with offset: " + newOffset.toString());
                         PurchasingManager.initiatePurchaseUpdatesRequest(newOffset);
+                    } else {
+                        mBillingService.getInventoryLatch().countDown();
                     }
                     return true;
                 case FAILED:
