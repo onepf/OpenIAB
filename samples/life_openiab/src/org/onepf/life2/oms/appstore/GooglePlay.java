@@ -70,6 +70,6 @@ public class GooglePlay implements Appstore {
 
     @Override
     public AppstoreName getAppstoreName() {
-        return AppstoreName.APPSTORE_GOOGLE;
+        return AppstoreName.GOOGLE;
     }
 }

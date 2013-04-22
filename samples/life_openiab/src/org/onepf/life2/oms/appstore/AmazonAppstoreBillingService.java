@@ -52,7 +52,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData, String initialSku) {
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         String requestId = PurchasingManager.initiatePurchaseRequest(sku);
         storeRequestListener(requestId, listener);
     }

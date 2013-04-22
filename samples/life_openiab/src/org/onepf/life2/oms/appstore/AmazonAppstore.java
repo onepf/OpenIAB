@@ -61,6 +61,6 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public AppstoreName getAppstoreName() {
-        return AppstoreName.APPSTORE_AMAZON;
+        return AppstoreName.AMAZON;
     }
 }

@@ -58,8 +58,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData, String initialSku) {
-        PurchaseInfo purchaseInfo = new PurchaseInfo(act, initialSku, itemType, requestCode, listener, extraData);
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        PurchaseInfo purchaseInfo = new PurchaseInfo(act, sku, itemType, requestCode, listener, extraData);
         purchases.put(transactionId, purchaseInfo);
         mPlasma.requestPurchaseItem(transactionId++, sku);
     }

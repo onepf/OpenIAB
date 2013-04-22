@@ -55,6 +55,6 @@ public class YandexStore implements Appstore {
 
     @Override
     public AppstoreName getAppstoreName() {
-        return AppstoreName.APPSTORE_YANDEX;
+        return AppstoreName.YANDEX;
     }
 }

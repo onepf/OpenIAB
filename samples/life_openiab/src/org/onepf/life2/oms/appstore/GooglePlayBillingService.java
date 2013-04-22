@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
-import org.onepf.life2.oms.appstore.googleUtils.*;
+import org.onepf.life2.oms.appstore.googleUtils.IabException;
+import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
+import org.onepf.life2.oms.appstore.googleUtils.Inventory;
+import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
 import java.util.List;
 
@@ -29,19 +32,8 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData, String initialSku) {
-        final IabHelper.OnIabPurchaseFinishedListener mListener = listener;
-        final String mInitialSku = initialSku;
-        IabHelper.OnIabPurchaseFinishedListener myListener = new IabHelper.OnIabPurchaseFinishedListener() {
-            @Override
-            public void onIabPurchaseFinished(IabResult result, Purchase info) {
-                if (info != null) {
-                    info.setSku(mInitialSku);
-                }
-                mListener.onIabPurchaseFinished(result, info);
-            }
-        };
-        mIabHelper.launchPurchaseFlow(act, sku, itemType, requestCode, myListener, extraData);
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        mIabHelper.launchPurchaseFlow(act, sku, itemType, requestCode, listener, extraData);
     }
 
     @Override

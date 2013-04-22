@@ -78,7 +78,7 @@ public class OpenIabHelper {
     public void dispose() {
         logDebug("Disposing.");
         checkSetupDone("dispose");
-        if (mAppstore.getAppstoreName() == AppstoreName.APPSTORE_GOOGLE) {
+        if (mAppstore.getAppstoreName() == AppstoreName.GOOGLE) {
             ((GooglePlayBillingService) mAppstoreBillingService).dispose();
         }
     }
@@ -87,123 +87,82 @@ public class OpenIabHelper {
         return true;
     }
 
-    public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
+    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
         launchPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchPurchaseFlow(Activity act, String sku, int requestCode,
+    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_INAPP, requestCode, listener, extraData);
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
                                                IabHelper.OnIabPurchaseFinishedListener listener) {
         launchSubscriptionPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
+    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
                                                IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_SUBS, requestCode, listener, extraData);
     }
 
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
+    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
-        OpenItem skuOpenItem = new OpenItem(sku);
-        String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
+        String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
         if (skuCurrentStore == null) {
             // TODO: throw an exception
             return;
         }
-        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData, sku);
+        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreSkus) throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
-                                    List<String> moreSubsSkus) throws IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreItemSkus,
+                                    List<OpenSku> moreSubsSkus) throws IabException {
         checkSetupDone("queryInvenoty");
         Map<String, String> skuToOpen = new HashMap<>();
         List<String> moreItemSkusCurrentStore = new ArrayList();
         if (moreItemSkus == null) {
             moreItemSkusCurrentStore = null;
         } else {
-            for (String sku : moreItemSkus) {
-                OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
+            for (OpenSku sku : moreItemSkus) {
+                String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
                     return null;
                 }
                 moreItemSkusCurrentStore.add(skuCurrentStore);
-                skuToOpen.put(skuCurrentStore, sku);
             }
         }
         List<String> moreSubsSkusCurrentStore = new ArrayList();
         if (moreSubsSkus == null) {
             moreSubsSkusCurrentStore = null;
         } else {
-            for (String sku : moreSubsSkus) {
-                OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
+            for (OpenSku sku : moreSubsSkus) {
+                String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
                     return null;
                 }
                 moreSubsSkusCurrentStore.add(skuCurrentStore);
-                skuToOpen.put(skuCurrentStore, sku);
             }
         }
         Inventory res = mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
                 moreSubsSkusCurrentStore);
-        if (res != null) {
-            Inventory resOpenItems = new Inventory();
-            resOpenItems.mSkuMap = new HashMap<>();
-            resOpenItems.mPurchaseMap = new HashMap<>();
-            for (String sku : res.mSkuMap.keySet()) {
-                String openName = skuToOpen.get(sku);
-                if (openName == null) {
-                    openName = sku;
-                }
-                resOpenItems.mSkuMap.put(openName, res.mSkuMap.get(sku));
-            }
-            for (String sku : res.mPurchaseMap.keySet()) {
-                String openName = skuToOpen.get(sku);
-                if (openName == null) {
-                    openName = sku;
-                }
-                resOpenItems.mPurchaseMap.put(openName, res.mPurchaseMap.get(sku));
-            }
-            res = resOpenItems;
-        }
         return res;
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,
-                                    final List<String> moreSkus,
+                                    final List<OpenSku> moreSkus,
                                     final IabHelper.QueryInventoryFinishedListener listener) {
-        final List<String> moreItemSkusCurrentStore;
-        if (moreSkus == null) {
-            moreItemSkusCurrentStore = null;
-        } else {
-            moreItemSkusCurrentStore = new ArrayList<>();
-            for (String sku : moreSkus) {
-                OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
-                if (skuCurrentStore == null) {
-                    // TODO: throw an exception
-                    return;
-                }
-                moreItemSkusCurrentStore.add(skuCurrentStore);
-            }
-        }
-
         final Handler handler = new Handler();
         checkSetupDone("queryInventory");
         flagStartAsync("refresh inventory");
@@ -212,7 +171,7 @@ public class OpenIabHelper {
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {
-                    inv = queryInventory(querySkuDetails, moreItemSkusCurrentStore);
+                    inv = queryInventory(querySkuDetails, moreSkus);
                 } catch (IabException ex) {
                     result = ex.getResult();
                 }

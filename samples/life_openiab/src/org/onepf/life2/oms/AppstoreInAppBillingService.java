@@ -17,7 +17,7 @@ import java.util.List;
 public interface AppstoreInAppBillingService {
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
-    void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData, String initialSku);
+    void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);
 
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 

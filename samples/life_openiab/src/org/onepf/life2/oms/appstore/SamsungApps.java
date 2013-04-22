@@ -49,6 +49,6 @@ public class SamsungApps implements Appstore {
 
     @Override
     public AppstoreName getAppstoreName() {
-        return AppstoreName.APPSTORE_SAMSUNG;
+        return AppstoreName.SAMSUNG;
     }
 }
