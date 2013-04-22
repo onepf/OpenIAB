@@ -41,7 +41,7 @@ public class GooglePlay implements Appstore {
     }
 
     @Override
-    public boolean isAppPresented(String packageName) {
+    public boolean isAppAvailable(String packageName) {
         return false;
     }
 

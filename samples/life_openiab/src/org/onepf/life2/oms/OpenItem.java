@@ -15,28 +15,28 @@ import java.util.Map;
  * Samples of use:
  * 1. new OpenItem("some_sku_name")
  * sku for Google Play is "some_sku_name", sku for other stores are undefined
- * 2. new OpenItem("'Google Play' : 'some_sku_name_google', 'Amazon AppStore' : 'some_sku_name_amazon'")
+ * 2. new OpenItem("'google' : 'some_sku_name_google', 'amazon' : 'some_sku_name_amazon'")
  * sku for Google Play is "some_sku_name_google", for Amazon App Store is "some_sku_name_amazon"
  * and undefined for others
- * 3. new OpenItem("'Google Play':'some_sku_name_google', 'Amazon AppStore' : '?'")
+ * 3. new OpenItem("'google':'some_sku_name_google', 'amazon' : '?'")
  * sku for Google Play is "some_sku_name_google", sku for other stores are undefined
  * <p/>
  * List of all supported stores names:
- * 1. Google Play
- * 2. Amazon AppStore
- * 3. Samsung Apps
- * 4. Yandex.Store
- * 5. SK T-Store
+ * 1. google
+ * 2. amazon
+ * 3. samsung
+ * 4. yandex
+ * 5. tstore
  */
 
 public class OpenItem {
-    private Map<AppstoreName, String> storeToSkuName;
+    private Map<AppstoreName, String> storeToSku;
 
-    public OpenItem(String s) {
-        s = s.replaceAll("\\s", "");
-        storeToSkuName = new HashMap<>();
-        if (s.contains(",") || s.contains(":")) {
-            String[] allStores = s.split(",");
+    public OpenItem(String skuJSON) {
+        skuJSON = skuJSON.replaceAll("\\s", "");
+        storeToSku = new HashMap<>();
+        if (skuJSON.contains(",") || skuJSON.contains(":")) {
+            String[] allStores = skuJSON.split(",");
             for (String curStore : allStores) {
                 String[] parse = curStore.split(":");
                 if (parse.length != 2 || parse[0].length() < 3 || parse[1].length() < 3) {
@@ -56,21 +56,21 @@ public class OpenItem {
                 setSkuForStore(appstore, sku);
             }
         } else {
-            storeToSkuName.put(AppstoreName.APPSTORE_GOOGLE, s);
+            storeToSku.put(AppstoreName.APPSTORE_GOOGLE, skuJSON);
         }
     }
 
-    public String getSkuName(AppstoreName appstore) {
-        return storeToSkuName.get(appstore);
+    public String getSku(AppstoreName appstore) {
+        return storeToSku.get(appstore);
     }
 
     public void setSkuForStore(AppstoreName appstore, String sku) {
         if (sku.equals("?")) {
             return;
         }
-        if (storeToSkuName.containsKey(appstore)) {
+        if (storeToSku.containsKey(appstore)) {
             throw new OpenItemParseException("Redefinition sku for " + appstore.toString());
         }
-        storeToSkuName.put(appstore, sku);
+        storeToSku.put(appstore, sku);
     }
 }

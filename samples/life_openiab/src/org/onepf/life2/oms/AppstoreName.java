@@ -6,11 +6,11 @@ package org.onepf.life2.oms;
  * Time: 17:41
  */
 public enum AppstoreName {
-    APPSTORE_GOOGLE("Google Play"),
-    APPSTORE_AMAZON("Amazon AppStore"),
-    APPSTORE_SAMSUNG("Samsung Apps"),
-    APPSTORE_YANDEX("Yandex.Store"),
-    APPSTORE_TSTORE("SK T-Store");
+    APPSTORE_GOOGLE("google"),
+    APPSTORE_AMAZON("amazon"),
+    APPSTORE_SAMSUNG("samsung"),
+    APPSTORE_YANDEX("yandex"),
+    APPSTORE_TSTORE("tstore");
 
     private String name;
 

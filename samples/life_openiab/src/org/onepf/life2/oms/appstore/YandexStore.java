@@ -34,7 +34,7 @@ public class YandexStore implements Appstore {
     }
 
     @Override
-    public boolean isAppPresented(String packageName) {
+    public boolean isAppAvailable(String packageName) {
         return false;
     }
 

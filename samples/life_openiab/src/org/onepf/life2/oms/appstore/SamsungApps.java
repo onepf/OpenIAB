@@ -25,7 +25,7 @@ public class SamsungApps implements Appstore {
     }
 
     @Override
-    public boolean isAppPresented(String packageName) {
+    public boolean isAppAvailable(String packageName) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

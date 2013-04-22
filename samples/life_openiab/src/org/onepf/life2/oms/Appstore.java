@@ -22,7 +22,7 @@ package org.onepf.life2.oms;
  */
 
 public interface Appstore {
-    boolean isAppPresented(String packageName);
+    boolean isAppAvailable(String packageName);
 
     boolean isInstaller();
 

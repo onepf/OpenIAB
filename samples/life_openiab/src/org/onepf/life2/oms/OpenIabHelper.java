@@ -110,7 +110,7 @@ public class OpenIabHelper {
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
         OpenItem skuOpenItem = new OpenItem(sku);
-        String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+        String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
         if (skuCurrentStore == null) {
             // TODO: throw an exception
             return;
@@ -136,7 +136,7 @@ public class OpenIabHelper {
         } else {
             for (String sku : moreItemSkus) {
                 OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
                     return null;
@@ -151,7 +151,7 @@ public class OpenIabHelper {
         } else {
             for (String sku : moreSubsSkus) {
                 OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
                     return null;
@@ -195,7 +195,7 @@ public class OpenIabHelper {
             moreItemSkusCurrentStore = new ArrayList<>();
             for (String sku : moreSkus) {
                 OpenItem skuOpenItem = new OpenItem(sku);
-                String skuCurrentStore = skuOpenItem.getSkuName(mAppstore.getAppstoreName());
+                String skuCurrentStore = skuOpenItem.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
                     return;
