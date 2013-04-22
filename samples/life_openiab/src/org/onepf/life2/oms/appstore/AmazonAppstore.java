@@ -27,12 +27,13 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class AmazonAppstore implements Appstore {
+    private static volatile boolean IS_SANDBOX_MODE;
+    private static volatile boolean IS_SANDBOX_MODE_CHECKED;
     private final Context mContext;
-    private final AmazonAppstoreBillingService mBillingService;
+    private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
         mContext = context;
-        mBillingService = new AmazonAppstoreBillingService(mContext);
     }
 
     @Override
@@ -42,7 +43,24 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public boolean isInstaller() {
-        return mBillingService.getIsInstaller();
+        if (IS_SANDBOX_MODE_CHECKED) {
+            return !IS_SANDBOX_MODE;
+        }
+        synchronized (AmazonAppstore.class) {
+            if (IS_SANDBOX_MODE_CHECKED) {
+                return !IS_SANDBOX_MODE;
+            }
+            try {
+                ClassLoader localClassLoader = AmazonAppstore.class.getClassLoader();
+                localClassLoader.loadClass("com.amazon.android.Kiwi");
+                IS_SANDBOX_MODE = false;
+            } catch (Throwable localThrowable) {
+                IS_SANDBOX_MODE = true;
+            }
+            IS_SANDBOX_MODE_CHECKED = true;
+        }
+        return !IS_SANDBOX_MODE;
+        //return mBillingService.getIsInstaller();
     }
 
     @Override
@@ -56,6 +74,9 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
+        if (mBillingService == null) {
+            mBillingService = new AmazonAppstoreBillingService(mContext);
+        }
         return mBillingService;
     }
 
