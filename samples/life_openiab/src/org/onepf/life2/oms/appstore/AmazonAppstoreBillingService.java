@@ -21,8 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
-import org.onepf.life2.oms.AppstoreName;
-import org.onepf.life2.oms.OpenSku;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.IabResult;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
@@ -55,8 +53,8 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        String requestId = PurchasingManager.initiatePurchaseRequest(sku.getSku(AppstoreName.AMAZON));
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        String requestId = PurchasingManager.initiatePurchaseRequest(sku);
         storeRequestListener(requestId, listener);
     }
 

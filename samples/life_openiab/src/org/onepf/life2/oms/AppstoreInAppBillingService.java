@@ -33,7 +33,7 @@ import java.util.List;
 public interface AppstoreInAppBillingService {
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
-    void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);
+    void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);
 
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 

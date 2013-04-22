@@ -21,9 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import com.samsungapps.plasma.*;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
-import org.onepf.life2.oms.AppstoreName;
 import org.onepf.life2.oms.OpenIabHelper;
-import org.onepf.life2.oms.OpenSku;
 import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
@@ -76,10 +74,10 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        PurchaseInfo purchaseInfo = new PurchaseInfo(act, sku.getSku(AppstoreName.SAMSUNG), itemType, requestCode, listener, extraData);
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        PurchaseInfo purchaseInfo = new PurchaseInfo(act, sku, itemType, requestCode, listener, extraData);
         purchases.put(transactionId, purchaseInfo);
-        mPlasma.requestPurchaseItem(transactionId++, sku.getSku(AppstoreName.SAMSUNG));
+        mPlasma.requestPurchaseItem(transactionId++, sku);
     }
 
     @Override
