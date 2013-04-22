@@ -113,7 +113,7 @@ public class OpenIabHelper {
             // TODO: throw an exception
             return;
         }
-        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData);
+        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData, sku);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
