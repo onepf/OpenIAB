@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
+import org.onepf.life2.oms.AppstoreName;
+import org.onepf.life2.oms.OpenSku;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.IabResult;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
@@ -38,22 +40,23 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private boolean mIsInstaller = false;
+    private String mCurrentUser;
 
     public AmazonAppstoreBillingService(Context context) {
         mContext = context;
         mRequestListeners = new HashMap<>();
-        AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
-        PurchasingManager.registerObserver(purchasingObserver);
     }
 
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
-        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Ok"));
+        AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
+        PurchasingManager.registerObserver(purchasingObserver);
+        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        String requestId = PurchasingManager.initiatePurchaseRequest(sku);
+    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        String requestId = PurchasingManager.initiatePurchaseRequest(sku.getSku(AppstoreName.AMAZON));
         storeRequestListener(requestId, listener);
     }
 
@@ -76,11 +79,15 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         mRequestListeners.put(requestId, listener);
     }
 
-    public void setIsInstaller(boolean installer) {
-        mIsInstaller = installer;
+    public IabHelper.OnIabPurchaseFinishedListener getRequestListener(String requestId) {
+        return mRequestListeners.get(requestId);
     }
 
-    public boolean getIsInstaller() {
-        return mIsInstaller;
+    public void setCurrentUser(String currentUser) {
+        mCurrentUser = currentUser;
+    }
+
+    public String getCurrentUser() {
+        return mCurrentUser;
     }
 }

@@ -20,6 +20,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
+import org.onepf.life2.oms.AppstoreName;
+import org.onepf.life2.oms.OpenSku;
 import org.onepf.life2.oms.appstore.googleUtils.IabException;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
@@ -48,8 +50,8 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        mIabHelper.launchPurchaseFlow(act, sku, itemType, requestCode, listener, extraData);
+    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        mIabHelper.launchPurchaseFlow(act, sku.getSku(AppstoreName.GOOGLE), itemType, requestCode, listener, extraData);
     }
 
     @Override
