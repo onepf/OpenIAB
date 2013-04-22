@@ -33,7 +33,7 @@ public class OpenItem {
     private Map<AppstoreName, String> storeToSkuName;
 
     public OpenItem(String s) {
-        s = s.replace("\\s", "");
+        s = s.replaceAll("\\s", "");
         storeToSkuName = new HashMap<>();
         if (s.contains(",") || s.contains(":")) {
             String[] allStores = s.split(",");
@@ -42,7 +42,7 @@ public class OpenItem {
                 if (parse.length != 2 || parse[0].length() < 3 || parse[1].length() < 3) {
                     throw new OpenItemParseException(curStore + " isn't valid sku description");
                 }
-                String storeName = parse[0].substring(1, parse[0].length() - 2);
+                String storeName = parse[0].substring(1, parse[0].length() - 1);
                 AppstoreName appstore = null;
                 for (AppstoreName appstoreName : AppstoreName.values()) {
                     if (appstoreName.toString().equals(storeName)) {
@@ -52,7 +52,7 @@ public class OpenItem {
                 if (appstore == null) {
                     throw new OpenItemParseException(storeName + " isn't valid store name");
                 }
-                String sku = parse[1].substring(1, parse[1].length() - 2);
+                String sku = parse[1].substring(1, parse[1].length() - 1);
                 setSkuForStore(appstore, sku);
             }
         } else {

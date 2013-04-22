@@ -33,6 +33,18 @@ public class Purchase {
     String mOriginalJson;
     String mSignature;
 
+    public Purchase() {
+
+    }
+
+    public void setItemType(String itemType) {
+        mItemType = itemType;
+    }
+
+    public void setSku(String sku) {
+        mSku = sku;
+    }
+
     public Purchase(String itemType, String jsonPurchaseInfo, String signature) throws JSONException {
         mItemType = itemType;
         mOriginalJson = jsonPurchaseInfo;

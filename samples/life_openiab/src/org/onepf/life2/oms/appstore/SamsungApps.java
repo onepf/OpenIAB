@@ -49,6 +49,6 @@ public class SamsungApps implements Appstore {
 
     @Override
     public AppstoreName getAppstoreName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return AppstoreName.APPSTORE_SAMSUNG;
     }
 }

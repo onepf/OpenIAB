@@ -51,6 +51,7 @@ public class OpenIabHelper {
     // Billing response codes
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
+    public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
 
     public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
         mContext = context;

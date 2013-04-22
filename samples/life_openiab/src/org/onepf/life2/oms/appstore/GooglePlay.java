@@ -33,7 +33,7 @@ public class GooglePlay implements Appstore {
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
     // isDebugMode = true |-> always returns app installed via Google Play
-    private final boolean isDebugMode = true;
+    private final boolean isDebugMode = false;
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
