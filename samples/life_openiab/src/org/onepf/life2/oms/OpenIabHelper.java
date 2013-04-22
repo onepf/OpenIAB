@@ -9,7 +9,9 @@ import org.onepf.life2.oms.appstore.GooglePlayBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: Boris Minaev
@@ -127,6 +129,7 @@ public class OpenIabHelper {
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
                                     List<String> moreSubsSkus) throws IabException {
         checkSetupDone("queryInvenoty");
+        Map<String, String> skuToOpen = new HashMap<>();
         List<String> moreItemSkusCurrentStore = new ArrayList();
         if (moreItemSkus == null) {
             moreItemSkusCurrentStore = null;
@@ -139,6 +142,7 @@ public class OpenIabHelper {
                     return null;
                 }
                 moreItemSkusCurrentStore.add(skuCurrentStore);
+                skuToOpen.put(skuCurrentStore, sku);
             }
         }
         List<String> moreSubsSkusCurrentStore = new ArrayList();
@@ -153,10 +157,32 @@ public class OpenIabHelper {
                     return null;
                 }
                 moreSubsSkusCurrentStore.add(skuCurrentStore);
+                skuToOpen.put(skuCurrentStore, sku);
             }
         }
-        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
+        Inventory res = mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
                 moreSubsSkusCurrentStore);
+        if (res != null) {
+            Inventory resOpenItems = new Inventory();
+            resOpenItems.mSkuMap = new HashMap<>();
+            resOpenItems.mPurchaseMap = new HashMap<>();
+            for (String sku : res.mSkuMap.keySet()) {
+                String openName = skuToOpen.get(sku);
+                if (openName == null) {
+                    openName = sku;
+                }
+                resOpenItems.mSkuMap.put(openName, res.mSkuMap.get(sku));
+            }
+            for (String sku : res.mPurchaseMap.keySet()) {
+                String openName = skuToOpen.get(sku);
+                if (openName == null) {
+                    openName = sku;
+                }
+                resOpenItems.mPurchaseMap.put(openName, res.mPurchaseMap.get(sku));
+            }
+            res = resOpenItems;
+        }
+        return res;
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,

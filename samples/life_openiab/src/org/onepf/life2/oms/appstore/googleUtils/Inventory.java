@@ -25,10 +25,10 @@ import java.util.Map;
  * An Inventory is returned by such methods as {@link org.onepf.life2.oms.appstore.googleUtils.IabHelper#queryInventory}.
  */
 public class Inventory {
-    Map<String, SkuDetails> mSkuMap = new HashMap<String, SkuDetails>();
-    Map<String, Purchase> mPurchaseMap = new HashMap<String, Purchase>();
+    public Map<String, SkuDetails> mSkuMap = new HashMap<String, SkuDetails>();
+    public Map<String, Purchase> mPurchaseMap = new HashMap<String, Purchase>();
 
-    Inventory() {
+    public Inventory() {
     }
 
     /**
