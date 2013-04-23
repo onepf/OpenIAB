@@ -127,6 +127,7 @@ public class OpenIabHelper {
         String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
         if (skuCurrentStore == null) {
             // TODO: throw an exception
+            Log.e(TAG, "No SKU for current appstore");
             return;
         }
         mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData);
@@ -152,6 +153,7 @@ public class OpenIabHelper {
                 String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
+                    Log.e(TAG, "No matching SKU found for current appstore");
                     return null;
                 }
                 moreItemSkusCurrentStore.add(skuCurrentStore);
@@ -165,6 +167,7 @@ public class OpenIabHelper {
                 String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
+                    Log.e(TAG, "No matching SKU found for current appstore");
                     return null;
                 }
                 moreSubsSkusCurrentStore.add(skuCurrentStore);
