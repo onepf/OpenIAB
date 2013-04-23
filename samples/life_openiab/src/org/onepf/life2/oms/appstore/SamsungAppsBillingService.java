@@ -73,7 +73,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
-        // no need to do something
+        IabResult res = new IabResult(0, "OK");
+        listener.onIabSetupFinished(res);
     }
 
     @Override
@@ -125,7 +126,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     @Override
     public void onPurchasedItemInformationListReceived(int i, int i2, ArrayList<PurchasedItemInformation> purchasedItemInformations) {
-        // Google Play doesn't keep purchasing history
+
     }
 
     @Override
