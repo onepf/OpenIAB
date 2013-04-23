@@ -17,6 +17,7 @@
 package org.onepf.life2.oms;
 
 import android.content.Context;
+import android.util.Log;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
 import org.onepf.life2.oms.appstore.SamsungApps;
