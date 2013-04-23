@@ -178,7 +178,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                 });
 
             }
-
+            // TODO: must this listener be called from UI thread?
             parent.update();
         }
     };

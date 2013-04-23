@@ -71,6 +71,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
+        // TODO: use parameters
         Log.d(TAG, "Amazon queryInventory()");
         mInventory = new Inventory();
         mInventoryRetrived = new CountDownLatch(1);
