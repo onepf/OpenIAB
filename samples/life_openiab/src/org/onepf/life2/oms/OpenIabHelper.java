@@ -74,7 +74,7 @@ public class OpenIabHelper {
     public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
         mContext = context;
         mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey, samsungGroupId);
-        mAppstore = mServiceManager.getAppstoreForService(AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING);
+        mAppstore = mServiceManager.getAppstoreForService(AppstoreService.IN_APP_BILLING);
         if (mAppstore == null) {
             return;
         }
@@ -100,6 +100,7 @@ public class OpenIabHelper {
     }
 
     public boolean subscriptionsSupported() {
+        // TODO: implement this
         return true;
     }
 

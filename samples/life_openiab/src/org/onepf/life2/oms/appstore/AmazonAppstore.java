@@ -65,7 +65,7 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return true;
         } else {
             return false;

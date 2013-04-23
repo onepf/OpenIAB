@@ -22,8 +22,8 @@ package org.onepf.life2.oms;
  */
 
 public enum AppstoreService {
-    APPSTORE_SERVICE_IN_APP_BILLING,
-    APPSTORE_SERVICE_LICENSING,
-    APPSTORE_SERVICE_PUSH,
-    APPSTORE_SERVICE_BACKUP
+    IN_APP_BILLING,
+    LICENSING,
+    PUSH,
+    BACKUP
 }

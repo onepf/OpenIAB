@@ -50,7 +50,7 @@ class AppstoreServiceManager {
     }
 
     public Appstore getAppstoreForService(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.APPSTORE_SERVICE_IN_APP_BILLING) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
             if (installer.isServiceSupported(appstoreService))
                 return installer;
