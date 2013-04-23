@@ -73,8 +73,8 @@ public class GooglePlay implements Appstore {
             }
             PackageManager packageManager = mContext.getPackageManager();
             List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
-            for (PackageInfo packageIngo : allPackages) {
-                if (packageIngo.packageName.equals("com.google.vending")) {
+            for (PackageInfo packageInfo : allPackages) {
+                if (packageInfo.packageName.equals("com.google.vending")) {
                     isBillingSupported = InformationState.SUPPORTED;
                     return true;
                 }
