@@ -33,7 +33,7 @@ public class SamsungApps implements Appstore {
     private String mItemGroupId;
 
     // isDebugMode = true -> always returns Samsung Apps is installer
-    private final boolean isDebugMode = true;
+    private final boolean isDebugMode = false;
 
     public SamsungApps(Context context, String itemGroupId) {
         mContext = context;
@@ -54,6 +54,9 @@ public class SamsungApps implements Appstore {
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+            return isDebugMode;
+        }
         // TODO: write implementation
         return false;
     }
