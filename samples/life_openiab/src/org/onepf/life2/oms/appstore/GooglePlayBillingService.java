@@ -67,7 +67,6 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
         mIabHelper.consume(itemInfo);
     }
 
-
     public void dispose() {
         mIabHelper.dispose();
     }
