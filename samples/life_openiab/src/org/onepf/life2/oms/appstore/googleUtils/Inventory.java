@@ -15,6 +15,9 @@
 
 package org.onepf.life2.oms.appstore.googleUtils;
 
+import org.onepf.life2.oms.AppstoreName;
+import org.onepf.life2.oms.OpenSku;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,5 +105,18 @@ public class Inventory {
 
     public void addPurchase(Purchase p) {
         mPurchaseMap.put(p.getSku(), p);
+    }
+
+    public Purchase getPurchase(OpenSku skuFigures) {
+        for (AppstoreName appstore : AppstoreName.values()) {
+            String sku = skuFigures.getSku(appstore);
+            if (sku != null) {
+                Purchase res = mPurchaseMap.get(sku);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -48,4 +48,18 @@ public class OpenSku {
     public String getSku(AppstoreName appstore) {
         return storeToSku.get(appstore);
     }
+
+    public boolean sameAs(String someMarketSku) {
+        for (AppstoreName appstore : storeToSku.keySet()) {
+            String skuForAppstore = storeToSku.get(appstore);
+            if (skuForAppstore.equals(someMarketSku))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean sameAs(String someMarketSku, AppstoreName appstore) {
+        String skuForAppstore = storeToSku.get(appstore);
+        return skuForAppstore == null || !skuForAppstore.equals(someMarketSku) ? false : true;
+    }
 }

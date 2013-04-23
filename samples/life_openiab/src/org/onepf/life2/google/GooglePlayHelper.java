@@ -69,12 +69,12 @@ public class GooglePlayHelper extends BasePurchaseHelper {
             final SharedPreferences.Editor editor = getSharedPreferencesEditor();
 
             Purchase figuresPurchase = inventory
-                    .getPurchase(GameActivity.FIGURES);
+                    .getPurchase(SKU_FIGURES);
             boolean figures = (figuresPurchase != null && verifyDeveloperPayload(figuresPurchase));
             editor.putBoolean(GameActivity.FIGURES, figures);
 
             Purchase orangeCellsPurchase = inventory
-                    .getPurchase(GameActivity.ORANGE_CELLS);
+                    .getPurchase(SKU_ORANGE_CELLS);
             boolean orangeCells = (orangeCellsPurchase != null && verifyDeveloperPayload(orangeCellsPurchase));
             editor.putBoolean(GameActivity.ORANGE_CELLS, orangeCells);
             editor.commit();

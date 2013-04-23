@@ -34,7 +34,7 @@ public class GooglePlay implements Appstore {
     private String mPublicKey;
 
     // isDebugMode = true |-> always returns app installed via Google Play
-    private final boolean isDebugMode = true;
+    private final boolean isDebugMode = false;
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
@@ -59,6 +59,9 @@ public class GooglePlay implements Appstore {
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+            return true;
+        }
         // TODO: write implementation
         return false;
     }
