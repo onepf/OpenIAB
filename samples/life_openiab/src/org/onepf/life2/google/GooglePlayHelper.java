@@ -22,9 +22,9 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     private static final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
     private static final String samsungGroupId = "100000031624";
 
-    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"));
-    private final static OpenSku SKU_FIGURES = new OpenSku(new Sku(AppstoreName.GOOGLE, "figures"));
-    private final static OpenSku SKU_CHANGES = new OpenSku(new Sku(AppstoreName.GOOGLE, "changes"), new Sku(AppstoreName.SAMSUNG, "000000063778"));
+    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"), new Sku(AppstoreName.AMAZON, "org.onepf.life.orange_cells.monthly"));
+    private final static OpenSku SKU_FIGURES = new OpenSku(new Sku(AppstoreName.GOOGLE, "figures"), new Sku(AppstoreName.AMAZON, "org.onepf.life.figures"));
+    private final static OpenSku SKU_CHANGES = new OpenSku(new Sku(AppstoreName.GOOGLE, "changes"), new Sku(AppstoreName.SAMSUNG, "000000063778"), new Sku(AppstoreName.AMAZON, "org.onepf.life.fifty_changes"));
     private final static int RC_REQUEST = 10001;
     private final static int PRIORITY = 50;
 
