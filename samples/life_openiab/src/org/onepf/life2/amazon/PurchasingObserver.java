@@ -122,7 +122,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
      */
     @Override
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
-        Log.v(TAG, "onPurchaseUpdatesRecived recieved: Response -" + purchaseUpdatesResponse);
+        Log.v(TAG, "Old onPurchaseUpdatesRecived recieved: Response -" + purchaseUpdatesResponse);
         Log.v(TAG, "PurchaseUpdatesRequestStatus:" + purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus());
         Log.v(TAG, "RequestID:" + purchaseUpdatesResponse.getRequestId());
         new PurchaseUpdatesAsyncTask().execute(purchaseUpdatesResponse);

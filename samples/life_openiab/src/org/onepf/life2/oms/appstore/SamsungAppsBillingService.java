@@ -162,4 +162,9 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
             purchaseInfo.mListener.onIabPurchaseFinished(iabResult, purchase);
         }
     }
+
+    @Override
+    public void dispose() {
+        // TODO: free resources
+    }
 }

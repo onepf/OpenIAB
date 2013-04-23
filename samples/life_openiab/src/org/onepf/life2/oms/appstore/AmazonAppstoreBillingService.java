@@ -19,6 +19,7 @@ package org.onepf.life2.oms.appstore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import com.amazon.inapp.purchasing.Offset;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
@@ -37,6 +38,7 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.04.13
  */
 public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
+    private static final String TAG = "Life";
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;
@@ -69,6 +71,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
+        Log.d(TAG, "Amazon queryInventory()");
         mInventory = new Inventory();
         mInventoryRetrived = new CountDownLatch(1);
         PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
@@ -84,6 +87,10 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void consume(Purchase itemInfo) {
     }
 
+    @Override
+    public void dispose() {
+        // TODO: free resources
+    }
 
     private void storeRequestListener(String requestId, IabHelper.OnIabPurchaseFinishedListener listener) {
         mRequestListeners.put(requestId, listener);

@@ -48,4 +48,7 @@ public class BasePurchaseHelper {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
     }
+
+    public void onDestroy() {
+    }
 }

@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
-import org.onepf.life2.oms.appstore.GooglePlayBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
@@ -94,9 +93,7 @@ public class OpenIabHelper {
     public void dispose() {
         logDebug("Disposing.");
         checkSetupDone("dispose");
-        if (mAppstore.getAppstoreName() == AppstoreName.GOOGLE) {
-            ((GooglePlayBillingService) mAppstoreBillingService).dispose();
-        }
+        mAppstoreBillingService.dispose();
     }
 
     public boolean subscriptionsSupported() {

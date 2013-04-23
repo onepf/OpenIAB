@@ -17,6 +17,7 @@
 package org.onepf.life2.oms;
 
 import android.content.Context;
+import android.util.Log;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
 import org.onepf.life2.oms.appstore.SamsungApps;
@@ -30,6 +31,7 @@ import java.util.List;
  * Date: 16.04.13
  */
 class AppstoreServiceManager {
+    private static final String TAG = "Life";
     List<Appstore> appstores;
 
     AppstoreServiceManager(Context context, String googlePublicKey, String samsungGroupId) {
@@ -52,6 +54,7 @@ class AppstoreServiceManager {
     public Appstore getAppstoreForService(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
+            Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
             if (installer.isServiceSupported(appstoreService)) {
                 return installer;
             }
@@ -74,7 +77,6 @@ class AppstoreServiceManager {
     }
 
     public List<Appstore> getAppstoresSupportingAPI(String packageName, AppstoreService appstoreService) {
-        // TODO: implement getAppstoresSupportingAPI method
         return null;
     }
 }

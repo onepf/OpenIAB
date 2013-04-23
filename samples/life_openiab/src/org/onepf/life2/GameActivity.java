@@ -148,6 +148,13 @@ public class GameActivity extends Activity {
         lifeView.pause();
     }
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        billingHelper.onDestroy();
+    }
+
     /**
      * Gets current logged in user
      *
