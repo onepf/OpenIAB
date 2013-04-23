@@ -31,7 +31,7 @@ import java.util.List;
  * Date: 16.04.13
  */
 class AppstoreServiceManager {
-    private static final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     List<Appstore> appstores;
 
     AppstoreServiceManager(Context context, String googlePublicKey, String samsungGroupId) {
@@ -54,9 +54,11 @@ class AppstoreServiceManager {
     public Appstore getAppstoreForService(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
-            Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
-            if (installer.isServiceSupported(appstoreService)) {
-                return installer;
+            if (installer != null) {
+                Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
+                if (installer.isServiceSupported(appstoreService)) {
+                    return installer;
+                }
             }
             for (Appstore appstore : appstores) {
                 if (appstore.isServiceSupported(appstoreService)) {

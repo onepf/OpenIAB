@@ -33,7 +33,7 @@ import java.util.LinkedList;
  */
 public class AmazonAppstoreObserver extends BasePurchasingObserver {
 
-    private final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     private final AmazonAppstoreBillingService mBillingService;
     private final Context mContext;
     private Offset mOffset;

@@ -38,7 +38,7 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.04.13
  */
 public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
-    private static final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;
@@ -71,6 +71,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
+        // TODO: use parameters
         Log.d(TAG, "Amazon queryInventory()");
         mInventory = new Inventory();
         mInventoryRetrived = new CountDownLatch(1);
