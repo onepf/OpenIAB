@@ -34,6 +34,13 @@ public class SkuDetails {
         this(IabHelper.ITEM_TYPE_INAPP, jsonSkuDetails);
     }
 
+    public SkuDetails(String sku, String name, String price) {
+        mItemType = IabHelper.ITEM_TYPE_INAPP;
+        mSku = sku;
+        mTitle = name;
+        mPrice = price;
+    }
+
     public SkuDetails(String itemType, String jsonSkuDetails) throws JSONException {
         mItemType = itemType;
         mJson = jsonSkuDetails;

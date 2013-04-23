@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * User: Boris Minaev
@@ -40,6 +41,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     private int transactionId;
     private Map<Integer, PurchaseInfo> purchases;
+    private Map<Integer, Inventory> queryInventorys;
+    private CountDownLatch latch;
 
     private class PurchaseInfo {
         IabHelper.OnIabPurchaseFinishedListener mListener;
@@ -65,6 +68,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
         mPlasma.setPlasmaListener(this);
         transactionId = 0;
         purchases = new HashMap<>();
+        queryInventorys = new HashMap<>();
     }
 
     @Override
@@ -86,8 +90,17 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
-        // TODO: write implementation
-        return null;
+        mPlasma.requestItemInformationList(transactionId++, 0, Integer.MAX_VALUE);
+        latch = new CountDownLatch(1);
+        int curTransactionId = transactionId - 1;
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        Inventory res = queryInventorys.get(curTransactionId);
+        queryInventorys.remove(curTransactionId);
+        return res;
     }
 
     @Override
@@ -96,13 +109,23 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
     }
 
     @Override
-    public void onItemInformationListReceived(int i, int i2, ArrayList<ItemInformation> itemInformations) {
-        //TODO: write implementation
+    public void onItemInformationListReceived(int transactionId, int statusCode, ArrayList<ItemInformation> itemInformations) {
+        latch.countDown();
+        if (statusCode != 0) {
+            queryInventorys.put(transactionId, null);
+        } else {
+            Inventory res = new Inventory();
+            for (ItemInformation item : itemInformations) {
+                SkuDetails skuDetails = new SkuDetails(item.getItemId(), item.getItemName(), item.getItemPriceString());
+                res.mSkuMap.put(item.getItemId(), skuDetails);
+            }
+            queryInventorys.put(transactionId, res);
+        }
     }
 
     @Override
     public void onPurchasedItemInformationListReceived(int i, int i2, ArrayList<PurchasedItemInformation> purchasedItemInformations) {
-        // TODO: write implementation
+        // Google Play doesn't keep purchasing history
     }
 
     @Override

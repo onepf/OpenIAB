@@ -107,11 +107,11 @@ public class Inventory {
         mPurchaseMap.put(p.getSku(), p);
     }
 
-    public Purchase getPurchase(OpenSku skuFigures) {
+    public Purchase getPurchase(OpenSku sku) {
         for (AppstoreName appstore : AppstoreName.values()) {
-            String sku = skuFigures.getSku(appstore);
-            if (sku != null) {
-                Purchase res = mPurchaseMap.get(sku);
+            String skuStr = sku.getSku(appstore);
+            if (skuStr != null) {
+                Purchase res = mPurchaseMap.get(skuStr);
                 if (res != null) {
                     return res;
                 }
