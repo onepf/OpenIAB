@@ -40,4 +40,6 @@ public interface AppstoreInAppBillingService {
     Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
 
     void consume(Purchase itemInfo) throws IabException;
+
+    void dispose();
 }

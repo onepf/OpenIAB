@@ -81,4 +81,8 @@ public class BillingHelper {
             }
         }
     }
+
+    public void onDestroy() {
+        currentHelper.onDestroy();
+    }
 }

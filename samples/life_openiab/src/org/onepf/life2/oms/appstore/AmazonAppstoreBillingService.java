@@ -84,6 +84,10 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void consume(Purchase itemInfo) {
     }
 
+    @Override
+    public void dispose() {
+        // TODO: free resources
+    }
 
     private void storeRequestListener(String requestId, IabHelper.OnIabPurchaseFinishedListener listener) {
         mRequestListeners.put(requestId, listener);

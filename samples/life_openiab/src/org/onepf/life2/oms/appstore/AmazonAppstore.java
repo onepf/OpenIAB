@@ -17,6 +17,7 @@
 package org.onepf.life2.oms.appstore;
 
 import android.content.Context;
+import android.util.Log;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreName;
@@ -27,6 +28,7 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class AmazonAppstore implements Appstore {
+    private static final String TAG = "Life";
     private static volatile boolean IS_SANDBOX_MODE;
     private static volatile boolean IS_SANDBOX_MODE_CHECKED;
     private final Context mContext;
@@ -59,6 +61,7 @@ public class AmazonAppstore implements Appstore {
             }
             IS_SANDBOX_MODE_CHECKED = true;
         }
+        Log.d(TAG, "IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
         return !IS_SANDBOX_MODE;
         //return mBillingService.getIsInstaller();
     }
