@@ -28,7 +28,7 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class AmazonAppstore implements Appstore {
-    private static final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     private static volatile boolean IS_SANDBOX_MODE;
     private static volatile boolean IS_SANDBOX_MODE_CHECKED;
     private final Context mContext;

@@ -31,7 +31,7 @@ import java.util.List;
  * Date: 16.04.13
  */
 class AppstoreServiceManager {
-    private static final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     List<Appstore> appstores;
 
     AppstoreServiceManager(Context context, String googlePublicKey, String samsungGroupId) {

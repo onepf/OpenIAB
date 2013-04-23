@@ -38,7 +38,7 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.04.13
  */
 public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
-    private static final String TAG = "Life";
+    private static final String TAG = "IabHelper";
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;

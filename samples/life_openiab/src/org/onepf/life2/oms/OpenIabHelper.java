@@ -35,6 +35,7 @@ import java.util.Map;
  */
 
 public class OpenIabHelper {
+    private static final String TAG = "IabHelper";
     Context mContext;
     AppstoreServiceManager mServiceManager;
     Appstore mAppstore;
@@ -42,7 +43,6 @@ public class OpenIabHelper {
 
     // Is debug logging enabled?
     boolean mDebugLog = false;
-    String mDebugTag = "IabHelper";
 
     // Is setup done?
     boolean mSetupDone = false;
@@ -78,6 +78,7 @@ public class OpenIabHelper {
             return;
         }
         mAppstoreBillingService = mAppstore.getInAppBillingService();
+        Log.d(TAG, "OpenIabHelper use appstore: " + mAppstore.getAppstoreName().name());
         mSetupDone = true;
     }
 
@@ -286,15 +287,15 @@ public class OpenIabHelper {
     }
 
     void logDebug(String msg) {
-        if (mDebugLog) Log.d(mDebugTag, msg);
+        if (mDebugLog) Log.d(TAG, msg);
     }
 
     void logError(String msg) {
-        Log.e(mDebugTag, "In-app billing error: " + msg);
+        Log.e(TAG, "In-app billing error: " + msg);
     }
 
     void logWarn(String msg) {
-        Log.w(mDebugTag, "In-app billing warning: " + msg);
+        Log.w(TAG, "In-app billing warning: " + msg);
     }
 
 }
