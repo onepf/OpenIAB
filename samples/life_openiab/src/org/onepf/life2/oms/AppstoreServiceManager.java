@@ -17,7 +17,6 @@
 package org.onepf.life2.oms;
 
 import android.content.Context;
-import android.util.Log;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
 import org.onepf.life2.oms.appstore.SamsungApps;
@@ -55,8 +54,9 @@ class AppstoreServiceManager {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
             Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
-            if (installer.isServiceSupported(appstoreService))
+            if (installer.isServiceSupported(appstoreService)) {
                 return installer;
+            }
             for (Appstore appstore : appstores) {
                 if (appstore.isServiceSupported(appstoreService)) {
                     return appstore;

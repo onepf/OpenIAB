@@ -17,11 +17,14 @@
 package org.onepf.life2.oms.appstore;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreName;
 import org.onepf.life2.oms.AppstoreService;
+
+import java.util.List;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -32,6 +35,11 @@ public class GooglePlay implements Appstore {
     private Context mContext;
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
+    private InformationState isBillingSupported = InformationState.UNDEFINED;
+
+    private enum InformationState {
+        UNDEFINED, SUPPORTED, UNSUPPORTED
+    }
 
     // isDebugMode = true |-> always returns app installed via Google Play
     private final boolean isDebugMode = false;
@@ -60,9 +68,20 @@ public class GooglePlay implements Appstore {
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
-            return true;
+            if (isBillingSupported != InformationState.UNDEFINED) {
+                return isBillingSupported == InformationState.SUPPORTED ? true : false;
+            }
+            PackageManager packageManager = mContext.getPackageManager();
+            List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
+            for (PackageInfo packageInfo : allPackages) {
+                if (packageInfo.packageName.equals("com.google.vending")) {
+                    isBillingSupported = InformationState.SUPPORTED;
+                    return true;
+                }
+            }
+            isBillingSupported = InformationState.UNSUPPORTED;
+            return false;
         }
-        // TODO: write implementation
         return false;
     }
 

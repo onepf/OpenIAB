@@ -146,19 +146,19 @@ public class GooglePlayHelper extends BasePurchaseHelper {
 
             Log.d(GameActivity.TAG, "Purchase successful.");
 
-            if (purchase.getSku().equals(SKU_ORANGE_CELLS)) {
+            if (SKU_ORANGE_CELLS.sameAs(purchase.getSku())) {
                 final SharedPreferences.Editor editor = getSharedPreferencesEditor();
                 editor.putBoolean(GameActivity.ORANGE_CELLS, true);
                 editor.commit();
             }
 
-            if (purchase.getSku().equals(SKU_FIGURES)) {
+            if (SKU_FIGURES.sameAs(purchase.getSku())) {
                 final SharedPreferences.Editor editor = getSharedPreferencesEditor();
                 editor.putBoolean(GameActivity.FIGURES, true);
                 editor.commit();
             }
 
-            if (purchase.getSku().equals(SKU_CHANGES)) {
+            if (SKU_CHANGES.sameAs(purchase.getSku())) {
                 mOpenIabHelper.consumeAsync(purchase, new IabHelper.OnConsumeFinishedListener() {
 
                     @Override
