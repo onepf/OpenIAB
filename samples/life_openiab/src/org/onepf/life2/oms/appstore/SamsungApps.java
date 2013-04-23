@@ -42,17 +42,20 @@ public class SamsungApps implements Appstore {
 
     @Override
     public boolean isAppAvailable(String packageName) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        // TODO: write implementation
+        return false;
     }
 
     @Override
     public boolean isInstaller() {
+        // TODO: write normal checker
         return isDebugMode;
     }
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        // TODO: write implementation
+        return false;
     }
 
     @Override

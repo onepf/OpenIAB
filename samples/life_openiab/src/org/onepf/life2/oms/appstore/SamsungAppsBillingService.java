@@ -49,7 +49,6 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
         int mRequestCode;
         String mExtraData;
 
-
         public PurchaseInfo(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
             mActivity = act;
             mSku = sku;
@@ -70,7 +69,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
-
+        // no need to do something
     }
 
     @Override
@@ -87,22 +86,23 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
+        // TODO: write implementation
         return null;
     }
 
     @Override
     public void consume(Purchase itemInfo) throws IabException {
-
+        // Samsung doesn't support consuming objects
     }
 
     @Override
     public void onItemInformationListReceived(int i, int i2, ArrayList<ItemInformation> itemInformations) {
-
+        //TODO: write implementation
     }
 
     @Override
     public void onPurchasedItemInformationListReceived(int i, int i2, ArrayList<PurchasedItemInformation> purchasedItemInformations) {
-
+        // TODO: write implementation
     }
 
     @Override
@@ -133,6 +133,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
             if (statusCode == Plasma.STATUS_CODE_SUCCESS) {
                 iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "OK");
             } else {
+                // TODO: errors
                 iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
             }
             purchaseInfo.mListener.onIabPurchaseFinished(iabResult, purchase);
