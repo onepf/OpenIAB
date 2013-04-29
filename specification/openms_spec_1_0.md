@@ -20,41 +20,111 @@ An application store that implemenents OpenStore API must provide a bindable ser
 ```
 package org.onepf.oms;
 
+import android.content.Intent;
+
 interface IOpenAppstore {
     boolean isAppAvailable(String packageName);
     boolean isInstaller(String packageName);
     boolean isIabServiceSupported(String packageName);
-    IOpenInAppBillingService getInAppBillingService();
+    Intent getInAppBillingServiceIntent();
     String getAppstoreName();
 }
 ```
 
 ### Sample Code 
 ```
-String myPackageName = context.getPackageName();
-PackageManager packageManager = getPackageManager();
-Intent intentAppstoreServices = new Intent("org.onepf.oms.openappstore.BIND");
+interface ServiceFounder {
+    void onServiceFound(Intent intent, boolean installer);
+    void onServiceNotFound();
+}
 
-List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstores, 0);
-for (ResolveInfo info : infoList) {
-    String packageName = info.serviceInfo.packageName;
-    String name = info.serviceInfo.name;
-    Intent intentAppstore = new Intent();
-    intentAppstore.setClassName(packageName, name);
-    bindService(intentAppstore, new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            openAppstoreService = IOpenAppstore.Stub.asInterface(service);
-            boolean isInstaller = openAppstoreService.isInstaller(myPackageName);
-            boolean isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
-            //ToDo add logic that asynchroniously collects information from all the appstores and selects right one
+class AppstoresServiceSupport {
+    class ServiceInfo {
+        boolean installer;
+        boolean supported;
+        Intent intent;
+        ServiceInfo(boolean installer, boolean supported, Intent intent) {
+            this.installer = installer;
+            this.supported = supported;
+            this.intent = intent;
         }
+    }
+    List<ServiceInfo> serviceInfo;
+    int count = 0;
+    public AppstoresServiceSupport(int count) {
+        this.count = count;
+        serviceInfos = new ArrayList<ServiceInfo>();  
+    }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            //Nothing to do here
+    public void add(boolean installer, boolean supported, Intent intent) {
+        serviceInfos.add(new ServiceInfo(installer, supported, intent));
+    }
+
+    public boolean isReady() {
+        return serviceInfos.size() >= count;
+    }
+
+    public void getServiceIntent(ServiceFounder serviceFounder) {
+        Intent intent = null;
+        for (ServiceInfo info : serviceInfos) {
+            if (info.installer) {
+                intent = info.intent;    
+            }
         }
-    }, Context.BIND_AUTO_CREATE);
+        if (intent) {
+            serviceFounder.onServiceFound(intent, true);
+        } else {
+            for (ServiceInfo info : serviceInfos) {
+                if (info.supported) {
+                    intent = info.intent;    
+                }
+            }
+            if (intent) {
+                serviceFounder.onServiceFound(intent, false);
+            } else {
+                serviceFounder.onServiceNotFound();
+            }
+        }
+    }
+  
+}
+
+interface ServiceFounder {
+    void onServiceFound(Intent intent, boolean installer);
+    void onServiceNotFound();
+}
+
+public void findOpenIabService(Context context, final ServiceFounder serviceFounder) { 
+    String myPackageName = context.getPackageName();
+    PackageManager packageManager = getPackageManager();
+    Intent intentAppstoreServices = new Intent("org.onepf.oms.openappstore.BIND");
+
+    List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstores, 0);
+    AppstoresServiceSupport intentAppstore = new AppstoresServiceSupport(infoList.size());
+    for (ResolveInfo info : infoList) {
+        String packageName = info.serviceInfo.packageName;
+        String name = info.serviceInfo.name;
+        Intent intentAppstore = new Intent();
+        intentAppstore.setClassName(packageName, name);
+        bindService(intentAppstore, new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+                boolean isInstaller = openAppstoreService.isInstaller(myPackageName);
+                boolean isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
+                Intent iabIntent = openAppstoreService.getInAppBillingServiceIntent();
+                appstoreServiceSupport.add(isInstaller, isSupported, iabIntent);
+                if (appstoreServiceSupport.isReady()) {
+                    appstoreServiceSupport.getServiceIntent(serviceFounder);
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                //Nothing to do here
+            }
+        }, Context.BIND_AUTO_CREATE);
+    }
 }
 ```        
 
@@ -82,7 +152,7 @@ interface IOpenInAppBillingService {
 Status
 -------------
 Current status: draft  
-Specification version: 0.51
+Specification version: 0.52
 Last update: April 29, 2013  
 
 License
