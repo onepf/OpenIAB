@@ -95,11 +95,7 @@ public class GameActivity extends Activity {
         ab_menu_figures.add(menu.findItem(R.id.menu_periodic));
         ab_menu_figures.add(menu.findItem(R.id.menu_robot));
 
-        final SharedPreferences settings = getSharedPreferencesForCurrentUser();
-        boolean hasFigures = settings.getBoolean(FIGURES, false);
-        for (MenuItem figure : ab_menu_figures) {
-            figure.setVisible(hasFigures);
-        }
+        update();
 
         return super.onCreateOptionsMenu(menu);
     }
