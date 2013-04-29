@@ -74,11 +74,12 @@ public class OpenIabHelper {
         public void onOpenIabHelperInitFinished();
     }
 
-    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId, OnOpenIabHelperInitFinished listener) {
+    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
         mContext = context;
-        final OnOpenIabHelperInitFinished mListener = listener;
-
         mServiceManager = new AppstoreServiceManager(context, googlePublicKey, samsungGroupId);
+    }
+
+    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
             @Override
             public void onAppstoreServiceManagerInitFinishedListener() {
@@ -89,18 +90,14 @@ public class OpenIabHelper {
                 mAppstoreBillingService = mAppstore.getInAppBillingService();
                 Log.d(TAG, "OpenIabHelper use appstore: " + mAppstore.getAppstoreName().name());
                 mSetupDone = true;
-                mListener.onOpenIabHelperInitFinished();
+                if (!mSetupDone) {
+                    IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
+                    listener.onIabSetupFinished(iabResult);
+                    return;
+                }
+                mAppstoreBillingService.startSetup(listener);
             }
         });
-    }
-
-    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
-        if (!mSetupDone) {
-            IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-            listener.onIabSetupFinished(iabResult);
-            return;
-        }
-        mAppstoreBillingService.startSetup(listener);
     }
 
     public void dispose() {

@@ -23,6 +23,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
@@ -53,7 +54,6 @@ class AppstoreServiceManager {
         appstores.add(new SamsungApps(context, samsungGroupId));
     }
 
-    ;
 
     void startSetup(OnAppstoreServiceManagerInitFinishedListener listener) {
         final OnAppstoreServiceManagerInitFinishedListener mListener = listener;
@@ -75,9 +75,16 @@ class AppstoreServiceManager {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
-                    boolean isInstaller = openAppstoreService.isInstaller(myPackageName);
-                    boolean isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
-                    Intent iabIntent = openAppstoreService.getInAppBillingServiceIntent();
+                    boolean isInstaller = false;
+                    boolean isSupported = false;
+                    Intent iabIntent = null;
+                    try {
+                        isInstaller = openAppstoreService.isInstaller(myPackageName);
+                        isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
+                        iabIntent = openAppstoreService.getInAppBillingServiceIntent();
+                    } catch (RemoteException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                     appstoresServiceSupport.add(isInstaller, isSupported, iabIntent);
                     if (appstoresServiceSupport.isReady()) {
                         ServiceFounder serviceFounder = new ServiceFounder() {
