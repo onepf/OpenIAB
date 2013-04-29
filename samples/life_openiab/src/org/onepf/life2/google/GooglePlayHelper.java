@@ -35,20 +35,16 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     public GooglePlayHelper(Context context) {
         mContext = context;
         parent = (GameActivity) context;
-        mOpenIabHelper = new OpenIabHelper(context, publicKey, samsungGroupId, new OpenIabHelper.OnOpenIabHelperInitFinished() {
-            @Override
-            public void onOpenIabHelperInitFinished() {
-                mOpenIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-                    public void onIabSetupFinished(IabResult result) {
-                        if (!result.isSuccess()) {
-                            Log.d(GameActivity.TAG,
-                                    "Problem setting up In-app Billing: " + result);
-                            return;
-                        }
-                        // isReady = true;
-                        mOpenIabHelper.queryInventoryAsync(mGotInventoryListener);
-                    }
-                });
+        mOpenIabHelper = new OpenIabHelper(context, publicKey, samsungGroupId);
+        mOpenIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    Log.d(GameActivity.TAG,
+                            "Problem setting up In-app Billing: " + result);
+                    return;
+                }
+                // isReady = true;
+                mOpenIabHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
     }
