@@ -55,6 +55,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
         PurchasingManager.registerObserver(purchasingObserver);
+        PurchasingManager.initiateGetUserIdRequest();
         listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
     }
 
@@ -81,6 +82,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         } catch (InterruptedException e) {
             return null;
         }
+        Log.d(TAG, "Amazon queryInventory finished. Inventory size: " + mInventory.getAllOwnedSkus().size());
         return mInventory;
     }
 

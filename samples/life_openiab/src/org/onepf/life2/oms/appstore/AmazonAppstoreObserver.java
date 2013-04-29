@@ -48,9 +48,6 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
         Log.v(TAG, "onSdkAvailable recieved: Response - " + isSandboxMode);
-        if (!isSandboxMode) {
-            PurchasingManager.initiateGetUserIdRequest();
-        }
     }
 
     @Override
@@ -68,7 +65,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
 
             if (getUserIdResponse.getUserIdRequestStatus() == GetUserIdResponse.GetUserIdRequestStatus.SUCCESSFUL) {
                 final String userId = getUserIdResponse.getUserId();
-
+                Log.d(TAG, "Set current userId: " + userId);
                 mBillingService.setCurrentUser(userId);
                 return true;
             } else {
@@ -105,6 +102,8 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             final PurchaseUpdatesResponse purchaseUpdatesResponse = params[0];
             final String userId = mBillingService.getCurrentUser();
             if (!purchaseUpdatesResponse.getUserId().equals(userId)) {
+                Log.w(TAG, "Current UserId: " + userId + ", purchase UserId: " + purchaseUpdatesResponse.getUserId());
+                mBillingService.getInventoryLatch().countDown();
                 return false;
             }
             Inventory inventory = mBillingService.getInventory();
@@ -128,6 +127,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                                 purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
                                 purchase.setSku(sku);
                                 inventory.addPurchase(purchase);
+                                Log.d(TAG, "Add to inventory SKU: " + sku);
                                 break;
                             case SUBSCRIPTION:
                                 final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
@@ -136,6 +136,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                                     purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
                                     purchase.setSku(sku);
                                     inventory.addPurchase(purchase);
+                                    Log.d(TAG, "Add subscription to inventory SKU: " + sku);
                                 }
 //                                final Date startDate = subscriptionPeriod.getStartDate();
 //                                if (latestSubscriptionPeriod == null ||
@@ -177,8 +178,10 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     }
                     return true;
                 case FAILED:
+                    mBillingService.getInventoryLatch().countDown();
                     return false;
             }
+            mBillingService.getInventoryLatch().countDown();
             return false;
         }
     }

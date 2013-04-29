@@ -202,7 +202,7 @@ public class GameActivity extends Activity {
             }
         }
         boolean hasOrangeCells = settings.getBoolean(ORANGE_CELLS, false);
-        Log.d(TAG, hasOrangeCells + " ");
+        Log.d(TAG, "Has orange cells: " + hasOrangeCells);
         if (ab_buy_orange_cells != null) {
             ab_buy_orange_cells.setVisible(!hasOrangeCells);
         }
