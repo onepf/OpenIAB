@@ -24,9 +24,7 @@ import android.util.Log;
 import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: Boris Minaev
@@ -36,24 +34,24 @@ import java.util.Map;
 
 public class OpenIabHelper {
     private static final String TAG = "IabHelper";
-    Context mContext;
-    AppstoreServiceManager mServiceManager;
-    Appstore mAppstore;
-    AppstoreInAppBillingService mAppstoreBillingService;
+    private final Context mContext;
+    private final AppstoreServiceManager mServiceManager;
+    private Appstore mAppstore;
+    private AppstoreInAppBillingService mAppstoreBillingService;
 
     // Is debug logging enabled?
-    boolean mDebugLog = false;
+    private static final boolean mDebugLog = false;
 
     // Is setup done?
-    boolean mSetupDone = false;
+    private boolean mSetupDone = false;
 
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
-    boolean mAsyncInProgress = false;
+    private boolean mAsyncInProgress = false;
 
     // (for logging/debugging)
     // if mAsyncInProgress == true, what asynchronous operation is in progress?
-    String mAsyncOperation = "";
+    private String mAsyncOperation = "";
 
     // The request code used to launch purchase flow
     int mRequestCode;
@@ -62,13 +60,13 @@ public class OpenIabHelper {
     String mPurchasingItemType;
 
     // Item types
-    public static final String ITEM_TYPE_INAPP = "inapp";
-    public static final String ITEM_TYPE_SUBS = "subs";
+    private static final String ITEM_TYPE_INAPP = "inapp";
+    private static final String ITEM_TYPE_SUBS = "subs";
 
     // Billing response codes
-    public static final int BILLING_RESPONSE_RESULT_OK = 0;
-    public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
-    public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
+    private static final int BILLING_RESPONSE_RESULT_OK = 0;
+    private static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
+    private static final int BILLING_RESPONSE_RESULT_ERROR = 6;
 
     public interface OnOpenIabHelperInitFinished {
         public void onOpenIabHelperInitFinished();
@@ -90,6 +88,7 @@ public class OpenIabHelper {
                 mAppstoreBillingService = mAppstore.getInAppBillingService();
                 Log.d(TAG, "OpenIabHelper use appstore: " + mAppstore.getAppstoreName().name());
                 mSetupDone = true;
+                // TODO: this is always false!
                 if (!mSetupDone) {
                     IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     listener.onIabSetupFinished(iabResult);
@@ -152,9 +151,9 @@ public class OpenIabHelper {
 
     public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreItemSkus,
                                     List<OpenSku> moreSubsSkus) throws IabException {
-        checkSetupDone("queryInvenoty");
-        Map<String, String> skuToOpen = new HashMap<>();
-        List<String> moreItemSkusCurrentStore = new ArrayList();
+        checkSetupDone("queryInventory");
+        //Map<String, String> skuToOpen = new HashMap<>();
+        List<String> moreItemSkusCurrentStore = new ArrayList<>();
         if (moreItemSkus == null) {
             moreItemSkusCurrentStore = null;
         } else {
@@ -168,7 +167,7 @@ public class OpenIabHelper {
                 moreItemSkusCurrentStore.add(skuCurrentStore);
             }
         }
-        List<String> moreSubsSkusCurrentStore = new ArrayList();
+        List<String> moreSubsSkusCurrentStore = new ArrayList<>();
         if (moreSubsSkus == null) {
             moreSubsSkusCurrentStore = null;
         } else {
@@ -182,9 +181,8 @@ public class OpenIabHelper {
                 moreSubsSkusCurrentStore.add(skuCurrentStore);
             }
         }
-        Inventory res = mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
+        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
                 moreSubsSkusCurrentStore);
-        return res;
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,
@@ -231,7 +229,7 @@ public class OpenIabHelper {
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
-        List<Purchase> purchases = new ArrayList<Purchase>();
+        List<Purchase> purchases = new ArrayList<>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
@@ -247,7 +245,7 @@ public class OpenIabHelper {
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
-                final List<IabResult> results = new ArrayList<IabResult>();
+                final List<IabResult> results = new ArrayList<>();
                 for (Purchase purchase : purchases) {
                     try {
                         consume(purchase);
@@ -285,8 +283,11 @@ public class OpenIabHelper {
     }
 
     void flagStartAsync(String operation) {
-        if (mAsyncInProgress) throw new IllegalStateException("Can't start async operation (" +
-                operation + ") because another async operation(" + mAsyncOperation + ") is in progress.");
+        // TODO: why can't be called consume and queryInventory at the same time?
+//        if (mAsyncInProgress) {
+//            throw new IllegalStateException("Can't start async operation (" +
+//                    operation + ") because another async operation(" + mAsyncOperation + ") is in progress.");
+//        }
         mAsyncOperation = operation;
         mAsyncInProgress = true;
         logDebug("Starting async operation: " + operation);
