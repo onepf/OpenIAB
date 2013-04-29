@@ -19,6 +19,7 @@ package org.onepf.life2.oms.appstore;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import com.amazon.inapp.purchasing.*;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.IabResult;
@@ -189,12 +190,11 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
         new PurchaseAsyncTask().execute(purchaseResponse);
     }
 
-    private class PurchaseAsyncTask extends AsyncTask<PurchaseResponse, Void, Boolean> {
+    private class PurchaseAsyncTask extends AsyncTask<PurchaseResponse, Void, Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>>> {
         @Override
-        protected Boolean doInBackground(final PurchaseResponse... params) {
+        protected Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>> doInBackground(final PurchaseResponse... params) {
             final PurchaseResponse purchaseResponse = params[0];
             final String userId = mBillingService.getCurrentUser();
-            IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
 
             if (!purchaseResponse.getUserId().equals(userId)) {
                 mBillingService.setCurrentUser(purchaseResponse.getUserId());
@@ -228,8 +228,13 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Invalid sku");
                     break;
             }
-            listener.onIabPurchaseFinished(result, purchase);
-            return result != null && result.isSuccess();
+            IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
+            return new Pair<>(listener, new Pair<>(result, purchase));
+        }
+
+        @Override
+        protected void onPostExecute(final Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>> result) {
+            result.first.onIabPurchaseFinished(result.second.first, result.second.second);
         }
     }
 }
