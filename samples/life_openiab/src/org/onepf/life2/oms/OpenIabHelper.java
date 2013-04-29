@@ -70,16 +70,28 @@ public class OpenIabHelper {
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
     public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
 
-    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
+    public interface OnOpenIabHelperInitFinished {
+        public void onOpenIabHelperInitFinished();
+    }
+
+    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId, OnOpenIabHelperInitFinished listener) {
         mContext = context;
-        mServiceManager = AppstoreServiceManager.getInstance(context, googlePublicKey, samsungGroupId);
-        mAppstore = mServiceManager.getAppstoreForService(AppstoreService.IN_APP_BILLING);
-        if (mAppstore == null) {
-            return;
-        }
-        mAppstoreBillingService = mAppstore.getInAppBillingService();
-        Log.d(TAG, "OpenIabHelper use appstore: " + mAppstore.getAppstoreName().name());
-        mSetupDone = true;
+        final OnOpenIabHelperInitFinished mListener = listener;
+
+        mServiceManager = new AppstoreServiceManager(context, googlePublicKey, samsungGroupId);
+        mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
+            @Override
+            public void onAppstoreServiceManagerInitFinishedListener() {
+                mAppstore = mServiceManager.getAppstoreForService(AppstoreService.IN_APP_BILLING);
+                if (mAppstore == null) {
+                    return;
+                }
+                mAppstoreBillingService = mAppstore.getInAppBillingService();
+                Log.d(TAG, "OpenIabHelper use appstore: " + mAppstore.getAppstoreName().name());
+                mSetupDone = true;
+                mListener.onOpenIabHelperInitFinished();
+            }
+        });
     }
 
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
