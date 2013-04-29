@@ -229,12 +229,17 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     break;
             }
             IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
+            Log.d(TAG, "Result message: " + result.getMessage() + ", SKU: " + purchase.getSku());
             return new Pair<>(listener, new Pair<>(result, purchase));
         }
 
         @Override
         protected void onPostExecute(final Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>> result) {
-            result.first.onIabPurchaseFinished(result.second.first, result.second.second);
+            if (result.first != null) {
+                result.first.onIabPurchaseFinished(result.second.first, result.second.second);
+            } else {
+                Log.e(TAG, "Something went wrong: PurchaseFinishedListener is null");
+            }
         }
     }
 }

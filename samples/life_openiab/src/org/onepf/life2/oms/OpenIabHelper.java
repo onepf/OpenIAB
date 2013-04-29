@@ -60,13 +60,13 @@ public class OpenIabHelper {
     String mPurchasingItemType;
 
     // Item types
-    private static final String ITEM_TYPE_INAPP = "inapp";
-    private static final String ITEM_TYPE_SUBS = "subs";
+    public static final String ITEM_TYPE_INAPP = "inapp";
+    public static final String ITEM_TYPE_SUBS = "subs";
 
     // Billing response codes
-    private static final int BILLING_RESPONSE_RESULT_OK = 0;
-    private static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
-    private static final int BILLING_RESPONSE_RESULT_ERROR = 6;
+    public static final int BILLING_RESPONSE_RESULT_OK = 0;
+    public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
+    public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
 
     public interface OnOpenIabHelperInitFinished {
         public void onOpenIabHelperInitFinished();
