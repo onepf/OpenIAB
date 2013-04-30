@@ -26,7 +26,7 @@ Current Status
 =====
 We have just started. We are creating a [sample game](/onepf/OpenIAB/tree/master/samples/life) that supports in-app billing of all existing 
 appstores that support in-app purchasing. In the same time, we are designing 
-[Open In-App Billing API](/onepf/OpenIAB/blob/master/specification/openms_spec_1_0.md) that appstores can use to easily integrate in-app billing functionality.
+[Open In-App Billing API](http://www.github.com/onepf/OpenIAB/blob/master/specification/openms_spec_1_0.md) that appstores can use to easily integrate in-app billing functionality.
 
 Basic Principles
 =====
