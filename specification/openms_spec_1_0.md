@@ -32,7 +32,7 @@ interface IOpenAppstore {
 ```
 
 ### Sample Code 
-```
+```java
 interface ServiceFounder {
     void onServiceFound(Intent intent, boolean installer);
     void onServiceNotFound();
@@ -137,7 +137,7 @@ OpenIAB API is designed to be as close to Google IAB API as possible to make it 
 
 
 ### Interface
-```
+```java
 package org.onepf.oms;
 
 interface IOpenInAppBillingService {
