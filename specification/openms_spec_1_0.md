@@ -17,7 +17,7 @@ OpenAppstore API
 An application store that implemenents OpenStore API must provide a bindable service that handles `org.onepf.oms.openappstore.BIND` intent and implements the following API.
 
 ### Interface
-```
+```java
 package org.onepf.oms;
 
 import android.content.Intent;
