@@ -119,4 +119,17 @@ public class Inventory {
         }
         return null;
     }
+
+    public SkuDetails getSkuDetails(OpenSku sku) {
+        for (AppstoreName appstore : AppstoreName.values()) {
+            String skuStr = sku.getSku(appstore);
+            if (skuStr != null) {
+                SkuDetails res = mSkuMap.get(skuStr);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return mSkuMap.get(sku);
+    }
 }

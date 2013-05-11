@@ -41,6 +41,14 @@ public class SkuDetails {
         mPrice = price;
     }
 
+    public SkuDetails(String itemType, String sku, String name, String price, String description) {
+        mItemType = itemType;
+        mSku = sku;
+        mTitle = name;
+        mPrice = price;
+        mDescription = description;
+    }
+
     public SkuDetails(String itemType, String jsonSkuDetails) throws JSONException {
         mItemType = itemType;
         mJson = jsonSkuDetails;
@@ -74,6 +82,6 @@ public class SkuDetails {
 
     @Override
     public String toString() {
-        return "SkuDetails:" + mJson;
+        return String.format("SkuDetails: type = %s, SKU = %s, title = %s, price = %s, description = %s", mItemType, mSku, mTitle, mPrice, mDescription);
     }
 }

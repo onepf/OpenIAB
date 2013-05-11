@@ -21,12 +21,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
 import com.amazon.inapp.purchasing.*;
-import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
-import org.onepf.life2.oms.appstore.googleUtils.IabResult;
-import org.onepf.life2.oms.appstore.googleUtils.Inventory;
-import org.onepf.life2.oms.appstore.googleUtils.Purchase;
+import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -243,6 +241,47 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             } else {
                 Log.e(TAG, "Something went wrong: PurchaseFinishedListener is null");
             }
+        }
+    }
+
+    @Override
+    public void onItemDataResponse(final ItemDataResponse itemDataResponse) {
+        Log.v(TAG, "onItemDataResponse recieved");
+        Log.v(TAG, "ItemDataRequestStatus" + itemDataResponse.getItemDataRequestStatus());
+        Log.v(TAG, "ItemDataRequestId" + itemDataResponse.getRequestId());
+        new ItemDataAsyncTask().execute(itemDataResponse);
+    }
+
+    private class ItemDataAsyncTask extends AsyncTask<ItemDataResponse, Void, Void> {
+        @Override
+        protected Void doInBackground(final ItemDataResponse... params) {
+            final ItemDataResponse itemDataResponse = params[0];
+
+            switch (itemDataResponse.getItemDataRequestStatus()) {
+                case SUCCESSFUL_WITH_UNAVAILABLE_SKUS:
+                    // Skus that you can not purchase will be here.
+                    for (final String s : itemDataResponse.getUnavailableSkus()) {
+                        Log.v(TAG, "Unavailable SKU:" + s);
+                    }
+                case SUCCESSFUL:
+                    // Information you'll want to display about your IAP items is here
+                    // In this example we'll simply log them.
+                    Inventory inventory = mBillingService.getInventory();
+                    final Map<String, Item> items = itemDataResponse.getItemData();
+                    for (final String key : items.keySet()) {
+                        Item i = items.get(key);
+                        Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), i.getSku(), i.getPrice(), i.getDescription()));
+                        String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_INAPP : IabHelper.ITEM_TYPE_INAPP;
+                        SkuDetails skuDetails = new SkuDetails(itemType, i.getSku(), i.getTitle(), i.getPrice(), i.getDescription());
+                        inventory.addSkuDetails(skuDetails);
+                    }
+                    break;
+                case FAILED:
+                    // On failed responses will fail gracefully.
+                    break;
+            }
+            mBillingService.getInventoryLatch().countDown();
+            return null;
         }
     }
 }

@@ -28,9 +28,7 @@ import org.onepf.life2.oms.appstore.googleUtils.IabResult;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
 import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -72,7 +70,6 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
-        // TODO: use parameters
         Log.d(TAG, "Amazon queryInventory()");
         mInventory = new Inventory();
         mInventoryRetrived = new CountDownLatch(1);
@@ -82,12 +79,29 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         } catch (InterruptedException e) {
             return null;
         }
+        if (querySkuDetails) {
+            mInventoryRetrived = new CountDownLatch(1);
+            Set<String> querySkus = new HashSet<>(mInventory.getAllOwnedSkus());
+            if (moreItemSkus != null) {
+                querySkus.addAll(moreItemSkus);
+            }
+            if (moreSubsSkus != null) {
+                querySkus.addAll(moreSubsSkus);
+            }
+            PurchasingManager.initiateItemDataRequest(querySkus);
+            try {
+                mInventoryRetrived.await();
+            } catch (InterruptedException e) {
+                Log.w(TAG, "Amazon SkuDetails fetching interrupted");
+            }
+        }
         Log.d(TAG, "Amazon queryInventory finished. Inventory size: " + mInventory.getAllOwnedSkus().size());
         return mInventory;
     }
 
     @Override
     public void consume(Purchase itemInfo) {
+        // Nothing to do here
     }
 
     @Override

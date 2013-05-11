@@ -16,6 +16,8 @@ import org.onepf.life2.oms.appstore.googleUtils.IabResult;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
 import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
+import java.util.Arrays;
+
 import static org.onepf.life2.oms.OpenSku.Sku;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
@@ -44,7 +46,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                     return;
                 }
                 // isReady = true;
-                mOpenIabHelper.queryInventoryAsync(mGotInventoryListener);
+                mOpenIabHelper.queryInventoryAsync(true, Arrays.asList(SKU_FIGURES, SKU_CHANGES), mGotInventoryListener);
             }
         });
     }
@@ -57,6 +59,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     private IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result,
                                              Inventory inventory) {
+
             if (result.isFailure()) {
                 parent.alert("Failed to load account information");
                 return;
@@ -67,6 +70,9 @@ public class GooglePlayHelper extends BasePurchaseHelper {
             }
 
             final SharedPreferences.Editor editor = getSharedPreferencesEditor();
+
+            Log.d(GameActivity.TAG, inventory.getSkuDetails(SKU_FIGURES).toString());
+            Log.d(GameActivity.TAG, inventory.getSkuDetails(SKU_CHANGES).toString());
 
             Purchase figuresPurchase = inventory
                     .getPurchase(SKU_FIGURES);
