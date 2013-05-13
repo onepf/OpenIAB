@@ -70,6 +70,29 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                 return;
             }
 
+            Purchase changesPurchase = inventory
+                    .getPurchase(SKU_CHANGES);
+            if (changesPurchase != null) {
+                mOpenIabHelper.consumeAsync(changesPurchase, new IabHelper.OnConsumeFinishedListener() {
+
+                    @Override
+                    public void onConsumeFinished(Purchase purchase,
+                                                  IabResult result) {
+                        if (result.isFailure()) {
+                            Log.d(GameActivity.TAG, "Fail consuming item");
+                            return;
+                        }
+                        final SharedPreferences settings = getSharedPreferencesForCurrentUser();
+                        int changes = settings.getInt(GameActivity.CHANGES, 50) + 50;
+                        final SharedPreferences.Editor editor = getSharedPreferencesEditor();
+                        editor.putInt(GameActivity.CHANGES, changes);
+                        editor.commit();
+                        parent.update();
+                    }
+                });
+
+            }
+
             final SharedPreferences.Editor editor = getSharedPreferencesEditor();
 
             Log.d(GameActivity.TAG, inventory.getSkuDetails(SKU_FIGURES).toString());
@@ -186,6 +209,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
 
             }
             // TODO: must this listener be called from UI thread?
+            // it isn't part of lib...
             parent.update();
         }
     };
