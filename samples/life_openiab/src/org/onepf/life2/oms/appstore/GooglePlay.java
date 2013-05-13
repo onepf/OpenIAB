@@ -44,7 +44,7 @@ public class GooglePlay implements Appstore {
     }
 
     // isDebugMode = true |-> always returns app installed via Google Play
-    private final boolean isDebugMode = true;
+    private final boolean isDebugMode = false;
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
