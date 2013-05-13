@@ -45,6 +45,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
                             "Problem setting up In-app Billing: " + result);
                     return;
                 }
+                Log.d(GameActivity.TAG, "OpenIabHelper started setup");
                 // isReady = true;
                 mOpenIabHelper.queryInventoryAsync(true, Arrays.asList(SKU_FIGURES, SKU_CHANGES), mGotInventoryListener);
             }
@@ -59,7 +60,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     private IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result,
                                              Inventory inventory) {
-
+            Log.d(GameActivity.TAG, "Inventory finished");
             if (result.isFailure()) {
                 parent.alert("Failed to load account information");
                 return;

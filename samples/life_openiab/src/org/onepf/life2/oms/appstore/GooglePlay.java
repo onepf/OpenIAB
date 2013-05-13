@@ -19,6 +19,7 @@ package org.onepf.life2.oms.appstore;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 import org.onepf.life2.oms.Appstore;
 import org.onepf.life2.oms.AppstoreInAppBillingService;
 import org.onepf.life2.oms.AppstoreName;
@@ -36,13 +37,14 @@ public class GooglePlay implements Appstore {
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
     private InformationState isBillingSupported = InformationState.UNDEFINED;
+    private final String TAG = "IabHelper";
 
     private enum InformationState {
         UNDEFINED, SUPPORTED, UNSUPPORTED
     }
 
     // isDebugMode = true |-> always returns app installed via Google Play
-    private final boolean isDebugMode = false;
+    private final boolean isDebugMode = true;
 
     public GooglePlay(Context context, String publicKey) {
         mContext = context;
@@ -68,14 +70,16 @@ public class GooglePlay implements Appstore {
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
+            Log.d(TAG, "Check google if billing supported");
             if (isBillingSupported != InformationState.UNDEFINED) {
                 return isBillingSupported == InformationState.SUPPORTED ? true : false;
             }
             PackageManager packageManager = mContext.getPackageManager();
             List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
             for (PackageInfo packageInfo : allPackages) {
-                if (packageInfo.packageName.equals("com.google.vending")) {
+                if (packageInfo.packageName.equals("com.google.vending") || packageInfo.packageName.equals("com.android.vending")) {
                     isBillingSupported = InformationState.SUPPORTED;
+                    Log.d(TAG, "Google supports billing");
                     return true;
                 }
             }
