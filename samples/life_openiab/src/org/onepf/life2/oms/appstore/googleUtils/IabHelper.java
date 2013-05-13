@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import com.android.vending.billing.IInAppBillingService;
 import org.json.JSONException;
+import org.onepf.life2.GameActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ import java.util.List;
  */
 public class IabHelper {
     // Is debug logging enabled?
-    boolean mDebugLog = false;
+    boolean mDebugLog = true;
     String mDebugTag = "IabHelper";
 
     // Is setup done?
@@ -450,6 +451,9 @@ public class IabHelper {
                 String sku = purchase.getSku();
 
                 // Verify signature
+                if (!Security.verifyPurchase(mSignatureBase64, purchaseData, dataSignature)) {
+                    Log.d(GameActivity.TAG, "signature verification failed");
+                }
                 /*
                 if (!Security.verifyPurchase(mSignatureBase64, purchaseData, dataSignature)) {
                     logError("Purchase signature verification FAILED for sku " + sku);
@@ -826,23 +830,28 @@ public class IabHelper {
                 String purchaseData = purchaseDataList.get(i);
                 String signature = signatureList.get(i);
                 String sku = ownedSkus.get(i);
-                if (Security.verifyPurchase(mSignatureBase64, purchaseData, signature)) {
-                    logDebug("Sku is owned: " + sku);
-                    Purchase purchase = new Purchase(itemType, purchaseData, signature);
+                if (!Security.verifyPurchase(mSignatureBase64, purchaseData, signature)) {
+                    Log.d(GameActivity.TAG, "signature failed");
+                }
+                //if (Security.verifyPurchase(mSignatureBase64, purchaseData, signature)) {
+                logDebug("Sku is owned: " + sku);
+                Purchase purchase = new Purchase(itemType, purchaseData, signature);
 
-                    if (TextUtils.isEmpty(purchase.getToken())) {
-                        logWarn("BUG: empty/null token!");
-                        logDebug("Purchase data: " + purchaseData);
-                    }
+                if (TextUtils.isEmpty(purchase.getToken())) {
+                    logWarn("BUG: empty/null token!");
+                    logDebug("Purchase data: " + purchaseData);
+                }
 
-                    // Record ownership and token
-                    inv.addPurchase(purchase);
+                // Record ownership and token
+                inv.addPurchase(purchase);
+                /*
                 } else {
                     logWarn("Purchase signature verification **FAILED**. Not adding item.");
                     logDebug("   Purchase data: " + purchaseData);
                     logDebug("   Signature: " + signature);
                     verificationFailed = true;
                 }
+                */
             }
 
             continueToken = ownedItems.getString(INAPP_CONTINUATION_TOKEN);

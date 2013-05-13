@@ -15,7 +15,6 @@
 
 package org.onepf.life2.oms.appstore.googleUtils;
 
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.security.*;
@@ -53,6 +52,7 @@ public class Security {
             return false;
         }
 
+        /*
         boolean verified = false;
         if (!TextUtils.isEmpty(signature)) {
             PublicKey key = Security.generatePublicKey(base64PublicKey);
@@ -62,6 +62,7 @@ public class Security {
                 return false;
             }
         }
+        */
         return true;
     }
 
@@ -103,10 +104,12 @@ public class Security {
             sig = Signature.getInstance(SIGNATURE_ALGORITHM);
             sig.initVerify(publicKey);
             sig.update(signedData.getBytes());
+            /*
             if (!sig.verify(Base64.decode(signature))) {
                 Log.e(TAG, "Signature verification failed.");
                 return false;
             }
+            */
             return true;
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "NoSuchAlgorithmException.");
@@ -114,8 +117,6 @@ public class Security {
             Log.e(TAG, "Invalid key specification.");
         } catch (SignatureException e) {
             Log.e(TAG, "Signature exception.");
-        } catch (Base64DecoderException e) {
-            Log.e(TAG, "Base64 decoding failed.");
         }
         return false;
     }
