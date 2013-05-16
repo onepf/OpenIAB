@@ -25,6 +25,7 @@ import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: Boris Minaev
@@ -72,9 +73,9 @@ public class OpenIabHelper {
         public void onOpenIabHelperInitFinished();
     }
 
-    public OpenIabHelper(Context context, String googlePublicKey, String samsungGroupId) {
+    public OpenIabHelper(Context context, Map<String, String> extra) {
         mContext = context;
-        mServiceManager = new AppstoreServiceManager(context, googlePublicKey, samsungGroupId);
+        mServiceManager = new AppstoreServiceManager(context, extra);
     }
 
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {

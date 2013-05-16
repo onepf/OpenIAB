@@ -28,9 +28,11 @@ import android.util.Log;
 import org.onepf.life2.oms.appstore.AmazonAppstore;
 import org.onepf.life2.oms.appstore.GooglePlay;
 import org.onepf.life2.oms.appstore.SamsungApps;
+import org.onepf.life2.oms.appstore.TStore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -46,12 +48,13 @@ class AppstoreServiceManager {
     }
 
 
-    AppstoreServiceManager(Context context, String googlePublicKey, String samsungGroupId) {
+    AppstoreServiceManager(Context context, Map<String, String> extra) {
         mContext = context;
-        appstores = new ArrayList<Appstore>();
-        appstores.add(new GooglePlay(context, googlePublicKey));
+        appstores = new ArrayList<>();
+        appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
         appstores.add(new AmazonAppstore(context));
-        appstores.add(new SamsungApps(context, samsungGroupId));
+        appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
+        appstores.add(new TStore(context, extra.get("TStoreAppId")));
     }
 
 
@@ -83,7 +86,7 @@ class AppstoreServiceManager {
                         isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
                         iabIntent = openAppstoreService.getInAppBillingServiceIntent();
                     } catch (RemoteException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        Log.e(TAG, "RemoteException: " + e.getMessage());
                     }
                     appstoresServiceSupport.add(isInstaller, isSupported, iabIntent);
                     if (appstoresServiceSupport.isReady()) {

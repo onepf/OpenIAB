@@ -17,16 +17,26 @@ import org.onepf.life2.oms.appstore.googleUtils.Inventory;
 import org.onepf.life2.oms.appstore.googleUtils.Purchase;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.onepf.life2.oms.OpenSku.Sku;
 
 public class GooglePlayHelper extends BasePurchaseHelper {
     private static final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
     private static final String samsungGroupId = "100000031624";
+    private static final String tstoreAppId = "OA00325110";
 
-    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"), new Sku(AppstoreName.AMAZON, "org.onepf.life.orange_cells.monthly"));
-    private final static OpenSku SKU_FIGURES = new OpenSku(new Sku(AppstoreName.GOOGLE, "figures"), new Sku(AppstoreName.AMAZON, "org.onepf.life.figures"));
-    private final static OpenSku SKU_CHANGES = new OpenSku(new Sku(AppstoreName.GOOGLE, "changes"), new Sku(AppstoreName.SAMSUNG, "000000063778"), new Sku(AppstoreName.AMAZON, "org.onepf.life.fifty_changes"));
+    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"),
+            new Sku(AppstoreName.AMAZON, "org.onepf.life.orange_cells.monthly"),
+            new Sku(AppstoreName.TSTORE, "0901214320"));
+    private final static OpenSku SKU_FIGURES = new OpenSku(new Sku(AppstoreName.GOOGLE, "figures"),
+            new Sku(AppstoreName.AMAZON, "org.onepf.life.figures"),
+            new Sku(AppstoreName.TSTORE, "0901214321"));
+    private final static OpenSku SKU_CHANGES = new OpenSku(new Sku(AppstoreName.GOOGLE, "changes"),
+            new Sku(AppstoreName.SAMSUNG, "000000063778"),
+            new Sku(AppstoreName.AMAZON, "org.onepf.life.fifty_changes"),
+            new Sku(AppstoreName.TSTORE, "0901214308"));
     private final static int RC_REQUEST = 10001;
     private final static int PRIORITY = 50;
 
@@ -37,7 +47,11 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     public GooglePlayHelper(Context context) {
         mContext = context;
         parent = (GameActivity) context;
-        mOpenIabHelper = new OpenIabHelper(context, publicKey, samsungGroupId);
+        Map<String, String> extra = new HashMap<>();
+        extra.put("GooglePublicKey", publicKey);
+        extra.put("SamsungGroupId", samsungGroupId);
+        extra.put("TStoreAppId", tstoreAppId);
+        mOpenIabHelper = new OpenIabHelper(context, extra);
         mOpenIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 if (!result.isSuccess()) {
