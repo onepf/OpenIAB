@@ -50,7 +50,7 @@ class AppstoreServiceManager {
 
     AppstoreServiceManager(Context context, Map<String, String> extra) {
         mContext = context;
-        appstores = new ArrayList<>();
+        appstores = new ArrayList<Appstore>();
         appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
         appstores.add(new AmazonAppstore(context));
         appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));

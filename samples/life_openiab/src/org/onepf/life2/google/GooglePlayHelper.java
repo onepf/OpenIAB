@@ -47,7 +47,7 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     public GooglePlayHelper(Context context) {
         mContext = context;
         parent = (GameActivity) context;
-        Map<String, String> extra = new HashMap<>();
+        Map<String, String> extra = new HashMap<String, String>();
         extra.put("GooglePublicKey", publicKey);
         extra.put("SamsungGroupId", samsungGroupId);
         extra.put("TStoreAppId", tstoreAppId);

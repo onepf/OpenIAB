@@ -114,7 +114,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
                 case SUCCESSFUL:
                     SubscriptionPeriod latestSubscriptionPeriod = null;
-                    final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<>();
+                    final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<SubscriptionPeriod>();
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
                         final String sku = receipt.getSku();
@@ -231,7 +231,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             }
             IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
             Log.d(TAG, "Result message: " + result.getMessage() + ", SKU: " + purchase.getSku());
-            return new Pair<>(listener, new Pair<>(result, purchase));
+            return new Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>>(listener, new Pair<IabResult, Purchase>(result, purchase));
         }
 
         @Override

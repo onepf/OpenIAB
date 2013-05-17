@@ -76,7 +76,7 @@ public class GameActivity extends Activity {
         });
 
 
-        requestIds = new HashMap<>();
+        requestIds = new HashMap<String, String>();
         context = this;
 
         billingHelper = new BillingHelper(this);
@@ -88,7 +88,7 @@ public class GameActivity extends Activity {
         ab_buy_figures = menu.findItem(R.id.menu_buy_figures);
         ab_buy_orange_cells = menu.findItem(R.id.menu_buy_orange_cells);
 
-        ab_menu_figures = new ArrayList<>();
+        ab_menu_figures = new ArrayList<MenuItem>();
         ab_menu_figures.add(menu.findItem(R.id.menu_empty_field));
         ab_menu_figures.add(menu.findItem(R.id.menu_glider));
         ab_menu_figures.add(menu.findItem(R.id.menu_big_glider));

@@ -33,7 +33,7 @@ public final class ParamsBuilder {
     private ConcurrentHashMap<String, String> mParams = null;
 
     public ParamsBuilder() {
-        mParams = new ConcurrentHashMap<>();
+        mParams = new ConcurrentHashMap<String, String>();
     }
 
     public ParamsBuilder put(Map<String, String> source) {

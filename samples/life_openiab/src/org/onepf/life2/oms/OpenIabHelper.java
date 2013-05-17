@@ -154,7 +154,7 @@ public class OpenIabHelper {
                                     List<OpenSku> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
         //Map<String, String> skuToOpen = new HashMap<>();
-        List<String> moreItemSkusCurrentStore = new ArrayList<>();
+        List<String> moreItemSkusCurrentStore = new ArrayList<String>();
         if (moreItemSkus == null) {
             moreItemSkusCurrentStore = null;
         } else {
@@ -168,7 +168,7 @@ public class OpenIabHelper {
                 moreItemSkusCurrentStore.add(skuCurrentStore);
             }
         }
-        List<String> moreSubsSkusCurrentStore = new ArrayList<>();
+        List<String> moreSubsSkusCurrentStore = new ArrayList<String>();
         if (moreSubsSkus == null) {
             moreSubsSkusCurrentStore = null;
         } else {
@@ -230,7 +230,7 @@ public class OpenIabHelper {
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
-        List<Purchase> purchases = new ArrayList<>();
+        List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
@@ -246,7 +246,7 @@ public class OpenIabHelper {
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
-                final List<IabResult> results = new ArrayList<>();
+                final List<IabResult> results = new ArrayList<IabResult>();
                 for (Purchase purchase : purchases) {
                     try {
                         consume(purchase);

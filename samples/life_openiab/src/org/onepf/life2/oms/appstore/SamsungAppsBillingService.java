@@ -67,8 +67,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
         mPlasma.setDeveloperFlag(1);
         mPlasma.setPlasmaListener(this);
         transactionId = 0;
-        purchases = new HashMap<>();
-        queryInventorys = new HashMap<>();
+        purchases = new HashMap<Integer, PurchaseInfo>();
+        queryInventorys = new HashMap<Integer, Inventory>();
     }
 
     @Override

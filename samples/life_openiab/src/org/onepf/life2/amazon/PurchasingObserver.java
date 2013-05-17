@@ -354,7 +354,7 @@ public class PurchasingObserver extends BasePurchasingObserver {
             switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
                 case SUCCESSFUL:
                     SubscriptionPeriod latestSubscriptionPeriod = null;
-                    final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<>();
+                    final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<SubscriptionPeriod>();
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
                         final String sku = receipt.getSku();

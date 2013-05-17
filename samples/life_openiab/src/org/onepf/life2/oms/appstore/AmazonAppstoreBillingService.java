@@ -46,7 +46,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     public AmazonAppstoreBillingService(Context context) {
         mContext = context;
-        mRequestListeners = new HashMap<>();
+        mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     }
 
     @Override
@@ -81,7 +81,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         }
         if (querySkuDetails) {
             mInventoryRetrived = new CountDownLatch(1);
-            Set<String> querySkus = new HashSet<>(mInventory.getAllOwnedSkus());
+            Set<String> querySkus = new HashSet<String>(mInventory.getAllOwnedSkus());
             if (moreItemSkus != null) {
                 querySkus.addAll(moreItemSkus);
             }
