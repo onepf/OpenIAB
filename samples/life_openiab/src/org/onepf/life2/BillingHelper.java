@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.util.Log;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import org.onepf.life2.google.GooglePlayHelper;
+import org.onepf.life2.yandex.YandexStoreHelper;
 
 /**
  * User: Boris Minaev
@@ -35,6 +36,7 @@ public class BillingHelper {
         //new AmazonHelper(activity, this);
         //new SamsungHelper(activity, this);
         //new TstoreHelper(activity, this);
+        //new YandexStoreHelper(activity);
     }
 
     public boolean updateHelper(BasePurchaseHelper helper) {

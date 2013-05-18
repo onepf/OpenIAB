@@ -43,8 +43,8 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
-        mIabHelper.startSetup(listener);
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+        mIabHelper.startSetup(listener, billingService);
     }
 
     @Override
