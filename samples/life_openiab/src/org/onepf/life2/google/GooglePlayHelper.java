@@ -11,6 +11,7 @@ import org.onepf.life2.Market;
 import org.onepf.life2.oms.AppstoreName;
 import org.onepf.life2.oms.OpenIabHelper;
 import org.onepf.life2.oms.OpenSku;
+import org.onepf.life2.oms.appstore.IabHelperBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.IabHelper;
 import org.onepf.life2.oms.appstore.googleUtils.IabResult;
 import org.onepf.life2.oms.appstore.googleUtils.Inventory;
@@ -26,22 +27,32 @@ public class GooglePlayHelper extends BasePurchaseHelper {
     private static final String publicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
     private static final String samsungGroupId = "100000031624";
     private static final String tstoreAppId = "OA00325110";
+    private static final String YANDEX_PUBLIC_KEY = "qwerty";
 
-    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"),
+    private final static OpenSku SKU_ORANGE_CELLS = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "orange_cells_subscription"),
             new Sku(AppstoreName.AMAZON, "org.onepf.life.orange_cells.monthly"),
-            new Sku(AppstoreName.TSTORE, "0901214320"));
-    private final static OpenSku SKU_FIGURES = new OpenSku(new Sku(AppstoreName.GOOGLE, "figures"),
+            new Sku(AppstoreName.TSTORE, "0901214320"),
+            new Sku(AppstoreName.YANDEX, "gas"));
+
+    private final static OpenSku SKU_FIGURES = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "figures"),
             new Sku(AppstoreName.AMAZON, "org.onepf.life.figures"),
-            new Sku(AppstoreName.TSTORE, "0901214321"));
-    private final static OpenSku SKU_CHANGES = new OpenSku(new Sku(AppstoreName.GOOGLE, "changes"),
+            new Sku(AppstoreName.TSTORE, "0901214321"),
+            new Sku(AppstoreName.YANDEX, "money"));
+
+    private final static OpenSku SKU_CHANGES = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "changes"),
             new Sku(AppstoreName.SAMSUNG, "000000063778"),
             new Sku(AppstoreName.AMAZON, "org.onepf.life.fifty_changes"),
-            new Sku(AppstoreName.TSTORE, "0901214308"));
-    private final static int RC_REQUEST = 10001;
+            new Sku(AppstoreName.TSTORE, "0901214308"),
+            new Sku(AppstoreName.YANDEX, "water"));
+
+    protected final static int RC_REQUEST = 10001;
     private final static int PRIORITY = 50;
 
-    OpenIabHelper mOpenIabHelper;
-    Context mContext;
+    protected OpenIabHelper mOpenIabHelper;
+    protected Context mContext;
     GameActivity parent;
 
     public GooglePlayHelper(Context context) {
@@ -51,19 +62,31 @@ public class GooglePlayHelper extends BasePurchaseHelper {
         extra.put("GooglePublicKey", publicKey);
         extra.put("SamsungGroupId", samsungGroupId);
         extra.put("TStoreAppId", tstoreAppId);
+        extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
         mOpenIabHelper = new OpenIabHelper(context, extra);
-        mOpenIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+
+        IabHelper.OnIabSetupFinishedListener listener = openIabSetupFinishedListener();
+        IabHelperBillingService service = billingService(mContext);
+        mOpenIabHelper.startSetup(listener, service);
+    }
+
+    public IabHelper.OnIabSetupFinishedListener openIabSetupFinishedListener() {
+        return new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 if (!result.isSuccess()) {
                     Log.d(GameActivity.TAG,
-                            "Problem setting up In-app Billing: " + result);
+                          "Problem setting up In-app Billing: " + result);
                     return;
                 }
                 Log.d(GameActivity.TAG, "OpenIabHelper started setup");
                 // isReady = true;
                 mOpenIabHelper.queryInventoryAsync(true, Arrays.asList(SKU_FIGURES, SKU_CHANGES), mGotInventoryListener);
             }
-        });
+        };
+    }
+
+    public IabHelperBillingService billingService(Context context) {
+        return null;
     }
 
     @Override

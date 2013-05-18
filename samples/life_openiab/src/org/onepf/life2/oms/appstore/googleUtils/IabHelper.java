@@ -31,6 +31,7 @@ import android.util.Log;
 import com.android.vending.billing.IInAppBillingService;
 import org.json.JSONException;
 import org.onepf.life2.GameActivity;
+import org.onepf.life2.oms.appstore.IabHelperBillingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,8 +91,7 @@ public class IabHelper {
     Context mContext;
 
     // Connection to the service
-    IInAppBillingService mService;
-    ServiceConnection mServiceConn;
+    IabHelperBillingService mService;
 
     // The request code used to launch purchase flow
     int mRequestCode;
@@ -193,76 +193,18 @@ public class IabHelper {
      *
      * @param listener The listener to notify when the setup process is complete.
      */
-    public void startSetup(final OnIabSetupFinishedListener listener) {
+    public void startSetup(final OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
         // If already set up, can't do it again.
         if (mSetupDone) throw new IllegalStateException("IAB helper is already set up.");
 
         // Connection to IAB service
         logDebug("Starting in-app billing setup.");
-        mServiceConn = new ServiceConnection() {
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                logDebug("Billing service disconnected.");
-                mService = null;
-            }
-
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                logDebug("Billing service connected.");
-                mService = IInAppBillingService.Stub.asInterface(service);
-                String packageName = mContext.getPackageName();
-                try {
-                    logDebug("Checking for in-app billing 3 support.");
-
-                    // check for in-app billing v3 support
-                    int response = mService.isBillingSupported(3, packageName, ITEM_TYPE_INAPP);
-                    if (response != BILLING_RESPONSE_RESULT_OK) {
-                        if (listener != null) listener.onIabSetupFinished(new IabResult(response,
-                                "Error checking for billing v3 support."));
-
-                        // if in-app purchases aren't supported, neither are subscriptions.
-                        mSubscriptionsSupported = false;
-                        return;
-                    }
-                    logDebug("In-app billing version 3 supported for " + packageName);
-
-                    // check for v3 subscriptions support
-                    response = mService.isBillingSupported(3, packageName, ITEM_TYPE_SUBS);
-                    if (response == BILLING_RESPONSE_RESULT_OK) {
-                        logDebug("Subscriptions AVAILABLE.");
-                        mSubscriptionsSupported = true;
-                    } else {
-                        logDebug("Subscriptions NOT AVAILABLE. Response: " + response);
-                    }
-
-                    mSetupDone = true;
-                } catch (RemoteException e) {
-                    if (listener != null) {
-                        listener.onIabSetupFinished(new IabResult(IABHELPER_REMOTE_EXCEPTION,
-                                "RemoteException while setting up in-app billing."));
-                    }
-                    e.printStackTrace();
-                    return;
-                }
-
-                if (listener != null) {
-                    listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup successful."));
-                }
-            }
-        };
-
-        Intent serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND");
-        if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
-            // service available to handle that Intent
-            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
-        } else {
-            // no service available to handle that Intent
-            if (listener != null) {
-                listener.onIabSetupFinished(
-                        new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
-                                "Billing service unavailable on device."));
-            }
+        mService = billingService;
+        if (mService == null) {
+            mService = new IabHelperBillingService(mContext);
         }
+        mService.setIabHelper(this);
+        mService.bindService(listener);
     }
 
     /**
@@ -274,13 +216,9 @@ public class IabHelper {
     public void dispose() {
         logDebug("Disposing.");
         mSetupDone = false;
-        if (mServiceConn != null) {
-            logDebug("Unbinding from service.");
-            if (mContext != null) mContext.unbindService(mServiceConn);
-            mServiceConn = null;
-            mService = null;
-            mPurchaseListener = null;
-        }
+        mService.dispose();
+        mService = null;
+        mPurchaseListener = null;
     }
 
     /**
@@ -290,6 +228,13 @@ public class IabHelper {
         return mSubscriptionsSupported;
     }
 
+    public void setSubscriptionsSupported(boolean subscriptionsSupported) {
+        mSubscriptionsSupported = subscriptionsSupported;
+    }
+
+    public void setSetupDone(boolean setupDone) {
+        mSetupDone = setupDone;
+    }
 
     /**
      * Callback that notifies when a purchase is finished.
@@ -431,56 +376,10 @@ public class IabHelper {
         String dataSignature = data.getStringExtra(RESPONSE_INAPP_SIGNATURE);
 
         if (resultCode == Activity.RESULT_OK && responseCode == BILLING_RESPONSE_RESULT_OK) {
-            logDebug("Successful resultcode from purchase activity.");
-            logDebug("Purchase data: " + purchaseData);
-            logDebug("Data signature: " + dataSignature);
-            logDebug("Extras: " + data.getExtras());
-            logDebug("Expected item type: " + mPurchasingItemType);
-
-            if (purchaseData == null || dataSignature == null) {
-                logError("BUG: either purchaseData or dataSignature is null.");
-                logDebug("Extras: " + data.getExtras().toString());
-                result = new IabResult(IABHELPER_UNKNOWN_ERROR, "IAB returned null purchaseData or dataSignature");
-                if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
-                return true;
-            }
-
-            Purchase purchase = null;
-            try {
-                purchase = new Purchase(mPurchasingItemType, purchaseData, dataSignature);
-                String sku = purchase.getSku();
-
-                // Verify signature
-                if (!Security.verifyPurchase(mSignatureBase64, purchaseData, dataSignature)) {
-                    Log.d(GameActivity.TAG, "signature verification failed");
-                }
-                /*
-                if (!Security.verifyPurchase(mSignatureBase64, purchaseData, dataSignature)) {
-                    logError("Purchase signature verification FAILED for sku " + sku);
-                    result = new IabResult(IABHELPER_VERIFICATION_FAILED, "Signature verification failed for sku " + sku);
-                    if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, purchase);
-                    return true;
-                }
-                */
-                logDebug("Purchase signature successfully verified.");
-            } catch (JSONException e) {
-                logError("Failed to parse purchase data.");
-                e.printStackTrace();
-                result = new IabResult(IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
-                if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
-                return true;
-            }
-
-            if (mPurchaseListener != null) {
-                mPurchaseListener.onIabPurchaseFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Success"), purchase);
-            }
+            processPurchaseSuccess(data, purchaseData, dataSignature);
         } else if (resultCode == Activity.RESULT_OK) {
             // result code was OK, but in-app billing response was not OK.
-            logDebug("Result code was OK but in-app billing response was not OK: " + getResponseDesc(responseCode));
-            if (mPurchaseListener != null) {
-                result = new IabResult(responseCode, "Problem purchashing item.");
-                mPurchaseListener.onIabPurchaseFinished(result, null);
-            }
+            processPurchaseFail(responseCode);
         } else if (resultCode == Activity.RESULT_CANCELED) {
             logDebug("Purchase canceled - Response: " + getResponseDesc(responseCode));
             result = new IabResult(IABHELPER_USER_CANCELLED, "User canceled.");
@@ -492,6 +391,59 @@ public class IabHelper {
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
         }
         return true;
+    }
+
+    public void processPurchaseFail(int responseCode) {
+        IabResult result;
+        logDebug("Result code was OK but in-app billing response was not OK: " + getResponseDesc(responseCode));
+        if (mPurchaseListener != null) {
+            result = new IabResult(responseCode, "Problem purchashing item.");
+            mPurchaseListener.onIabPurchaseFinished(result, null);
+        }
+    }
+
+    public void processPurchaseSuccess(Intent data, String purchaseData,
+                                       String dataSignature) {
+        IabResult result;
+        logDebug("Successful resultcode from purchase activity.");
+        logDebug("Purchase data: " + purchaseData);
+        logDebug("Data signature: " + dataSignature);
+        logDebug("Extras: " + data.getExtras());
+        logDebug("Expected item type: " + mPurchasingItemType);
+
+        if (purchaseData == null || dataSignature == null) {
+            logError("BUG: either purchaseData or dataSignature is null.");
+            logDebug("Extras: " + data.getExtras().toString());
+            result = new IabResult(IABHELPER_UNKNOWN_ERROR, "IAB returned null purchaseData or dataSignature");
+            if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
+            return;
+        }
+
+        Purchase purchase = null;
+        try {
+            purchase = new Purchase(mPurchasingItemType, purchaseData, dataSignature);
+            String sku = purchase.getSku();
+
+            if(!isValidDataSignature(mSignatureBase64, purchaseData, dataSignature)) {
+                logError("Purchase signature verification FAILED for sku " + sku);
+                result = new IabResult(IABHELPER_VERIFICATION_FAILED, "Signature verification failed for sku " + sku);
+                if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, purchase);
+                return;
+            }
+
+            logDebug("Purchase signature successfully verified.");
+        }
+        catch (JSONException e) {
+            logError("Failed to parse purchase data.");
+            e.printStackTrace();
+            result = new IabResult(IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
+            if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
+            return;
+        }
+
+        if (mPurchaseListener != null) {
+            mPurchaseListener.onIabPurchaseFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Success"), purchase);
+        }
     }
 
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
@@ -734,9 +686,13 @@ public class IabHelper {
             int index = IABHELPER_ERROR_BASE - code;
             if (index >= 0 && index < iabhelper_msgs.length) return iabhelper_msgs[index];
             else return String.valueOf(code) + ":Unknown IAB Helper Error";
-        } else if (code < 0 || code >= iab_msgs.length)
-            return String.valueOf(code) + ":Unknown";
-        else
+        } else if (code < 0 || code >= iab_msgs.length) {
+            String description = IabHelperBillingService.getResponseDesc(code);
+            if (description == null) {
+                description = String.valueOf(code) + ":Unknown";
+            }
+            return description;
+        } else
             return iab_msgs[code];
     }
 
@@ -830,28 +786,33 @@ public class IabHelper {
                 String purchaseData = purchaseDataList.get(i);
                 String signature = signatureList.get(i);
                 String sku = ownedSkus.get(i);
-                if (!Security.verifyPurchase(mSignatureBase64, purchaseData, signature)) {
-                    Log.d(GameActivity.TAG, "signature failed");
-                }
-                //if (Security.verifyPurchase(mSignatureBase64, purchaseData, signature)) {
-                logDebug("Sku is owned: " + sku);
-                Purchase purchase = new Purchase(itemType, purchaseData, signature);
 
-                if (TextUtils.isEmpty(purchase.getToken())) {
-                    logWarn("BUG: empty/null token!");
-                    logDebug("Purchase data: " + purchaseData);
-                }
-
-                // Record ownership and token
-                inv.addPurchase(purchase);
-                /*
-                } else {
-                    logWarn("Purchase signature verification **FAILED**. Not adding item.");
+                if (!isValidDataSignature(mSignatureBase64, purchaseData, signature)) {
                     logDebug("   Purchase data: " + purchaseData);
                     logDebug("   Signature: " + signature);
                     verificationFailed = true;
                 }
-                */
+
+                if (verificationFailed == false) {
+                    logDebug("Sku is owned: " + sku);
+                    Purchase purchase = new Purchase(itemType, purchaseData, signature);
+
+                    if (TextUtils.isEmpty(purchase.getToken())) {
+                        logWarn("BUG: empty/null token!");
+                        logDebug("Purchase data: " + purchaseData);
+                    }
+
+                    // Record ownership and token
+                    inv.addPurchase(purchase);
+                    /*
+                    } else {
+                        logWarn("Purchase signature verification **FAILED**. Not adding item.");
+                        logDebug("   Purchase data: " + purchaseData);
+                        logDebug("   Signature: " + signature);
+                        verificationFailed = true;
+                    }
+                    */
+                }
             }
 
             continueToken = ownedItems.getString(INAPP_CONTINUATION_TOKEN);
@@ -937,7 +898,7 @@ public class IabHelper {
         })).start();
     }
 
-    void logDebug(String msg) {
+    public void logDebug(String msg) {
         if (mDebugLog) Log.d(mDebugTag, msg);
     }
 
@@ -947,5 +908,18 @@ public class IabHelper {
 
     void logWarn(String msg) {
         Log.w(mDebugTag, "In-app billing warning: " + msg);
+    }
+
+    boolean isValidDataSignature(String base64PublicKey, String signedData, String signature) {
+        boolean isValid = true;
+        if (mService.isDataSignatureSupported() == false) {
+            logWarn("Signature verification is not supported");
+        } else {
+            isValid = Security.verifyPurchase(base64PublicKey, signedData, signature);
+        }
+        if (isValid == false) {
+            logWarn("Purchase signature verification **FAILED**.");
+        }
+        return isValid;
     }
 }
