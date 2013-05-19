@@ -25,10 +25,7 @@ import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import org.onepf.life2.oms.appstore.AmazonAppstore;
-import org.onepf.life2.oms.appstore.GooglePlay;
-import org.onepf.life2.oms.appstore.SamsungApps;
-import org.onepf.life2.oms.appstore.TStore;
+import org.onepf.life2.oms.appstore.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +52,7 @@ class AppstoreServiceManager {
         appstores.add(new AmazonAppstore(context));
         appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
         appstores.add(new TStore(context, extra.get("TStoreAppId")));
+        appstores.add(new YandexStore(context, extra.get("YandexPublicKey")));
     }
 
 

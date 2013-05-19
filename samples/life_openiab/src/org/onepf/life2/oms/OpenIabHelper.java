@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
+import org.onepf.life2.oms.appstore.IabHelperBillingService;
 import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public class OpenIabHelper {
         mServiceManager = new AppstoreServiceManager(context, extra);
     }
 
-    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
         mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
             @Override
             public void onAppstoreServiceManagerInitFinishedListener() {
@@ -95,7 +96,7 @@ public class OpenIabHelper {
                     listener.onIabSetupFinished(iabResult);
                     return;
                 }
-                mAppstoreBillingService.startSetup(listener);
+                mAppstoreBillingService.startSetup(listener, billingService);
             }
         });
     }

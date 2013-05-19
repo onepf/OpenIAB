@@ -38,6 +38,8 @@ public class GooglePlay implements Appstore {
     private String mPublicKey;
     private InformationState isBillingSupported = InformationState.UNDEFINED;
     private final String TAG = "IabHelper";
+    private final String ANDROID_INSTALLER = "com.android.vending";
+    private final String GOOGLE_INSTALLER = "com.google.vending";
 
     private enum InformationState {
         UNDEFINED, SUPPORTED, UNSUPPORTED
@@ -64,7 +66,7 @@ public class GooglePlay implements Appstore {
         PackageManager packageManager = mContext.getPackageManager();
         String packageName = mContext.getClass().getPackage().getName();
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
-        return (installerPackageName != null && installerPackageName.equals("com.android.vending"));
+        return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
 
     @Override
@@ -77,7 +79,7 @@ public class GooglePlay implements Appstore {
             PackageManager packageManager = mContext.getPackageManager();
             List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
             for (PackageInfo packageInfo : allPackages) {
-                if (packageInfo.packageName.equals("com.google.vending") || packageInfo.packageName.equals("com.android.vending")) {
+                if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
                     isBillingSupported = InformationState.SUPPORTED;
                     Log.d(TAG, "Google supports billing");
                     return true;

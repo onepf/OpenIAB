@@ -27,30 +27,39 @@ import org.onepf.life2.oms.AppstoreService;
  * Date: 16.04.13
  */
 public class YandexStore implements Appstore {
-    private final Context mContext;
 
-    public YandexStore(Context context) {
+    private final Context mContext;
+    private String mPublicKey;
+    private YandexStoreBillingService mBillingService;
+
+    public YandexStore(Context context, String publicKey) {
         mContext = context;
+        mPublicKey = publicKey;
     }
 
     @Override
     public boolean isAppAvailable(String packageName) {
+        // TODO: implement this
         return false;
     }
 
     @Override
     public boolean isInstaller() {
+        // TODO: implement this
         return false;
     }
 
     @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
-        return false;
+        return (appstoreService == AppstoreService.IN_APP_BILLING);
     }
 
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
-        return null;
+    	if (mBillingService == null) {
+            mBillingService = new YandexStoreBillingService(mContext, mPublicKey);
+        }
+        return mBillingService;
     }
 
     @Override
