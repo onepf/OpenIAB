@@ -54,16 +54,14 @@ public class IabHelperBillingService {
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 mIabHelper.logDebug(LOG_PREFIX + "disconnected.");
-                mBillingService = null;
+                didServiceDisconnected();
             }
 
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 mIabHelper.logDebug(LOG_PREFIX + "connected.");
-                mBillingService = getInAppBillingService(service);
+                didServiceConnected(service);
 
-
-                String packageName = mContext.getPackageName();
                 String packageName = mIabHelper.getPackageName();
                 try {
                     mIabHelper.logDebug(LOG_PREFIX + "Checking for in-app billing 3 support.");
@@ -126,11 +124,15 @@ public class IabHelperBillingService {
         }
     }
 
-    public IInAppBillingService getInAppBillingService(android.os.IBinder service) {
-        return IInAppBillingService.Stub.asInterface(service);
+    protected void didServiceConnected(android.os.IBinder service) {
+        mBillingService = IInAppBillingService.Stub.asInterface(service);
     }
 
-    public Intent getServiceIntent() {
+    protected void didServiceDisconnected() {
+        mBillingService = null;
+    }
+
+    protected Intent getServiceIntent() {
         return new Intent("com.android.vending.billing.InAppBillingService.BIND");
     }
 
