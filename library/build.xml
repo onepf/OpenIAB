@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="openIAB" default="release">
+
+    <property environment="env"/>
+    <property name="sdk.dir" value="${env.ANDROID_HOME}"/>
+
+    <property file="ant.properties"/>
+
+
+    <loadproperties srcFile="project.properties"/>
+
+    <!-- quick lineChecker on sdk.dir -->
+    <fail message="sdk.dir is missing. Make sure to generate local.properties using 'android update project' or to inject it through an env var"
+          unless="sdk.dir"/>
+
+    <import file="custom_rules.xml" optional="true" />
+
+    <!-- version-tag: 1 -->
+    <import file="${sdk.dir}/tools/ant/build.xml"/>
+
+    <target name="build_jar" depends="debug">
+        <jar destfile="openiab.jar" 
+             basedir="${out.dir}/classes"
+             excludes="**/R.class,**/R$*,**/BuildConfig.class,**/Manifest*.class"/>
+    </target>
+
+</project>
