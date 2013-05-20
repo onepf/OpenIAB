@@ -15,11 +15,8 @@
 
 package org.onepf.trivialdrive_openiab;
 
-import com.example.android.trivialdrivesample.R;
-import org.onepf.trivialdrive_openiab.util.IabHelper;
-import org.onepf.trivialdrive_openiab.util.IabResult;
-import org.onepf.trivialdrive_openiab.util.Inventory;
-import org.onepf.trivialdrive_openiab.util.Purchase;
+import org.onepf.life2.oms.AppstoreName;
+import org.onepf.life2.oms.OpenIabHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -28,6 +25,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import org.onepf.life2.oms.OpenSku;
+import static org.onepf.life2.oms.OpenSku.*;
+import org.onepf.life2.oms.appstore.googleUtils.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Example game using in-app billing version 3.
@@ -91,11 +94,23 @@ public class MainActivity extends Activity {
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas
     // (consumable)
-    static final String SKU_PREMIUM = "android.test.purchased";
-    static final String SKU_GAS = "gas";
-
+    static final OpenSku SKU_PREMIUM = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "sku_premium"),
+            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
+    static final OpenSku SKU_GAS = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "sku_gas"),
+            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
     // SKU for our subscription (infinite gas)
-    static final String SKU_INFINITE_GAS = "infinite_gas";
+    static final OpenSku SKU_INFINITE_GAS = new OpenSku(
+            new Sku(AppstoreName.GOOGLE, "sku_infinte_gas"),
+            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
+
 
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
@@ -111,7 +126,7 @@ public class MainActivity extends Activity {
     int mTank;
 
     // The helper object
-    IabHelper mHelper;
+    OpenIabHelper mHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -133,7 +148,10 @@ public class MainActivity extends Activity {
          * want to make it easy for an attacker to replace the public key with
          * one of their own and then fake messages from the server.
          */
-        String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhh9ee2Ka+dO2UCkGSndfH6/5jZ/kgILRguYcp8TpkAus6SEU8r8RSjYf4umAVD0beC3e7KOpxHxjnnE0z8A+MegZ11DE7/jQw4XQ0BaGzDTezCJrNUR8PqKf/QemRIT7UaNC0DrYE07v9WFjHFSXOqChZaJpih5lC/1yxwh+54IS4wapKcKnOFjPqbxw8dMTA7b0Ti0KzpBcexIBeDV5FT6FimawfbUr/ejae2qlu1fZdlwmj+yJEFk8h9zLiH7lhzB6PIX72lLAYk+thS6K8i26XbtR+t9/wahlwv05W6qtLEvWBJ5yeNXUghAw+Hk/x8mwIlrsjWMQtt1W+pBxYQIDAQAB";
+        String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm0S8A+t8Uhek4CZvjEKlxQxFH8TWnMu8+hO0MoGP92y7FkaW3facYh2cli0PT4rxYsetRdFJbOe3Z9DKQ5v5CXVNEib+C6p9RJiZdAYbF+E+Oj7FAa0XnHpp1gk9hXRM7Il/3KMv54FrqLOnak/wCg05AalSMyX5xAOz1SPDsvDMOx/DgB+eja4DUQaeoZltmS6mofqx2g12tb8bY44L48femCgKcI5YS8HLQj+dH2UvAS9DNJa2xzMfEg4ZbtVyy6wmhpBp8zOSpGLORZo+/kHjCPxjDhElyOuv5xpWBetZfcOKCqi3PZDPDgnNrtyzPysf5wQ55Ju5xm1zMllgSwIDAQAB";
+        String samsungGroupId = "100000031624";
+        String tstoreAppId = "OA00325110";
+        String YANDEX_PUBLIC_KEY = "qwerty";
 
         // Some sanity checks to see if the developer (that's you!) really
         // followed the
@@ -150,11 +168,16 @@ public class MainActivity extends Activity {
         // Create the helper, passing it our context and the public key to
         // verify signatures with
         Log.d(TAG, "Creating IAB helper.");
-        mHelper = new IabHelper(this, base64EncodedPublicKey);
+        Map<String, String> extra = new HashMap<String, String>();
+        extra.put("GooglePublicKey", base64EncodedPublicKey);
+        extra.put("SamsungGroupId", samsungGroupId);
+        extra.put("TStoreAppId", tstoreAppId);
+        extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
+        mHelper = new OpenIabHelper(this, extra);
 
         // enable debug logging (for a production application, you should set
         // this to false).
-        mHelper.enableDebugLogging(true);
+        // mHelper.enableDebugLogging(true);
 
         // Start setup. This is asynchronous and the specified listener
         // will be called once setup completes.
@@ -174,7 +197,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "Setup successful. Querying inventory.");
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
-        });
+        }, null);
     }
 
     // Listener that's called when we finish querying the items and

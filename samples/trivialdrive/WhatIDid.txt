@@ -1,0 +1,19 @@
+1. Проверил, что рабтает :)
+2. Удалил com.android.vending
+3. Удалил util
+4. Проверил, что не компилится
+5. Удалил старые импорты
+6. Добавил библиотеку (openiab.jar)
+7. Добавил еще кучу библиотек (для всех сторов)
+8. Заменил IabHelper mHelper -> OpenIabHelper mHelper;
+9. Добавил map extra, поправил new OpenIabHelper(this, extra)
+10. Закоментировал столчку "mHelper.enableDebugLogging(true);" // todo: добавить функционал в OpenIabHelper
+11. Заимпортил IabHelper из нового места (import org.onepf.life2.oms.appstore.googleUtils.*;) // todo: strange class path?
+12. mHelper.startSetup(..., null) ? // todo: откуда взялся второй аргумент?
+13. Заимпортил OpenSku, import static OpenSku
+14. Заимпортил AppstoreName
+15. Поменял все строчки-названия-ску на OpenSku
+16. Добавил кучу всего в AndroidManifest.xml
+17. Оно запускается!
+18. Проверяем с реальными sku-шками...
+
