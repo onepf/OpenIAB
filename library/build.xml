@@ -19,7 +19,7 @@
     <import file="${sdk.dir}/tools/ant/build.xml"/>
 
     <target name="build_jar" depends="debug">
-        <jar destfile="openiab.jar" 
+        <jar destfile="out/openiab.jar" 
              basedir="${out.dir}/classes"
              excludes="**/R.class,**/R$*,**/BuildConfig.class,**/Manifest*.class"/>
     </target>
