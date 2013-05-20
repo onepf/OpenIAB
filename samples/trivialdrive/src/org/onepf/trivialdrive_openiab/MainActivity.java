@@ -101,13 +101,13 @@ public class MainActivity extends Activity {
             new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
     static final OpenSku SKU_GAS = new OpenSku(
             new Sku(AppstoreName.GOOGLE, "sku_gas"),
-            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreName.AMAZON, "amazon_sku_gas"),
             new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
             new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
     // SKU for our subscription (infinite gas)
     static final OpenSku SKU_INFINITE_GAS = new OpenSku(
             new Sku(AppstoreName.GOOGLE, "sku_infinte_gas"),
-            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreName.AMAZON, "amazon_sku_infinite_gas"),
             new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
             new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
 
