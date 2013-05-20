@@ -64,6 +64,7 @@ public class IabHelperBillingService {
 
 
                 String packageName = mContext.getPackageName();
+                String packageName = mIabHelper.getPackageName();
                 try {
                     mIabHelper.logDebug(LOG_PREFIX + "Checking for in-app billing 3 support.");
 
