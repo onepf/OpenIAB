@@ -178,7 +178,7 @@ public class IabHelper {
          *
          * @param result The result of the setup process.
          */
-        public void onIabSetupFinished(org.onepf.oms.appstore.googleUtils.IabResult result);
+        public void onIabSetupFinished(IabResult result);
     }
 
     /**
@@ -244,7 +244,7 @@ public class IabHelper {
          * @param result The result of the purchase.
          * @param info   The purchase information (null if purchase failed)
          */
-        public void onIabPurchaseFinished(org.onepf.oms.appstore.googleUtils.IabResult result, Purchase info);
+        public void onIabPurchaseFinished(IabResult result, Purchase info);
     }
 
     // The listener registered on launchPurchaseFlow, which we have to call back when
@@ -292,10 +292,10 @@ public class IabHelper {
                                    OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
         flagStartAsync("launchPurchaseFlow");
-        org.onepf.oms.appstore.googleUtils.IabResult result;
+        IabResult result;
 
         if (itemType.equals(ITEM_TYPE_SUBS) && !mSubscriptionsSupported) {
-            org.onepf.oms.appstore.googleUtils.IabResult r = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_SUBSCRIPTIONS_NOT_AVAILABLE,
+            IabResult r = new IabResult(IABHELPER_SUBSCRIPTIONS_NOT_AVAILABLE,
                     "Subscriptions are not available.");
             if (listener != null) listener.onIabPurchaseFinished(r, null);
             return;
@@ -308,7 +308,7 @@ public class IabHelper {
             if (response != BILLING_RESPONSE_RESULT_OK) {
                 logError("Unable to buy item, Error response: " + getResponseDesc(response));
 
-                result = new org.onepf.oms.appstore.googleUtils.IabResult(response, "Unable to buy item");
+                result = new IabResult(response, "Unable to buy item");
                 if (listener != null) listener.onIabPurchaseFinished(result, null);
                 return;
             }
@@ -326,13 +326,13 @@ public class IabHelper {
             logError("SendIntentException while launching purchase flow for sku " + sku);
             e.printStackTrace();
 
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_SEND_INTENT_FAILED, "Failed to send intent.");
+            result = new IabResult(IABHELPER_SEND_INTENT_FAILED, "Failed to send intent.");
             if (listener != null) listener.onIabPurchaseFinished(result, null);
         } catch (RemoteException e) {
             logError("RemoteException while launching purchase flow for sku " + sku);
             e.printStackTrace();
 
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_REMOTE_EXCEPTION, "Remote exception while starting purchase flow");
+            result = new IabResult(IABHELPER_REMOTE_EXCEPTION, "Remote exception while starting purchase flow");
             if (listener != null) listener.onIabPurchaseFinished(result, null);
         }
     }
@@ -351,7 +351,7 @@ public class IabHelper {
      *         handle it normally.
      */
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
-        org.onepf.oms.appstore.googleUtils.IabResult result;
+        IabResult result;
         if (requestCode != mRequestCode) return false;
 
         checkSetupDone("handleActivityResult");
@@ -361,7 +361,7 @@ public class IabHelper {
 
         if (data == null) {
             logError("Null data in IAB activity result.");
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_BAD_RESPONSE, "Null data in IAB result");
+            result = new IabResult(IABHELPER_BAD_RESPONSE, "Null data in IAB result");
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
             return true;
         }
@@ -377,29 +377,29 @@ public class IabHelper {
             processPurchaseFail(responseCode);
         } else if (resultCode == Activity.RESULT_CANCELED) {
             logDebug("Purchase canceled - Response: " + getResponseDesc(responseCode));
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_USER_CANCELLED, "User canceled.");
+            result = new IabResult(IABHELPER_USER_CANCELLED, "User canceled.");
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
         } else {
             logError("Purchase failed. Result code: " + Integer.toString(resultCode)
                     + ". Response: " + getResponseDesc(responseCode));
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_UNKNOWN_PURCHASE_RESPONSE, "Unknown purchase response.");
+            result = new IabResult(IABHELPER_UNKNOWN_PURCHASE_RESPONSE, "Unknown purchase response.");
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
         }
         return true;
     }
 
     public void processPurchaseFail(int responseCode) {
-        org.onepf.oms.appstore.googleUtils.IabResult result;
+        IabResult result;
         logDebug("Result code was OK but in-app billing response was not OK: " + getResponseDesc(responseCode));
         if (mPurchaseListener != null) {
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(responseCode, "Problem purchashing item.");
+            result = new IabResult(responseCode, "Problem purchashing item.");
             mPurchaseListener.onIabPurchaseFinished(result, null);
         }
     }
 
     public void processPurchaseSuccess(Intent data, String purchaseData,
                                        String dataSignature) {
-        org.onepf.oms.appstore.googleUtils.IabResult result;
+        IabResult result;
         logDebug("Successful resultcode from purchase activity.");
         logDebug("Purchase data: " + purchaseData);
         logDebug("Data signature: " + dataSignature);
@@ -409,7 +409,7 @@ public class IabHelper {
         if (purchaseData == null || dataSignature == null) {
             logError("BUG: either purchaseData or dataSignature is null.");
             logDebug("Extras: " + data.getExtras().toString());
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_UNKNOWN_ERROR, "IAB returned null purchaseData or dataSignature");
+            result = new IabResult(IABHELPER_UNKNOWN_ERROR, "IAB returned null purchaseData or dataSignature");
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
             return;
         }
@@ -421,7 +421,7 @@ public class IabHelper {
 
             if(!isValidDataSignature(mSignatureBase64, purchaseData, dataSignature)) {
                 logError("Purchase signature verification FAILED for sku " + sku);
-                result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_VERIFICATION_FAILED, "Signature verification failed for sku " + sku);
+                result = new IabResult(IABHELPER_VERIFICATION_FAILED, "Signature verification failed for sku " + sku);
                 if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, purchase);
                 return;
             }
@@ -431,17 +431,17 @@ public class IabHelper {
         catch (JSONException e) {
             logError("Failed to parse purchase data.");
             e.printStackTrace();
-            result = new org.onepf.oms.appstore.googleUtils.IabResult(IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
+            result = new IabResult(IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
             if (mPurchaseListener != null) mPurchaseListener.onIabPurchaseFinished(result, null);
             return;
         }
 
         if (mPurchaseListener != null) {
-            mPurchaseListener.onIabPurchaseFinished(new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_OK, "Success"), purchase);
+            mPurchaseListener.onIabPurchaseFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Success"), purchase);
         }
     }
 
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
@@ -456,23 +456,23 @@ public class IabHelper {
      *                        Ignored if null or if querySkuDetails is false.
      * @param moreSubsSkus    additional SUBSCRIPTIONS skus to query information on, regardless of ownership.
      *                        Ignored if null or if querySkuDetails is false.
-     * @throws org.onepf.oms.appstore.googleUtils.IabException
+     * @throws IabException
      *          if a problem occurs while refreshing the inventory.
      */
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
-                                    List<String> moreSubsSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+                                    List<String> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
         try {
             Inventory inv = new Inventory();
             int r = queryPurchases(inv, ITEM_TYPE_INAPP);
             if (r != BILLING_RESPONSE_RESULT_OK) {
-                throw new org.onepf.oms.appstore.googleUtils.IabException(r, "Error refreshing inventory (querying owned items).");
+                throw new IabException(r, "Error refreshing inventory (querying owned items).");
             }
 
             if (querySkuDetails) {
                 r = querySkuDetails(ITEM_TYPE_INAPP, inv, moreItemSkus);
                 if (r != BILLING_RESPONSE_RESULT_OK) {
-                    throw new org.onepf.oms.appstore.googleUtils.IabException(r, "Error refreshing inventory (querying prices of items).");
+                    throw new IabException(r, "Error refreshing inventory (querying prices of items).");
                 }
             }
 
@@ -480,22 +480,22 @@ public class IabHelper {
             if (mSubscriptionsSupported) {
                 r = queryPurchases(inv, ITEM_TYPE_SUBS);
                 if (r != BILLING_RESPONSE_RESULT_OK) {
-                    throw new org.onepf.oms.appstore.googleUtils.IabException(r, "Error refreshing inventory (querying owned subscriptions).");
+                    throw new IabException(r, "Error refreshing inventory (querying owned subscriptions).");
                 }
 
                 if (querySkuDetails) {
                     r = querySkuDetails(ITEM_TYPE_SUBS, inv, moreItemSkus);
                     if (r != BILLING_RESPONSE_RESULT_OK) {
-                        throw new org.onepf.oms.appstore.googleUtils.IabException(r, "Error refreshing inventory (querying prices of subscriptions).");
+                        throw new IabException(r, "Error refreshing inventory (querying prices of subscriptions).");
                     }
                 }
             }
 
             return inv;
         } catch (RemoteException e) {
-            throw new org.onepf.oms.appstore.googleUtils.IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while refreshing inventory.", e);
+            throw new IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while refreshing inventory.", e);
         } catch (JSONException e) {
-            throw new org.onepf.oms.appstore.googleUtils.IabException(IABHELPER_BAD_RESPONSE, "Error parsing JSON response while refreshing inventory.", e);
+            throw new IabException(IABHELPER_BAD_RESPONSE, "Error parsing JSON response while refreshing inventory.", e);
         }
     }
 
@@ -509,7 +509,7 @@ public class IabHelper {
          * @param result The result of the operation.
          * @param inv    The inventory.
          */
-        public void onQueryInventoryFinished(org.onepf.oms.appstore.googleUtils.IabResult result, Inventory inv);
+        public void onQueryInventoryFinished(IabResult result, Inventory inv);
     }
 
 
@@ -531,17 +531,17 @@ public class IabHelper {
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
-                org.onepf.oms.appstore.googleUtils.IabResult result = new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {
                     inv = queryInventory(querySkuDetails, moreSkus);
-                } catch (org.onepf.oms.appstore.googleUtils.IabException ex) {
+                } catch (IabException ex) {
                     result = ex.getResult();
                 }
 
                 flagEndAsync();
 
-                final org.onepf.oms.appstore.googleUtils.IabResult result_f = result;
+                final IabResult result_f = result;
                 final Inventory inv_f = inv;
                 handler.post(new Runnable() {
                     public void run() {
@@ -568,14 +568,14 @@ public class IabHelper {
      * For that, see {@link #consumeAsync}.
      *
      * @param itemInfo The PurchaseInfo that represents the item to consume.
-     * @throws org.onepf.oms.appstore.googleUtils.IabException
+     * @throws IabException
      *          if there is a problem during consumption.
      */
-    public void consume(Purchase itemInfo) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
 
         if (!itemInfo.mItemType.equals(ITEM_TYPE_INAPP)) {
-            throw new org.onepf.oms.appstore.googleUtils.IabException(IABHELPER_INVALID_CONSUMPTION,
+            throw new IabException(IABHELPER_INVALID_CONSUMPTION,
                     "Items of type '" + itemInfo.mItemType + "' can't be consumed.");
         }
 
@@ -584,7 +584,7 @@ public class IabHelper {
             String sku = itemInfo.getSku();
             if (token == null || token.equals("")) {
                 logError("Can't consume " + sku + ". No token.");
-                throw new org.onepf.oms.appstore.googleUtils.IabException(IABHELPER_MISSING_TOKEN, "PurchaseInfo is missing token for sku: "
+                throw new IabException(IABHELPER_MISSING_TOKEN, "PurchaseInfo is missing token for sku: "
                         + sku + " " + itemInfo);
             }
 
@@ -594,10 +594,10 @@ public class IabHelper {
                 logDebug("Successfully consumed sku: " + sku);
             } else {
                 logDebug("Error consuming consuming sku " + sku + ". " + getResponseDesc(response));
-                throw new org.onepf.oms.appstore.googleUtils.IabException(response, "Error consuming sku " + sku);
+                throw new IabException(response, "Error consuming sku " + sku);
             }
         } catch (RemoteException e) {
-            throw new org.onepf.oms.appstore.googleUtils.IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while consuming. PurchaseInfo: " + itemInfo, e);
+            throw new IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while consuming. PurchaseInfo: " + itemInfo, e);
         }
     }
 
@@ -611,7 +611,7 @@ public class IabHelper {
          * @param purchase The purchase that was (or was to be) consumed.
          * @param result   The result of the consumption operation.
          */
-        public void onConsumeFinished(Purchase purchase, org.onepf.oms.appstore.googleUtils.IabResult result);
+        public void onConsumeFinished(Purchase purchase, IabResult result);
     }
 
     /**
@@ -625,7 +625,7 @@ public class IabHelper {
          * @param results   The results of each consumption operation, corresponding to each
          *                  sku.
          */
-        public void onConsumeMultiFinished(List<Purchase> purchases, List<org.onepf.oms.appstore.googleUtils.IabResult> results);
+        public void onConsumeMultiFinished(List<Purchase> purchases, List<IabResult> results);
     }
 
     /**
@@ -849,7 +849,7 @@ public class IabHelper {
                 RESPONSE_GET_SKU_DETAILS_LIST);
 
         for (String thisResponse : responseList) {
-            org.onepf.oms.appstore.googleUtils.SkuDetails d = new org.onepf.oms.appstore.googleUtils.SkuDetails(itemType, thisResponse);
+            SkuDetails d = new SkuDetails(itemType, thisResponse);
             logDebug("Got sku details: " + d);
             inv.addSkuDetails(d);
         }
@@ -864,12 +864,12 @@ public class IabHelper {
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
-                final List<org.onepf.oms.appstore.googleUtils.IabResult> results = new ArrayList<org.onepf.oms.appstore.googleUtils.IabResult>();
+                final List<IabResult> results = new ArrayList<IabResult>();
                 for (Purchase purchase : purchases) {
                     try {
                         consume(purchase);
-                        results.add(new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getSku()));
-                    } catch (org.onepf.oms.appstore.googleUtils.IabException ex) {
+                        results.add(new IabResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getSku()));
+                    } catch (IabException ex) {
                         results.add(ex.getResult());
                     }
                 }
@@ -910,7 +910,7 @@ public class IabHelper {
         if (mService.isDataSignatureSupported() == false) {
             logWarn("Signature verification is not supported");
         } else {
-            isValid = org.onepf.oms.appstore.googleUtils.Security.verifyPurchase(base64PublicKey, signedData, signature);
+            isValid = Security.verifyPurchase(base64PublicKey, signedData, signature);
         }
         if (isValid == false) {
             logWarn("Purchase signature verification **FAILED**.");

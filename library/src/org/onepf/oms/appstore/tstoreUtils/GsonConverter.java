@@ -26,13 +26,13 @@ public class GsonConverter implements Converter {
     private final Gson mGson = new Gson();
 
     @Override
-    public String toJson(org.onepf.oms.appstore.tstoreUtils.CommandRequest r) {
+    public String toJson(CommandRequest r) {
         return mGson.toJson(r);
     }
 
     @Override
-    public org.onepf.oms.appstore.tstoreUtils.Response fromJson(String json) {
-        return mGson.fromJson(json, org.onepf.oms.appstore.tstoreUtils.Response.class);
+    public Response fromJson(String json) {
+        return mGson.fromJson(json, Response.class);
     }
 
     @Override

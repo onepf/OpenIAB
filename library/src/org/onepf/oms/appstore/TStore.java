@@ -17,12 +17,16 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.AppstoreName;
+import org.onepf.oms.AppstoreService;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.05.13
  */
-public class TStore implements org.onepf.oms.Appstore {
+public class TStore implements Appstore {
     private final Context mContext;
     private TStoreBillingService mBillingService;
     private String mAppId;
@@ -45,8 +49,8 @@ public class TStore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public boolean isServiceSupported(org.onepf.oms.AppstoreService appstoreService) {
-        if (appstoreService == org.onepf.oms.AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return true;
         } else {
             return false;
@@ -54,7 +58,7 @@ public class TStore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreInAppBillingService getInAppBillingService() {
+    public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
             mBillingService = new TStoreBillingService(mContext, mAppId);
         }
@@ -62,7 +66,7 @@ public class TStore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreName getAppstoreName() {
-        return org.onepf.oms.AppstoreName.TSTORE;
+    public AppstoreName getAppstoreName() {
+        return AppstoreName.TSTORE;
     }
 }

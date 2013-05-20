@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 import org.onepf.oms.appstore.IabHelperBillingService;
+import org.onepf.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class OpenIabHelper {
         mServiceManager = new AppstoreServiceManager(context, extra);
     }
 
-    public void startSetup(final org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
         mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
             @Override
             public void onAppstoreServiceManagerInitFinishedListener() {
@@ -91,7 +92,7 @@ public class OpenIabHelper {
                 mSetupDone = true;
                 // TODO: this is always false!
                 if (!mSetupDone) {
-                    org.onepf.oms.appstore.googleUtils.IabResult iabResult = new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
+                    IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     listener.onIabSetupFinished(iabResult);
                     return;
                 }
@@ -111,27 +112,27 @@ public class OpenIabHelper {
         return true;
     }
 
-    public void launchPurchaseFlow(Activity act, org.onepf.oms.OpenSku sku, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener) {
+    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
         launchPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchPurchaseFlow(Activity act, org.onepf.oms.OpenSku sku, int requestCode,
-                                   org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+                                   IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_INAPP, requestCode, listener, extraData);
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, org.onepf.oms.OpenSku sku, int requestCode,
-                                               org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener) {
+    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+                                               IabHelper.OnIabPurchaseFinishedListener listener) {
         launchSubscriptionPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, org.onepf.oms.OpenSku sku, int requestCode,
-                                               org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+                                               IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_SUBS, requestCode, listener, extraData);
     }
 
-    public void launchPurchaseFlow(Activity act, org.onepf.oms.OpenSku sku, String itemType, int requestCode,
-                                   org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode,
+                                   IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
         String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
         if (skuCurrentStore == null) {
@@ -146,19 +147,19 @@ public class OpenIabHelper {
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
-    public org.onepf.oms.appstore.googleUtils.Inventory queryInventory(boolean querySkuDetails, List<org.onepf.oms.OpenSku> moreSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreSkus) throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
-    public org.onepf.oms.appstore.googleUtils.Inventory queryInventory(boolean querySkuDetails, List<org.onepf.oms.OpenSku> moreItemSkus,
-                                    List<org.onepf.oms.OpenSku> moreSubsSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreItemSkus,
+                                    List<OpenSku> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
         //Map<String, String> skuToOpen = new HashMap<>();
         List<String> moreItemSkusCurrentStore = new ArrayList<String>();
         if (moreItemSkus == null) {
             moreItemSkusCurrentStore = null;
         } else {
-            for (org.onepf.oms.OpenSku sku : moreItemSkus) {
+            for (OpenSku sku : moreItemSkus) {
                 String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
@@ -172,7 +173,7 @@ public class OpenIabHelper {
         if (moreSubsSkus == null) {
             moreSubsSkusCurrentStore = null;
         } else {
-            for (org.onepf.oms.OpenSku sku : moreSubsSkus) {
+            for (OpenSku sku : moreSubsSkus) {
                 String skuCurrentStore = sku.getSku(mAppstore.getAppstoreName());
                 if (skuCurrentStore == null) {
                     // TODO: throw an exception
@@ -187,25 +188,25 @@ public class OpenIabHelper {
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,
-                                    final List<org.onepf.oms.OpenSku> moreSkus,
-                                    final org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener listener) {
+                                    final List<OpenSku> moreSkus,
+                                    final IabHelper.QueryInventoryFinishedListener listener) {
         final Handler handler = new Handler();
         checkSetupDone("queryInventory");
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
-                org.onepf.oms.appstore.googleUtils.IabResult result = new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
-                org.onepf.oms.appstore.googleUtils.Inventory inv = null;
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
+                Inventory inv = null;
                 try {
                     inv = queryInventory(querySkuDetails, moreSkus);
-                } catch (org.onepf.oms.appstore.googleUtils.IabException ex) {
+                } catch (IabException ex) {
                     result = ex.getResult();
                 }
 
                 flagEndAsync();
 
-                final org.onepf.oms.appstore.googleUtils.IabResult result_f = result;
-                final org.onepf.oms.appstore.googleUtils.Inventory inv_f = inv;
+                final IabResult result_f = result;
+                final Inventory inv_f = inv;
                 handler.post(new Runnable() {
                     public void run() {
                         listener.onQueryInventoryFinished(result_f, inv_f);
@@ -215,43 +216,43 @@ public class OpenIabHelper {
         })).start();
     }
 
-    public void queryInventoryAsync(org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener listener) {
+    public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
         queryInventoryAsync(true, null, listener);
     }
 
-    public void queryInventoryAsync(boolean querySkuDetails, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener listener) {
+    public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
-    public void consume(org.onepf.oms.appstore.googleUtils.Purchase itemInfo) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         // TODO: need to check store
         checkSetupDone("consume");
         mAppstoreBillingService.consume(itemInfo);
     }
 
-    public void consumeAsync(org.onepf.oms.appstore.googleUtils.Purchase purchase, org.onepf.oms.appstore.googleUtils.IabHelper.OnConsumeFinishedListener listener) {
-        List<org.onepf.oms.appstore.googleUtils.Purchase> purchases = new ArrayList<org.onepf.oms.appstore.googleUtils.Purchase>();
+    public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
+        List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
 
-    public void consumeAsync(List<org.onepf.oms.appstore.googleUtils.Purchase> purchases, org.onepf.oms.appstore.googleUtils.IabHelper.OnConsumeMultiFinishedListener listener) {
+    public void consumeAsync(List<Purchase> purchases, IabHelper.OnConsumeMultiFinishedListener listener) {
         consumeAsyncInternal(purchases, null, listener);
     }
 
-    void consumeAsyncInternal(final List<org.onepf.oms.appstore.googleUtils.Purchase> purchases,
-                              final org.onepf.oms.appstore.googleUtils.IabHelper.OnConsumeFinishedListener singleListener,
-                              final org.onepf.oms.appstore.googleUtils.IabHelper.OnConsumeMultiFinishedListener multiListener) {
+    void consumeAsyncInternal(final List<Purchase> purchases,
+                              final IabHelper.OnConsumeFinishedListener singleListener,
+                              final IabHelper.OnConsumeMultiFinishedListener multiListener) {
         final Handler handler = new Handler();
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
-                final List<org.onepf.oms.appstore.googleUtils.IabResult> results = new ArrayList<org.onepf.oms.appstore.googleUtils.IabResult>();
-                for (org.onepf.oms.appstore.googleUtils.Purchase purchase : purchases) {
+                final List<IabResult> results = new ArrayList<IabResult>();
+                for (Purchase purchase : purchases) {
                     try {
                         consume(purchase);
-                        results.add(new org.onepf.oms.appstore.googleUtils.IabResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getSku()));
-                    } catch (org.onepf.oms.appstore.googleUtils.IabException ex) {
+                        results.add(new IabResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getSku()));
+                    } catch (IabException ex) {
                         results.add(ex.getResult());
                     }
                 }

@@ -17,14 +17,18 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.AppstoreName;
+import org.onepf.oms.AppstoreService;
 
 /**
  * User: Boris Minaev
  * Date: 22.04.13
  * Time: 12:28
  */
-public class SamsungApps implements org.onepf.oms.Appstore {
-    private org.onepf.oms.AppstoreInAppBillingService mBillingService;
+public class SamsungApps implements Appstore {
+    private AppstoreInAppBillingService mBillingService;
     private Context mContext;
     private String mItemGroupId;
 
@@ -49,8 +53,8 @@ public class SamsungApps implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public boolean isServiceSupported(org.onepf.oms.AppstoreService appstoreService) {
-        if (appstoreService == org.onepf.oms.AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return isDebugMode;
         }
         // TODO: write implementation
@@ -58,7 +62,7 @@ public class SamsungApps implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreInAppBillingService getInAppBillingService() {
+    public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
             mBillingService = new SamsungAppsBillingService(mContext, mItemGroupId);
         }
@@ -66,7 +70,7 @@ public class SamsungApps implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreName getAppstoreName() {
-        return org.onepf.oms.AppstoreName.SAMSUNG;
+    public AppstoreName getAppstoreName() {
+        return AppstoreName.SAMSUNG;
     }
 }

@@ -20,6 +20,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import com.samsungapps.plasma.*;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,23 +36,23 @@ import java.util.concurrent.CountDownLatch;
  * Time: 12:29
  */
 
-public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBillingService, PlasmaListener {
+public class SamsungAppsBillingService implements AppstoreInAppBillingService, PlasmaListener {
     private Plasma mPlasma;
 
     private int transactionId;
     private Map<Integer, PurchaseInfo> purchases;
-    private Map<Integer, org.onepf.oms.appstore.googleUtils.Inventory> queryInventorys;
+    private Map<Integer, Inventory> queryInventorys;
     private CountDownLatch latch;
 
     private class PurchaseInfo {
-        org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener mListener;
+        IabHelper.OnIabPurchaseFinishedListener mListener;
         Activity mActivity;
         String mSku;
         String mItemType;
         int mRequestCode;
         String mExtraData;
 
-        public PurchaseInfo(Activity act, String sku, String itemType, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        public PurchaseInfo(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
             mActivity = act;
             mSku = sku;
             mItemType = itemType;
@@ -65,17 +68,17 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
         mPlasma.setPlasmaListener(this);
         transactionId = 0;
         purchases = new HashMap<Integer, PurchaseInfo>();
-        queryInventorys = new HashMap<Integer, org.onepf.oms.appstore.googleUtils.Inventory>();
+        queryInventorys = new HashMap<Integer, Inventory>();
     }
 
     @Override
-    public void startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
-        org.onepf.oms.appstore.googleUtils.IabResult res = new org.onepf.oms.appstore.googleUtils.IabResult(0, "OK");
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+        IabResult res = new IabResult(0, "OK");
         listener.onIabSetupFinished(res);
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         PurchaseInfo purchaseInfo = new PurchaseInfo(act, sku, itemType, requestCode, listener, extraData);
         purchases.put(transactionId, purchaseInfo);
         mPlasma.requestPurchaseItem(transactionId++, sku);
@@ -87,7 +90,7 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
     }
 
     @Override
-    public org.onepf.oms.appstore.googleUtils.Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         mPlasma.requestItemInformationList(transactionId++, 0, Integer.MAX_VALUE);
         latch = new CountDownLatch(1);
         int curTransactionId = transactionId - 1;
@@ -96,13 +99,13 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
         } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        org.onepf.oms.appstore.googleUtils.Inventory res = queryInventorys.get(curTransactionId);
+        Inventory res = queryInventorys.get(curTransactionId);
         queryInventorys.remove(curTransactionId);
         return res;
     }
 
     @Override
-    public void consume(org.onepf.oms.appstore.googleUtils.Purchase itemInfo) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         // Samsung doesn't support consuming objects
     }
 
@@ -112,9 +115,9 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
         if (statusCode != 0) {
             queryInventorys.put(transactionId, null);
         } else {
-            org.onepf.oms.appstore.googleUtils.Inventory res = new org.onepf.oms.appstore.googleUtils.Inventory();
+            Inventory res = new Inventory();
             for (ItemInformation item : itemInformations) {
-                org.onepf.oms.appstore.googleUtils.SkuDetails skuDetails = new org.onepf.oms.appstore.googleUtils.SkuDetails(item.getItemId(), item.getItemName(), item.getItemPriceString());
+                SkuDetails skuDetails = new SkuDetails(item.getItemId(), item.getItemName(), item.getItemPriceString());
                 res.mSkuMap.put(item.getItemId(), skuDetails);
             }
             queryInventorys.put(transactionId, res);
@@ -133,8 +136,8 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
             if (purchaseInfo != null) {
                 purchases.remove(purchaseInfo);
                 // TODO: errors
-                org.onepf.oms.appstore.googleUtils.IabResult iabResult = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
-                org.onepf.oms.appstore.googleUtils.Purchase purchase = null;
+                IabResult iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
+                Purchase purchase = null;
                 purchaseInfo.mListener.onIabPurchaseFinished(iabResult, purchase);
             }
         }
@@ -146,16 +149,16 @@ public class SamsungAppsBillingService implements org.onepf.oms.AppstoreInAppBil
         if (purchaseInfo != null) {
             purchases.remove(purchaseInfo);
 
-            org.onepf.oms.appstore.googleUtils.Purchase purchase = new org.onepf.oms.appstore.googleUtils.Purchase();
+            Purchase purchase = new Purchase();
             purchase.setItemType(purchaseInfo.mItemType);
             purchase.setSku(purchaseInfo.mSku);
 
-            org.onepf.oms.appstore.googleUtils.IabResult iabResult;
+            IabResult iabResult;
             if (statusCode == Plasma.STATUS_CODE_SUCCESS) {
-                iabResult = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "OK");
+                iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "OK");
             } else {
                 // TODO: errors
-                iabResult = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
+                iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
             }
             purchaseInfo.mListener.onIabPurchaseFinished(iabResult, purchase);
         }

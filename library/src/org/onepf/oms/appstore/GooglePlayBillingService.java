@@ -19,7 +19,11 @@ package org.onepf.oms.appstore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.appstore.googleUtils.IabException;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import java.util.List;
 
@@ -29,22 +33,22 @@ import java.util.List;
  * Time: 16:09
  */
 
-public class GooglePlayBillingService implements org.onepf.oms.AppstoreInAppBillingService {
+public class GooglePlayBillingService implements AppstoreInAppBillingService {
     Context mContext;
-    private org.onepf.oms.appstore.googleUtils.IabHelper mIabHelper;
+    private IabHelper mIabHelper;
 
     public GooglePlayBillingService(Context context, String publicKey) {
         mContext = context;
-        mIabHelper = new org.onepf.oms.appstore.googleUtils.IabHelper(context, publicKey);
+        mIabHelper = new IabHelper(context, publicKey);
     }
 
     @Override
-    public void startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
         mIabHelper.startSetup(listener, billingService);
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         mIabHelper.launchPurchaseFlow(act, sku, itemType, requestCode, listener, extraData);
     }
 
@@ -54,12 +58,12 @@ public class GooglePlayBillingService implements org.onepf.oms.AppstoreInAppBill
     }
 
     @Override
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         return mIabHelper.queryInventory(querySkuDetails, moreItemSkus, moreSubsSkus);
     }
 
     @Override
-    public void consume(org.onepf.oms.appstore.googleUtils.Purchase itemInfo) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public void consume(Purchase itemInfo) throws IabException {
         mIabHelper.consume(itemInfo);
     }
 

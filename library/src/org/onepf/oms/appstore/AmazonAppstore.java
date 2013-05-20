@@ -18,13 +18,16 @@ package org.onepf.oms.appstore;
 
 import android.content.Context;
 import android.util.Log;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.AppstoreName;
+import org.onepf.oms.AppstoreService;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
-public class AmazonAppstore implements org.onepf.oms.Appstore {
+public class AmazonAppstore implements Appstore {
     private static final String TAG = "IabHelper";
     private static volatile boolean IS_SANDBOX_MODE;
     private static volatile boolean IS_SANDBOX_MODE_CHECKED;
@@ -64,8 +67,8 @@ public class AmazonAppstore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public boolean isServiceSupported(org.onepf.oms.AppstoreService appstoreService) {
-        if (appstoreService == org.onepf.oms.AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return true;
         } else {
             return false;
@@ -73,7 +76,7 @@ public class AmazonAppstore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreInAppBillingService getInAppBillingService() {
+    public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
             mBillingService = new AmazonAppstoreBillingService(mContext);
         }

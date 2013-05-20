@@ -25,6 +25,7 @@ import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import org.onepf.oms.appstore.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +48,11 @@ class AppstoreServiceManager {
     AppstoreServiceManager(Context context, Map<String, String> extra) {
         mContext = context;
         appstores = new ArrayList<Appstore>();
-        appstores.add(new org.onepf.oms.appstore.GooglePlay(context, extra.get("GooglePublicKey")));
-        appstores.add(new org.onepf.oms.appstore.AmazonAppstore(context));
-        appstores.add(new org.onepf.oms.appstore.SamsungApps(context, extra.get("SamsungGroupId")));
-        appstores.add(new org.onepf.oms.appstore.TStore(context, extra.get("TStoreAppId")));
-        appstores.add(new org.onepf.oms.appstore.YandexStore(context, extra.get("YandexPublicKey")));
+        appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
+        appstores.add(new AmazonAppstore(context));
+        appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
+        appstores.add(new TStore(context, extra.get("TStoreAppId")));
+        appstores.add(new YandexStore(context, extra.get("YandexPublicKey")));
     }
 
 
@@ -59,7 +60,7 @@ class AppstoreServiceManager {
         final OnAppstoreServiceManagerInitFinishedListener mListener = listener;
         final String myPackageName = mContext.getPackageName();
         PackageManager packageManager = mContext.getPackageManager();
-        Intent intentAppstoreServices = new Intent("org.onepf.oms.openappstore.BIND");
+        Intent intentAppstoreServices = new Intent("openappstore.BIND");
 
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
         final AppstoresServiceSupport appstoresServiceSupport = new AppstoresServiceSupport(infoList.size());
@@ -87,7 +88,7 @@ class AppstoreServiceManager {
                     }
                     appstoresServiceSupport.add(isInstaller, isSupported, iabIntent);
                     if (appstoresServiceSupport.isReady()) {
-                        org.onepf.oms.ServiceFounder serviceFounder = new org.onepf.oms.ServiceFounder() {
+                        ServiceFounder serviceFounder = new ServiceFounder() {
                             @Override
                             public void onServiceFound(Intent intent, boolean installer) {
                                 // TODO: add found service to appstores
@@ -122,8 +123,8 @@ class AppstoreServiceManager {
     }
     */
 
-    public Appstore getAppstoreForService(org.onepf.oms.AppstoreService appstoreService) {
-        if (appstoreService == org.onepf.oms.AppstoreService.IN_APP_BILLING) {
+    public Appstore getAppstoreForService(AppstoreService appstoreService) {
+        if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
             if (installer != null) {
                 Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
@@ -149,7 +150,7 @@ class AppstoreServiceManager {
         return null;
     }
 
-    public List<Appstore> getAppstoresSupportingAPI(String packageName, org.onepf.oms.AppstoreService appstoreService) {
+    public List<Appstore> getAppstoresSupportingAPI(String packageName, AppstoreService appstoreService) {
         return null;
     }
 }

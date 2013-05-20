@@ -21,7 +21,11 @@ import android.content.Context;
 import android.util.Log;
 import com.skplanet.dodo.IapPlugin;
 import com.skplanet.dodo.IapResponse;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.onepf.oms.appstore.tstoreUtils.GsonConverter;
+import org.onepf.oms.appstore.tstoreUtils.Response;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -32,9 +36,9 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
 
     private final Context mContext;
     private final TStoreBillingService mBillingService;
-    private final org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener mListener;
+    private final IabHelper.OnIabPurchaseFinishedListener mListener;
 
-    public TStoreRequestCallback(TStoreBillingService billingService, Context context, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener) {
+    public TStoreRequestCallback(TStoreBillingService billingService, Context context, IabHelper.OnIabPurchaseFinishedListener listener) {
         mBillingService = billingService;
         mContext = context;
         mListener = listener;
@@ -45,7 +49,7 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
     public void onError(String reqid, String errcode, String errmsg) {
         Log.e(TAG, "TStore error. onError() identifier:" + reqid + " code:" + errcode + " msg:" + errmsg);
         // TODO: support different error codes
-        IabResult result = new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_ERROR, errmsg);
+        IabResult result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, errmsg);
     }
 
     @Override
@@ -54,19 +58,19 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
             Log.e(TAG, "onResponse() response data is null");
             return;
         }
-        org.onepf.oms.appstore.tstoreUtils.Response response = new org.onepf.oms.appstore.tstoreUtils.GsonConverter().fromJson(data.getContentToString());
-        org.onepf.oms.appstore.googleUtils.Purchase purchase = new org.onepf.oms.appstore.googleUtils.Purchase();
+        Response response = new GsonConverter().fromJson(data.getContentToString());
+        Purchase purchase = new Purchase();
         IabResult result = null;
         if (response.result.code.equals("0000")) {
-            result = new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
-            for (org.onepf.oms.appstore.tstoreUtils.Response.Product product : response.result.product) {
+            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
+            for (Response.Product product : response.result.product) {
                 // TODO: set correct type
                 purchase.setItemType(product.type);
                 purchase.setSku(product.id);
             }
         } else {
             // TODO: support other error codes
-            result = new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_ERROR, response.result.message);
+            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, response.result.message);
         }
         mListener.onIabPurchaseFinished(result, purchase);
     }

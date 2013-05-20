@@ -28,9 +28,9 @@ public interface Appstore {
 
     boolean isServiceSupported(AppstoreService appstoreService);
 
-    org.onepf.oms.AppstoreInAppBillingService getInAppBillingService();
+    AppstoreInAppBillingService getInAppBillingService();
 
-    org.onepf.oms.AppstoreName getAppstoreName();
+    AppstoreName getAppstoreName();
 
     //... other methods that return different Appstore specific services
 

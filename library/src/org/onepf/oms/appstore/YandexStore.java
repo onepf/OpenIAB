@@ -17,6 +17,8 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.AppstoreName;
 import org.onepf.oms.AppstoreService;
 
@@ -24,7 +26,7 @@ import org.onepf.oms.AppstoreService;
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
-public class YandexStore implements org.onepf.oms.Appstore {
+public class YandexStore implements Appstore {
 
     private final Context mContext;
     private String mPublicKey;
@@ -53,7 +55,7 @@ public class YandexStore implements org.onepf.oms.Appstore {
     }
 
     @Override
-    public org.onepf.oms.AppstoreInAppBillingService getInAppBillingService() {
+    public AppstoreInAppBillingService getInAppBillingService() {
     	if (mBillingService == null) {
             mBillingService = new YandexStoreBillingService(mContext, mPublicKey);
         }

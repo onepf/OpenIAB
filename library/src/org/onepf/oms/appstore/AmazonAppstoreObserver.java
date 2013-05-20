@@ -21,6 +21,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
 import com.amazon.inapp.purchasing.*;
+import org.onepf.oms.appstore.googleUtils.*;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -103,7 +104,7 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                 mBillingService.getInventoryLatch().countDown();
                 return false;
             }
-            org.onepf.oms.appstore.googleUtils.Inventory inventory = mBillingService.getInventory();
+            Inventory inventory = mBillingService.getInventory();
 
             // TODO: do something with this
             for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
@@ -117,11 +118,11 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
                         final String sku = receipt.getSku();
-                        org.onepf.oms.appstore.googleUtils.Purchase purchase;
+                        Purchase purchase;
                         switch (receipt.getItemType()) {
                             case ENTITLED:
-                                purchase = new org.onepf.oms.appstore.googleUtils.Purchase();
-                                purchase.setItemType(org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_INAPP);
+                                purchase = new Purchase();
+                                purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
                                 purchase.setSku(sku);
                                 inventory.addPurchase(purchase);
                                 Log.d(TAG, "Add to inventory SKU: " + sku);
@@ -129,8 +130,8 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                             case SUBSCRIPTION:
                                 final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
                                 if (subscriptionPeriod.getEndDate() == null) {
-                                    purchase = new org.onepf.oms.appstore.googleUtils.Purchase();
-                                    purchase.setItemType(org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_SUBS);
+                                    purchase = new Purchase();
+                                    purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
                                     purchase.setSku(sku);
                                     inventory.addPurchase(purchase);
                                     Log.d(TAG, "Add subscription to inventory SKU: " + sku);
@@ -190,17 +191,17 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
         new PurchaseAsyncTask().execute(purchaseResponse);
     }
 
-    private class PurchaseAsyncTask extends AsyncTask<PurchaseResponse, Void, Pair<org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener, Pair<org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase>>> {
+    private class PurchaseAsyncTask extends AsyncTask<PurchaseResponse, Void, Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>>> {
         @Override
-        protected Pair<org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener, Pair<org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase>> doInBackground(final PurchaseResponse... params) {
+        protected Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>> doInBackground(final PurchaseResponse... params) {
             final PurchaseResponse purchaseResponse = params[0];
             final String userId = mBillingService.getCurrentUser();
 
             if (!purchaseResponse.getUserId().equals(userId)) {
                 mBillingService.setCurrentUser(purchaseResponse.getUserId());
             }
-            org.onepf.oms.appstore.googleUtils.Purchase purchase = new org.onepf.oms.appstore.googleUtils.Purchase();
-            org.onepf.oms.appstore.googleUtils.IabResult result = null;
+            Purchase purchase = new Purchase();
+            IabResult result = null;
             switch (purchaseResponse.getPurchaseRequestStatus()) {
                 case SUCCESSFUL:
                     final Receipt receipt = purchaseResponse.getReceipt();
@@ -208,33 +209,33 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     switch (receipt.getItemType()) {
                         case CONSUMABLE:
                         case ENTITLED:
-                            purchase.setItemType(org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_INAPP);
+                            purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
                             break;
                         case SUBSCRIPTION:
-                            purchase.setItemType(org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_SUBS);
+                            purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
                             break;
                     }
 
                     //printReceipt(purchaseResponse.getReceipt());
-                    result = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
                     break;
                 case ALREADY_ENTITLED:
-                    result = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Already owned");
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Already owned");
                     break;
                 case FAILED:
-                    result = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED, "Purchase failed");
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED, "Purchase failed");
                     break;
                 case INVALID_SKU:
-                    result = new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Invalid sku");
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Invalid sku");
                     break;
             }
-            org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
+            IabHelper.OnIabPurchaseFinishedListener listener = mBillingService.getRequestListener(purchaseResponse.getRequestId());
             Log.d(TAG, "Result message: " + result.getMessage() + ", SKU: " + purchase.getSku());
-            return new Pair<org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener, Pair<org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase>>(listener, new Pair<org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase>(result, purchase));
+            return new Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>>(listener, new Pair<IabResult, Purchase>(result, purchase));
         }
 
         @Override
-        protected void onPostExecute(final Pair<org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener, Pair<org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase>> result) {
+        protected void onPostExecute(final Pair<IabHelper.OnIabPurchaseFinishedListener, Pair<IabResult, Purchase>> result) {
             if (result.first != null) {
                 result.first.onIabPurchaseFinished(result.second.first, result.second.second);
             } else {
@@ -265,13 +266,13 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                 case SUCCESSFUL:
                     // Information you'll want to display about your IAP items is here
                     // In this example we'll simply log them.
-                    org.onepf.oms.appstore.googleUtils.Inventory inventory = mBillingService.getInventory();
+                    Inventory inventory = mBillingService.getInventory();
                     final Map<String, Item> items = itemDataResponse.getItemData();
                     for (final String key : items.keySet()) {
                         Item i = items.get(key);
                         Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), i.getSku(), i.getPrice(), i.getDescription()));
-                        String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_INAPP : org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_INAPP;
-                        org.onepf.oms.appstore.googleUtils.SkuDetails skuDetails = new org.onepf.oms.appstore.googleUtils.SkuDetails(itemType, i.getSku(), i.getTitle(), i.getPrice(), i.getDescription());
+                        String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_INAPP : IabHelper.ITEM_TYPE_INAPP;
+                        SkuDetails skuDetails = new SkuDetails(itemType, i.getSku(), i.getTitle(), i.getPrice(), i.getDescription());
                         inventory.addSkuDetails(skuDetails);
                     }
                     break;

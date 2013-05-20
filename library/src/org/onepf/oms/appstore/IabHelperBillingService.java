@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import com.android.vending.billing.IInAppBillingService;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 
 
@@ -22,7 +23,7 @@ public class IabHelperBillingService {
     private IInAppBillingService mBillingService;
     private ServiceConnection mServiceConn;
     private Context mContext;
-    private org.onepf.oms.appstore.googleUtils.IabHelper mIabHelper;
+    private IabHelper mIabHelper;
 
     public IabHelperBillingService(Context context) {
         mContext = context;
@@ -48,7 +49,7 @@ public class IabHelperBillingService {
         return mBillingService.consumePurchase(apiVersion, packageName, purchaseToken);
     }
 
-    public void bindService(final org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener) {
+    public void bindService(final IabHelper.OnIabSetupFinishedListener listener) {
         mServiceConn = new ServiceConnection() {
             @Override
             public void onServiceDisconnected(ComponentName name) {
@@ -67,8 +68,8 @@ public class IabHelperBillingService {
                     mIabHelper.logDebug(LOG_PREFIX + "Checking for in-app billing 3 support.");
 
                     // check for in-app billing v3 support
-                    int response = isBillingSupported(3, packageName, org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_INAPP);
-                    if (response != org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                    int response = isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_INAPP);
+                    if (response != IabHelper.BILLING_RESPONSE_RESULT_OK) {
                         if (listener != null) listener.onIabSetupFinished(new IabResult(response, "Error checking for billing v3 support."));
 
                         // if in-app purchases aren't supported, neither are subscriptions.
@@ -78,8 +79,8 @@ public class IabHelperBillingService {
                     mIabHelper.logDebug(LOG_PREFIX + "In-app billing version 3 supported for " + packageName);
 
                     // check for v3 subscriptions support
-                    response = isBillingSupported(3, packageName, org.onepf.oms.appstore.googleUtils.IabHelper.ITEM_TYPE_SUBS);
-                    if (response == org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                    response = isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_SUBS);
+                    if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
                         mIabHelper.logDebug(LOG_PREFIX + "Subscriptions AVAILABLE.");
                         mIabHelper.setSubscriptionsSupported(true);
                     }
@@ -91,14 +92,14 @@ public class IabHelperBillingService {
                 }
                 catch (RemoteException e) {
                     if (listener != null) {
-                        listener.onIabSetupFinished(new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.IABHELPER_REMOTE_EXCEPTION, "RemoteException while setting up in-app billing."));
+                        listener.onIabSetupFinished(new IabResult(IabHelper.IABHELPER_REMOTE_EXCEPTION, "RemoteException while setting up in-app billing."));
                     }
                     e.printStackTrace();
                     return;
                 }
 
                 if (listener != null) {
-                    listener.onIabSetupFinished(new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+                    listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
                 }
             }
         };
@@ -140,7 +141,7 @@ public class IabHelperBillingService {
         return null;
     }
 
-    public void setIabHelper(org.onepf.oms.appstore.googleUtils.IabHelper iabHelper) {
+    public void setIabHelper(IabHelper iabHelper) {
         mIabHelper = iabHelper;
     }
 }

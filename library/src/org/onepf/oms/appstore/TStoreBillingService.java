@@ -22,6 +22,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.skplanet.dodo.IapPlugin;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.appstore.googleUtils.*;
+import org.onepf.oms.appstore.tstoreUtils.ParamsBuilder;
 
 import java.util.List;
 
@@ -29,7 +32,7 @@ import java.util.List;
  * Author: Ruslan Sayfutdinov
  * Date: 16.05.13
  */
-public class TStoreBillingService implements org.onepf.oms.AppstoreInAppBillingService {
+public class TStoreBillingService implements AppstoreInAppBillingService {
     private static final String TAG = "IabHelper";
     private final Context mContext;
     private final String mAppId;
@@ -41,17 +44,17 @@ public class TStoreBillingService implements org.onepf.oms.AppstoreInAppBillingS
     }
 
     @Override
-    public void startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
         mPlugin = IapPlugin.getPlugin(mContext);
-        listener.onIabSetupFinished(new org.onepf.oms.appstore.googleUtils.IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        org.onepf.oms.appstore.tstoreUtils.ParamsBuilder paramsBuilder = new org.onepf.oms.appstore.tstoreUtils.ParamsBuilder();
-        paramsBuilder.put(org.onepf.oms.appstore.tstoreUtils.ParamsBuilder.KEY_APPID, mAppId);
-        paramsBuilder.put(org.onepf.oms.appstore.tstoreUtils.ParamsBuilder.KEY_PID, sku);
-        Bundle req = mPlugin.sendPaymentRequest(paramsBuilder.build(), new org.onepf.oms.appstore.TStoreRequestCallback(this, mContext, listener));
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+        ParamsBuilder paramsBuilder = new ParamsBuilder();
+        paramsBuilder.put(ParamsBuilder.KEY_APPID, mAppId);
+        paramsBuilder.put(ParamsBuilder.KEY_PID, sku);
+        Bundle req = mPlugin.sendPaymentRequest(paramsBuilder.build(), new TStoreRequestCallback(this, mContext, listener));
         if (req == null) {
             Log.e(TAG, "TStore buy request failure");
         } else {
@@ -68,12 +71,12 @@ public class TStoreBillingService implements org.onepf.oms.AppstoreInAppBillingS
     }
 
     @Override
-    public org.onepf.oms.appstore.googleUtils.Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         return null;
     }
 
     @Override
-    public void consume(org.onepf.oms.appstore.googleUtils.Purchase itemInfo) throws org.onepf.oms.appstore.googleUtils.IabException {
+    public void consume(Purchase itemInfo) throws IabException {
     }
 
     @Override

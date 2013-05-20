@@ -22,7 +22,11 @@ import android.content.Intent;
 import android.util.Log;
 import com.amazon.inapp.purchasing.Offset;
 import com.amazon.inapp.purchasing.PurchasingManager;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -31,30 +35,30 @@ import java.util.concurrent.CountDownLatch;
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
-public class AmazonAppstoreBillingService implements org.onepf.oms.AppstoreInAppBillingService {
+public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
     private static final String TAG = "IabHelper";
     private final Context mContext;
-    private Map<String, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
+    private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;
-    private org.onepf.oms.appstore.googleUtils.Inventory mInventory;
+    private Inventory mInventory;
 
     private CountDownLatch mInventoryRetrived;
 
     public AmazonAppstoreBillingService(Context context) {
         mContext = context;
-        mRequestListeners = new HashMap<String, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener>();
+        mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     }
 
     @Override
-    public void startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
         AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
         PurchasingManager.registerObserver(purchasingObserver);
         PurchasingManager.initiateGetUserIdRequest();
-        listener.onIabSetupFinished(new IabResult(org.onepf.oms.appstore.googleUtils.IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         String requestId = PurchasingManager.initiatePurchaseRequest(sku);
         storeRequestListener(requestId, listener);
     }
@@ -65,9 +69,9 @@ public class AmazonAppstoreBillingService implements org.onepf.oms.AppstoreInApp
     }
 
     @Override
-    public org.onepf.oms.appstore.googleUtils.Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
         Log.d(TAG, "Amazon queryInventory()");
-        mInventory = new org.onepf.oms.appstore.googleUtils.Inventory();
+        mInventory = new Inventory();
         mInventoryRetrived = new CountDownLatch(1);
         PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
         try {
@@ -96,7 +100,7 @@ public class AmazonAppstoreBillingService implements org.onepf.oms.AppstoreInApp
     }
 
     @Override
-    public void consume(org.onepf.oms.appstore.googleUtils.Purchase itemInfo) {
+    public void consume(Purchase itemInfo) {
         // Nothing to do here
     }
 
@@ -105,11 +109,11 @@ public class AmazonAppstoreBillingService implements org.onepf.oms.AppstoreInApp
         // TODO: free resources
     }
 
-    private void storeRequestListener(String requestId, org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener listener) {
+    private void storeRequestListener(String requestId, IabHelper.OnIabPurchaseFinishedListener listener) {
         mRequestListeners.put(requestId, listener);
     }
 
-    public org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener getRequestListener(String requestId) {
+    public IabHelper.OnIabPurchaseFinishedListener getRequestListener(String requestId) {
         return mRequestListeners.get(requestId);
     }
 
@@ -121,7 +125,7 @@ public class AmazonAppstoreBillingService implements org.onepf.oms.AppstoreInApp
         return mCurrentUser;
     }
 
-    public org.onepf.oms.appstore.googleUtils.Inventory getInventory() {
+    public Inventory getInventory() {
         return mInventory;
     }
 
