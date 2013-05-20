@@ -60,7 +60,7 @@ class AppstoreServiceManager {
         final OnAppstoreServiceManagerInitFinishedListener mListener = listener;
         final String myPackageName = mContext.getPackageName();
         PackageManager packageManager = mContext.getPackageManager();
-        Intent intentAppstoreServices = new Intent("openappstore.BIND");
+        Intent intentAppstoreServices = new Intent("org.onepf.oms.openappstore.BIND");
 
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
         final AppstoresServiceSupport appstoresServiceSupport = new AppstoresServiceSupport(infoList.size());
