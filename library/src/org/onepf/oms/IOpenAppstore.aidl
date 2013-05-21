@@ -7,17 +7,21 @@ package org.onepf.oms;
  */
 
 import android.content.Intent;
-import android.os.IBinder;
 
 interface IOpenAppstore {
     boolean isAppAvailable(String packageName);
 
     boolean isInstaller(String packageName);
 
-    boolean isIabServiceSupported(String packageName);
-
-    Intent getInAppBillingServiceIntent();
+    Intent getServiceIntent(String packageName, int serviceType);
 
     String getAppstoreName();
 
+    Intent getProductPageIntent(String packageName);
+
+    Intent getRateItPageIntent(String packageName);
+
+    Intent getSameDeveloperPageIntent(String packageName);
+    
+    boolean areOutsideLinksAllowed();
 }
