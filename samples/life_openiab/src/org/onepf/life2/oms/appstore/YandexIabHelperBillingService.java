@@ -2,6 +2,8 @@ package org.onepf.life2.oms.appstore;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.RemoteException;
 import com.android.vending.billing.IInAppBillingService;
 import com.yandex.store.service.IStoreInAppService;
 
@@ -11,6 +13,7 @@ import com.yandex.store.service.IStoreInAppService;
  */
 public class YandexIabHelperBillingService extends IabHelperBillingService {
     public static final int BILLING_RESPONSE_RESULT_BUY_ALREADY_IN_PROGRESS= 10000;
+    private IStoreInAppService mBillingService;
 
     public YandexIabHelperBillingService(Context context) {
         super(context);
@@ -18,12 +21,42 @@ public class YandexIabHelperBillingService extends IabHelperBillingService {
     }
 
     @Override
-    public IInAppBillingService getInAppBillingService(android.os.IBinder service) {
-        return (IInAppBillingService)IStoreInAppService.Stub.asInterface(service);
+    public int isBillingSupported(int apiVersion, String packageName, String type) throws RemoteException {
+        return mBillingService.isBillingSupported(apiVersion, packageName, type);
     }
 
     @Override
-    public Intent getServiceIntent() {
+    public Bundle getSkuDetails(int apiVersion, String packageName, String type, Bundle skusBundle) throws RemoteException {
+        return mBillingService.getSkuDetails(apiVersion, packageName, type, skusBundle);
+    }
+
+    @Override
+    public Bundle getBuyIntent(int apiVersion, String packageName, String sku, String type, String developerPayload) throws RemoteException {
+        return mBillingService.getBuyIntent(apiVersion, packageName, sku, type, developerPayload);
+    }
+
+    @Override
+    public Bundle getPurchases(int apiVersion, String packageName, String type, String continuationToken) throws RemoteException {
+        return mBillingService.getPurchases(apiVersion, packageName, type, continuationToken);
+    }
+
+    @Override
+    public int consumePurchase(int apiVersion, String packageName, String purchaseToken) throws RemoteException {
+        return mBillingService.consumePurchase(apiVersion, packageName, purchaseToken);
+    }
+
+    @Override
+    protected void didServiceConnected(android.os.IBinder service) {
+        mBillingService = IStoreInAppService.Stub.asInterface(service);
+    }
+
+    @Override
+    protected void didServiceDisconnected() {
+        mBillingService = null;
+    }
+
+    @Override
+    protected Intent getServiceIntent() {
         return new Intent("com.yandex.store.service.StoreInAppService.BIND");
     }
 

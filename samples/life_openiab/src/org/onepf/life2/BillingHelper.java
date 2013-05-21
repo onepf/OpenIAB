@@ -77,9 +77,10 @@ public class BillingHelper {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (currentHelper != null) {
-            if (currentHelper.getMarket() == Market.GOOGLE_PLAY) {
-                currentHelper
-                        .onActivityResult(requestCode, resultCode, data);
+            Market market = currentHelper.getMarket();
+            if (market == Market.GOOGLE_PLAY ||
+                market == Market.YANDEX_STORE) {
+                currentHelper.onActivityResult(requestCode, resultCode, data);
             }
         }
     }
