@@ -70,11 +70,12 @@ class AppstoreServiceManager {
         for (ResolveInfo info : infoList) {
             String packageName = info.serviceInfo.packageName;
             String name = info.serviceInfo.name;
-            Intent intentAppstore = new Intent();
-            intentAppstore.setClassName(packageName, name);
-            mContext.bindService(intentAppstore, new ServiceConnection() {
+//            Intent intentAppstore = new Intent();
+            intentAppstoreServices.setClassName(packageName, name);
+            mContext.bindService(intentAppstoreServices, new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
+                    Log.d(TAG, "appstoresService connected for component: " + name.flattenToShortString());
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
                     boolean isInstaller = false;
                     boolean isSupported = false;
@@ -106,6 +107,7 @@ class AppstoreServiceManager {
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
+                    Log.d(TAG, "appstoresService disconnected for component: " + name.flattenToShortString());
                     //Nothing to do here
                 }
             }, Context.BIND_AUTO_CREATE);
