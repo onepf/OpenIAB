@@ -40,7 +40,7 @@ public class AmazonAppstore implements Appstore {
 
     @Override
     public boolean isAppAvailable(String packageName) {
-        return false;
+        return isInstaller();
     }
 
     @Override
@@ -63,7 +63,6 @@ public class AmazonAppstore implements Appstore {
         }
         Log.d(TAG, "IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
         return !IS_SANDBOX_MODE;
-        //return mBillingService.getIsInstaller();
     }
 
     @Override
