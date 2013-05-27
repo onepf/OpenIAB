@@ -79,13 +79,13 @@ class AppstoreServiceManager {
                     boolean isInstaller = false;
                     boolean isSupported = false;
                     Intent iabIntent = null;
-                    try {
-                        isInstaller = openAppstoreService.isInstaller(myPackageName);
-                        isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
-                        iabIntent = openAppstoreService.getInAppBillingServiceIntent();
-                    } catch (RemoteException e) {
-                        Log.e(TAG, "RemoteException: " + e.getMessage());
-                    }
+                    //try {
+                        //isInstaller = openAppstoreService.isInstaller(myPackageName);
+                        //isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
+                        //iabIntent = openAppstoreService.getInAppBillingServiceIntent();
+                    //} catch (RemoteException e) {
+                    //    Log.e(TAG, "RemoteException: " + e.getMessage());
+                    //}
                     appstoresServiceSupport.add(isInstaller, isSupported, iabIntent);
                     if (appstoresServiceSupport.isReady()) {
                         ServiceFounder serviceFounder = new ServiceFounder() {
