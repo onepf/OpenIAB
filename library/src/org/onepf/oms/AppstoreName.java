@@ -26,5 +26,5 @@ public enum AppstoreName {
     AMAZON,
     SAMSUNG,
     TSTORE,
-    YANDEX
+    OPENSTORE
 }

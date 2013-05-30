@@ -45,6 +45,11 @@ public class IabHelperBillingService {
         mContext = context;
     }
 
+    public IabHelperBillingService(IInAppBillingService billingService, Context context) {
+        mContext = context;
+        mBillingService = billingService;
+    }
+
     public int isBillingSupported(int apiVersion, String packageName, String type) throws RemoteException {
         return mBillingService.isBillingSupported(apiVersion, packageName, type);
     }
@@ -120,16 +125,57 @@ public class IabHelperBillingService {
             }
         };
 
-        Intent serviceIntent = getServiceIntent();
+        if (mBillingService != null) {
+            String packageName = mContext.getPackageName();
+            try {
+                mIabHelper.logDebug(LOG_PREFIX + "Checking for in-app billing 3 support.");
 
-        if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
-            // service available to handle that Intent
-            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
-        }
-        else {
-            // no service available to handle that Intent
+                // check for in-app billing v3 support
+                int response = isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_INAPP);
+                if (response != IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                    if (listener != null) listener.onIabSetupFinished(new IabResult(response, "Error checking for billing v3 support."));
+
+                    // if in-app purchases aren't supported, neither are subscriptions.
+                    mIabHelper.setSubscriptionsSupported(false);
+                    return;
+                }
+                mIabHelper.logDebug(LOG_PREFIX + "In-app billing version 3 supported for " + packageName);
+
+                // check for v3 subscriptions support
+                response = isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_SUBS);
+                if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                    mIabHelper.logDebug(LOG_PREFIX + "Subscriptions AVAILABLE.");
+                    mIabHelper.setSubscriptionsSupported(true);
+                }
+                else {
+                    mIabHelper.logDebug(LOG_PREFIX + "Subscriptions NOT AVAILABLE. Response: " + response);
+                }
+
+                mIabHelper.setSetupDone(true);
+            }
+            catch (RemoteException e) {
+                if (listener != null) {
+                    listener.onIabSetupFinished(new IabResult(IabHelper.IABHELPER_REMOTE_EXCEPTION, "RemoteException while setting up in-app billing."));
+                }
+                e.printStackTrace();
+                return;
+            }
+
             if (listener != null) {
-                listener.onIabSetupFinished(new IabResult(mIabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing service unavailable on device."));
+                listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+            }
+        } else {
+            Intent serviceIntent = getServiceIntent();
+
+            if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
+                // service available to handle that Intent
+                mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+            }
+            else {
+                // no service available to handle that Intent
+                if (listener != null) {
+                    listener.onIabSetupFinished(new IabResult(mIabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing service unavailable on device."));
+                }
             }
         }
     }

@@ -30,6 +30,7 @@ import org.onepf.oms.appstore.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -37,7 +38,9 @@ import java.util.Map;
  */
 class AppstoreServiceManager {
     private static final String TAG = "IabHelper";
+    private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     List<Appstore> appstores;
+    Map<String, String> mExtra;
     private Context mContext;
 
     public interface OnAppstoreServiceManagerInitFinishedListener {
@@ -47,26 +50,25 @@ class AppstoreServiceManager {
 
     AppstoreServiceManager(Context context, Map<String, String> extra) {
         mContext = context;
+        mExtra = extra;
         appstores = new ArrayList<Appstore>();
         appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
         appstores.add(new AmazonAppstore(context));
         appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
         appstores.add(new TStore(context, extra.get("TStoreAppId")));
-        appstores.add(new YandexStore(context, extra.get("YandexPublicKey")));
     }
 
 
-    void startSetup(OnAppstoreServiceManagerInitFinishedListener listener) {
+    void startSetup(final OnAppstoreServiceManagerInitFinishedListener listener) {
         final OnAppstoreServiceManagerInitFinishedListener mListener = listener;
-        final String myPackageName = mContext.getPackageName();
         PackageManager packageManager = mContext.getPackageManager();
-        Intent intentAppstoreServices = new Intent("org.onepf.oms.openappstore.BIND");
+        Intent intentAppstoreServices = new Intent(BIND_INTENT);
 
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
-        final AppstoresServiceSupport appstoresServiceSupport = new AppstoresServiceSupport(infoList.size());
         if (infoList.size() == 0) {
             mListener.onAppstoreServiceManagerInitFinishedListener();
         }
+        final CountDownLatch countDownLatch = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
             String packageName = info.serviceInfo.packageName;
             String name = info.serviceInfo.name;
@@ -76,32 +78,26 @@ class AppstoreServiceManager {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
-                    boolean isInstaller = false;
-                    boolean isSupported = false;
-                    Intent iabIntent = null;
-                    //try {
-                        //isInstaller = openAppstoreService.isInstaller(myPackageName);
-                        //isSupported = openAppstoreService.isIabServiceSupported(myPackageName);
-                        //iabIntent = openAppstoreService.getInAppBillingServiceIntent();
-                    //} catch (RemoteException e) {
-                    //    Log.e(TAG, "RemoteException: " + e.getMessage());
-                    //}
-                    appstoresServiceSupport.add(isInstaller, isSupported, iabIntent);
-                    if (appstoresServiceSupport.isReady()) {
-                        ServiceFounder serviceFounder = new ServiceFounder() {
-                            @Override
-                            public void onServiceFound(Intent intent, boolean installer) {
-                                // TODO: add found service to appstores
-                                mListener.onAppstoreServiceManagerInitFinishedListener();
-                            }
-
-                            @Override
-                            public void onServiceNotFound() {
-
-                            }
-                        };
-                        appstoresServiceSupport.getServiceIntent(serviceFounder);
+                    String appstoreName = null;
+                    try {
+                        appstoreName = openAppstoreService.getAppstoreName();
+                       } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException: " + e.getMessage());
                     }
+                    String publicKey = mExtra.get(appstoreName);
+                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext, appstoreName);
+                    openAppstore.startSetup(publicKey, new OnAppstoreStartSetupFinishListener() {
+                        @Override
+                        public void onAppstoreStartSetupFinishListener(boolean isOk) {
+                            synchronized (appstores) {
+                                appstores.add(openAppstore);
+                            }
+                            countDownLatch.countDown();
+                            if (countDownLatch.getCount() == 0) {
+                                listener.onAppstoreServiceManagerInitFinishedListener();
+                            }
+                        }
+                    });
                 }
 
                 @Override
