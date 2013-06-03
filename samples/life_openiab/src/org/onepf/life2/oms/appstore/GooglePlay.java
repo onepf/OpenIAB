@@ -64,7 +64,7 @@ public class GooglePlay implements Appstore {
             return true;
         }
         PackageManager packageManager = mContext.getPackageManager();
-        String packageName = mContext.getApplicationContext().getClass().getPackage().getName();
+        String packageName = mContext.getPackageName();
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
         return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
