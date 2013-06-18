@@ -16,92 +16,137 @@
 
 package org.onepf.oms.appstore;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.os.IBinder;
+import android.content.*;
 import android.os.RemoteException;
-import com.android.vending.billing.IInAppBillingService;
+import android.util.Log;
 import org.onepf.oms.*;
-
-import java.util.List;
 
 /**
  * User: Boris Minaev
  * Date: 28.05.13
  * Time: 2:39
  */
-public class OpenAppstore implements Appstore{
+public class OpenAppstore extends DefaultAppstore {
+    static final private String TAG = Class.class.getSimpleName();
     Context mContext;
     IOpenAppstore mIOpenAppstore;
-    String mName;
     AppstoreInAppBillingService mBillingService;
-    final int BILLING_SERVICE = 0;
+    static final private int BILLING_SERVICE = 0;
 
-    public OpenAppstore(IOpenAppstore iOpenAppstore, Context context, String name) {
+    public OpenAppstore(IOpenAppstore iOpenAppstore, Context context) {
         mContext = context;
         mIOpenAppstore = iOpenAppstore;
-        mName = name;
     }
 
     public void startSetup(final String publicKey, final OnAppstoreStartSetupFinishListener listener) {
-        try {
-            Intent billingIntent = mIOpenAppstore.getServiceIntent(mContext.getPackageName(), BILLING_SERVICE);
-            PackageManager packageManager = mContext.getPackageManager();
-            List<ResolveInfo> infoList = packageManager.queryIntentServices(billingIntent, 0);
-            if (infoList.size() != 1) {
-                listener.onAppstoreStartSetupFinishListener(false);
-            }
-            for (ResolveInfo info : infoList) {
-                String packageName = info.serviceInfo.packageName;
-                String name = info.serviceInfo.name;
-                Intent intentAppstore = new Intent();
-                intentAppstore.setClassName(packageName, name);
-                mContext.bindService(intentAppstore, new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName name, IBinder service) {
-                        IInAppBillingService openInAppBillingService = IInAppBillingService.Stub.asInterface(service);
-                        mBillingService = new OpenAppstoreBillingService(openInAppBillingService, publicKey, mContext);
-                        listener.onAppstoreStartSetupFinishListener(true);
-                    }
+        final String contextPackageName = getPackageName();
+        Intent billingIntent = getServiceIntent(contextPackageName, BILLING_SERVICE);
 
-                    @Override
-                    public void onServiceDisconnected(ComponentName name) {
-                        listener.onAppstoreStartSetupFinishListener(false);
-                    }
-                }, Context.BIND_AUTO_CREATE);
-            }
-        } catch (RemoteException e) {
+        if (billingIntent == null) {
             listener.onAppstoreStartSetupFinishListener(false);
+            return;
         }
+
+        boolean isInstaller = isInstaller(contextPackageName);
+        Log.d(TAG, "isInstaller: " + String.valueOf(isInstaller));
+
+        boolean couldBeInstaller = couldBeInstaller(contextPackageName);
+        Log.d(TAG, "couldBeInstaller: " + String.valueOf(couldBeInstaller));
+
+        mBillingService = new OpenAppstoreBillingService(publicKey, mContext, billingIntent);
+        listener.onAppstoreStartSetupFinishListener(true);
+    }
+
+    private String getPackageName() {
+        return mContext.getPackageName();
     }
 
     @Override
     public boolean isAppAvailable(String packageName) {
         try {
-            return mIOpenAppstore.isAppAvailable(mContext.getPackageName());
+            return mIOpenAppstore.isAppAvailable(getPackageName());
         } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
             return false;
         }
     }
 
     @Override
-    public boolean isInstaller() {
+    public boolean isInstaller(String packageName) {
         try {
-            return mIOpenAppstore.isInstaller(mContext.getPackageName());
+            return mIOpenAppstore.isInstaller(getPackageName());
         } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
             return false;
         }
     }
 
     @Override
-    public boolean isServiceSupported(AppstoreService appstoreService) {
+    public boolean couldBeInstaller(String packageName) {
         try {
-            return mIOpenAppstore.isServiceSupported(mContext.getPackageName(), BILLING_SERVICE);
+            return mIOpenAppstore.couldBeInstaller(getPackageName());
         } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public Intent getServiceIntent(String packageName, int serviceType) {
+        try {
+            return mIOpenAppstore.getServiceIntent(getPackageName(), serviceType);
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public String getAppstoreName() {
+        try {
+            return mIOpenAppstore.getAppstoreName();
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Intent getProductPageIntent(String packageName) {
+        try {
+            return mIOpenAppstore.getProductPageIntent(getPackageName());
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Intent getRateItPageIntent(String packageName) {
+        try {
+            return mIOpenAppstore.getRateItPageIntent(getPackageName());
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public Intent getSameDeveloperPageIntent(String packageName) {
+        try {
+            return mIOpenAppstore.getSameDeveloperPageIntent(getPackageName());
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public boolean areOutsideLinksAllowed() {
+        try {
+            return mIOpenAppstore.areOutsideLinksAllowed();
+        } catch (RemoteException e) {
+            Log.w(TAG, "RemoteException: " + e.getMessage());
             return false;
         }
     }
@@ -109,14 +154,5 @@ public class OpenAppstore implements Appstore{
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         return mBillingService;
-    }
-
-    @Override
-    public AppstoreName getAppstoreName() {
-        return AppstoreName.OPENSTORE;
-    }
-
-    public String getStringName() {
-        return mName;
     }
 }

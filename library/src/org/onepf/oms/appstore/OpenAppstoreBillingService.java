@@ -19,8 +19,11 @@ package org.onepf.oms.appstore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
 import com.android.vending.billing.IInAppBillingService;
 import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.OnAppstoreStartSetupFinishListener;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -33,21 +36,23 @@ import java.util.List;
  * Date: 28.05.13
  * Time: 3:03
  */
-public class OpenAppstoreBillingService implements AppstoreInAppBillingService{
-    IInAppBillingService mIInAppBillingService;
-    IabHelperBillingService mIabHelperBillingService;
+public class OpenAppstoreBillingService implements AppstoreInAppBillingService {
+    static final private String TAG = Class.class.getSimpleName();
+    OpenIabHelperBillingService mIabHelperBillingService;
     String mPublicKey;
     IabHelper mIabHelper;
 
-    public OpenAppstoreBillingService(IInAppBillingService iOpenInAppBillingService, String publicKey, Context context) {
-        mIInAppBillingService = iOpenInAppBillingService;
+    public OpenAppstoreBillingService(String publicKey, Context context, Intent billingIntent) {
+        Log.d(TAG, "create new OpenAppstoreBillingService");
         mPublicKey = publicKey;
         mIabHelper = new IabHelper(context, publicKey);
-        mIabHelperBillingService = new IabHelperBillingService(mIInAppBillingService, context);
+        mIabHelperBillingService = new OpenIabHelperBillingService(context);
+        mIabHelperBillingService.setServiceIntent(billingIntent);
     }
 
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
+        Log.d(TAG, "will mIabHelper.startSetup");
         mIabHelper.startSetup(listener, mIabHelperBillingService);
     }
 

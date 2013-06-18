@@ -29,9 +29,8 @@ interface IOpenAppstore {
 
     boolean isInstaller(String packageName);
 
-    boolean isServiceSupported(String packageName, int serviceType);
+    boolean couldBeInstaller(String packageName);
 
-    // 0 - billing service
     Intent getServiceIntent(String packageName, int serviceType);
 
     String getAppstoreName();

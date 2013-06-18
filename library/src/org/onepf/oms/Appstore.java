@@ -16,25 +16,34 @@
 
 package org.onepf.oms;
 
+import android.content.Intent;
+
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
 
 public interface Appstore {
+   // IOpenAppstore.idls methods
     boolean isAppAvailable(String packageName);
 
-    boolean isInstaller();
+    boolean isInstaller(String packageName);
 
-    boolean isServiceSupported(AppstoreService appstoreService);
+    boolean couldBeInstaller(String packageName);
 
+    Intent getServiceIntent(String packageName, int serviceType);
+
+    String getAppstoreName();
+
+    Intent getProductPageIntent(String packageName);
+
+    Intent getRateItPageIntent(String packageName);
+
+    Intent getSameDeveloperPageIntent(String packageName);
+
+    boolean areOutsideLinksAllowed();
+
+    // additional methods
     AppstoreInAppBillingService getInAppBillingService();
-
-    AppstoreName getAppstoreName();
-
-    //... other methods that return different Appstore specific services
-
-    //a method to open application product page in this appstore
-    //a method to open the reviews page (aka "rate it") in this appstore
-    //a method that returns if the appstore allows links to developer website
+    AppstoreType getAppstoreType();
 }

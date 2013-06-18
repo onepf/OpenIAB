@@ -17,17 +17,14 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
-import org.onepf.oms.Appstore;
-import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.AppstoreName;
-import org.onepf.oms.AppstoreService;
+import org.onepf.oms.*;
 
 /**
  * User: Boris Minaev
  * Date: 22.04.13
  * Time: 12:28
  */
-public class SamsungApps implements Appstore {
+public class SamsungApps extends DefaultAppstore {
     private AppstoreInAppBillingService mBillingService;
     private Context mContext;
     private String mItemGroupId;
@@ -41,18 +38,11 @@ public class SamsungApps implements Appstore {
     }
 
     @Override
-    public boolean isAppAvailable(String packageName) {
-        // TODO: write implementation
-        return false;
-    }
-
-    @Override
-    public boolean isInstaller() {
+    public boolean isInstaller(String packageName) {
         // TODO: write normal checker
         return isDebugMode;
     }
 
-    @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return isDebugMode;
@@ -70,7 +60,12 @@ public class SamsungApps implements Appstore {
     }
 
     @Override
-    public AppstoreName getAppstoreName() {
-        return AppstoreName.SAMSUNG;
+    public String getAppstoreName() {
+        return "AppstoreName.SAMSUNG";
+    }
+
+    @Override
+    public AppstoreType getAppstoreType() {
+        return AppstoreType.SAMSUNG;
     }
 }

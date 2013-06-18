@@ -15,22 +15,23 @@
 
 package org.onepf.trivialdrive_openiab;
 
-import org.onepf.life2.oms.AppstoreName;
-import org.onepf.life2.oms.OpenIabHelper;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import org.onepf.life2.oms.OpenSku;
-import static org.onepf.life2.oms.OpenSku.*;
-import org.onepf.life2.oms.appstore.googleUtils.*;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.onepf.oms.AppstoreName;
+import org.onepf.oms.AppstoreType;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.OpenSku;
+import org.onepf.oms.OpenSku.*;
+import org.onepf.oms.appstore.googleUtils.*;
 
 /**
  * Example game using in-app billing version 3.
@@ -95,21 +96,21 @@ public class MainActivity extends Activity {
     // SKUs for our products: the premium upgrade (non-consumable) and gas
     // (consumable)
     static final OpenSku SKU_PREMIUM = new OpenSku(
-            new Sku(AppstoreName.GOOGLE, "sku_premium"),
-            new Sku(AppstoreName.AMAZON, "amazon_sku_premium"),
-            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
+            new Sku(AppstoreType.GOOGLE, "sku_premium"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
     static final OpenSku SKU_GAS = new OpenSku(
-            new Sku(AppstoreName.GOOGLE, "sku_gas"),
-            new Sku(AppstoreName.AMAZON, "amazon_sku_gas"),
-            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
+            new Sku(AppstoreType.GOOGLE, "sku_gas"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_gas"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
     // SKU for our subscription (infinite gas)
     static final OpenSku SKU_INFINITE_GAS = new OpenSku(
-            new Sku(AppstoreName.GOOGLE, "sku_infinte_gas"),
-            new Sku(AppstoreName.AMAZON, "amazon_sku_infinite_gas"),
-            new Sku(AppstoreName.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreName.YANDEX, "yandex_sku_premium"));
+            new Sku(AppstoreType.GOOGLE, "sku_infinte_gas"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_infinite_gas"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
 
 
     // (arbitrary) request code for the purchase flow
@@ -174,6 +175,8 @@ public class MainActivity extends Activity {
         extra.put("TStoreAppId", tstoreAppId);
         extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
         mHelper = new OpenIabHelper(this, extra);
+
+        createBroadcasts();
 
         // enable debug logging (for a production application, you should set
         // this to false).
@@ -468,6 +471,8 @@ public class MainActivity extends Activity {
         if (mHelper != null)
             mHelper.dispose();
         mHelper = null;
+
+        destroyBroadcasts();
     }
 
     // updates UI to reflect model
@@ -538,4 +543,47 @@ public class MainActivity extends Activity {
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
     }
+
+
+
+    //TODO: how to implement automatically store specific broadcast services?
+
+    private void destroyBroadcasts() {
+        Log.d(TAG, "destroyBroadcasts");
+        try {
+            this.unregisterReceiver(mBillingReceiver);
+        } catch (Exception ex) {
+            Log.d(TAG, "destroyBroadcasts exception:\n" + ex.getMessage());
+        }
+    }
+
+    private void createBroadcasts() {
+        Log.d(TAG, "createBroadcasts");
+
+        IntentFilter filter = new IntentFilter(YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED);
+        this.registerReceiver(mBillingReceiver, filter);
+    }
+
+    // Yandex specific
+    public static final String YANDEX_STORE_SERVICE = "com.yandex.store.service";
+    public static final String YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED = YANDEX_STORE_SERVICE + ".PURCHASE_STATE_CHANGED";
+
+    private BroadcastReceiver mBillingReceiver = new BroadcastReceiver() {
+        private static final String TAG = "YandexBillingReceiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.d(TAG, "onReceive intent: " + intent);
+
+            if (YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED.equals(action)) {
+                purchaseStateChanged(intent);
+            }
+        }
+
+        private void purchaseStateChanged(Intent data) {
+            Log.d(TAG, "purchaseStateChanged intent: " + data);
+            mHelper.handleActivityResult(RC_REQUEST, Activity.RESULT_OK, data);
+        }
+    };
 }

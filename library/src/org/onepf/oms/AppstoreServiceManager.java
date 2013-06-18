@@ -47,7 +47,6 @@ class AppstoreServiceManager {
         public void onAppstoreServiceManagerInitFinishedListener();
     }
 
-
     AppstoreServiceManager(Context context, Map<String, String> extra) {
         mContext = context;
         mExtra = extra;
@@ -60,41 +59,51 @@ class AppstoreServiceManager {
 
 
     void startSetup(final OnAppstoreServiceManagerInitFinishedListener listener) {
-        final OnAppstoreServiceManagerInitFinishedListener mListener = listener;
+        final OnAppstoreServiceManagerInitFinishedListener initListener = listener;
         PackageManager packageManager = mContext.getPackageManager();
-        Intent intentAppstoreServices = new Intent(BIND_INTENT);
-
+        final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
         if (infoList.size() == 0) {
-            mListener.onAppstoreServiceManagerInitFinishedListener();
+            initListener.onAppstoreServiceManagerInitFinishedListener();
         }
+
         final CountDownLatch countDownLatch = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
             String packageName = info.serviceInfo.packageName;
             String name = info.serviceInfo.name;
-            Intent intentAppstore = new Intent();
+            Intent intentAppstore = new Intent(intentAppstoreServices);
             intentAppstore.setClassName(packageName, name);
             mContext.bindService(intentAppstore, new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
+                    Log.d(TAG, "appstoresService connected for component: " + name.flattenToShortString());
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+
+                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext);
+
                     String appstoreName = null;
                     try {
                         appstoreName = openAppstoreService.getAppstoreName();
-                       } catch (RemoteException e) {
-                        Log.e(TAG, "RemoteException: " + e.getMessage());
+                    } catch (RemoteException e) {
+                        Log.w(TAG, "RemoteException: " + e.getMessage());
                     }
                     String publicKey = mExtra.get(appstoreName);
-                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext, appstoreName);
+
                     openAppstore.startSetup(publicKey, new OnAppstoreStartSetupFinishListener() {
                         @Override
                         public void onAppstoreStartSetupFinishListener(boolean isOk) {
-                            synchronized (appstores) {
-                                appstores.add(openAppstore);
+                            Log.d(TAG, "onAppstoreStartSetupFinishListener: " + String.valueOf(isOk));
+                            if (isOk == true) {
+                                synchronized (appstores) {
+                                    Log.d(TAG, "add new open store by type: " + openAppstore.getAppstoreName());
+                                    if (appstores.contains(openAppstore) == false) {
+                                        appstores.add(openAppstore);
+                                    }
+                                }
                             }
                             countDownLatch.countDown();
                             if (countDownLatch.getCount() == 0) {
-                                listener.onAppstoreServiceManagerInitFinishedListener();
+                                initListener.onAppstoreServiceManagerInitFinishedListener();
                             }
                         }
                     });
@@ -102,35 +111,33 @@ class AppstoreServiceManager {
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
+                    Log.d(TAG, "appstoresService disconnected for component: " + name.flattenToShortString());
                     //Nothing to do here
                 }
             }, Context.BIND_AUTO_CREATE);
         }
     }
 
-    private static AppstoreServiceManager instance;
-
-    /*
-    public static AppstoreServiceManager getInstance(Context context, String publicKey, String samsungGroupId) {
-        if (instance == null) {
-            instance = new AppstoreServiceManager(context, publicKey, samsungGroupId);
-        }
-        return instance;
-    }
-    */
-
     public Appstore getAppstoreForService(AppstoreService appstoreService) {
+        //TODO: implement logic to choose app store.
+        String packageName = mContext.getPackageName();
+
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
             if (installer != null) {
-                Log.d(TAG, "Installer appstore: " + installer.getAppstoreName().name());
-                if (installer.isServiceSupported(appstoreService)) {
+                Log.d(TAG, "Installer appstore: " + installer.getAppstoreName());
+                Intent inappIntent = installer.getServiceIntent(packageName, 0);
+                if (inappIntent != null) {
                     return installer;
                 }
             }
-            for (Appstore appstore : appstores) {
-                if (appstore.isServiceSupported(appstoreService)) {
-                    return appstore;
+
+            synchronized (appstores) {
+                for (Appstore appstore : appstores) {
+                    Intent inappIntent = installer.getServiceIntent(packageName, 0);
+                    if (inappIntent != null) {
+                        return appstore;
+                    }
                 }
             }
         }
@@ -138,15 +145,28 @@ class AppstoreServiceManager {
     }
 
     public Appstore getInstallerAppstore() {
-        for (Appstore appstore : appstores) {
-            if (appstore.isInstaller()) {
-                return appstore;
+        //TODO: implement logic to choose app store.
+        String packageName = mContext.getPackageName();
+        Appstore returnAppstore = null;
+        synchronized (appstores) {
+            for (Appstore appstore : appstores) {
+                if (appstore.isInstaller(packageName)) {
+                    return appstore;
+                }
+                // return last appstore if no one is selected (debug mode)
+                returnAppstore = appstore;
+            }
+            for (Appstore appstore : appstores) {
+                if (appstore.couldBeInstaller(packageName)) {
+                    return appstore;
+                }
+                // return last appstore if no one is selected (debug mode)
+                returnAppstore = appstore;
             }
         }
-        return null;
-    }
-
-    public List<Appstore> getAppstoresSupportingAPI(String packageName, AppstoreService appstoreService) {
-        return null;
+        if (returnAppstore != null) {
+            Log.w(TAG, "getInstallerAppstore returns random appstore");
+        }
+        return returnAppstore;
     }
 }

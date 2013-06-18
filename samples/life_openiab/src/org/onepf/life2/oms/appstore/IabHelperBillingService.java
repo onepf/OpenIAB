@@ -29,6 +29,11 @@ public class IabHelperBillingService {
         mContext = context;
     }
 
+    public IabHelperBillingService(IInAppBillingService billingService, Context context) {
+        mContext = context;
+        mBillingService = billingService;
+    }
+
     public int isBillingSupported(int apiVersion, String packageName, String type) throws RemoteException {
         return mBillingService.isBillingSupported(apiVersion, packageName, type);
     }

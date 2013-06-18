@@ -21,7 +21,7 @@ package org.onepf.oms;
  * Date: 16.04.13
  * Time: 17:41
  */
-public enum AppstoreName {
+public enum AppstoreType {
     GOOGLE,
     AMAZON,
     SAMSUNG,

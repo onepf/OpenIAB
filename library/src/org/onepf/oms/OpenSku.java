@@ -26,31 +26,31 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class OpenSku {
-    private Map<AppstoreName, String> storeToSku;
+    private Map<AppstoreType, String> storeToSku;
 
     public static class Sku {
-        AppstoreName appstore;
+        AppstoreType appstore;
         String sku;
 
-        public Sku(AppstoreName appstore, String sku) {
+        public Sku(AppstoreType appstore, String sku) {
             this.appstore = appstore;
             this.sku = sku;
         }
     }
 
     public OpenSku(Sku... skus) {
-        storeToSku = new EnumMap<AppstoreName, String>(AppstoreName.class);
+        storeToSku = new EnumMap<AppstoreType, String>(AppstoreType.class);
         for (Sku sku : skus) {
             storeToSku.put(sku.appstore, sku.sku);
         }
     }
 
-    public String getSku(AppstoreName appstore) {
+    public String getSku(AppstoreType appstore) {
         return storeToSku.get(appstore);
     }
 
     public boolean sameAs(String someMarketSku) {
-        for (AppstoreName appstore : storeToSku.keySet()) {
+        for (AppstoreType appstore : storeToSku.keySet()) {
             String skuForAppstore = storeToSku.get(appstore);
             if (skuForAppstore.equals(someMarketSku))
                 return true;
@@ -58,7 +58,7 @@ public class OpenSku {
         return false;
     }
 
-    public boolean sameAs(String someMarketSku, AppstoreName appstore) {
+    public boolean sameAs(String someMarketSku, AppstoreType appstore) {
         String skuForAppstore = storeToSku.get(appstore);
         return skuForAppstore == null || !skuForAppstore.equals(someMarketSku) ? false : true;
     }

@@ -17,13 +17,11 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
-import org.onepf.oms.Appstore;
-import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.AppstoreName;
-import org.onepf.oms.AppstoreService;
+import org.onepf.oms.*;
 
 import java.util.List;
 
@@ -32,7 +30,7 @@ import java.util.List;
  * Date: 16.04.13
  */
 
-public class GooglePlay implements Appstore {
+public class GooglePlay extends DefaultAppstore {
     private Context mContext;
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
@@ -59,17 +57,24 @@ public class GooglePlay implements Appstore {
     }
 
     @Override
-    public boolean isInstaller() {
+    public boolean isInstaller(String packageName) {
         if (isDebugMode) {
             return true;
         }
         PackageManager packageManager = mContext.getPackageManager();
-        String packageName = mContext.getPackageName();
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
         return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
 
     @Override
+    public Intent getServiceIntent(String packageName, int serviceType) {
+        if (serviceType == 0) {
+            new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        }
+        return null;
+    }
+
+    //TODO: update to match new appstore aidl
     public boolean isServiceSupported(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             Log.d(TAG, "Check google if billing supported");
@@ -100,7 +105,12 @@ public class GooglePlay implements Appstore {
     }
 
     @Override
-    public AppstoreName getAppstoreName() {
-        return AppstoreName.GOOGLE;
+    public String getAppstoreName() {
+        return "AppstoreName.GOOGLE";
+    }
+
+    @Override
+    public AppstoreType getAppstoreType() {
+        return AppstoreType.GOOGLE;
     }
 }

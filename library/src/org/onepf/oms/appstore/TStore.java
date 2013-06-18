@@ -17,16 +17,13 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
-import org.onepf.oms.Appstore;
-import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.AppstoreName;
-import org.onepf.oms.AppstoreService;
+import org.onepf.oms.*;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.05.13
  */
-public class TStore implements Appstore {
+public class TStore extends DefaultAppstore {
     private final Context mContext;
     private TStoreBillingService mBillingService;
     private String mAppId;
@@ -37,18 +34,11 @@ public class TStore implements Appstore {
     }
 
     @Override
-    public boolean isAppAvailable(String packageName) {
+    public boolean isInstaller(String packageName) {
         // TODO: implement this
         return false;
     }
 
-    @Override
-    public boolean isInstaller() {
-        // TODO: implement this
-        return false;
-    }
-
-    @Override
     public boolean isServiceSupported(AppstoreService appstoreService) {
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
             return true;
@@ -66,7 +56,12 @@ public class TStore implements Appstore {
     }
 
     @Override
-    public AppstoreName getAppstoreName() {
-        return AppstoreName.TSTORE;
+    public String getAppstoreName() {
+        return "AppstoreName.TSTORE";
+    }
+
+    @Override
+    public AppstoreType getAppstoreType() {
+        return AppstoreType.TSTORE;
     }
 }
