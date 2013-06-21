@@ -26,7 +26,6 @@ import android.widget.ImageView;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.onepf.oms.AppstoreName;
 import org.onepf.oms.AppstoreType;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.OpenSku;
