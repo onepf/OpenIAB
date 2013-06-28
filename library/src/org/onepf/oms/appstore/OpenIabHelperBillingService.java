@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
-import com.yandex.store.service.IStoreInAppService;
 import org.onepf.oms.IOpenInAppBillingService;
-import org.onepf.oms.OnAppstoreStartSetupFinishListener;
 
 /**
  * Author: Yury Vasileuski
@@ -59,7 +57,7 @@ public class OpenIabHelperBillingService extends IabHelperBillingService {
 
     @Override
     protected Intent getServiceIntent() {
-        return new Intent(mBillingIntent); // new Intent("com.yandex.store.service.StoreInAppService.BIND");
+        return new Intent(mBillingIntent);
     }
 
     public void setServiceIntent(Intent intent) {
