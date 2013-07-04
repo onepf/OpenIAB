@@ -174,6 +174,8 @@ public class MainActivity extends Activity {
         extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
         mHelper = new OpenIabHelper(this, extra);
         
+        createBroadcasts();
+
         // enable debug logging (for a production application, you should set this to false).
         mHelper.enableDebugLogging(true);
 
@@ -438,6 +440,8 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Destroying helper.");
         if (mHelper != null) mHelper.dispose();
         mHelper = null;
+
+        destroyBroadcasts();
     }
 
     // updates UI to reflect model
@@ -500,4 +504,45 @@ public class MainActivity extends Activity {
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
     }
+
+     //TODO: how to implement automatically store specific broadcast services?
+
+    private void destroyBroadcasts() {
+        Log.d(TAG, "destroyBroadcasts");
+        try {
+            this.unregisterReceiver(mBillingReceiver);
+        } catch (Exception ex) {
+            Log.d(TAG, "destroyBroadcasts exception:\n" + ex.getMessage());
+        }
+    }
+
+    private void createBroadcasts() {
+        Log.d(TAG, "createBroadcasts");
+
+        IntentFilter filter = new IntentFilter(YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED);
+        this.registerReceiver(mBillingReceiver, filter);
+    }
+
+    // Yandex specific
+    public static final String YANDEX_STORE_SERVICE = "com.yandex.store.service";
+    public static final String YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED = YANDEX_STORE_SERVICE + ".PURCHASE_STATE_CHANGED";
+
+    private BroadcastReceiver mBillingReceiver = new BroadcastReceiver() {
+        private static final String TAG = "YandexBillingReceiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.d(TAG, "onReceive intent: " + intent);
+
+            if (YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED.equals(action)) {
+                purchaseStateChanged(intent);
+            }
+        }
+
+        private void purchaseStateChanged(Intent data) {
+            Log.d(TAG, "purchaseStateChanged intent: " + data);
+            mHelper.handleActivityResult(RC_REQUEST, Activity.RESULT_OK, data);
+        }
+    };
 }
