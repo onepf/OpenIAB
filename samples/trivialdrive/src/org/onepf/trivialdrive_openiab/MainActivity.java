@@ -24,10 +24,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.example.android.trivialdrivesample.util.IabHelper;
-import com.example.android.trivialdrivesample.util.IabResult;
-import com.example.android.trivialdrivesample.util.Inventory;
-import com.example.android.trivialdrivesample.util.Purchase;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.onepf.oms.AppstoreType;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.OpenSku;
+import org.onepf.oms.OpenSku.*;
+import org.onepf.oms.appstore.googleUtils.*;
 
 
 /**
@@ -94,11 +98,23 @@ public class MainActivity extends Activity {
     boolean mSubscribedToInfiniteGas = false;
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
-    static final String SKU_PREMIUM = "premium";
-    static final String SKU_GAS = "gas";
+    static final OpenSku SKU_PREMIUM = new OpenSku(
+            new Sku(AppstoreType.GOOGLE, "sku_premium"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_premium"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
+    static final OpenSku SKU_GAS = new OpenSku(
+            new Sku(AppstoreType.GOOGLE, "sku_gas"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_gas"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
     
     // SKU for our subscription (infinite gas)
-    static final String SKU_INFINITE_GAS = "infinite_gas";
+    static final OpenSku SKU_INFINITE_GAS = new OpenSku(
+            new Sku(AppstoreType.GOOGLE, "sku_infinte_gas"),
+            new Sku(AppstoreType.AMAZON, "amazon_sku_infinite_gas"),
+            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
+            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
 
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
@@ -114,7 +130,7 @@ public class MainActivity extends Activity {
     int mTank;
 
     // The helper object
-    IabHelper mHelper;
+    OpenIabHelper mHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -136,7 +152,10 @@ public class MainActivity extends Activity {
          * of their own and then fake messages from the server.
          */
         String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
-        
+        String samsungGroupId = "PLACE_HERE_SAMSUNG_GROUP_ID";
+        String tstoreAppId = "PLACE_HERE_TSTORE_APP_ID";
+        String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
+
         // Some sanity checks to see if the developer (that's you!) really followed the
         // instructions to run this sample (don't put these checks on your app!)
         if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
@@ -148,7 +167,12 @@ public class MainActivity extends Activity {
         
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
-        mHelper = new IabHelper(this, base64EncodedPublicKey);
+        Map<String, String> extra = new HashMap<String, String>();
+        extra.put("GooglePublicKey", base64EncodedPublicKey);
+        extra.put("SamsungGroupId", samsungGroupId);
+        extra.put("TStoreAppId", tstoreAppId);
+        extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
+        mHelper = new OpenIabHelper(this, extra);
         
         // enable debug logging (for a production application, you should set this to false).
         mHelper.enableDebugLogging(true);
@@ -170,7 +194,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "Setup successful. Querying inventory.");
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
-        });
+        }, null);
     }
 
     // Listener that's called when we finish querying the items and subscriptions we own
