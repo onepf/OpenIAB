@@ -13,11 +13,14 @@
  * limitations under the License.
  */
 
-package com.example.android.trivialdrivesample;
+package org.onepf.trivialdrive_openiab;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -177,7 +180,7 @@ public class MainActivity extends Activity {
         createBroadcasts();
 
         // enable debug logging (for a production application, you should set this to false).
-        mHelper.enableDebugLogging(true);
+        //mHelper.enableDebugLogging(true);
 
         // Start setup. This is asynchronous and the specified listener
         // will be called once setup completes.
