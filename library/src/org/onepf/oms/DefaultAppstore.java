@@ -53,8 +53,4 @@ public class DefaultAppstore implements Appstore {
         return null;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.OPENSTORE;
-    }
 }

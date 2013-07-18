@@ -16,8 +16,12 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.AppstoreService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
-import org.onepf.oms.*;
 
 /**
  * User: Boris Minaev
@@ -61,11 +65,7 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.SAMSUNG";
+        return OpenIabHelper.NAME_SAMSUNG;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.SAMSUNG;
-    }
 }

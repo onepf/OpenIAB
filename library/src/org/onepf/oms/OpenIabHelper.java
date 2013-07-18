@@ -16,17 +16,22 @@
 
 package org.onepf.oms;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.onepf.oms.appstore.googleUtils.IabException;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
-import org.onepf.oms.appstore.IabHelperBillingService;
-import org.onepf.oms.appstore.googleUtils.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * User: Boris Minaev
@@ -35,7 +40,7 @@ import java.util.Map;
  */
 
 public class OpenIabHelper {
-    private static final String TAG = "IabHelper";
+    private static final String TAG = "OpenIabHelper";
     private final Context mContext;
     private final AppstoreServiceManager mServiceManager;
     private Appstore mAppstore;
@@ -69,7 +74,93 @@ public class OpenIabHelper {
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
     public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
+    
+    public static final String NAME_GOOGLE = "com.google.play";
+    public static final String NAME_AMAZON = "com.amazon.apps";
+    public static final String NAME_TSTORE = "com.tmobile.store";
+    public static final String NAME_SAMSUNG = "com.samsung.apps";
 
+    /** 
+     * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
+     */
+    private static final Map <String, Map<String, String>> sku2storeSkuMappings = new HashMap<String, Map <String, String>>();
+
+    /** 
+     * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
+     */
+    private static final Map <String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map <String, String>>();
+    
+    /**
+     * TODO: returns smth with nice API like .
+     * <pre>
+     * mapSku(sku).store(GOOGLE_PLAY).to(SKU_MY1_GOOGLE).and(AMAZON_APPS).to(SKU_MY1_AMAZON)
+     * or
+     * mapStore(AMAZON_APPS).sku(SKU_MY2).to(SKU_MY2_AMAZON).sku(SKU_MY3).to(SKU_MY3_AMAZON)
+     * </pre>
+     * 
+     * @param storeName - store name, provided by particular store service @see {@link IOpenAppstore#getAppstoreName()}
+     */
+    public static Map<String, String> storeMappings(String storeName) {
+        Map<String, String> result = sku2storeSkuMappings.get(storeName);
+        if (result == null) {
+            result = new HashMap<String, String>();
+            sku2storeSkuMappings.put(storeName, result);
+        }
+        throw new IllegalStateException("Not implemented yet. Should return smth useful for mapping ");
+    }
+    
+    /**
+     * TODO: consider sync
+     * 
+     * Map sku and storeSku for particular store. 
+     * @param sku - and
+     * @param storeSku - shouldn't duplicate already mapped values
+     * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
+     */
+    public static void mapSku(String sku, String storeName, String storeSku) {
+        Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
+        if (skuMap == null) {
+            skuMap = new HashMap<String, String>();
+            sku2storeSkuMappings.put(storeName, skuMap);
+        }
+        if (skuMap.get(sku) != null) {
+            throw new IllegalArgumentException("Already specified sku: " + sku + ", storeSku: " + skuMap.get(sku));
+        };
+
+        Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
+        if (storeSkuMap == null) {
+            storeSkuMap = new HashMap<String, String>();
+            storeSku2skuMappings.put(storeName, storeSkuMap);
+        }
+        if (storeSkuMap.get(storeSku) != null) {
+            throw new IllegalArgumentException("Already specified storeSku: " + storeSku + ", sku: " + storeSkuMap.get(storeSku));
+        }
+        
+        skuMap.put(sku, storeSku);
+        storeSkuMap.put(storeSku, sku);
+    }
+    
+    public static String getStoreSku(final String appstoreName, String sku) {
+        String currentStoreSku = sku;
+        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
+        if (skuMap != null && skuMap.get(sku) != null) {
+            currentStoreSku = skuMap.get(sku);
+            Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+        }
+        return currentStoreSku;
+    }
+    
+    public static String getSku(final String appstoreName, String storeSku) {
+        String sku = storeSku;
+        Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
+        if (skuMap != null && skuMap.get(sku) != null) {
+            sku = skuMap.get(sku);
+            Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+        }
+        return sku;
+    }
+
+    
     public interface OnOpenIabHelperInitFinished {
         public void onOpenIabHelperInitFinished();
     }
@@ -79,7 +170,10 @@ public class OpenIabHelper {
         mServiceManager = new AppstoreServiceManager(context, extra);
     }
 
-    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    /**
+     *  TODO: What is it's needed for ? 
+     */
+    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
             @Override
             public void onAppstoreServiceManagerInitFinishedListener() {
@@ -99,7 +193,7 @@ public class OpenIabHelper {
                     listener.onIabSetupFinished(iabResult);
                     return;
                 }
-                mAppstoreBillingService.startSetup(listener, billingService);
+                mAppstoreBillingService.startSetup(listener);
             }
         });
     }
@@ -115,83 +209,78 @@ public class OpenIabHelper {
         return true;
     }
 
-    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
+    public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
         launchPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+    public void launchPurchaseFlow(Activity act, String sku, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_INAPP, requestCode, listener, extraData);
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
                                                IabHelper.OnIabPurchaseFinishedListener listener) {
         launchSubscriptionPurchaseFlow(act, sku, requestCode, listener, "");
     }
 
-    public void launchSubscriptionPurchaseFlow(Activity act, OpenSku sku, int requestCode,
+    public void launchSubscriptionPurchaseFlow(Activity act, String sku, int requestCode,
                                                IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         launchPurchaseFlow(act, sku, ITEM_TYPE_SUBS, requestCode, listener, extraData);
     }
 
-    public void launchPurchaseFlow(Activity act, OpenSku sku, String itemType, int requestCode,
+    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
-        String skuCurrentStore = sku.getSku(mAppstore.getAppstoreType());
-        if (skuCurrentStore == null) {
-            // TODO: throw an exception
-            logError("No SKU for current appstore");
-            return;
+        String currentStoreSku1 = sku;
+        Map<String, String> skuMap = sku2storeSkuMappings.get(mAppstore.getAppstoreName());
+        if (skuMap != null && skuMap.get(sku) != null) {
+            currentStoreSku1 = skuMap.get(sku);
+            Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku1);
         }
-        mAppstoreBillingService.launchPurchaseFlow(act, skuCurrentStore, itemType, requestCode, listener, extraData);
+        String currentStoreSku = currentStoreSku1;
+        mAppstore.getAppstoreName();
+        mAppstoreBillingService.launchPurchaseFlow(act, currentStoreSku, itemType, requestCode, listener, extraData);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
-    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreSkus) throws IabException {
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
-    public Inventory queryInventory(boolean querySkuDetails, List<OpenSku> moreItemSkus,
-                                    List<OpenSku> moreSubsSkus) throws IabException {
+    /**
+     * 
+     * 
+     * @param querySkuDetails
+     * @param moreItemSkus
+     * @param moreSubsSkus - list of subscription skus to query regardless of ownership
+     */
+    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
-        //Map<String, String> skuToOpen = new HashMap<>();
-        List<String> moreItemSkusCurrentStore = new ArrayList<String>();
-        if (moreItemSkus == null) {
-            moreItemSkusCurrentStore = null;
-        } else {
-            for (OpenSku sku : moreItemSkus) {
-                String skuCurrentStore = sku.getSku(mAppstore.getAppstoreType());
-                if (skuCurrentStore == null) {
-                    // TODO: throw an exception
-                    logError("No matching SKU found for current appstore");
-                    return null;
-                }
-                moreItemSkusCurrentStore.add(skuCurrentStore);
+
+        List<String> moreItemStoreSkus = null;
+        if (moreItemSkus != null) {
+            moreItemStoreSkus = new ArrayList<String>();
+            for (String sku : moreItemSkus) {
+                String currentStoreSku = getStoreSku(mAppstore.getAppstoreName(), sku);
+                moreItemStoreSkus.add(currentStoreSku);
             }
         }
-        List<String> moreSubsSkusCurrentStore = new ArrayList<String>();
-        if (moreSubsSkus == null) {
-            moreSubsSkusCurrentStore = null;
-        } else {
-            for (OpenSku sku : moreSubsSkus) {
-                String skuCurrentStore = sku.getSku(mAppstore.getAppstoreType());
-                if (skuCurrentStore == null) {
-                    // TODO: throw an exception
-                    logError("No matching SKU found for current appstore");
-                    return null;
-                }
-                moreSubsSkusCurrentStore.add(skuCurrentStore);
+        List<String> moreSubsStoreSkus = null;
+        if (moreSubsSkus != null) {
+            moreSubsStoreSkus = new ArrayList<String>();
+            for (String sku : moreSubsSkus) {
+                String currentStoreSku = getStoreSku(mAppstore.getAppstoreName(), sku);
+                moreSubsStoreSkus.add(currentStoreSku);
             }
         }
-        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemSkusCurrentStore,
-                moreSubsSkusCurrentStore);
+        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
     }
 
     public void queryInventoryAsync(final boolean querySkuDetails,
-                                    final List<OpenSku> moreSkus,
+                                    final List<String> moreSkus,
                                     final IabHelper.QueryInventoryFinishedListener listener) {
         final Handler handler = new Handler();
         checkSetupDone("queryInventory");

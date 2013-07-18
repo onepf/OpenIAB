@@ -188,16 +188,13 @@ public class IabHelper {
      *
      * @param listener The listener to notify when the setup process is complete.
      */
-    public void startSetup(final OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
+    public void startSetup(final OnIabSetupFinishedListener listener) {
         // If already set up, can't do it again.
         if (mSetupDone) throw new IllegalStateException("IAB helper is already set up.");
 
         // Connection to IAB service
         logDebug("Starting in-app billing setup.");
-        mService = billingService;
-        if (mService == null) {
-            mService = new IabHelperBillingService(mContext);
-        }
+        mService = new IabHelperBillingService(mContext);
         mService.setIabHelper(this);
         mService.bindService(listener);
     }

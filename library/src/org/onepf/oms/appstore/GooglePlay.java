@@ -106,11 +106,7 @@ public class GooglePlay extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.GOOGLE";
+        return OpenIabHelper.NAME_GOOGLE;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.GOOGLE;
-    }
 }

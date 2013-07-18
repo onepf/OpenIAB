@@ -57,11 +57,7 @@ public class TStore extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.TSTORE";
+        return OpenIabHelper.NAME_TSTORE;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.TSTORE;
-    }
 }

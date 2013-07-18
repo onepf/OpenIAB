@@ -51,9 +51,9 @@ public class OpenAppstoreBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         Log.d(TAG, "will mIabHelper.startSetup");
-        mIabHelper.startSetup(listener, mIabHelperBillingService);
+        mIabHelper.startSetup(listener);
     }
 
     @Override

@@ -75,11 +75,7 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.AMAZON";
+        return OpenIabHelper.NAME_AMAZON;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.AMAZON;
-    }
 }

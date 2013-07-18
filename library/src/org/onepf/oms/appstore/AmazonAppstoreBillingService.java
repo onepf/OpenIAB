@@ -50,7 +50,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
         PurchasingManager.registerObserver(purchasingObserver);
         PurchasingManager.initiateGetUserIdRequest();

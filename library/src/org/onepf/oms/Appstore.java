@@ -45,5 +45,4 @@ public interface Appstore {
 
     // additional methods
     AppstoreInAppBillingService getInAppBillingService();
-    AppstoreType getAppstoreType();
 }

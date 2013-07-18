@@ -72,7 +72,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         IabResult res = new IabResult(0, "OK");
         listener.onIabSetupFinished(res);
     }
