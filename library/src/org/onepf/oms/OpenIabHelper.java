@@ -75,6 +75,11 @@ public class OpenIabHelper {
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
     public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
     
+    public static final int SERVICE_IN_APP_BILLING = 0;
+    public static final int SERVICE_LICENSING = 1;
+    public static final int SERVICE_PUSH = 2;
+    public static final int SERVICE_BACKUP = 3;
+    
     public static final String NAME_GOOGLE = "com.google.play";
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_TSTORE = "com.tmobile.store";
@@ -177,7 +182,7 @@ public class OpenIabHelper {
         mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
             @Override
             public void onAppstoreServiceManagerInitFinishedListener() {
-                mAppstore = mServiceManager.getAppstoreForService(AppstoreService.IN_APP_BILLING);
+                mAppstore = mServiceManager.getAppstoreForService(OpenIabHelper.SERVICE_IN_APP_BILLING);
                 if (mAppstore == null) {
                     logWarn("FAIL startSetup: Appstore is null");
                     return;
@@ -231,15 +236,8 @@ public class OpenIabHelper {
     public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
-        String currentStoreSku1 = sku;
-        Map<String, String> skuMap = sku2storeSkuMappings.get(mAppstore.getAppstoreName());
-        if (skuMap != null && skuMap.get(sku) != null) {
-            currentStoreSku1 = skuMap.get(sku);
-            Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku1);
-        }
-        String currentStoreSku = currentStoreSku1;
-        mAppstore.getAppstoreName();
-        mAppstoreBillingService.launchPurchaseFlow(act, currentStoreSku, itemType, requestCode, listener, extraData);
+        String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
+        mAppstoreBillingService.launchPurchaseFlow(act, storeSku, itemType, requestCode, listener, extraData);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
@@ -264,16 +262,16 @@ public class OpenIabHelper {
         if (moreItemSkus != null) {
             moreItemStoreSkus = new ArrayList<String>();
             for (String sku : moreItemSkus) {
-                String currentStoreSku = getStoreSku(mAppstore.getAppstoreName(), sku);
-                moreItemStoreSkus.add(currentStoreSku);
+                String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
+                moreItemStoreSkus.add(storeSku);
             }
         }
         List<String> moreSubsStoreSkus = null;
         if (moreSubsSkus != null) {
             moreSubsStoreSkus = new ArrayList<String>();
             for (String sku : moreSubsSkus) {
-                String currentStoreSku = getStoreSku(mAppstore.getAppstoreName(), sku);
-                moreSubsStoreSkus.add(currentStoreSku);
+                String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
+                moreSubsStoreSkus.add(storeSku);
             }
         }
         return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
@@ -317,9 +315,10 @@ public class OpenIabHelper {
     }
 
     public void consume(Purchase itemInfo) throws IabException {
-        // TODO: need to check store
         checkSetupDone("consume");
-        mAppstoreBillingService.consume(itemInfo);
+        Purchase purchaseStoreSku = (Purchase) itemInfo.clone(); // TODO: use Purchase.getStoreSku()
+        purchaseStoreSku.setSku(getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
+        mAppstoreBillingService.consume(purchaseStoreSku);
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {

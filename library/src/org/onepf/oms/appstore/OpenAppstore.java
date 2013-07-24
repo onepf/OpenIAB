@@ -27,7 +27,7 @@ import org.onepf.oms.*;
  * Time: 2:39
  */
 public class OpenAppstore extends DefaultAppstore {
-    static final private String TAG = Class.class.getSimpleName();
+    static final private String TAG = OpenAppstore.class.getSimpleName();
     Context mContext;
     IOpenAppstore mIOpenAppstore;
     AppstoreInAppBillingService mBillingService;
@@ -38,13 +38,17 @@ public class OpenAppstore extends DefaultAppstore {
         mIOpenAppstore = iOpenAppstore;
     }
 
-    public void startSetup(final String publicKey, final OnAppstoreStartSetupFinishListener listener) {
+    /**
+     * Prepare everything required to bind to remote billing server
+     * <p>
+     * <b>TODO:</b> do bind service and return success or not
+     */
+    public boolean initBilling(final String publicKey) {
         final String contextPackageName = getPackageName();
         Intent billingIntent = getServiceIntent(contextPackageName, BILLING_SERVICE);
 
         if (billingIntent == null) {
-            listener.onAppstoreStartSetupFinishListener(false);
-            return;
+            return false;
         }
 
         boolean isInstaller = isInstaller(contextPackageName);
@@ -53,8 +57,8 @@ public class OpenAppstore extends DefaultAppstore {
         boolean couldBeInstaller = couldBeInstaller(contextPackageName);
         Log.d(TAG, "couldBeInstaller: " + String.valueOf(couldBeInstaller));
 
-        mBillingService = new OpenAppstoreBillingService(publicKey, mContext, billingIntent);
-        listener.onAppstoreStartSetupFinishListener(true);
+        mBillingService = new OpenAppstoreBillingService(publicKey, mContext, billingIntent, this);
+        return true;
     }
 
     private String getPackageName() {

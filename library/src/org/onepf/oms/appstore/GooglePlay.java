@@ -35,9 +35,9 @@ public class GooglePlay extends DefaultAppstore {
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
     private InformationState isBillingSupported = InformationState.UNDEFINED;
-    private final String TAG = "IabHelper";
-    private final String ANDROID_INSTALLER = "com.android.vending";
-    private final String GOOGLE_INSTALLER = "com.google.vending";
+    private static final String TAG = "IabHelper";
+    private static final String ANDROID_INSTALLER = "com.android.vending";
+    private static final String GOOGLE_INSTALLER = "com.google.vending";
 
     private enum InformationState {
         UNDEFINED, SUPPORTED, UNSUPPORTED
@@ -75,8 +75,8 @@ public class GooglePlay extends DefaultAppstore {
     }
 
     //TODO: update to match new appstore aidl
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(int appstoreService) {
+        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
             Log.d(TAG, "Check google if billing supported");
             if (isBillingSupported != InformationState.UNDEFINED) {
                 return isBillingSupported == InformationState.SUPPORTED ? true : false;
@@ -99,7 +99,7 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new GooglePlayBillingService(mContext, mPublicKey);
+            mBillingService = new GooglePlayBillingService(mContext, mPublicKey, this);
         }
         return mBillingService;
     }

@@ -137,8 +137,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
                 purchases.remove(purchaseInfo);
                 // TODO: errors
                 IabResult iabResult = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ERROR, "Some error");
-                Purchase purchase = null;
-                purchaseInfo.mListener.onIabPurchaseFinished(iabResult, purchase);
+                purchaseInfo.mListener.onIabPurchaseFinished(iabResult, null);
             }
         }
     }
@@ -149,9 +148,9 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService, P
         if (purchaseInfo != null) {
             purchases.remove(purchaseInfo);
 
-            Purchase purchase = new Purchase();
+            Purchase purchase = new Purchase(OpenIabHelper.NAME_SAMSUNG);
             purchase.setItemType(purchaseInfo.mItemType);
-            purchase.setSku(purchaseInfo.mSku);
+            purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_SAMSUNG, purchaseInfo.mSku));
 
             IabResult iabResult;
             if (statusCode == Plasma.STATUS_CODE_SUCCESS) {

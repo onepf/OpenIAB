@@ -16,16 +16,19 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
 import android.util.Log;
-import org.onepf.oms.*;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final String TAG = "IabHelper";
+    private static final String TAG = AmazonAppstore.class.getSimpleName();
     private static volatile boolean IS_SANDBOX_MODE;
     private static volatile boolean IS_SANDBOX_MODE_CHECKED;
     private final Context mContext;
@@ -57,8 +60,8 @@ public class AmazonAppstore extends DefaultAppstore {
         return !IS_SANDBOX_MODE;
     }
 
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(int appstoreService) {
+        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
             return true;
         } else {
             return false;

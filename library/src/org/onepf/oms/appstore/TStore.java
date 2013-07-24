@@ -16,8 +16,11 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
-import org.onepf.oms.*;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -39,8 +42,8 @@ public class TStore extends DefaultAppstore {
         return false;
     }
 
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+    public boolean isServiceSupported(int appstoreService) {
+        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
             return true;
         } else {
             return false;

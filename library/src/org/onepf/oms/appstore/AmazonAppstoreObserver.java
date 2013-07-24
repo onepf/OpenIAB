@@ -16,15 +16,31 @@
 
 package org.onepf.oms.appstore;
 
+import java.util.LinkedList;
+import java.util.Map;
+
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.onepf.oms.appstore.googleUtils.SkuDetails;
+
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
-import com.amazon.inapp.purchasing.*;
-import org.onepf.oms.appstore.googleUtils.*;
 
-import java.util.LinkedList;
-import java.util.Map;
+import com.amazon.inapp.purchasing.BasePurchasingObserver;
+import com.amazon.inapp.purchasing.GetUserIdResponse;
+import com.amazon.inapp.purchasing.Item;
+import com.amazon.inapp.purchasing.ItemDataResponse;
+import com.amazon.inapp.purchasing.Offset;
+import com.amazon.inapp.purchasing.PurchaseResponse;
+import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
+import com.amazon.inapp.purchasing.PurchasingManager;
+import com.amazon.inapp.purchasing.Receipt;
+import com.amazon.inapp.purchasing.SubscriptionPeriod;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -32,7 +48,7 @@ import java.util.Map;
  */
 public class AmazonAppstoreObserver extends BasePurchasingObserver {
 
-    private static final String TAG = "IabHelper";
+    private static final String TAG = AmazonAppstoreObserver.class.getSimpleName();
     private final AmazonAppstoreBillingService mBillingService;
     private final Context mContext;
     private Offset mOffset;
@@ -117,24 +133,24 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
                     final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<SubscriptionPeriod>();
                     for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
-                        final String sku = receipt.getSku();
+                        final String storeSku = receipt.getSku();
                         Purchase purchase;
                         switch (receipt.getItemType()) {
                             case ENTITLED:
-                                purchase = new Purchase();
+                                purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
                                 purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-                                purchase.setSku(sku);
+                                purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                                 inventory.addPurchase(purchase);
-                                Log.d(TAG, "Add to inventory SKU: " + sku);
+                                Log.d(TAG, "Add to inventory SKU: " + storeSku);
                                 break;
                             case SUBSCRIPTION:
                                 final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
                                 if (subscriptionPeriod.getEndDate() == null) {
-                                    purchase = new Purchase();
+                                    purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
                                     purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
-                                    purchase.setSku(sku);
+                                    purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                                     inventory.addPurchase(purchase);
-                                    Log.d(TAG, "Add subscription to inventory SKU: " + sku);
+                                    Log.d(TAG, "Add subscription to inventory SKU: " + storeSku);
                                 }
 //                                final Date startDate = subscriptionPeriod.getStartDate();
 //                                if (latestSubscriptionPeriod == null ||
@@ -200,12 +216,13 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
             if (!purchaseResponse.getUserId().equals(userId)) {
                 mBillingService.setCurrentUser(purchaseResponse.getUserId());
             }
-            Purchase purchase = new Purchase();
+            Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
             IabResult result = null;
             switch (purchaseResponse.getPurchaseRequestStatus()) {
                 case SUCCESSFUL:
                     final Receipt receipt = purchaseResponse.getReceipt();
-                    purchase.setSku(receipt.getSku());
+                    final String storeSku = receipt.getSku();
+                    purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE:
                         case ENTITLED:

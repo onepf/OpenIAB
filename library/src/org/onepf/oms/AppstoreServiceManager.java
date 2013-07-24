@@ -25,6 +25,7 @@ import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+
 import org.onepf.oms.appstore.*;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.04.13
  */
 class AppstoreServiceManager {
-    private static final String TAG = "IabHelper";
+    private static final String TAG = AppstoreServiceManager.class.getSimpleName();
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     List<Appstore> appstores;
     Map<String, String> mExtra;
@@ -79,50 +80,60 @@ class AppstoreServiceManager {
                     Log.d(TAG, "appstoresService connected for component: " + name.flattenToShortString());
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
 
-                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext);
-
                     String appstoreName = null;
                     try {
                         appstoreName = openAppstoreService.getAppstoreName();
                     } catch (RemoteException e) {
-                        Log.w(TAG, "RemoteException: " + e.getMessage());
+                        Log.e(TAG, "onServiceConnected() ComponentName: " + name, e);
                     }
+                    
+                    if (appstoreName == null) { // no name - no service
+                        countDownLatch.countDown();
+                        Log.e(TAG, "onServiceConnected() Appstore doesn't have name. Skipped. ComponentName: " + name);
+                        return;
+                    }
+                    
+                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext);
+
                     String publicKey = mExtra.get(appstoreName);
 
-                    openAppstore.startSetup(publicKey, new OnAppstoreStartSetupFinishListener() {
-                        @Override
-                        public void onAppstoreStartSetupFinishListener(boolean isOk) {
-                            Log.d(TAG, "onAppstoreStartSetupFinishListener: " + String.valueOf(isOk));
-                            if (isOk == true) {
-                                synchronized (appstores) {
-                                    Log.d(TAG, "add new open store by type: " + openAppstore.getAppstoreName());
-                                    if (appstores.contains(openAppstore) == false) {
-                                        appstores.add(openAppstore);
-                                    }
-                                }
-                            }
-                            countDownLatch.countDown();
-                            if (countDownLatch.getCount() == 0) {
-                                initListener.onAppstoreServiceManagerInitFinishedListener();
+                    if (openAppstore.initBilling(publicKey)) {
+                        synchronized (appstores) {
+                            Log.d(TAG, "onServiceConnected() add new open store by type: " + openAppstore.getAppstoreName());
+                            if (appstores.contains(openAppstore) == false) {
+                                appstores.add(openAppstore);
                             }
                         }
-                    });
+                    } else {
+                        Log.d(TAG, "onServiceConnected(): billing init failed");
+                    }
+                    
+                    countDownLatch.countDown();
+                    if (countDownLatch.getCount() == 0) {
+                        initListener.onAppstoreServiceManagerInitFinishedListener();
+                    }
+
                 }
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    Log.d(TAG, "appstoresService disconnected for component: " + name.flattenToShortString());
+                    Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
                     //Nothing to do here
                 }
             }, Context.BIND_AUTO_CREATE);
         }
     }
 
-    public Appstore getAppstoreForService(AppstoreService appstoreService) {
+    /**
+     * Lookup for requested service in store based on isInstaller()/canBeInstaller() conditions 
+     * 
+     * @param appstoreService - ID of service. @see {@link OpenIabHelper#SERVICE_IN_APP_BILLING} 
+     */
+    public Appstore getAppstoreForService(int appstoreService) {
         //TODO: implement logic to choose app store.
         String packageName = mContext.getPackageName();
 
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
+        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
             Appstore installer = getInstallerAppstore();
             if (installer != null) {
                 Log.d(TAG, "Installer appstore: " + installer.getAppstoreName());
