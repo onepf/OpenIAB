@@ -36,7 +36,7 @@ import java.util.concurrent.CountDownLatch;
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
-class AppstoreServiceManager {
+public class AppstoreServiceManager {
     private static final String TAG = "IabHelper";
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     List<Appstore> appstores;
@@ -47,16 +47,20 @@ class AppstoreServiceManager {
         public void onAppstoreServiceManagerInitFinishedListener();
     }
 
-    AppstoreServiceManager(Context context, Map<String, String> extra) {
+    public AppstoreServiceManager(Context context, ArrayList<Appstore> appstores, Map<String, String> extra) {
         mContext = context;
         mExtra = extra;
+        this.appstores = appstores;
+    }
+
+    public AppstoreServiceManager(Context context, Map<String, String> extra) {
+        this(context, null, extra);
         appstores = new ArrayList<Appstore>();
         appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
         appstores.add(new AmazonAppstore(context));
         appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
         appstores.add(new TStore(context, extra.get("TStoreAppId")));
     }
-
 
     void startSetup(final OnAppstoreServiceManagerInitFinishedListener listener) {
         final OnAppstoreServiceManagerInitFinishedListener initListener = listener;
@@ -119,25 +123,21 @@ class AppstoreServiceManager {
     }
 
     public Appstore getAppstoreForService(AppstoreService appstoreService) {
-        //TODO: implement logic to choose app store.
-        String packageName = mContext.getPackageName();
-
         if (appstoreService == AppstoreService.IN_APP_BILLING) {
+            if (appstores.size() == 1) {
+                return appstores.get(0);
+            }
+
             Appstore installer = getInstallerAppstore();
             if (installer != null) {
                 Log.d(TAG, "Installer appstore: " + installer.getAppstoreName());
-                Intent inappIntent = installer.getServiceIntent(packageName, 0);
-                if (inappIntent != null) {
+                if (installer.isServiceSupported(appstoreService)) {
                     return installer;
                 }
             }
-
-            synchronized (appstores) {
-                for (Appstore appstore : appstores) {
-                    Intent inappIntent = installer.getServiceIntent(packageName, 0);
-                    if (inappIntent != null) {
-                        return appstore;
-                    }
+            for (Appstore appstore : appstores) {
+                if (appstore.isServiceSupported(appstoreService)) {
+                    return appstore;
                 }
             }
         }

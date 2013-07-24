@@ -19,6 +19,11 @@ public class DefaultAppstore implements Appstore {
     }
 
     @Override
+    public boolean isServiceSupported(AppstoreService appstoreService) {
+        return false;
+    }
+
+    @Override
     public Intent getServiceIntent(String packageName, int serviceType) {
         return null;
     }
