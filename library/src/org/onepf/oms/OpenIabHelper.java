@@ -31,6 +31,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 /**
@@ -170,9 +171,13 @@ public class OpenIabHelper {
         public void onOpenIabHelperInitFinished();
     }
 
-    public OpenIabHelper(Context context, Map<String, String> extra) {
+    public OpenIabHelper(Context context, AppstoreServiceManager manager, Map<String, String> extra) {
         mContext = context;
-        mServiceManager = new AppstoreServiceManager(context, extra);
+        mServiceManager = manager;
+    }
+
+    public OpenIabHelper(Context context, Map<String, String> extra) {
+        this(context, new AppstoreServiceManager(context, extra), extra);
     }
 
     /**
@@ -285,6 +290,7 @@ public class OpenIabHelper {
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
+                Looper.prepare();
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {

@@ -31,6 +31,8 @@ public interface Appstore {
 
     boolean couldBeInstaller(String packageName);
 
+    boolean isServiceSupported(int appstoreService);
+
     Intent getServiceIntent(String packageName, int serviceType);
 
     String getAppstoreName();

@@ -69,7 +69,7 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public Intent getServiceIntent(String packageName, int serviceType) {
         if (serviceType == 0) {
-            new Intent("com.android.vending.billing.InAppBillingService.BIND");
+            return new Intent("com.android.vending.billing.InAppBillingService.BIND");
         }
         return null;
     }

@@ -33,7 +33,7 @@ public class SamsungApps extends DefaultAppstore {
     private String mItemGroupId;
 
     // isDebugMode = true -> always returns Samsung Apps is installer
-    private final boolean isDebugMode = false;
+    private final boolean isDebugMode = true;
 
     public SamsungApps(Context context, String itemGroupId) {
         mContext = context;
