@@ -173,12 +173,12 @@ public class MainActivity extends Activity {
         
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
-        Map<String, String> extra = new HashMap<String, String>();
-        extra.put("GooglePublicKey", base64EncodedPublicKey);
-        extra.put("SamsungGroupId", samsungGroupId);
-        extra.put("TStoreAppId", tstoreAppId);
-        extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
-        mHelper = new OpenIabHelper(this, extra);
+        Map<String, String> storeKeys = new HashMap<String, String>();
+        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
+        storeKeys.put(OpenIabHelper.NAME_SAMSUNG, samsungGroupId);
+        storeKeys.put(OpenIabHelper.NAME_TSTORE, tstoreAppId);
+        storeKeys.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
+        mHelper = new OpenIabHelper(this, storeKeys);
         
         createBroadcasts();
 

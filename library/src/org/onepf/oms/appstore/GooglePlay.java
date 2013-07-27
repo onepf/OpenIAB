@@ -16,14 +16,17 @@
 
 package org.onepf.oms.appstore;
 
+import java.util.List;
+
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
-import org.onepf.oms.*;
-
-import java.util.List;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -31,18 +34,16 @@ import java.util.List;
  */
 
 public class GooglePlay extends DefaultAppstore {
+    private static final String TAG = GooglePlay.class.getSimpleName();
+
+    private static final String ANDROID_INSTALLER = "com.android.vending";
+    private static final String GOOGLE_INSTALLER = "com.google.vending";
+    private static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
+    
     private Context mContext;
     private GooglePlayBillingService mBillingService;
     private String mPublicKey;
-    private InformationState isBillingSupported = InformationState.UNDEFINED;
-    private static final String TAG = "IabHelper";
-    private static final String ANDROID_INSTALLER = "com.android.vending";
-    private static final String GOOGLE_INSTALLER = "com.google.vending";
-
-    private enum InformationState {
-        UNDEFINED, SUPPORTED, UNSUPPORTED
-    }
-
+    
     // isDebugMode = true |-> always returns app installed via Google Play
     private final boolean isDebugMode = false;
 
@@ -52,12 +53,7 @@ public class GooglePlay extends DefaultAppstore {
     }
 
     @Override
-    public boolean isAppAvailable(String packageName) {
-        return false;
-    }
-
-    @Override
-    public boolean isInstaller(String packageName) {
+    public boolean isPackageInstaller(String packageName) {
         if (isDebugMode) {
             return true;
         }
@@ -65,35 +61,29 @@ public class GooglePlay extends DefaultAppstore {
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
         return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
-
-    @Override
-    public Intent getServiceIntent(String packageName, int serviceType) {
-        if (serviceType == 0) {
-            return new Intent("com.android.vending.billing.InAppBillingService.BIND");
-        }
-        return null;
-    }
-
-    //TODO: update to match new appstore aidl
-    public boolean isServiceSupported(int appstoreService) {
-        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
-            Log.d(TAG, "Check google if billing supported");
-            if (isBillingSupported != InformationState.UNDEFINED) {
-                return isBillingSupported == InformationState.SUPPORTED ? true : false;
+    
+    /**
+     * Assume Android app is published in Google Play in any case. 
+     * 
+     * @return true if Google Play is installed in the system   
+     */
+    @Override    
+    public boolean isBillingAvailable(String packageName) {
+        Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
+        PackageManager packageManager = mContext.getPackageManager();
+        List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
+        for (PackageInfo packageInfo : allPackages) {
+            if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
+                Log.d(TAG, "Google supports billing");
+                return true;
             }
-            PackageManager packageManager = mContext.getPackageManager();
-            List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
-            for (PackageInfo packageInfo : allPackages) {
-                if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
-                    isBillingSupported = InformationState.SUPPORTED;
-                    Log.d(TAG, "Google supports billing");
-                    return true;
-                }
-            }
-            isBillingSupported = InformationState.UNSUPPORTED;
-            return false;
         }
         return false;
+    }
+
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
     }
 
     @Override

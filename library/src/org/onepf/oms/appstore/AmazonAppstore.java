@@ -16,6 +16,7 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
@@ -39,7 +40,7 @@ public class AmazonAppstore extends DefaultAppstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
+    public boolean isPackageInstaller(String packageName) {
         if (IS_SANDBOX_MODE_CHECKED) {
             return !IS_SANDBOX_MODE;
         }
@@ -60,14 +61,19 @@ public class AmazonAppstore extends DefaultAppstore {
         return !IS_SANDBOX_MODE;
     }
 
-    public boolean isServiceSupported(int appstoreService) {
-        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * Cannot assume any app is published in Amazon, so say YES only if Amazon is installer
+     */
+    @Override
+    public boolean isBillingAvailable(String packageName) {
+        return isPackageInstaller(packageName);
     }
-
+    
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
+    }
+    
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -80,5 +86,6 @@ public class AmazonAppstore extends DefaultAppstore {
     public String getAppstoreName() {
         return OpenIabHelper.NAME_AMAZON;
     }
+
 
 }

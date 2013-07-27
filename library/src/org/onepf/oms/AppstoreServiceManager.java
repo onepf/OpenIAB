@@ -16,22 +16,30 @@
 
 package org.onepf.oms;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+
+import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.GooglePlay;
+import org.onepf.oms.appstore.OpenAppstore;
+import org.onepf.oms.appstore.SamsungApps;
+import org.onepf.oms.appstore.TStore;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-
-import org.onepf.oms.appstore.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -40,36 +48,52 @@ import java.util.concurrent.CountDownLatch;
 public class AppstoreServiceManager {
     private static final String TAG = AppstoreServiceManager.class.getSimpleName();
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
-    List<Appstore> appstores;
-    Map<String, String> mExtra;
+    
     private Context mContext;
+    
+    private List<Appstore> appstores;
+    
+    private Map<String, String> storeKeys;
+    
+    /** Developer preferred store names */
+    private String[] prefferedStoreNames = new String[] {};
 
-    public interface OnAppstoreServiceManagerInitFinishedListener {
-        public void onAppstoreServiceManagerInitFinishedListener();
-    }
-
+    /**
+     * @deprecated use {@link #AppstoreServiceManager(Context, Map, String[], Appstore[])} instead
+     * @param appstores - additional stores to process as well as OpenStores
+     */
     public AppstoreServiceManager(Context context, ArrayList<Appstore> appstores, Map<String, String> extra) {
-        mContext = context;
-        mExtra = extra;
-        this.appstores = appstores;
+        this(context, extra, null, appstores.toArray(new Appstore[0]));
     }
 
-    public AppstoreServiceManager(Context context, Map<String, String> extra) {
-        this(context, null, extra);
-        appstores = new ArrayList<Appstore>();
-        appstores.add(new GooglePlay(context, extra.get("GooglePublicKey")));
-        appstores.add(new AmazonAppstore(context));
-        appstores.add(new SamsungApps(context, extra.get("SamsungGroupId")));
-        appstores.add(new TStore(context, extra.get("TStoreAppId")));
+    /**
+     * Main constructor
+     * 
+     * @param context
+     * @param storeKeys - map [ storeName -> publicKey ]
+     * @param prefferedStoreNames - will be used if package installer cannot be found
+     * @param extraStores - extra stores to participate in store elections
+     */
+    public AppstoreServiceManager(Context context, Map <String, String> storeKeys, String[] prefferedStoreNames, Appstore[] extraStores) {
+        this.mContext = context;
+        this.storeKeys = storeKeys;
+        this.prefferedStoreNames = prefferedStoreNames != null ? prefferedStoreNames : new String[]{};
+        this.appstores = extraStores != null ? new ArrayList<Appstore>(Arrays.asList(extraStores)) : new ArrayList<Appstore>();
     }
 
-    void startSetup(final OnAppstoreServiceManagerInitFinishedListener listener) {
-        final OnAppstoreServiceManagerInitFinishedListener initListener = listener;
+    /**
+     * Discover all OpenStore services, checks them and build {@link #appstores} list<br>
+     * 
+     * TODO: better to acquire all necessary params before store election
+     * @param listener - called back when all OpenStores collected and analyzed
+     */
+    void startSetup(final OnInitListener listener) {
+        final OnInitListener initListener = listener;
         PackageManager packageManager = mContext.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
         if (infoList.size() == 0) {
-            initListener.onAppstoreServiceManagerInitFinishedListener();
+            initListener.onInitFinished();
         }
 
         final CountDownLatch countDownLatch = new CountDownLatch(infoList.size());
@@ -99,7 +123,7 @@ public class AppstoreServiceManager {
                     
                     final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext);
 
-                    String publicKey = mExtra.get(appstoreName);
+                    String publicKey = storeKeys.get(appstoreName);
 
                     if (openAppstore.initBilling(publicKey)) {
                         synchronized (appstores) {
@@ -114,7 +138,7 @@ public class AppstoreServiceManager {
 
                     countDownLatch.countDown();
                     if (countDownLatch.getCount() == 0) {
-                        initListener.onAppstoreServiceManagerInitFinishedListener();
+                        initListener.onInitFinished();
                     }
 
                 }
@@ -128,60 +152,75 @@ public class AppstoreServiceManager {
         }
     }
 
+    
     /**
-     * Lookup for requested service in store based on isInstaller()/canBeInstaller() conditions 
+     * Lookup for requested service in store based on isPackageInstaller() & isBillingAvailable()
+     * <p>
+     * Scenario:
+     * <li>
+     * - look for installer: if exists and supports billing service - we done <li>  
+     * - rest of stores who support billing considered as candidates<p><li>
      * 
-     * @param appstoreService - ID of service. @see {@link OpenIabHelper#SERVICE_IN_APP_BILLING} 
+     * - find candidate according to [prefferedStoreNames]. if found - we done<p><li>
+     * 
+     * - select candidate randomly from 3 groups based on published package version<li> 
+     *   - published version == app.versionCode<li>
+     *   - published version  > app.versionCode<li>
+     *   - published version < app.versionCode
+     * 
      */
-    public Appstore getAppstoreForService(int appstoreService) {
-        //TODO: implement logic to choose app store.
+    public AppstoreInAppBillingService selectBillingService() {
         String packageName = mContext.getPackageName();
-
-        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
-            // TODO: should be better approach to select store manually
-            if (appstores.size() == 1) {
-                return appstores.get(0);
+        // candidates:
+        Map<String, Appstore> candidates = new HashMap<String, Appstore>();
+        //
+        for (Appstore appstore : appstores) {
+            if (appstore.isBillingAvailable(packageName)) {
+                candidates.put(appstore.getAppstoreName(), appstore);
             }
-            
-            Appstore installer = getInstallerAppstore();
-            if (installer != null) {
-                Log.d(TAG, "Installer appstore: " + installer.getAppstoreName());
-                if (installer.isServiceSupported(appstoreService)) {
-                    return installer;
-                }
-            }
-                for (Appstore appstore : appstores) {
-                if (appstore.isServiceSupported(appstoreService)) {
-                        return appstore;
-                    }
-                }
-            }
-        return null;
-    }
-
-    public Appstore getInstallerAppstore() {
-        //TODO: implement logic to choose app store.
-        String packageName = mContext.getPackageName();
-        Appstore returnAppstore = null;
-        synchronized (appstores) {
-            for (Appstore appstore : appstores) {
-                if (appstore.isInstaller(packageName)) {
-                    return appstore;
-                }
-                // return last appstore if no one is selected (debug mode)
-                returnAppstore = appstore;
-            }
-            for (Appstore appstore : appstores) {
-                if (appstore.couldBeInstaller(packageName)) {
-                    return appstore;
-                }
-                // return last appstore if no one is selected (debug mode)
-                returnAppstore = appstore;
+            if (appstore.isPackageInstaller(packageName)) {
+                return appstore.getInAppBillingService();
             }
         }
-        if (returnAppstore != null) {
-            Log.w(TAG, "getInstallerAppstore returns random appstore");
+        if (candidates.size() == 0) return null;
+        
+        // lookup for developer preffered stores
+        for (int i = 0; i < prefferedStoreNames.length; i++) {
+            Appstore candidate = candidates.get(prefferedStoreNames[i]);
+            if (candidate != null) {
+                return candidate.getInAppBillingService();
+            }
         }
-        return returnAppstore;
+        // nothing found. select something that matches package version
+        int versionCode = Appstore.PACKAGE_VERSION_UNDEFINED; 
+        try {
+            versionCode = mContext.getPackageManager().getPackageInfo(packageName, 0).versionCode;
+        } catch (NameNotFoundException e) {
+            Log.e(TAG, "Are we installed?", e);
+        }
+        List<Appstore> sameVersion = new ArrayList<Appstore>();
+        List<Appstore> higherVersion = new ArrayList<Appstore>();
+        for (Appstore candidate : candidates.values()) {
+            final int storeVersion = candidate.getPackageVersion(packageName);
+            if (storeVersion == versionCode) {
+                 sameVersion.add(candidate);
+            } else if (storeVersion > versionCode) {
+                higherVersion.add(candidate);
+            }
+        }
+        // use random if found stores with same version of package  
+        if (sameVersion.size() > 0) {
+            return sameVersion.get(new Random().nextInt(sameVersion.size())).getInAppBillingService();
+        } else if (higherVersion.size() > 0) {  // or one of higher version
+            return higherVersion.get(new Random().nextInt(higherVersion.size())).getInAppBillingService();
+        } else {                                // ok, return no matter what
+            return candidates.get(new Random().nextInt(candidates.size())).getInAppBillingService(); 
+        }
     }
+    
+    
+    public interface OnInitListener {
+        public void onInitFinished();
+    }
+
 }

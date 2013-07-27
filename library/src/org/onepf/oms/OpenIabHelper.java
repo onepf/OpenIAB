@@ -21,6 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.GooglePlay;
+import org.onepf.oms.appstore.SamsungApps;
+import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -75,12 +79,7 @@ public class OpenIabHelper {
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE = 3;
     public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
-    
-    public static final int SERVICE_IN_APP_BILLING = 0;
-    public static final int SERVICE_LICENSING = 1;
-    public static final int SERVICE_PUSH = 2;
-    public static final int SERVICE_BACKUP = 3;
-    
+        
     public static final String NAME_GOOGLE = "com.google.play";
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_TSTORE = "com.tmobile.store";
@@ -171,34 +170,38 @@ public class OpenIabHelper {
         public void onOpenIabHelperInitFinished();
     }
 
+    /**
+     * @deprecated TODO: need to add limited list of stores to avoid store elections 
+     */
     public OpenIabHelper(Context context, AppstoreServiceManager manager, Map<String, String> extra) {
         mContext = context;
         mServiceManager = manager;
     }
 
-    public OpenIabHelper(Context context, Map<String, String> extra) {
-        this(context, new AppstoreServiceManager(context, extra), extra);
+    public OpenIabHelper(Context context, Map<String, String> storeKeys) {
+        this(context, storeKeys, null);
+    }
+    
+    public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
+        this.mContext = context;
+        this.mServiceManager = new AppstoreServiceManager(context, storeKeys, prefferedStores, new Appstore[] {
+                    new GooglePlay(context, storeKeys.get(OpenIabHelper.NAME_GOOGLE))
+                ,   new AmazonAppstore(context)
+                ,   new SamsungApps(context, storeKeys.get(OpenIabHelper.NAME_SAMSUNG))
+                ,   new TStore(context, storeKeys.get(OpenIabHelper.NAME_TSTORE))
+        });
     }
 
     /**
-     *  TODO: What is it's needed for ? 
+     *  Discover available stores and select the best billing service. Calls listener when service is found
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
-        mServiceManager.startSetup(new AppstoreServiceManager.OnAppstoreServiceManagerInitFinishedListener() {
+        mServiceManager.startSetup(new AppstoreServiceManager.OnInitListener() {
             @Override
-            public void onAppstoreServiceManagerInitFinishedListener() {
-                mAppstore = mServiceManager.getAppstoreForService(OpenIabHelper.SERVICE_IN_APP_BILLING);
-                if (mAppstore == null) {
-                    logWarn("FAIL startSetup: Appstore is null");
-                    return;
-                }
-                logDebug("OpenIabHelper use appstore: " + mAppstore.getAppstoreName());
-
+            public void onInitFinished() {
                 mAppstoreBillingService = mAppstore.getInAppBillingService();
 
-                mSetupDone = true;
-                // TODO: this is always false!
-                if (!mSetupDone) {
+                if (mAppstoreBillingService == null) {
                     IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     listener.onIabSetupFinished(iabResult);
                     return;

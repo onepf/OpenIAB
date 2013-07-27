@@ -2,36 +2,7 @@ package org.onepf.oms;
 
 import android.content.Intent;
 
-public class DefaultAppstore implements Appstore {
-    @Override
-    public boolean isAppAvailable(String packageName) {
-        return false;
-    }
-
-    @Override
-    public boolean isInstaller(String packageName) {
-        return false;
-    }
-
-    @Override
-    public boolean couldBeInstaller(String packageName) {
-        return false;
-    }
-
-    @Override
-    public boolean isServiceSupported(int appstoreService) {
-        return false;
-    }
-
-    @Override
-    public Intent getServiceIntent(String packageName, int serviceType) {
-        return null;
-    }
-
-    @Override
-    public String getAppstoreName() {
-        return null;
-    }
+public abstract class DefaultAppstore implements Appstore {
 
     @Override
     public Intent getProductPageIntent(String packageName) {

@@ -16,6 +16,7 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
@@ -33,7 +34,7 @@ public class SamsungApps extends DefaultAppstore {
     private String mItemGroupId;
 
     // isDebugMode = true -> always returns Samsung Apps is installer
-    private final boolean isDebugMode = true;
+    private final boolean isDebugMode = false;
 
     public SamsungApps(Context context, String itemGroupId) {
         mContext = context;
@@ -41,19 +42,22 @@ public class SamsungApps extends DefaultAppstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
+    public boolean isPackageInstaller(String packageName) {
         // TODO: write normal checker
         return isDebugMode;
     }
 
-    public boolean isServiceSupported(int appstoreService) {
-        if (appstoreService == OpenIabHelper.SERVICE_IN_APP_BILLING) {
-            return isDebugMode;
-        }
+    @Override
+    public boolean isBillingAvailable(String packageName) {
+        return isDebugMode;
         // TODO: write implementation
-        return false;
     }
-
+    
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
+    }
+    
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -66,5 +70,6 @@ public class SamsungApps extends DefaultAppstore {
     public String getAppstoreName() {
         return OpenIabHelper.NAME_SAMSUNG;
     }
+
 
 }

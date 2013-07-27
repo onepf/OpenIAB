@@ -36,13 +36,14 @@ import android.util.Log;
  * Time: 3:03
  */
 public class OpenAppstoreBillingService implements AppstoreInAppBillingService {
-    static final private String TAG = Class.class.getSimpleName();
+    static final private String TAG = OpenAppstoreBillingService.class.getSimpleName();
+    
     OpenIabHelperBillingService mIabHelperBillingService;
     String mPublicKey;
     IabHelper mIabHelper;
 
     public OpenAppstoreBillingService(String publicKey, Context context, Intent billingIntent, Appstore appstore) {
-        Log.d(TAG, "create new OpenAppstoreBillingService");
+        Log.d(TAG, "OpenAppstoreBillingService() publicKey: " + publicKey+ " context: " + context+ " billingIntent: " + billingIntent+ " appstore: " + appstore);
         mPublicKey = publicKey;
         mIabHelper = new IabHelper(context, publicKey, appstore);
         mIabHelperBillingService = new OpenIabHelperBillingService(context);
