@@ -65,39 +65,16 @@ public class AmazonAppstoreObserver extends BasePurchasingObserver {
     }
 
     @Override
-    public void onGetUserIdResponse(final GetUserIdResponse getUserIdResponse) {
-        Log.v(TAG, "onGetUserIdResponse recieved: Response -" + getUserIdResponse);
-        Log.v(TAG, "RequestId:" + getUserIdResponse.getRequestId());
-        Log.v(TAG, "IdRequestStatus:" + getUserIdResponse.getUserIdRequestStatus());
-        new GetUserIdAsyncTask().execute(getUserIdResponse);
-    }
+    public void onGetUserIdResponse(final GetUserIdResponse userIdResponse) {
+        Log.d(TAG, "onGetUserIdResponse() getUserIdResponse: " + userIdResponse + ", requestId: " + userIdResponse.getRequestId() 
+                + ", idRequestStatus: " + userIdResponse.getUserIdRequestStatus());
 
-    private class GetUserIdAsyncTask extends AsyncTask<GetUserIdResponse, Void, Boolean> {
-        @Override
-        protected Boolean doInBackground(final GetUserIdResponse... params) {
-            GetUserIdResponse getUserIdResponse = params[0];
-
-            if (getUserIdResponse.getUserIdRequestStatus() == GetUserIdResponse.GetUserIdRequestStatus.SUCCESSFUL) {
-                final String userId = getUserIdResponse.getUserId();
-                Log.d(TAG, "Set current userId: " + userId);
-                mBillingService.setCurrentUser(userId);
-                return true;
-            } else {
-                Log.v(TAG, "onGetUserIdResponse: Unable to get user ID.");
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean result) {
-            super.onPostExecute(result);
-//            if (result) {
-//                if (mOffset == null) {
-//                    PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
-//                } else {
-//                    PurchasingManager.initiatePurchaseUpdatesRequest(Offset.fromString(mOffset));
-//                }
-//            }
+        if (userIdResponse.getUserIdRequestStatus() == GetUserIdResponse.GetUserIdRequestStatus.SUCCESSFUL) {
+            final String userId = userIdResponse.getUserId();
+            Log.d(TAG, "Set current userId: " + userId);
+            mBillingService.setCurrentUser(userId);
+        } else {
+            Log.d(TAG, "onGetUserIdResponse() Unable to get user ID");
         }
     }
 

@@ -32,6 +32,10 @@ import java.util.List;
  * Time: 15:46
  */
 public interface AppstoreInAppBillingService {
+    /**
+     * Initialization of service. After initialization is completed listener.onIabSetupFinished() 
+     * must be called in UI thread 
+     */
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
     void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);

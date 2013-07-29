@@ -116,8 +116,11 @@ public class AppstoreServiceManager {
                     }
                     
                     if (appstoreName == null) { // no name - no service
-                        countDownLatch.countDown();
                         Log.e(TAG, "onServiceConnected() Appstore doesn't have name. Skipped. ComponentName: " + name);
+                        countDownLatch.countDown();
+                        if (countDownLatch.getCount() == 0) {
+                            initListener.onInitFinished();
+                        }
                         return;
                     }
                     

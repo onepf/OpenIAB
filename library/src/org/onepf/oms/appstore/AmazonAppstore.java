@@ -30,8 +30,8 @@ import android.util.Log;
  */
 public class AmazonAppstore extends DefaultAppstore {
     private static final String TAG = AmazonAppstore.class.getSimpleName();
-    private static volatile boolean IS_SANDBOX_MODE;
-    private static volatile boolean IS_SANDBOX_MODE_CHECKED;
+    private static volatile boolean IS_SANDBOX_MODE = false;
+    private static volatile boolean IS_SANDBOX_MODE_CHECKED = true;
     private final Context mContext;
     private AmazonAppstoreBillingService mBillingService;
 

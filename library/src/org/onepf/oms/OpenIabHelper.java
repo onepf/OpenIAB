@@ -27,6 +27,7 @@ import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
@@ -86,6 +87,8 @@ public class OpenIabHelper {
     public static final String NAME_SAMSUNG = "com.samsung.apps";
 
     /** 
+     * NOTE: used as sync object in related methods<br>
+     * 
      * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
      */
     private static final Map <String, Map<String, String>> sku2storeSkuMappings = new HashMap<String, Map <String, String>>();
@@ -94,75 +97,67 @@ public class OpenIabHelper {
      * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
      */
     private static final Map <String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map <String, String>>();
-    
+        
     /**
-     * TODO: returns smth with nice API like .
+     * Map sku and storeSku for particular store.
+     * 
+     * TODO: returns smth with nice API like:
      * <pre>
      * mapSku(sku).store(GOOGLE_PLAY).to(SKU_MY1_GOOGLE).and(AMAZON_APPS).to(SKU_MY1_AMAZON)
      * or
      * mapStore(AMAZON_APPS).sku(SKU_MY2).to(SKU_MY2_AMAZON).sku(SKU_MY3).to(SKU_MY3_AMAZON)
      * </pre>
      * 
-     * @param storeName - store name, provided by particular store service @see {@link IOpenAppstore#getAppstoreName()}
-     */
-    public static Map<String, String> storeMappings(String storeName) {
-        Map<String, String> result = sku2storeSkuMappings.get(storeName);
-        if (result == null) {
-            result = new HashMap<String, String>();
-            sku2storeSkuMappings.put(storeName, result);
-        }
-        throw new IllegalStateException("Not implemented yet. Should return smth useful for mapping ");
-    }
-    
-    /**
-     * TODO: consider sync
-     * 
-     * Map sku and storeSku for particular store. 
      * @param sku - and
      * @param storeSku - shouldn't duplicate already mapped values
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
      */
     public static void mapSku(String sku, String storeName, String storeSku) {
-        Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
-        if (skuMap == null) {
-            skuMap = new HashMap<String, String>();
-            sku2storeSkuMappings.put(storeName, skuMap);
+        synchronized (sku2storeSkuMappings) {
+            Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
+            if (skuMap == null) {
+                skuMap = new HashMap<String, String>();
+                sku2storeSkuMappings.put(storeName, skuMap);
+            }
+            if (skuMap.get(sku) != null) {
+                throw new IllegalArgumentException("Already specified sku: " + sku + ", storeSku: " + skuMap.get(sku));
+            }
+            ;
+            Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
+            if (storeSkuMap == null) {
+                storeSkuMap = new HashMap<String, String>();
+                storeSku2skuMappings.put(storeName, storeSkuMap);
+            }
+            if (storeSkuMap.get(storeSku) != null) {
+                throw new IllegalArgumentException("Already specified storeSku: " + storeSku + ", sku: " + storeSkuMap.get(storeSku));
+            }
+            skuMap.put(sku, storeSku);
+            storeSkuMap.put(storeSku, sku);
         }
-        if (skuMap.get(sku) != null) {
-            throw new IllegalArgumentException("Already specified sku: " + sku + ", storeSku: " + skuMap.get(sku));
-        };
-
-        Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
-        if (storeSkuMap == null) {
-            storeSkuMap = new HashMap<String, String>();
-            storeSku2skuMappings.put(storeName, storeSkuMap);
-        }
-        if (storeSkuMap.get(storeSku) != null) {
-            throw new IllegalArgumentException("Already specified storeSku: " + storeSku + ", sku: " + storeSkuMap.get(storeSku));
-        }
-        
-        skuMap.put(sku, storeSku);
-        storeSkuMap.put(storeSku, sku);
     }
     
     public static String getStoreSku(final String appstoreName, String sku) {
-        String currentStoreSku = sku;
-        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-        if (skuMap != null && skuMap.get(sku) != null) {
-            currentStoreSku = skuMap.get(sku);
-            Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+        synchronized (sku2storeSkuMappings) {
+            String currentStoreSku = sku;
+            Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
+            if (skuMap != null && skuMap.get(sku) != null) {
+                currentStoreSku = skuMap.get(sku);
+                Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+            }
+            return currentStoreSku;
         }
-        return currentStoreSku;
     }
     
     public static String getSku(final String appstoreName, String storeSku) {
-        String sku = storeSku;
-        Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
-        if (skuMap != null && skuMap.get(sku) != null) {
-            sku = skuMap.get(sku);
-            Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+        synchronized (sku2storeSkuMappings) {
+            String sku = storeSku;
+            Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
+            if (skuMap != null && skuMap.get(sku) != null) {
+                sku = skuMap.get(sku);
+                Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+            }
+            return sku;
         }
-        return sku;
     }
 
     
@@ -199,14 +194,19 @@ public class OpenIabHelper {
         mServiceManager.startSetup(new AppstoreServiceManager.OnInitListener() {
             @Override
             public void onInitFinished() {
-                mAppstoreBillingService = mAppstore.getInAppBillingService();
+                mAppstoreBillingService = mServiceManager.selectBillingService();
 
                 if (mAppstoreBillingService == null) {
                     IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     listener.onIabSetupFinished(iabResult);
                     return;
                 }
-                mAppstoreBillingService.startSetup(listener);
+                mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
+                    public void onIabSetupFinished(IabResult result) {
+                        mSetupDone = true;
+                        listener.onIabSetupFinished(result);
+                    }
+                });
             }
         });
     }

@@ -41,6 +41,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;
     private Inventory mInventory;
+    private IabHelper.OnIabSetupFinishedListener setupListener;
 
     private CountDownLatch mInventoryRetrived;
 
@@ -54,7 +55,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         AmazonAppstoreObserver purchasingObserver = new AmazonAppstoreObserver(mContext, this);
         PurchasingManager.registerObserver(purchasingObserver);
         PurchasingManager.initiateGetUserIdRequest();
-        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+        this.setupListener = listener;
     }
 
     @Override
@@ -118,7 +119,11 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     public void setCurrentUser(String currentUser) {
-        mCurrentUser = currentUser;
+        this.mCurrentUser = currentUser;
+        if (setupListener != null) {
+            setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+            setupListener = null;
+        }
     }
 
     public String getCurrentUser() {
