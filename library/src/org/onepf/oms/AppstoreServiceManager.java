@@ -172,7 +172,7 @@ public class AppstoreServiceManager {
      *   - published version < app.versionCode
      * 
      */
-    public AppstoreInAppBillingService selectBillingService() {
+    public Appstore selectBillingService() {
         String packageName = mContext.getPackageName();
         // candidates:
         Map<String, Appstore> candidates = new HashMap<String, Appstore>();
@@ -182,7 +182,7 @@ public class AppstoreServiceManager {
                 candidates.put(appstore.getAppstoreName(), appstore);
             }
             if (appstore.isPackageInstaller(packageName)) {
-                return appstore.getInAppBillingService();
+                return appstore;
             }
         }
         if (candidates.size() == 0) return null;
@@ -191,7 +191,7 @@ public class AppstoreServiceManager {
         for (int i = 0; i < prefferedStoreNames.length; i++) {
             Appstore candidate = candidates.get(prefferedStoreNames[i]);
             if (candidate != null) {
-                return candidate.getInAppBillingService();
+                return candidate;
             }
         }
         // nothing found. select something that matches package version
@@ -213,11 +213,11 @@ public class AppstoreServiceManager {
         }
         // use random if found stores with same version of package  
         if (sameVersion.size() > 0) {
-            return sameVersion.get(new Random().nextInt(sameVersion.size())).getInAppBillingService();
+            return sameVersion.get(new Random().nextInt(sameVersion.size()));
         } else if (higherVersion.size() > 0) {  // or one of higher version
-            return higherVersion.get(new Random().nextInt(higherVersion.size())).getInAppBillingService();
+            return higherVersion.get(new Random().nextInt(higherVersion.size()));
         } else {                                // ok, return no matter what
-            return candidates.get(new Random().nextInt(candidates.size())).getInAppBillingService(); 
+            return candidates.get(new Random().nextInt(candidates.size())); 
         }
     }
     

@@ -36,7 +36,8 @@ import java.util.concurrent.CountDownLatch;
  * Date: 16.04.13
  */
 public class AmazonAppstoreBillingService implements AppstoreInAppBillingService {
-    private static final String TAG = "IabHelper";
+    private static final String TAG = AmazonAppstoreBillingService.class.getSimpleName();
+    
     private final Context mContext;
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners;
     private String mCurrentUser;
@@ -81,7 +82,6 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
             return null;
         }
         if (querySkuDetails) {
-            mInventoryRetrived = new CountDownLatch(1);
             Set<String> querySkus = new HashSet<String>(mInventory.getAllOwnedSkus());
             if (moreItemSkus != null) {
                 querySkus.addAll(moreItemSkus);
@@ -89,11 +89,14 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
             if (moreSubsSkus != null) {
                 querySkus.addAll(moreSubsSkus);
             }
-            PurchasingManager.initiateItemDataRequest(querySkus);
-            try {
-                mInventoryRetrived.await();
-            } catch (InterruptedException e) {
-                Log.w(TAG, "Amazon SkuDetails fetching interrupted");
+            if (querySkus.size() > 0) {
+                mInventoryRetrived = new CountDownLatch(1);
+                PurchasingManager.initiateItemDataRequest(querySkus);
+                try {
+                    mInventoryRetrived.await();
+                } catch (InterruptedException e) {
+                    Log.w(TAG, "Amazon SkuDetails fetching interrupted");
+                }
             }
         }
         Log.d(TAG, "Amazon queryInventory finished. Inventory size: " + mInventory.getAllOwnedSkus().size());

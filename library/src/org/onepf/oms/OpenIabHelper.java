@@ -194,13 +194,15 @@ public class OpenIabHelper {
         mServiceManager.startSetup(new AppstoreServiceManager.OnInitListener() {
             @Override
             public void onInitFinished() {
-                mAppstoreBillingService = mServiceManager.selectBillingService();
-
-                if (mAppstoreBillingService == null) {
+                
+                mAppstore = mServiceManager.selectBillingService();
+                if (mAppstore == null) {
                     IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     listener.onIabSetupFinished(iabResult);
                     return;
                 }
+                
+                mAppstoreBillingService = mAppstore.getInAppBillingService(); 
                 mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
                     public void onIabSetupFinished(IabResult result) {
                         mSetupDone = true;

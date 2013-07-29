@@ -30,8 +30,8 @@ import android.util.Log;
  */
 public class AmazonAppstore extends DefaultAppstore {
     private static final String TAG = AmazonAppstore.class.getSimpleName();
-    private static volatile boolean IS_SANDBOX_MODE = false;
-    private static volatile boolean IS_SANDBOX_MODE_CHECKED = true;
+    private static volatile boolean IS_SANDBOX_MODE; //  = false;
+    private static volatile boolean IS_SANDBOX_MODE_CHECKED;//  = true;
     private final Context mContext;
     private AmazonAppstoreBillingService mBillingService;
 
@@ -41,6 +41,7 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
+        Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
         if (IS_SANDBOX_MODE_CHECKED) {
             return !IS_SANDBOX_MODE;
         }
@@ -53,11 +54,12 @@ public class AmazonAppstore extends DefaultAppstore {
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
                 IS_SANDBOX_MODE = false;
             } catch (Throwable localThrowable) {
+                Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
                 IS_SANDBOX_MODE = true;
             }
             IS_SANDBOX_MODE_CHECKED = true;
         }
-        Log.d(TAG, "IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
+        Log.d(TAG, "isPackageInstaller() IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
         return !IS_SANDBOX_MODE;
     }
 
