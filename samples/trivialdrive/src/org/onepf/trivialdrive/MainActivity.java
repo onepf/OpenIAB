@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 
-package org.onepf.trivialdrive_openiab;
+package org.onepf.trivialdrive;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
-
+import org.onepf.trivialdrive.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -108,15 +107,15 @@ public class MainActivity extends Activity {
     static final String SKU_INFINITE_GAS = "sku_infinite_gas";
     
     static {
-        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "amazon_sku_premium");
+        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_premium");
 
-        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "amazon_sku_gas");
+        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_gas");
 
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "amazon_sku_infinite_gas");
+        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_infinite_gas");
 
