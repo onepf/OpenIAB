@@ -295,7 +295,6 @@ public class OpenIabHelper {
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
-                Looper.prepare();
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {
