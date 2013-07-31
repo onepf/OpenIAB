@@ -30,9 +30,11 @@ import android.util.Log;
  */
 public class AmazonAppstore extends DefaultAppstore {
     private static final String TAG = AmazonAppstore.class.getSimpleName();
-    private static volatile boolean IS_SANDBOX_MODE; //  = false;
-    private static volatile boolean IS_SANDBOX_MODE_CHECKED;//  = true;
+    
+    private volatile Boolean sandboxMode;// = false;
+    
     private final Context mContext;
+    
     private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
@@ -42,25 +44,21 @@ public class AmazonAppstore extends DefaultAppstore {
     @Override
     public boolean isPackageInstaller(String packageName) {
         Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
-        if (IS_SANDBOX_MODE_CHECKED) {
-            return !IS_SANDBOX_MODE;
+        if (sandboxMode != null) {
+            return !sandboxMode;
         }
         synchronized (AmazonAppstore.class) {
-            if (IS_SANDBOX_MODE_CHECKED) {
-                return !IS_SANDBOX_MODE;
-            }
             try {
                 ClassLoader localClassLoader = AmazonAppstore.class.getClassLoader();
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
-                IS_SANDBOX_MODE = false;
+                sandboxMode = false;
             } catch (Throwable localThrowable) {
                 Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
-                IS_SANDBOX_MODE = true;
+                sandboxMode = true;
             }
-            IS_SANDBOX_MODE_CHECKED = true;
         }
-        Log.d(TAG, "isPackageInstaller() IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
-        return !IS_SANDBOX_MODE;
+        Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        return !sandboxMode;
     }
 
     /**

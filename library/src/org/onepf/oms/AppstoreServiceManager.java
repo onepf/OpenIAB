@@ -24,11 +24,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.OpenAppstore;
-import org.onepf.oms.appstore.SamsungApps;
-import org.onepf.oms.appstore.TStore;
 
 import android.content.ComponentName;
 import android.content.Context;

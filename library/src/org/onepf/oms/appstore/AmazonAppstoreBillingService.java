@@ -16,6 +16,22 @@
 
 package org.onepf.oms.appstore;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.onepf.oms.appstore.googleUtils.SkuDetails;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -32,21 +48,11 @@ import com.amazon.inapp.purchasing.PurchasingManager;
 import com.amazon.inapp.purchasing.Receipt;
 import com.amazon.inapp.purchasing.SubscriptionPeriod;
 
-import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.googleUtils.IabHelper;
-import org.onepf.oms.appstore.googleUtils.IabResult;
-import org.onepf.oms.appstore.googleUtils.Inventory;
-import org.onepf.oms.appstore.googleUtils.Purchase;
-import org.onepf.oms.appstore.googleUtils.SkuDetails;
-import org.onepf.oms.appstore.tstoreUtils.CommandRequest.Parameter;
-
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-
 /**
- * Author: Ruslan Sayfutdinov
- * Date: 16.04.13
+ * Amazon billing service impl
+ * 
+ * @author Ruslan Sayfutdinov, Oleg Orlov
+ * @since 16.04.13
  */
 public class AmazonAppstoreBillingService extends BasePurchasingObserver implements AppstoreInAppBillingService {
     private static final String TAG = AmazonAppstoreBillingService.class.getSimpleName();
@@ -64,6 +70,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     /** If not null will be notified from  */
     private IabHelper.OnIabSetupFinishedListener setupListener;
 
+    /** TODO: consider removal inventoryLatch or using carefully */
     private CountDownLatch inventoryLatch;
 
     public AmazonAppstoreBillingService(Context context) {
@@ -76,8 +83,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         PurchasingManager.registerObserver(this);
-        PurchasingManager.initiateGetUserIdRequest();
         this.setupListener = listener;
+        PurchasingManager.initiateGetUserIdRequest();
     }
 
     @Override

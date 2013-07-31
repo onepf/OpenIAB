@@ -38,7 +38,7 @@ public class GooglePlay extends DefaultAppstore {
 
     private static final String ANDROID_INSTALLER = "com.android.vending";
     private static final String GOOGLE_INSTALLER = "com.google.vending";
-    private static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
+    static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
     
     private Context mContext;
     private GooglePlayBillingService mBillingService;
