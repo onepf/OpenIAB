@@ -25,7 +25,10 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
+
 import org.json.JSONException;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.IabHelperBillingService;
 
 import java.util.ArrayList;
@@ -139,6 +142,9 @@ public class IabHelper {
     public static final String GET_SKU_DETAILS_ITEM_LIST = "ITEM_ID_LIST";
     public static final String GET_SKU_DETAILS_ITEM_TYPE_LIST = "ITEM_TYPE_LIST";
 
+    /** TODO: IabHelper for Google and OpenStore must not be same */
+    private Appstore appstore;
+    
     /**
      * Creates an instance. After creation, it will not yet be ready to use. You must perform
      * setup by calling {@link #startSetup} and wait for setup to complete. This constructor does not
@@ -149,10 +155,12 @@ public class IabHelper {
      *                        This is used for verification of purchase signatures. You can find your app's base64-encoded
      *                        public key in your application's page on Google Play Developer Console. Note that this
      *                        is NOT your "developer public key".
+     * @param appstore TODO
      */
-    public IabHelper(Context ctx, String base64PublicKey) {
+    public IabHelper(Context ctx, String base64PublicKey, Appstore appstore) {
         mContext = ctx.getApplicationContext();
         mSignatureBase64 = base64PublicKey;
+        this.appstore = appstore;
         logDebug("IAB helper created.");
     }
 
@@ -188,16 +196,13 @@ public class IabHelper {
      *
      * @param listener The listener to notify when the setup process is complete.
      */
-    public void startSetup(final OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
+    public void startSetup(final OnIabSetupFinishedListener listener) {
         // If already set up, can't do it again.
         if (mSetupDone) throw new IllegalStateException("IAB helper is already set up.");
 
         // Connection to IAB service
         logDebug("Starting in-app billing setup.");
-        mService = billingService;
-        if (mService == null) {
-            mService = new IabHelperBillingService(mContext);
-        }
+        mService = new IabHelperBillingService(mContext);
         mService.setIabHelper(this);
         mService.bindService(listener);
     }
@@ -397,8 +402,7 @@ public class IabHelper {
         }
     }
 
-    public void processPurchaseSuccess(Intent data, String purchaseData,
-                                       String dataSignature) {
+    public void processPurchaseSuccess(Intent data, String purchaseData, String dataSignature) {
         IabResult result;
         logDebug("Successful resultcode from purchase activity.");
         logDebug("Purchase data: " + purchaseData);
@@ -416,8 +420,9 @@ public class IabHelper {
 
         Purchase purchase = null;
         try {
-            purchase = new Purchase(mPurchasingItemType, purchaseData, dataSignature);
+            purchase = new Purchase(mPurchasingItemType, purchaseData, dataSignature, appstore.getAppstoreName());
             String sku = purchase.getSku();
+            purchase.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), sku));
 
             if(!isValidDataSignature(mSignatureBase64, purchaseData, dataSignature)) {
                 logError("Purchase signature verification FAILED for sku " + sku);
@@ -758,8 +763,7 @@ public class IabHelper {
 
         do {
             logDebug("Calling getPurchases with continuation token: " + continueToken);
-            Bundle ownedItems = mService.getPurchases(3, getPackageName(),
-                    itemType, continueToken);
+            Bundle ownedItems = mService.getPurchases(3, getPackageName(), itemType, continueToken);
 
             int response = getResponseCodeFromBundle(ownedItems);
             logDebug("Owned items response: " + String.valueOf(response));
@@ -774,12 +778,9 @@ public class IabHelper {
                 return IABHELPER_BAD_RESPONSE;
             }
 
-            ArrayList<String> ownedSkus = ownedItems.getStringArrayList(
-                    RESPONSE_INAPP_ITEM_LIST);
-            ArrayList<String> purchaseDataList = ownedItems.getStringArrayList(
-                    RESPONSE_INAPP_PURCHASE_DATA_LIST);
-            ArrayList<String> signatureList = ownedItems.getStringArrayList(
-                    RESPONSE_INAPP_SIGNATURE_LIST);
+            ArrayList<String> ownedSkus = ownedItems.getStringArrayList(RESPONSE_INAPP_ITEM_LIST);
+            ArrayList<String> purchaseDataList = ownedItems.getStringArrayList(RESPONSE_INAPP_PURCHASE_DATA_LIST);
+            ArrayList<String> signatureList = ownedItems.getStringArrayList(RESPONSE_INAPP_SIGNATURE_LIST);
 
             for (int i = 0; i < purchaseDataList.size(); ++i) {
                 String purchaseData = purchaseDataList.get(i);
@@ -794,7 +795,9 @@ public class IabHelper {
 
                 if (verificationFailed == false) {
                     logDebug("Sku is owned: " + sku);
-                    Purchase purchase = new Purchase(itemType, purchaseData, signature);
+                    Purchase purchase = new Purchase(itemType, purchaseData, signature, appstore.getAppstoreName());
+                    String storeSku = purchase.getSku();
+                    purchase.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), storeSku));
 
                     if (TextUtils.isEmpty(purchase.getToken())) {
                         logWarn("BUG: empty/null token!");

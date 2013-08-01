@@ -16,10 +16,17 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
-import org.onepf.oms.*;
 
 /**
+ * TODO: implement TStore.isInstaller if possible
+ * TODO: implement TStore.isBillingAvailable
+ * 
  * Author: Ruslan Sayfutdinov
  * Date: 16.05.13
  */
@@ -34,19 +41,22 @@ public class TStore extends DefaultAppstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
-        // TODO: implement this
+    public boolean isPackageInstaller(String packageName) {
+        // TODO: implement TStore.isInstaller if possible
         return false;
     }
 
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
-            return true;
-        } else {
-            return false;
-        }
+    @Override
+    public boolean isBillingAvailable(String packageName) {
+        // TODO: implement TStore.isBillingAvailable
+        return false;
     }
-
+    
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
+    }
+    
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -57,11 +67,8 @@ public class TStore extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.TSTORE";
+        return OpenIabHelper.NAME_TSTORE;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.TSTORE;
-    }
+
 }

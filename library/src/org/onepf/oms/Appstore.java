@@ -24,15 +24,28 @@ import android.content.Intent;
  */
 
 public interface Appstore {
-   // IOpenAppstore.idls methods
-    boolean isAppAvailable(String packageName);
 
-    boolean isInstaller(String packageName);
+    /**
+     * If Appstore cannot determine version of published app on it's server
+     */
+    public static final int PACKAGE_VERSION_UNDEFINED = -1;
 
-    boolean couldBeInstaller(String packageName);
+    /**
+     * Returns true only if actual installer for specified app
+     */
+    boolean isPackageInstaller(String packageName);
+    
+    /**
+     * Tells whether in-app billing is ready to work with specified app
+     * For OpenStore app: if any in-app item for this app published in store
+     */
+    boolean isBillingAvailable(String packageName);
 
-    Intent getServiceIntent(String packageName, int serviceType);
-
+    /**
+     * 
+     */
+    int getPackageVersion(String packageName);
+    
     String getAppstoreName();
 
     Intent getProductPageIntent(String packageName);
@@ -45,5 +58,6 @@ public interface Appstore {
 
     // additional methods
     AppstoreInAppBillingService getInAppBillingService();
-    AppstoreType getAppstoreType();
+
+
 }

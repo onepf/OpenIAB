@@ -16,20 +16,19 @@
 
 package org.onepf.oms.appstore;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.IBinder;
-import android.util.Log;
-import com.android.vending.billing.IInAppBillingService;
+import java.util.List;
+
+import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.OnAppstoreStartSetupFinishListener;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 
-import java.util.List;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
 /**
  * User: Boris Minaev
@@ -37,23 +36,24 @@ import java.util.List;
  * Time: 3:03
  */
 public class OpenAppstoreBillingService implements AppstoreInAppBillingService {
-    static final private String TAG = Class.class.getSimpleName();
+    static final private String TAG = OpenAppstoreBillingService.class.getSimpleName();
+    
     OpenIabHelperBillingService mIabHelperBillingService;
     String mPublicKey;
     IabHelper mIabHelper;
 
-    public OpenAppstoreBillingService(String publicKey, Context context, Intent billingIntent) {
-        Log.d(TAG, "create new OpenAppstoreBillingService");
+    public OpenAppstoreBillingService(String publicKey, Context context, Intent billingIntent, Appstore appstore) {
+        Log.d(TAG, "OpenAppstoreBillingService() publicKey: " + publicKey+ " context: " + context+ " billingIntent: " + billingIntent+ " appstore: " + appstore);
         mPublicKey = publicKey;
-        mIabHelper = new IabHelper(context, publicKey);
+        mIabHelper = new IabHelper(context, publicKey, appstore);
         mIabHelperBillingService = new OpenIabHelperBillingService(context);
         mIabHelperBillingService.setServiceIntent(billingIntent);
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         Log.d(TAG, "will mIabHelper.startSetup");
-        mIabHelper.startSetup(listener, mIabHelperBillingService);
+        mIabHelper.startSetup(listener);
     }
 
     @Override

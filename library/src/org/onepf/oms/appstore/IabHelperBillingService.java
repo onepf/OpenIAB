@@ -149,7 +149,7 @@ public class IabHelperBillingService {
     }
 
     protected Intent getServiceIntent() {
-        return new Intent("com.android.vending.billing.InAppBillingService.BIND");
+        return new Intent(GooglePlay.VENDING_ACTION);
     }
 
     public boolean isDataSignatureSupported() {
