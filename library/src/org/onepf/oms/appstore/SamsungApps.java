@@ -16,8 +16,12 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
-import org.onepf.oms.*;
 
 /**
  * User: Boris Minaev
@@ -38,19 +42,22 @@ public class SamsungApps extends DefaultAppstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
+    public boolean isPackageInstaller(String packageName) {
         // TODO: write normal checker
         return isDebugMode;
     }
 
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
-            return isDebugMode;
-        }
+    @Override
+    public boolean isBillingAvailable(String packageName) {
+        return isDebugMode;
         // TODO: write implementation
-        return false;
     }
-
+    
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
+    }
+    
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -61,11 +68,8 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.SAMSUNG";
+        return OpenIabHelper.NAME_SAMSUNG;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.SAMSUNG;
-    }
+
 }

@@ -16,19 +16,25 @@
 
 package org.onepf.oms.appstore;
 
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.DefaultAppstore;
+import org.onepf.oms.OpenIabHelper;
+
 import android.content.Context;
 import android.util.Log;
-import org.onepf.oms.*;
 
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final String TAG = "IabHelper";
-    private static volatile boolean IS_SANDBOX_MODE;
-    private static volatile boolean IS_SANDBOX_MODE_CHECKED;
+    private static final String TAG = AmazonAppstore.class.getSimpleName();
+    
+    private volatile Boolean sandboxMode;// = false;
+    
     private final Context mContext;
+    
     private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
@@ -36,35 +42,38 @@ public class AmazonAppstore extends DefaultAppstore {
     }
 
     @Override
-    public boolean isInstaller(String packageName) {
-        if (IS_SANDBOX_MODE_CHECKED) {
-            return !IS_SANDBOX_MODE;
+    public boolean isPackageInstaller(String packageName) {
+        Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
+        if (sandboxMode != null) {
+            return !sandboxMode;
         }
         synchronized (AmazonAppstore.class) {
-            if (IS_SANDBOX_MODE_CHECKED) {
-                return !IS_SANDBOX_MODE;
-            }
             try {
                 ClassLoader localClassLoader = AmazonAppstore.class.getClassLoader();
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
-                IS_SANDBOX_MODE = false;
+                sandboxMode = false;
             } catch (Throwable localThrowable) {
-                IS_SANDBOX_MODE = true;
+                Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
+                sandboxMode = true;
             }
-            IS_SANDBOX_MODE_CHECKED = true;
         }
-        Log.d(TAG, "IS_SANDBOX_MODE: " + IS_SANDBOX_MODE);
-        return !IS_SANDBOX_MODE;
+        Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        return !sandboxMode;
     }
 
-    public boolean isServiceSupported(AppstoreService appstoreService) {
-        if (appstoreService == AppstoreService.IN_APP_BILLING) {
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * Cannot assume any app is published in Amazon, so say YES only if Amazon is installer
+     */
+    @Override
+    public boolean isBillingAvailable(String packageName) {
+        return isPackageInstaller(packageName);
     }
-
+    
+    @Override
+    public int getPackageVersion(String packageName) {
+        return Appstore.PACKAGE_VERSION_UNDEFINED;
+    }
+    
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -75,11 +84,8 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        return "AppstoreName.AMAZON";
+        return OpenIabHelper.NAME_AMAZON;
     }
 
-    @Override
-    public AppstoreType getAppstoreType() {
-        return AppstoreType.AMAZON;
-    }
+
 }

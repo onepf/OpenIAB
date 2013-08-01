@@ -20,8 +20,11 @@ import org.json.JSONObject;
 
 /**
  * Represents an in-app billing purchase.
+ * 
+ * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere 
+ * <p><b>TODO</b>: add getStoreSku() to use mapped value in Appstore's inner code
  */
-public class Purchase {
+public class Purchase implements Cloneable {
     String mItemType;  // ITEM_TYPE_INAPP or ITEM_TYPE_SUBS
     String mOrderId;
     String mPackageName;
@@ -32,9 +35,11 @@ public class Purchase {
     String mToken;
     String mOriginalJson;
     String mSignature;
+    String appstoreName;
 
-    public Purchase() {
-
+    public Purchase(String appstoreName) {
+        if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
+        this.appstoreName = appstoreName;
     }
 
     public void setItemType(String itemType) {
@@ -45,7 +50,8 @@ public class Purchase {
         mSku = sku;
     }
 
-    public Purchase(String itemType, String jsonPurchaseInfo, String signature) throws JSONException {
+    public Purchase(String itemType, String jsonPurchaseInfo, String signature, String appstoreName) throws JSONException {
+        this.appstoreName = appstoreName;
         mItemType = itemType;
         mOriginalJson = jsonPurchaseInfo;
         JSONObject o = new JSONObject(mOriginalJson);
@@ -57,6 +63,14 @@ public class Purchase {
         mDeveloperPayload = o.optString("developerPayload");
         mToken = o.optString("token", o.optString("purchaseToken"));
         mSignature = signature;
+    }
+    
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException("Somebody forgot to add Cloneable to class", e);
+        }
     }
 
     public String getItemType() {
