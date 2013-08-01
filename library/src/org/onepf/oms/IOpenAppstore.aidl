@@ -13,27 +13,44 @@
  *       See the License for the specific language governing permissions and
  *       limitations under the License.
  ******************************************************************************/
-
 package org.onepf.oms;
-
-/**
- * User: Boris Minaev
- * Date: 29.04.13
- * Time: 17:28
- */
 
 import android.content.Intent;
 
+/**
+ * Service interface to implement by OpenStore implementation
+ * 
+ * @author Boris Minaev, Oleg Orlov
+ * @since 29.04.2013
+ */
 interface IOpenAppstore {
-    boolean isAppAvailable(String packageName);
 
-    boolean isInstaller(String packageName);
-
-    boolean couldBeInstaller(String packageName);
-
-    Intent getServiceIntent(String packageName, int serviceType);
-
+    /**
+     * Every OpenStore implementation must provide their name. It's required for core OpenIAB functions 
+     */
     String getAppstoreName();
+    
+    /**
+     * OpenStores must provide information about packages it installed. If OpenStore is installer 
+     * and supports In-App billing it will be used for purchases
+     */
+    boolean isPackageInstaller(String packageName);
+    
+    /**
+     * If <b>true</b> OpenIAB assumes In-App items (SKU) for app are published and ready to use
+     */
+    boolean isBillingAvailable(String packageName);
+    
+    /**
+     * Provides android:versionCode of .apk published in OpenStore
+     * @return -1 if UNDEFINED
+     */
+    int getPackageVersion(String packageName);
+
+    /**
+     * Should provide Intent to be used for binding IOpenInAppBillingService
+     */
+    Intent getBillingServiceIntent();
 
     Intent getProductPageIntent(String packageName);
 

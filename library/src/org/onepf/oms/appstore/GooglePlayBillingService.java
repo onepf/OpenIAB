@@ -16,16 +16,18 @@
 
 package org.onepf.oms.appstore;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
+import java.util.List;
+
+import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 
-import java.util.List;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 
 /**
  * User: Boris Minaev
@@ -37,14 +39,14 @@ public class GooglePlayBillingService implements AppstoreInAppBillingService {
     Context mContext;
     private IabHelper mIabHelper;
 
-    public GooglePlayBillingService(Context context, String publicKey) {
+    public GooglePlayBillingService(Context context, String publicKey, Appstore appstore) {
         mContext = context;
-        mIabHelper = new IabHelper(context, publicKey);
+        mIabHelper = new IabHelper(context, publicKey, appstore);
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
-        mIabHelper.startSetup(listener, billingService);
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
+        mIabHelper.startSetup(listener);
     }
 
     @Override

@@ -13,7 +13,16 @@
  * limitations under the License.
  */
 
-package org.onepf.trivialdrive_openiab;
+package org.onepf.trivialdrive;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,15 +35,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.onepf.oms.AppstoreType;
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.OpenSku;
-import org.onepf.oms.OpenSku.*;
-import org.onepf.oms.appstore.googleUtils.*;
 
 
 /**
@@ -101,24 +101,27 @@ public class MainActivity extends Activity {
     boolean mSubscribedToInfiniteGas = false;
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
-    static final OpenSku SKU_PREMIUM = new OpenSku(
-            new Sku(AppstoreType.GOOGLE, "sku_premium"),
-            new Sku(AppstoreType.AMAZON, "amazon_sku_premium"),
-            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
-    static final OpenSku SKU_GAS = new OpenSku(
-            new Sku(AppstoreType.GOOGLE, "sku_gas"),
-            new Sku(AppstoreType.AMAZON, "amazon_sku_gas"),
-            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
+    static final String SKU_PREMIUM = "sku_premium";
+    static final String SKU_GAS = "sku_gas";
     
     // SKU for our subscription (infinite gas)
-    static final OpenSku SKU_INFINITE_GAS = new OpenSku(
-            new Sku(AppstoreType.GOOGLE, "sku_infinte_gas"),
-            new Sku(AppstoreType.AMAZON, "amazon_sku_infinite_gas"),
-            new Sku(AppstoreType.TSTORE, "tstore_sku_premium"),
-            new Sku(AppstoreType.OPENSTORE, "openstore_sku_premium"));
+    static final String SKU_INFINITE_GAS = "sku_infinite_gas";
+    
+    static {
+        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
+        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
+        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_premium");
 
+        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
+        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
+        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_gas");
+
+        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
+        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
+        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_infinite_gas");
+
+    }
+    
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
 
@@ -170,12 +173,12 @@ public class MainActivity extends Activity {
         
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
-        Map<String, String> extra = new HashMap<String, String>();
-        extra.put("GooglePublicKey", base64EncodedPublicKey);
-        extra.put("SamsungGroupId", samsungGroupId);
-        extra.put("TStoreAppId", tstoreAppId);
-        extra.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
-        mHelper = new OpenIabHelper(this, extra);
+        Map<String, String> storeKeys = new HashMap<String, String>();
+        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
+        storeKeys.put(OpenIabHelper.NAME_SAMSUNG, samsungGroupId);
+        storeKeys.put(OpenIabHelper.NAME_TSTORE, tstoreAppId);
+        storeKeys.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
+        mHelper = new OpenIabHelper(this, storeKeys);
         
         createBroadcasts();
 
@@ -199,7 +202,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "Setup successful. Querying inventory.");
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
-        }, null);
+        });
     }
 
     // Listener that's called when we finish querying the items and subscriptions we own
@@ -521,7 +524,6 @@ public class MainActivity extends Activity {
 
     private void createBroadcasts() {
         Log.d(TAG, "createBroadcasts");
-
         IntentFilter filter = new IntentFilter(YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED);
         this.registerReceiver(mBillingReceiver, filter);
     }

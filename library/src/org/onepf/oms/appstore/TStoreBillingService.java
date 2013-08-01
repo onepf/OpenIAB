@@ -44,7 +44,7 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener, final IabHelperBillingService billingService) {
+    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         mPlugin = IapPlugin.getPlugin(mContext);
         listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
     }

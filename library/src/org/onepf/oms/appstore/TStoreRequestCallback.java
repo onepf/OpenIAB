@@ -19,8 +19,11 @@ package org.onepf.oms.appstore;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.skplanet.dodo.IapPlugin;
 import com.skplanet.dodo.IapResponse;
+
+import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Purchase;
@@ -59,14 +62,14 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
             return;
         }
         Response response = new GsonConverter().fromJson(data.getContentToString());
-        Purchase purchase = new Purchase();
+        Purchase purchase = new Purchase(OpenIabHelper.NAME_TSTORE);
         IabResult result = null;
         if (response.result.code.equals("0000")) {
             result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
             for (Response.Product product : response.result.product) {
                 // TODO: set correct type
                 purchase.setItemType(product.type);
-                purchase.setSku(product.id);
+                purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_TSTORE, product.id));
             }
         } else {
             // TODO: support other error codes
