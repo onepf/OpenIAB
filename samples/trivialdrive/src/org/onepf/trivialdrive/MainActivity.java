@@ -17,12 +17,13 @@ package org.onepf.trivialdrive;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
-import org.onepf.trivialdrive.R;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -523,21 +524,6 @@ public class MainActivity extends Activity {
 
     private void createBroadcasts() {
         Log.d(TAG, "createBroadcasts");
-        
-        
-        // want to send broadcast 
-        this.sendBroadcast(new Intent("preved-preved-preved"));
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-            }
-            
-        };
-        this.registerReceiver(receiver, new IntentFilter("preved-preved-preved"));
-        
-        this.unregisterReceiver(receiver);
-        
-        
         IntentFilter filter = new IntentFilter(YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED);
         this.registerReceiver(mBillingReceiver, filter);
     }
