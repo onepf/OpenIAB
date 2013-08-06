@@ -62,9 +62,10 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     /** Only for verification all requests are for the same users */
     private String currentUserId;
     
-    /** Maintained internally by {@link #queryInventory(boolean, List, List)}
-     * , {@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)}
-     * , {@link #onItemDataResponse(ItemDataResponse)}*/
+    /** Maintained internally by 
+     * <li>{@link #queryInventory(boolean, List, List)}
+     * <li>{@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)}
+     * <li>{@link #onItemDataResponse(ItemDataResponse)}*/
     private Inventory inventory;
     
     /** If not null will be notified from  */
@@ -84,12 +85,12 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         PurchasingManager.registerObserver(this);
         this.setupListener = listener;
-        PurchasingManager.initiateGetUserIdRequest();
     }
 
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
         Log.v(TAG, "onSdkAvailable() isSandBox: " + isSandboxMode);
+        PurchasingManager.initiateGetUserIdRequest();
     }
 
     @Override
