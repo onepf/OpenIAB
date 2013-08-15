@@ -15,24 +15,31 @@
 
 package org.onepf.oms.appstore.googleUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONException;
+import org.onepf.oms.Appstore;
+import org.onepf.oms.AppstoreInAppBillingService;
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.GooglePlay;
+import org.onepf.oms.appstore.IabHelperBillingService;
+
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.json.JSONException;
-import org.onepf.oms.Appstore;
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.IabHelperBillingService;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.android.vending.billing.IInAppBillingService;
 
 
 /**
@@ -66,10 +73,11 @@ import java.util.List;
  *
  * @author Bruno Oliveira (Google)
  */
-public class IabHelper {
+public class IabHelper implements AppstoreInAppBillingService {
+    private static final String TAG = IabHelper.class.getSimpleName();
     // Is debug logging enabled?
     boolean mDebugLog = true;
-    String mDebugTag = "IabHelper";
+    String mDebugTag = TAG;
 
     // Is setup done?
     boolean mSetupDone = false;
@@ -88,8 +96,10 @@ public class IabHelper {
     // Context we were passed during initialization
     Context mContext;
 
+
     // Connection to the service
-    IabHelperBillingService mService;
+    IInAppBillingService mService;
+    ServiceConnection mServiceConn;
 
     // The request code used to launch purchase flow
     int mRequestCode;
@@ -202,9 +212,87 @@ public class IabHelper {
 
         // Connection to IAB service
         logDebug("Starting in-app billing setup.");
-        mService = new IabHelperBillingService(mContext);
-        mService.setIabHelper(this);
-        mService.bindService(listener);
+        mServiceConn = new ServiceConnection() {
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                logDebug("Billing service disconnected.");
+                mService = null;
+            }
+
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                logDebug("Billing service connected.");
+                mService = getServiceFromBinder(service);
+                String packageName = mContext.getPackageName();
+                try {
+                    logDebug("Checking for in-app billing 3 support.");
+                    
+                    // check for in-app billing v3 support
+                    int response = mService.isBillingSupported(3, packageName, ITEM_TYPE_INAPP);
+                    if (response != BILLING_RESPONSE_RESULT_OK) {
+                        if (listener != null) listener.onIabSetupFinished(new IabResult(response,
+                                "Error checking for billing v3 support."));
+                        
+                        // if in-app purchases aren't supported, neither are subscriptions.
+                        mSubscriptionsSupported = false;
+                        return;
+                    }
+                    logDebug("In-app billing version 3 supported for " + packageName);
+                    
+                    // check for v3 subscriptions support
+                    response = mService.isBillingSupported(3, packageName, ITEM_TYPE_SUBS);
+                    if (response == BILLING_RESPONSE_RESULT_OK) {
+                        logDebug("Subscriptions AVAILABLE.");
+                        mSubscriptionsSupported = true;
+                    }
+                    else {
+                        logDebug("Subscriptions NOT AVAILABLE. Response: " + response);
+                    }
+                    
+                    mSetupDone = true;
+                } catch (RemoteException e) {
+                    if (listener != null) {
+                        listener.onIabSetupFinished(new IabResult(IABHELPER_REMOTE_EXCEPTION,
+                                                    "RemoteException while setting up in-app billing."));
+                    }
+                    Log.e(TAG, "RemoteException while setting up in-app billing", e);
+                    return;
+                }
+
+                if (listener != null) {
+                    listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+                }
+            }
+        };
+        
+        Intent serviceIntent = getServiceIntent();
+        if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
+            // service available to handle that Intent
+            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+        } else {
+            // no service available to handle that Intent
+            if (listener != null) {
+                listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
+                        "Billing service unavailable on device.")); 
+            }
+        }
+    }
+
+    /**
+     * IabHelper code is shared between OpenStore and Google Play, but services has different names  
+     */
+    protected Intent getServiceIntent() {
+        return new Intent(GooglePlay.VENDING_ACTION);
+    }
+    
+    /** Override to return needed service interface */
+    protected IInAppBillingService getServiceFromBinder(IBinder service) {
+        return IInAppBillingService.Stub.asInterface(service);
+    }
+    
+    /** OpenStores currently doesn't support signatures */
+    protected boolean isSignatureSupported() {
+        return true;
     }
 
     /**
@@ -216,9 +304,13 @@ public class IabHelper {
     public void dispose() {
         logDebug("Disposing.");
         mSetupDone = false;
-        mService.dispose();
-        mService = null;
-        mPurchaseListener = null;
+        if (mServiceConn != null) {
+            logDebug("Unbinding from service.");
+            if (mContext != null) mContext.unbindService(mServiceConn);
+            mServiceConn = null;
+            mService = null;
+            mPurchaseListener = null;
+        }
     }
 
     /**
@@ -787,13 +879,7 @@ public class IabHelper {
                 String signature = signatureList.get(i);
                 String sku = ownedSkus.get(i);
 
-                if (!isValidDataSignature(mSignatureBase64, purchaseData, signature)) {
-                    logDebug("   Purchase data: " + purchaseData);
-                    logDebug("   Signature: " + signature);
-                    verificationFailed = true;
-                }
-
-                if (verificationFailed == false) {
+                if (isValidDataSignature(mSignatureBase64, purchaseData, signature)) {
                     logDebug("Sku is owned: " + sku);
                     Purchase purchase = new Purchase(itemType, purchaseData, signature, appstore.getAppstoreName());
                     String storeSku = purchase.getSku();
@@ -806,14 +892,11 @@ public class IabHelper {
 
                     // Record ownership and token
                     inv.addPurchase(purchase);
-                    /*
-                    } else {
-                        logWarn("Purchase signature verification **FAILED**. Not adding item.");
-                        logDebug("   Purchase data: " + purchaseData);
-                        logDebug("   Signature: " + signature);
-                        verificationFailed = true;
-                    }
-                    */
+                } else {
+                    logWarn("Purchase signature verification **FAILED**. Not adding item.");
+                    logDebug("   Purchase data: " + purchaseData);
+                    logDebug("   Signature: " + signature);
+                    verificationFailed = true;
                 }
             }
 
@@ -914,7 +997,7 @@ public class IabHelper {
 
     boolean isValidDataSignature(String base64PublicKey, String signedData, String signature) {
         boolean isValid = true;
-        if (mService.isDataSignatureSupported() == false) {
+        if ( ! isSignatureSupported()) {
             logWarn("Signature verification is not supported");
         } else {
             isValid = Security.verifyPurchase(base64PublicKey, signedData, signature);

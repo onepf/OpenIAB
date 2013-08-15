@@ -176,6 +176,8 @@ public class AppstoreServiceManager {
         for (Appstore appstore : appstores) {
             if (appstore.isBillingAvailable(packageName)) {
                 candidates.put(appstore.getAppstoreName(), appstore);
+            } else {
+                continue; // for billing we cannot select store without billing
             }
             if (appstore.isPackageInstaller(packageName)) {
                 return appstore;
