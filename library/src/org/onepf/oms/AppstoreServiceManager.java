@@ -18,6 +18,7 @@ package org.onepf.oms;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,7 +216,7 @@ public class AppstoreServiceManager {
         } else if (higherVersion.size() > 0) {  // or one of higher version
             return higherVersion.get(new Random().nextInt(higherVersion.size()));
         } else {                                // ok, return no matter what
-            return candidates.get(new Random().nextInt(candidates.size())); 
+            return new ArrayList<Appstore>(candidates.values()).get(new Random().nextInt(candidates.size())); 
         }
     }
     
