@@ -23,7 +23,6 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.GooglePlay;
-import org.onepf.oms.appstore.IabHelperBillingService;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -783,13 +782,10 @@ public class IabHelper implements AppstoreInAppBillingService {
             if (index >= 0 && index < iabhelper_msgs.length) return iabhelper_msgs[index];
             else return String.valueOf(code) + ":Unknown IAB Helper Error";
         } else if (code < 0 || code >= iab_msgs.length) {
-            String description = IabHelperBillingService.getResponseDesc(code);
-            if (description == null) {
-                description = String.valueOf(code) + ":Unknown";
-            }
-            return description;
-        } else
+            return String.valueOf(code) + ":Unknown";        
+        } else {
             return iab_msgs[code];
+        }
     }
 
 
