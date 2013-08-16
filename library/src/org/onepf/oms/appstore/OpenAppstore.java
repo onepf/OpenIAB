@@ -20,20 +20,25 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.IOpenAppstore;
+import org.onepf.oms.IOpenInAppBillingService;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.android.vending.billing.IInAppBillingService;
+
 /**
- * 
  * 
  * @author Boris Minaev, Oleg Orlov
  * @since 28.05.13
  */
 public class OpenAppstore extends DefaultAppstore {
-    static final private String TAG = OpenAppstore.class.getSimpleName();
+    private static final String TAG = OpenAppstore.class.getSimpleName();
     
     private Context context;
     private IOpenAppstore openAppstoreService;
@@ -50,7 +55,7 @@ public class OpenAppstore extends DefaultAppstore {
      * <b>TODO:</b> not just prepare, but do bind service and return success or not
      */
     public boolean initBilling(final String publicKey) {
-        Intent billingIntent = null;
+        final Intent billingIntent;
         try {
             billingIntent = openAppstoreService.getBillingServiceIntent();
         } catch (RemoteException e) {
@@ -62,10 +67,20 @@ public class OpenAppstore extends DefaultAppstore {
             return false;
         }
 
-        boolean isInstaller = isPackageInstaller(context.getPackageName());
-        Log.d(TAG, "isInstaller: " + String.valueOf(isInstaller));
-
-        mBillingService = new OpenAppstoreBillingService(publicKey, context, billingIntent, this);
+        mBillingService = new IabHelper(context, publicKey, this) {
+            @Override
+            protected Intent getServiceIntent() {
+                return billingIntent;
+            }
+            @Override
+            protected IInAppBillingService getServiceFromBinder(IBinder service) {
+                return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
+            }
+            @Override
+            protected boolean isSignatureSupported() {
+                return false;
+            }
+        };
         return true;
     }
 
@@ -153,5 +168,50 @@ public class OpenAppstore extends DefaultAppstore {
     public AppstoreInAppBillingService getInAppBillingService() {
         return mBillingService;
     }
+    
+    public String toString() {
+        return "OpenStore {name: " + getAppstoreName() + "} "+ super.toString();
+        
+    }
+    
+    /** Represent {@link IOpenInAppBillingService} as {@link IInAppBillingService} */
+    private static final class IOpenInAppBillingWrapper implements IInAppBillingService {
+        private final IOpenInAppBillingService openStoreBilling;
+
+        private IOpenInAppBillingWrapper(IOpenInAppBillingService openStoreBilling) {
+            this.openStoreBilling = openStoreBilling;
+        }
+
+        @Override
+        public IBinder asBinder() {
+            return openStoreBilling.asBinder();
+        }
+
+        @Override
+        public int isBillingSupported(int apiVersion, String packageName, String type) throws RemoteException {
+            return openStoreBilling.isBillingSupported(apiVersion, packageName, type);
+        }
+
+        @Override
+        public Bundle getSkuDetails(int apiVersion, String packageName, String type, Bundle skusBundle) throws RemoteException {
+            return openStoreBilling.getSkuDetails(apiVersion, packageName, type, skusBundle);
+        }
+
+        @Override
+        public Bundle getPurchases(int apiVersion, String packageName, String type, String continuationToken) throws RemoteException {
+            return openStoreBilling.getPurchases(apiVersion, packageName, type, continuationToken);
+        }
+
+        @Override
+        public Bundle getBuyIntent(int apiVersion, String packageName, String sku, String type, String developerPayload) throws RemoteException {
+            return openStoreBilling.getBuyIntent(apiVersion, packageName, sku, type, developerPayload);
+        }
+
+        @Override
+        public int consumePurchase(int apiVersion, String packageName, String purchaseToken) throws RemoteException {
+            return openStoreBilling.consumePurchase(apiVersion, packageName, purchaseToken);
+        }
+    }
+
 
 }

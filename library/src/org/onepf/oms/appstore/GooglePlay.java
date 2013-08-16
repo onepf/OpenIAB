@@ -22,6 +22,7 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -38,10 +39,10 @@ public class GooglePlay extends DefaultAppstore {
 
     private static final String ANDROID_INSTALLER = "com.android.vending";
     private static final String GOOGLE_INSTALLER = "com.google.vending";
-    static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
+    public  static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
     
     private Context mContext;
-    private GooglePlayBillingService mBillingService;
+    private IabHelper mBillingService;
     private String mPublicKey;
     
     // isDebugMode = true |-> always returns app installed via Google Play
@@ -89,7 +90,7 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new GooglePlayBillingService(mContext, mPublicKey, this);
+            mBillingService = new IabHelper(mContext, mPublicKey, this);
         }
         return mBillingService;
     }
