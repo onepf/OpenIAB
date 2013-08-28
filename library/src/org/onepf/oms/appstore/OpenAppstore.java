@@ -76,10 +76,6 @@ public class OpenAppstore extends DefaultAppstore {
             protected IInAppBillingService getServiceFromBinder(IBinder service) {
                 return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
             }
-            @Override
-            protected boolean isSignatureSupported() {
-                return false;
-            }
         };
         return true;
     }

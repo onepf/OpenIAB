@@ -42,7 +42,8 @@ public interface Appstore {
     boolean isBillingAvailable(String packageName);
 
     /**
-     * 
+     * Returns <code>android:versionCode</code> package. If there are several builds for one package
+     * versionCode of the most approptiate to be used  
      */
     int getPackageVersion(String packageName);
     
@@ -56,7 +57,9 @@ public interface Appstore {
 
     boolean areOutsideLinksAllowed();
 
-    // additional methods
+    /**
+     * @return helper to interact with store billing service and perform purchases
+     */
     AppstoreInAppBillingService getInAppBillingService();
 
 

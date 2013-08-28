@@ -289,11 +289,6 @@ public class IabHelper implements AppstoreInAppBillingService {
         return IInAppBillingService.Stub.asInterface(service);
     }
     
-    /** OpenStores currently doesn't support signatures */
-    protected boolean isSignatureSupported() {
-        return true;
-    }
-
     /**
      * Dispose of object, releasing resources. It's very important to call this
      * method when you are done with this object. It will release any resources
@@ -991,14 +986,9 @@ public class IabHelper implements AppstoreInAppBillingService {
         Log.w(mDebugTag, "In-app billing warning: " + msg);
     }
 
-    boolean isValidDataSignature(String base64PublicKey, String signedData, String signature) {
-        boolean isValid = true;
-        if ( ! isSignatureSupported()) {
-            logWarn("Signature verification is not supported");
-        } else {
-            isValid = Security.verifyPurchase(base64PublicKey, signedData, signature);
-        }
-        if (isValid == false) {
+    boolean isValidDataSignature(String base64PublicKey, String purchaseData, String signature) {
+        boolean isValid = Security.verifyPurchase(base64PublicKey, purchaseData, signature);
+        if (!isValid) {
             logWarn("Purchase signature verification **FAILED**.");
         }
         return isValid;
