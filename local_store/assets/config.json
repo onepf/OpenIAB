@@ -1,0 +1,57 @@
+{
+    "applications": [
+        {
+            "packageName": "org.onepf.trivialdrive",
+            "version": "1",
+            "installed": "true",
+            "billingActive": "true",
+
+            "products": [
+                {
+                    "productId": "sku_gas",
+                    "type": "inapp",
+                    "price": "50",
+                    "title": "GAS",
+                    "description": "car fuel"
+                },
+                {
+                    "productId": "sku_premium",
+                    "type": "inapp"
+                },
+                {
+                    "productId": "sku_infinite_gas",
+                    "type": "subs"
+                }
+            ],
+
+            "inventory": [
+                "sku_premium",
+                "sku_infinite_gas"
+            ]
+        },
+        {
+            "packageName": "com.openiab.angrybots",
+            "version": "666",
+            "installed": "true",
+            "billingActive": "true",
+            "products": [
+                {
+                    "productId": "onepf.sku_ammo",
+                    "type": "inapp"
+                },
+                {
+                    "productId": "onepf.sku_medkit",
+                    "type": "inapp"
+                },
+                {
+                    "productId": "onepf.sku_cowboy_hat",
+                    "type": "inapp"
+                },
+                {
+                    "productId": "onepf.sku_infinite_ammo",
+                    "type": "subs"
+                }
+            ]
+        }
+    ]
+}
