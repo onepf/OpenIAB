@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using OpenIabPlugin;
 
 public class BillingDemo : MonoBehaviour {
-
+#if UNITY_ANDROID
     private const int OFFSET = 5;
     private const int BUTTON_WIDTH = 200;
     private const int BUTTON_HEIGHT = 80;
@@ -342,4 +342,5 @@ public class BillingDemo : MonoBehaviour {
     void PauseGame(bool pause) {
         Time.timeScale = pause ? 0 : 1;
     }
+#endif // UnityAndroid
 }
