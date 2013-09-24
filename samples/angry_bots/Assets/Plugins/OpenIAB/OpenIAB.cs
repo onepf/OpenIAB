@@ -68,6 +68,11 @@ namespace OpenIabPlugin {
         }
 
         public static void mapSku(string sku, string storeName, string storeSku) {
+            if (Application.platform != RuntimePlatform.Android) {
+                OpenIABEventManager.SendMessage("OnBillingNotSupported", "editor mode");
+                return;
+            }
+
             _plugin.Call("mapSku", sku, storeName, storeSku);
         }
 
