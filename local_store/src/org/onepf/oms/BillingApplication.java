@@ -24,14 +24,14 @@ public class BillingApplication extends Application implements IBillingApplicati
     public void onCreate() {
         super.onCreate();
         try {
-            _database = new Database(readJsonFromAssets("config.json"));
-        } catch (JSONException e) {
-            Log.e(TAG, "Couldn't parse provided 'config.json'.", e);
+            _database = new Database(XmlHelper.loadXMLFromString(readTextFileFromAssets("config.xml")));
+        } catch (Exception e) {
+            Log.e(TAG, "Couldn't parse provided 'config' file", e);
             _database = new Database();
         }
     }
 
-    public String readJsonFromAssets(String fileName) {
+    public String readTextFileFromAssets(String fileName) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         try {
@@ -41,14 +41,14 @@ public class BillingApplication extends Application implements IBillingApplicati
                 sb.append(temp);
             }
         } catch (IOException e) {
-            Log.e(TAG, "Couldn't read 'config.json' from assets", e);
+            Log.e(TAG, "Couldn't read 'config' from assets", e);
         } finally {
             try {
                 if (br != null) {
                     br.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Couldn't close stream while reading 'config.json' from assets", e);
+                Log.e(TAG, "Couldn't close stream while reading 'config' from assets", e);
             }
         }
         return sb.toString();

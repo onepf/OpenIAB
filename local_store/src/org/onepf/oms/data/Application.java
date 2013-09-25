@@ -1,8 +1,14 @@
 package org.onepf.oms.data;
 
+import android.util.Log;
+import org.onepf.oms.BillingApplication;
+import org.w3c.dom.Element;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 
@@ -19,6 +25,34 @@ public class Application {
     public Application(String name, int version) {
         _packageName = name;
         _version = version;
+    }
+
+    public Application(Element xml) {
+        _packageName = xml.getAttribute("packageName");
+
+        String version = xml.getAttribute("version");
+        _version = version != null ? Integer.parseInt(version) : 0;
+
+        String installed = xml.getAttribute("installed");
+        _installed = installed == null || Boolean.parseBoolean(installed);
+
+        String billingActive = xml.getAttribute("billingActive");
+        _billingActive = billingActive == null || Boolean.parseBoolean(billingActive);
+
+        NodeList productList = xml.getElementsByTagName("product");
+        if (productList != null) {
+            for (int i = 0; i < productList.getLength(); ++i) {
+                _productList.add(new SkuDetails(productList.item(i)));
+            }
+        }
+
+        NodeList inventoryList = ((Element) xml.getElementsByTagName("inventory").item(0)).getElementsByTagName("item");
+        if (inventoryList != null) {
+            for (int i = 0; i < inventoryList.getLength(); ++i) {
+                String sku = inventoryList.item(i).getTextContent();
+                _inventoryList.add(sku);
+            }
+        }
     }
 
     public Application(String json) throws JSONException {

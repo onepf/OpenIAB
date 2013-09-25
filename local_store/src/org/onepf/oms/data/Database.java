@@ -1,14 +1,12 @@
 package org.onepf.oms.data;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.onepf.oms.BillingApplication;
 import org.onepf.oms.BillingBinder;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -20,6 +18,15 @@ public class Database {
     ArrayList<Purchase> _purchaseHistory = new ArrayList<Purchase>();
 
     public Database() {
+    }
+
+    public Database(Document xml) throws Exception {
+        Element store = xml.getDocumentElement();
+        NodeList applicationList = store.getElementsByTagName("application");
+
+        for (int i = 0; i < applicationList.getLength(); ++i) {
+            _applicationList.add(new Application((Element) applicationList.item(i)));
+        }
     }
 
     public Database(String json) throws JSONException {
@@ -38,7 +45,7 @@ public class Database {
     }
 
     String generateToken(String packageName, String sku) {
-        return packageName +"."+ sku +"."+ UUID.randomUUID();
+        return packageName + "." + sku + "." + UUID.randomUUID();
     }
 
     public Application getApplication(String packageName) {
@@ -75,7 +82,7 @@ public class Database {
     }
 
     public int consume(String purchaseToken) {
-        for (int i = _purchaseHistory.size()-1; i >= 0; --i) {
+        for (int i = _purchaseHistory.size() - 1; i >= 0; --i) {
             if (_purchaseHistory.get(i).getToken().equals(purchaseToken)) {
                 _purchaseHistory.remove(i);
                 return BillingBinder.RESULT_OK;

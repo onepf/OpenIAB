@@ -19,6 +19,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.BillingApplication;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * Represents an in-app product's listing details.
@@ -37,6 +39,13 @@ public class SkuDetails {
         _title = name;
         _price = price;
         _description = description;
+    }
+
+    public SkuDetails(Node xml) {
+        NamedNodeMap attributes = xml.getAttributes();
+
+        _sku = attributes.getNamedItem("productId").getNodeValue();
+        _type = attributes.getNamedItem("type").getNodeValue();
     }
 
     public SkuDetails(String json) throws JSONException {
