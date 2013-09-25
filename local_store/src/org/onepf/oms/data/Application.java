@@ -1,13 +1,9 @@
 package org.onepf.oms.data;
 
-import android.util.Log;
-import org.onepf.oms.BillingApplication;
 import org.w3c.dom.Element;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
