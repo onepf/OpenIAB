@@ -4,12 +4,12 @@ import android.test.mock.MockApplication;
 import org.json.JSONException;
 import org.onepf.oms.data.Database;
 
-public class MockBillingApplication extends MockApplication implements IBillingApplication {
+public class MockBillingJsonApplication extends MockApplication implements IBillingApplication {
 
     Database _database;
     String _json;
 
-    public MockBillingApplication(String json) {
+    public MockBillingJsonApplication(String json) {
         _json = json;
     }
 

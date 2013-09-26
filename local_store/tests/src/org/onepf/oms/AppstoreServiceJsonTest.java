@@ -5,14 +5,14 @@ import android.os.RemoteException;
 import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-public class AppstoreServiceTest extends ServiceTestCase<AppstoreService> {
+public class AppstoreServiceJsonTest extends ServiceTestCase<AppstoreService> {
 
     AppstoreBinder _binder;
-    MockBillingApplication _app;
+    MockBillingJsonApplication _app;
 
     final String _jsonConfig = "{\"applications\":[{\"packageName\":\"org.onepf.trivialdrive\",\"version\":\"1\",\"installed\":\"true\",\"billingActive\":\"true\",\"products\":[{\"productId\":\"sku_gas\",\"type\":\"inapp\",\"price\":\"50\",\"title\":\"GAS\",\"description\":\"car fuel\"},{\"productId\":\"sku_premium\",\"type\":\"inapp\"},{\"productId\":\"sku_infinite_gas\",\"type\":\"subs\"}],\"inventory\":[\"sku_premium\",\"sku_infinite_gas\"]}]}";
 
-    public AppstoreServiceTest() {
+    public AppstoreServiceJsonTest() {
         super(AppstoreService.class);
     }
 
@@ -29,7 +29,7 @@ public class AppstoreServiceTest extends ServiceTestCase<AppstoreService> {
     }
 
     private void start(String json) {
-        _app = new MockBillingApplication(json);
+        _app = new MockBillingJsonApplication(json);
         _app.onCreate();
         setApplication(_app);
         _binder = (AppstoreBinder) bindService(new Intent());
