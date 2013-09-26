@@ -42,7 +42,12 @@ public class Application {
             }
         }
 
-        NodeList inventoryList = ((Element) xml.getElementsByTagName("inventory").item(0)).getElementsByTagName("item");
+        NodeList inventoryNodeList = xml.getElementsByTagName("inventory");
+        if (inventoryNodeList == null || inventoryNodeList.getLength() < 1) {
+            return;
+        }
+
+        NodeList inventoryList = ((Element) inventoryNodeList.item(0)).getElementsByTagName("item");
         if (inventoryList != null) {
             for (int i = 0; i < inventoryList.getLength(); ++i) {
                 String sku = inventoryList.item(i).getTextContent();
