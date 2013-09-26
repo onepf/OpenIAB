@@ -19,8 +19,10 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.BillingApplication;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Represents an in-app product's listing details.
@@ -41,11 +43,25 @@ public class SkuDetails {
         _description = description;
     }
 
-    public SkuDetails(Node xml) {
+    public SkuDetails(Element xml) {
         NamedNodeMap attributes = xml.getAttributes();
 
         _sku = attributes.getNamedItem("productId").getNodeValue();
         _type = attributes.getNamedItem("type").getNodeValue();
+
+        NodeList localeList = xml.getElementsByTagName("locale");
+        if (localeList != null && localeList.getLength() > 0) {
+            _title = ((Element) localeList.item(0)).getAttribute("title");
+            _description = ((Element) localeList.item(0)).getAttribute("description");
+        }
+
+        NodeList priceList = xml.getElementsByTagName("price");
+        if (priceList != null && priceList.getLength() > 0) {
+            NodeList countryList = ((Element) priceList.item(0)).getElementsByTagName("country");
+            if (countryList != null && countryList.getLength() > 0) {
+                _price = countryList.item(0).getTextContent();
+            }
+        }
     }
 
     public SkuDetails(String json) throws JSONException {

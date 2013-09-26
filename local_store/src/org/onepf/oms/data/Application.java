@@ -38,7 +38,7 @@ public class Application {
         NodeList productList = xml.getElementsByTagName("product");
         if (productList != null) {
             for (int i = 0; i < productList.getLength(); ++i) {
-                _productList.add(new SkuDetails(productList.item(i)));
+                _productList.add(new SkuDetails((Element) productList.item(i)));
             }
         }
 
@@ -46,7 +46,6 @@ public class Application {
         if (inventoryNodeList == null || inventoryNodeList.getLength() < 1) {
             return;
         }
-
         NodeList inventoryList = ((Element) inventoryNodeList.item(0)).getElementsByTagName("item");
         if (inventoryList != null) {
             for (int i = 0; i < inventoryList.getLength(); ++i) {
