@@ -21,6 +21,9 @@ public class Database {
     }
 
     public Database(Document xml) throws Exception {
+        if (xml == null) {
+            return;
+        }
         Element store = xml.getDocumentElement();
         NodeList applicationList = store.getElementsByTagName("application");
 
