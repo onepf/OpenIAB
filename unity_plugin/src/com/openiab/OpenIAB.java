@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class OpenIAB {
 
-    public static final String TAG = "OpenIAB";
+    public static final String TAG = "OpenIAB-unity-plugin";
     private static final String EVENT_MANAGER = "OpenIABEventManager";
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
@@ -140,8 +140,9 @@ public class OpenIAB {
                     String appstoreName = jsonObject.getString("appstoreName");
                     Purchase p = new Purchase(itemType, jsonPurchaseInfo, signature, appstoreName);
                     _helper.consumeAsync(p, _consumeFinishedListener);
+                    Log.i(TAG, "CONSUME JSON: " + json);
                 } catch (org.json.JSONException e) {
-                    UnityPlayer.UnitySendMessage(EVENT_MANAGER, CONSUME_PURCHASE_FAILED_CALLBACK, "Invalid json");
+                    UnityPlayer.UnitySendMessage(EVENT_MANAGER, CONSUME_PURCHASE_FAILED_CALLBACK, "Invalid json: " + json + ". " + e);
                 }
             }
         });
