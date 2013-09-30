@@ -134,11 +134,17 @@ public class OpenIAB {
             public void run() {
                 try {
                     JSONObject jsonObject = new JSONObject(json);
-                    String itemType = jsonObject.getString("itemType");
-                    String jsonPurchaseInfo = jsonObject.getString("originalJson");
-                    String signature = jsonObject.getString("signature");
                     String appstoreName = jsonObject.getString("appstoreName");
-                    Purchase p = new Purchase(itemType, jsonPurchaseInfo, signature, appstoreName);
+                    String jsonPurchaseInfo = jsonObject.getString("originalJson");
+                    Purchase p;
+                    if (jsonPurchaseInfo == null || jsonPurchaseInfo.equals("")) {
+                        p = new Purchase(appstoreName);
+                        p.setSku(jsonObject.getString("sku"));
+                    } else {
+                        String itemType = jsonObject.getString("itemType");
+                        String signature = jsonObject.getString("signature");
+                        p = new Purchase(itemType, jsonPurchaseInfo, signature, appstoreName);
+                    }
                     _helper.consumeAsync(p, _consumeFinishedListener);
                     Log.i(TAG, "CONSUME JSON: " + json);
                 } catch (org.json.JSONException e) {
