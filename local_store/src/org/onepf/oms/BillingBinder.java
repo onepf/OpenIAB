@@ -231,7 +231,7 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
 
         ArrayList<String> purchaseItemList = new ArrayList<String>(size);
         ArrayList<String> purchaseDataList = new ArrayList<String>(size);
-        ArrayList<String> purchaseSignatureList = new ArrayList<String>(Collections.nCopies(size, "no_signature"));
+        ArrayList<String> purchaseSignatureList = new ArrayList<String>(Collections.nCopies(size, ""));
 
         for (Purchase aPurchaseHistory : purchaseHistory) {
             purchaseItemList.add(aPurchaseHistory.getSku());

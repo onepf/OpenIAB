@@ -38,7 +38,7 @@ public class PurchaseActivity extends Activity {
             intent.putExtra(BillingBinder.RESPONSE_CODE, BillingBinder.RESULT_OK);
             intent.putExtra(BillingBinder.INAPP_PURCHASE_DATA, purchase.toJson());
             // TODO: create signature properly!
-            intent.putExtra(BillingBinder.INAPP_DATA_SIGNATURE, "no_signature");
+            intent.putExtra(BillingBinder.INAPP_DATA_SIGNATURE, "");
         }
 
         setResult(RESULT_OK, intent);
