@@ -146,7 +146,7 @@ public class OpenIAB {
                         p = new Purchase(itemType, jsonPurchaseInfo, signature, appstoreName);
                     }
                     _helper.consumeAsync(p, _consumeFinishedListener);
-                    Log.i(TAG, "CONSUME JSON: " + json);
+                    //Log.i(TAG, "CONSUME JSON: " + json);
                 } catch (org.json.JSONException e) {
                     UnityPlayer.UnitySendMessage(EVENT_MANAGER, CONSUME_PURCHASE_FAILED_CALLBACK, "Invalid json: " + json + ". " + e);
                 }
