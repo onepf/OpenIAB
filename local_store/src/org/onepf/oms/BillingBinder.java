@@ -73,7 +73,6 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
     @Override
     public int isBillingSupported(int apiVersion, String packageName, String type) throws RemoteException {
         if (apiVersion >= 3 &&
-                _db.getApplication(packageName) != null &&
                 (type.equals(BillingBinder.ITEM_TYPE_INAPP) || type.equals(BillingBinder.ITEM_TYPE_SUBS))) {
             return RESULT_OK;
         } else {
@@ -116,7 +115,7 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
 
         ArrayList<String> detailsList = new ArrayList<String>();
         for (String itemId : itemIdList) {
-            SkuDetails skuDetails = _db.getSkuDetails(packageName, itemId);
+            SkuDetails skuDetails = _db.getSkuDetails(itemId);
             if (skuDetails != null) {
                 detailsList.add(skuDetails.toJson());
             }
@@ -172,7 +171,7 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
         if (apiVersion < 3 || !(type.equals(ITEM_TYPE_INAPP) || type.equals(ITEM_TYPE_SUBS))) {
             result.putInt(RESPONSE_CODE, RESULT_DEVELOPER_ERROR);
         } else {
-            SkuDetails skuDetails = _db.getSkuDetails(packageName, sku);
+            SkuDetails skuDetails = _db.getSkuDetails(sku);
             if (skuDetails == null) {
                 result.putInt(RESPONSE_CODE, RESULT_ITEM_UNAVAILABLE);
             } else if (!skuDetails.getType().equals(type)) {
@@ -259,24 +258,25 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
         return apiVersion < 3 ? RESULT_DEVELOPER_ERROR : _db.consume(purchaseToken);
     }
 
+    // TODO:
     private ArrayList<Purchase> getPurchasesFormConfig(String packageName, String type) {
         ArrayList<Purchase> purchaseHistory = new ArrayList<Purchase>();
-        ArrayList<String> inventoryList = _db.getApplication(packageName).getInventoryList();
-        ArrayList<String> currentTypeInventoryList = new ArrayList<String>();
-        for (String sku : inventoryList) {
-            SkuDetails skuDetails = _db.getSkuDetails(packageName, sku);
-            if (skuDetails != null && skuDetails.getType().equals(type)) {
-                currentTypeInventoryList.add(sku);
-            }
-        }
-        for (String sku : currentTypeInventoryList) {
-            Purchase purchase = _db.createPurchase(packageName, sku, "");
-            if (purchase == null) {
-                Log.e(BillingApplication.TAG, "Couldn't create purchase from config: " + sku);
-            } else {
-                purchaseHistory.add(purchase);
-            }
-        }
+//        ArrayList<String> inventoryList = _db.getApplication(packageName).getInventoryList();
+//        ArrayList<String> currentTypeInventoryList = new ArrayList<String>();
+//        for (String sku : inventoryList) {
+//            SkuDetails skuDetails = _db.getSkuDetails(packageName, sku);
+//            if (skuDetails != null && skuDetails.getType().equals(type)) {
+//                currentTypeInventoryList.add(sku);
+//            }
+//        }
+//        for (String sku : currentTypeInventoryList) {
+//            Purchase purchase = _db.createPurchase(packageName, sku, "");
+//            if (purchase == null) {
+//                Log.e(BillingApplication.TAG, "Couldn't create purchase from config: " + sku);
+//            } else {
+//                purchaseHistory.add(purchase);
+//            }
+//        }
         return purchaseHistory;
     }
 }

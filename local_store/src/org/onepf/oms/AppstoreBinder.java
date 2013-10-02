@@ -3,7 +3,6 @@ package org.onepf.oms;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
-import org.onepf.oms.data.Application;
 import org.onepf.oms.data.Database;
 
 public class AppstoreBinder extends IOpenAppstore.Stub {
@@ -25,20 +24,17 @@ public class AppstoreBinder extends IOpenAppstore.Stub {
 
     @Override
     public boolean isPackageInstaller(String packageName) throws RemoteException {
-        Application app = _db.getApplication(packageName);
-        return app != null && app.installed();
+        return true;
     }
 
     @Override
     public boolean isBillingAvailable(String packageName) throws RemoteException {
-        Application app = _db.getApplication(packageName);
-        return app != null && app.billingActive();
+        return true;
     }
 
     @Override
     public int getPackageVersion(String packageName) throws RemoteException {
-        Application app = _db.getApplication(packageName);
-        return app == null ? -1 : app.getVersion();
+        return 0;
     }
 
     @Override

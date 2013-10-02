@@ -20,10 +20,11 @@ public class MockBillingJsonApplication extends MockApplication implements IBill
 
     @Override
     public void onCreate() {
-        try {
-            _database = new Database(_json);
-        } catch (JSONException e) {
+//        try {
+            //_database = new Database(_json);
             _database = new Database();
-        }
+//        } catch (JSONException e) {
+//            _database = new Database();
+//        }
     }
 }

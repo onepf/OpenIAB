@@ -154,7 +154,7 @@ public class MainActivity extends Activity {
          * want to make it easy for an attacker to replace the public key with one
          * of their own and then fake messages from the server.
          */
-        String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
+        String base64EncodedPublicKey = "cONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
         String samsungGroupId = "PLACE_HERE_SAMSUNG_GROUP_ID";
         String tstoreAppId = "PLACE_HERE_TSTORE_APP_ID";
         String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";

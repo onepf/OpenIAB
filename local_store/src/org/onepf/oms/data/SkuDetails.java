@@ -35,42 +35,12 @@ public class SkuDetails {
     String _title;
     String _description;
 
-    public SkuDetails(String itemType, String sku, String name, String price, String description) {
+    public SkuDetails(String itemType, String sku, String title, String price, String description) {
         _type = itemType;
         _sku = sku;
-        _title = name;
+        _title = title;
         _price = price;
         _description = description;
-    }
-
-    public SkuDetails(Element xml) {
-        NamedNodeMap attributes = xml.getAttributes();
-
-        _sku = attributes.getNamedItem("productId").getNodeValue();
-        _type = attributes.getNamedItem("type").getNodeValue();
-
-        NodeList localeList = xml.getElementsByTagName("locale");
-        if (localeList != null && localeList.getLength() > 0) {
-            _title = ((Element) localeList.item(0)).getAttribute("title");
-            _description = ((Element) localeList.item(0)).getAttribute("description");
-        }
-
-        NodeList priceList = xml.getElementsByTagName("price");
-        if (priceList != null && priceList.getLength() > 0) {
-            NodeList countryList = ((Element) priceList.item(0)).getElementsByTagName("country");
-            if (countryList != null && countryList.getLength() > 0) {
-                _price = countryList.item(0).getTextContent();
-            }
-        }
-    }
-
-    public SkuDetails(String json) throws JSONException {
-        JSONObject o = new JSONObject(json);
-        _sku = o.getString("productId");
-        _type = o.optString("type");
-        _price = o.optString("price");
-        _title = o.optString("title");
-        _description = o.optString("description");
     }
 
     public String toJson() {

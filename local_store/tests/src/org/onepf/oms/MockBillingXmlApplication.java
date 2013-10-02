@@ -20,10 +20,10 @@ public class MockBillingXmlApplication extends MockApplication implements IBilli
 
     @Override
     public void onCreate() {
-        try {
-            _database = new Database(_xml);
-        } catch (Exception e) {
+//        try {
+//            _database = new Database(_xml);
+//        } catch (Exception e) {
             _database = new Database();
-        }
+//        }
     }
 }

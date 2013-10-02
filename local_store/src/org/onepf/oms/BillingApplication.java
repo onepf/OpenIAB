@@ -11,7 +11,9 @@ import java.io.*;
 public class BillingApplication extends Application implements IBillingApplication {
 
     public static final String TAG = "OnePF-store";
-    static final String CONFIG_FILE = "config.xml";
+    static final String GOOGLE_CONFIG_FILE = "google-play.csv";
+    static final String AMAZON_CONFIG_FILE = "amazon.sdktester.json";
+    static final String ONEPF_CONFIG_FILE = "onepf.xml";
 
     Database _database;
     FileObserver _configObserver;
@@ -25,7 +27,9 @@ public class BillingApplication extends Application implements IBillingApplicati
     public void onCreate() {
         super.onCreate();
 
-        copyConfigFromAssets();
+        copyConfigFromAssets(GOOGLE_CONFIG_FILE);
+        copyConfigFromAssets(AMAZON_CONFIG_FILE);
+        copyConfigFromAssets(ONEPF_CONFIG_FILE);
 
         if (createDbFromConfig()) {
             _configObserver = new FileObserver(getConfigDir()) {
@@ -42,7 +46,7 @@ public class BillingApplication extends Application implements IBillingApplicati
         }
     }
 
-    private void copyConfigFromAssets() {
+    private void copyConfigFromAssets(String configFile) {
         File configDir = new File(getConfigDir());
         if (!configDir.exists()) {
             if (!configDir.mkdirs()) {
@@ -50,9 +54,8 @@ public class BillingApplication extends Application implements IBillingApplicati
                 return;
             }
         }
-        //Log.i(TAG, "Config file path: " + configDir.toString());
 
-        File outFile = new File(getConfigDir(), CONFIG_FILE);
+        File outFile = new File(getConfigDir(), configFile);
         if (outFile.exists()) {
             return;
         }
@@ -60,14 +63,14 @@ public class BillingApplication extends Application implements IBillingApplicati
         InputStream in;
         OutputStream out;
         try {
-            in = getAssets().open(CONFIG_FILE);
+            in = getAssets().open(configFile);
             out = new FileOutputStream(outFile);
             copyFile(in, out);
             in.close();
             out.flush();
             out.close();
         } catch(IOException e) {
-            Log.e(TAG, "Failed to copy asset file: config.xml", e);
+            Log.e(TAG, "Failed to copy asset file: " + configFile, e);
         }
     }
 
@@ -85,7 +88,10 @@ public class BillingApplication extends Application implements IBillingApplicati
 
     private boolean createDbFromConfig() {
         try {
-            _database = new Database(XmlHelper.loadXMLFromString(readConfigFromSdCard()));
+            _database = new Database();
+            _database.deserializeFromGoogleCSV(readConfigFromSdCard(GOOGLE_CONFIG_FILE));
+            _database.deserializeFromAmazonJson(readConfigFromSdCard(AMAZON_CONFIG_FILE));
+            _database.deserializeFromOnePFXML(readConfigFromSdCard(ONEPF_CONFIG_FILE));
         } catch (Exception e) {
             Log.e(TAG, "Couldn't parse provided 'config' file", e);
             _database = new Database();
@@ -94,8 +100,8 @@ public class BillingApplication extends Application implements IBillingApplicati
         return true;
     }
 
-    private String readConfigFromSdCard() {
-        File file = new File(getConfigDir(), CONFIG_FILE);
+    private String readConfigFromSdCard(String configFile) {
+        File file = new File(getConfigDir(), configFile);
         if (!file.exists()) {
             Log.i(TAG, "'config' file not found");
             return "";
@@ -106,7 +112,7 @@ public class BillingApplication extends Application implements IBillingApplicati
             br = new BufferedReader(new FileReader(file));
             String temp;
             while ((temp = br.readLine()) != null) {
-                sb.append(temp);
+                sb.append(temp).append("\n");
             }
         } catch (IOException e) {
             Log.e(TAG, "Couldn't read 'config'", e);
