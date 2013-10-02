@@ -1,15 +1,16 @@
 package org.onepf.oms;
 
 import android.test.mock.MockApplication;
+import org.onepf.oms.data.CSVException;
 import org.onepf.oms.data.Database;
 
-public class MockBillingXmlApplication extends MockApplication implements IBillingApplication {
+public class MockBillingCsvApplication extends MockApplication implements IBillingApplication {
 
     Database _database;
-    String _xml;
+    String _csv;
 
-    public MockBillingXmlApplication(String xml) {
-        _xml = xml;
+    public MockBillingCsvApplication(String csv) {
+        _csv = csv;
     }
 
     @Override
@@ -21,8 +22,8 @@ public class MockBillingXmlApplication extends MockApplication implements IBilli
     public void onCreate() {
         try {
             _database = new Database();
-            _database.deserializeFromOnePFXML(_xml);
-        } catch (Exception e) {
+            _database.deserializeFromGoogleCSV(_csv);
+        } catch (CSVException e) {
             _database = new Database();
         }
     }

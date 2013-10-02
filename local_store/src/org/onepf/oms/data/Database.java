@@ -3,6 +3,7 @@ package org.onepf.oms.data;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.BillingBinder;
+import org.onepf.oms.XmlHelper;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -27,9 +28,9 @@ public class Database {
         if (json == null || json.equals("")) return;
 
         JSONObject o = new JSONObject(json);
-        Iterator<String> keys = o.keys();
+        Iterator<?> keys = o.keys();
         while (keys.hasNext()) {
-            String key = keys.next();
+            String key = (String) keys.next();
             if (o.get(key) instanceof JSONObject) {
                 JSONObject product = (JSONObject) o.get(key);
                 String sku;
@@ -111,9 +112,7 @@ public class Database {
     public void deserializeFromOnePFXML(String xml) throws Exception {
         if (xml == null || xml.equals("")) return;
 
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document doc = builder.parse(new InputSource(new StringReader(xml)));
-        Element store = doc.getDocumentElement();
+        Element store = XmlHelper.loadXMLFromString(xml).getDocumentElement();
         NodeList productList = store.getElementsByTagName("product");
         for (int i = 0; i < productList.getLength(); ++i) {
             String sku;

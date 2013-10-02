@@ -85,16 +85,16 @@ public class AppstoreServiceXmlTest extends ServiceTestCase<AppstoreService> {
         assertTrue(_binder.isPackageInstaller("org.some.app"));
     }
 
-    @SmallTest
-    public void testIsNotPackageInstaller() throws Exception {
-        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
-                "<store> " +
-                "    <application packageName=\"org.some.app\" " +
-                "                 version=\"1\" " +
-                "                 installed=\"false\"/> " +
-                "</store> ");
-        assertFalse(_binder.isPackageInstaller("org.some.app"));
-    }
+//    @SmallTest
+//    public void testIsNotPackageInstaller() throws Exception {
+//        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
+//                "<store> " +
+//                "    <application packageName=\"org.some.app\" " +
+//                "                 version=\"1\" " +
+//                "                 installed=\"false\"/> " +
+//                "</store> ");
+//        assertFalse(_binder.isPackageInstaller("org.some.app"));
+//    }
 
     @SmallTest
     public void testIsBillingAvailable() throws Exception {
@@ -107,26 +107,26 @@ public class AppstoreServiceXmlTest extends ServiceTestCase<AppstoreService> {
         assertTrue(_binder.isBillingAvailable("org.some.app"));
     }
 
-    @SmallTest
-    public void testIsNotBillingAvailable() throws Exception {
-        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
-                "<store> " +
-                "    <application packageName=\"org.some.app\" " +
-                "                 version=\"1\" " +
-                "                 billingActive=\"false\"/> " +
-                "</store> ");
-        assertFalse(_binder.isBillingAvailable("org.some.app"));
-    }
+//    @SmallTest
+//    public void testIsNotBillingAvailable() throws Exception {
+//        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
+//                "<store> " +
+//                "    <application packageName=\"org.some.app\" " +
+//                "                 version=\"1\" " +
+//                "                 billingActive=\"false\"/> " +
+//                "</store> ");
+//        assertFalse(_binder.isBillingAvailable("org.some.app"));
+//    }
 
-    @SmallTest
-    public void testVersion() throws Exception {
-        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
-                "<store> " +
-                "    <application packageName=\"org.some.app\" " +
-                "                 version=\"666\"/> " +
-                "</store> ");
-        assertTrue(_binder.getPackageVersion("org.some.app") == 666);
-    }
+//    @SmallTest
+//    public void testVersion() throws Exception {
+//        start("<?xml version=\"1.0\" encoding=\"UTF-8\" ?> " +
+//                "<store> " +
+//                "    <application packageName=\"org.some.app\" " +
+//                "                 version=\"666\"/> " +
+//                "</store> ");
+//        assertTrue(_binder.getPackageVersion("org.some.app") == 666);
+//    }
 
     @SmallTest
     public void testBillingServiceIntent() throws Exception {

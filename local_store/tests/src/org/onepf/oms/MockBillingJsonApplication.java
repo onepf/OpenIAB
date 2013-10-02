@@ -20,11 +20,11 @@ public class MockBillingJsonApplication extends MockApplication implements IBill
 
     @Override
     public void onCreate() {
-//        try {
-            //_database = new Database(_json);
+        try {
             _database = new Database();
-//        } catch (JSONException e) {
-//            _database = new Database();
-//        }
+            _database.deserializeFromAmazonJson(_json);
+        } catch (JSONException e) {
+            _database = new Database();
+        }
     }
 }
