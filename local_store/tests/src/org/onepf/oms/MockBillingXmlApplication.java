@@ -1,11 +1,9 @@
 package org.onepf.oms;
 
-import android.test.mock.MockApplication;
 import org.onepf.oms.data.Database;
 
-public class MockBillingXmlApplication extends MockApplication implements IBillingApplication {
+public class MockBillingXmlApplication extends MockBillingApplicationBase {
 
-    Database _database;
     String _xml;
 
     public MockBillingXmlApplication(String xml) {
@@ -13,17 +11,12 @@ public class MockBillingXmlApplication extends MockApplication implements IBilli
     }
 
     @Override
-    public Database getDatabase() {
-        return _database;
-    }
-
-    @Override
     public void onCreate() {
         try {
-            _database = new Database();
+            _database = new Database(this);
             _database.deserializeFromOnePFXML(_xml);
         } catch (Exception e) {
-            _database = new Database();
+            _database = new Database(this);
         }
     }
 }

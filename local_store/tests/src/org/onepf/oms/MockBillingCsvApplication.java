@@ -1,12 +1,10 @@
 package org.onepf.oms;
 
-import android.test.mock.MockApplication;
 import org.onepf.oms.data.CSVException;
 import org.onepf.oms.data.Database;
 
-public class MockBillingCsvApplication extends MockApplication implements IBillingApplication {
+public class MockBillingCsvApplication extends MockBillingApplicationBase {
 
-    Database _database;
     String _csv;
 
     public MockBillingCsvApplication(String csv) {
@@ -14,17 +12,12 @@ public class MockBillingCsvApplication extends MockApplication implements IBilli
     }
 
     @Override
-    public Database getDatabase() {
-        return _database;
-    }
-
-    @Override
     public void onCreate() {
         try {
-            _database = new Database();
+            _database = new Database(this);
             _database.deserializeFromGoogleCSV(_csv);
         } catch (CSVException e) {
-            _database = new Database();
+            _database = new Database(this);
         }
     }
 }

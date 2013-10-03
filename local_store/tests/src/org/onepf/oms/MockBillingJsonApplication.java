@@ -1,12 +1,10 @@
 package org.onepf.oms;
 
-import android.test.mock.MockApplication;
 import org.json.JSONException;
 import org.onepf.oms.data.Database;
 
-public class MockBillingJsonApplication extends MockApplication implements IBillingApplication {
+public class MockBillingJsonApplication extends MockBillingApplicationBase  {
 
-    Database _database;
     String _json;
 
     public MockBillingJsonApplication(String json) {
@@ -14,17 +12,12 @@ public class MockBillingJsonApplication extends MockApplication implements IBill
     }
 
     @Override
-    public Database getDatabase() {
-        return _database;
-    }
-
-    @Override
     public void onCreate() {
         try {
-            _database = new Database();
+            _database = new Database(this);
             _database.deserializeFromAmazonJson(_json);
         } catch (JSONException e) {
-            _database = new Database();
+            _database = new Database(this);
         }
     }
 }
