@@ -113,6 +113,10 @@ public class Purchase implements Cloneable {
         return mSignature;
     }
 
+    public String getAppstoreName() {
+        return appstoreName;
+    }
+
     @Override
     public String toString() {
         return "PurchaseInfo(type:" + mItemType + "):" + mOriginalJson;
