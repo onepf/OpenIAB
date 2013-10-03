@@ -88,13 +88,13 @@ public class BillingApplication extends Application implements IBillingApplicati
 
     private boolean createDbFromConfig() {
         try {
-            _database = new Database();
+            _database = new Database(this);
             _database.deserializeFromGoogleCSV(readConfigFromSdCard(GOOGLE_CONFIG_FILE));
             _database.deserializeFromAmazonJson(readConfigFromSdCard(AMAZON_CONFIG_FILE));
             _database.deserializeFromOnePFXML(readConfigFromSdCard(ONEPF_CONFIG_FILE));
         } catch (Exception e) {
             Log.e(TAG, "Couldn't parse provided 'config' file", e);
-            _database = new Database();
+            _database = new Database(this);
             return false;
         }
         return true;

@@ -16,6 +16,7 @@
 package org.onepf.oms.data;
 
 import android.util.Log;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreBinder;
 import org.onepf.oms.BillingApplication;
@@ -41,6 +42,17 @@ public class Purchase implements Cloneable {
         _purchaseState = purchaseState;
         _developerPayload = developerPayload;
         _token = token;
+    }
+
+    public Purchase(String json) throws JSONException {
+        JSONObject o = new JSONObject(json);
+        _orderId = o.getString("orderId");
+        _packageName = o.getString("packageName");
+        _sku = o.getString("productId");
+        _purchaseTime = o.getLong("purchaseTime");
+        _purchaseState = o.getInt("purchaseState");
+        _developerPayload = o.getString("developerPayload");
+        _token = o.getString("purchaseToken");
     }
 
     public String toJson() {

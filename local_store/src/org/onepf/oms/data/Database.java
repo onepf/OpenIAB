@@ -1,7 +1,11 @@
 package org.onepf.oms.data;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.onepf.oms.BillingApplication;
 import org.onepf.oms.BillingBinder;
 import org.onepf.oms.XmlHelper;
 import org.w3c.dom.*;
@@ -16,12 +20,45 @@ import java.util.UUID;
 
 public class Database {
 
+    static final String INVENTORY_KEY = "inventory";
+
     long _orderid = 0;
 
     ArrayList<SkuDetails> _productList = new ArrayList<SkuDetails>();
     ArrayList<Purchase> _purchaseHistory = new ArrayList<Purchase>();
 
-    public Database() {
+    final Context _context;
+
+
+    public Database(Context context) {
+        _context = context;
+        loadInventory();
+    }
+
+    private void saveInventory() {
+        StringBuilder result = new StringBuilder();
+        for (Purchase p : _purchaseHistory) {
+            result.append(p.toJson()).append("|");
+        }
+        SharedPreferences.Editor prefsEditor = _context.getSharedPreferences(INVENTORY_KEY, 0).edit();
+        prefsEditor.putString(INVENTORY_KEY, result.toString());
+        prefsEditor.commit();
+    }
+
+    private void loadInventory() {
+        SharedPreferences prefs = _context.getSharedPreferences(INVENTORY_KEY, 0);
+        String data = prefs.getString(INVENTORY_KEY, null);
+
+        if (data == null || data.equals("")) return;
+
+        String[] purchases = data.split("\\|");
+        for (String json : purchases) {
+            try {
+                _purchaseHistory.add(new Purchase(json));
+            } catch (JSONException e) {
+                Log.e(BillingApplication.TAG, "Failed to deserialize purchase.", e);
+            }
+        }
     }
 
     public void deserializeFromAmazonJson(String json) throws JSONException {
@@ -168,15 +205,28 @@ public class Database {
 
     public void storePurchase(Purchase purchase) {
         _purchaseHistory.add(purchase);
+        saveInventory();
+
     }
 
     public int consume(String purchaseToken) {
         for (int i = _purchaseHistory.size() - 1; i >= 0; --i) {
             if (_purchaseHistory.get(i).getToken().equals(purchaseToken)) {
                 _purchaseHistory.remove(i);
+                saveInventory();
                 return BillingBinder.RESULT_OK;
             }
         }
         return BillingBinder.RESULT_ITEM_NOT_OWNED;
+    }
+
+    public ArrayList<Purchase> getInventory(String packageName, String type) {
+        ArrayList<Purchase> inventory = new ArrayList<Purchase>();
+        for (Purchase p : _purchaseHistory) {
+            if (getSkuDetails(p.getSku()).getType().equals(type) && p.getPackageName().equals(packageName)) {
+                inventory.add(p);
+            }
+        }
+        return inventory;
     }
 }

@@ -224,8 +224,7 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
 
         result.putInt(RESPONSE_CODE, RESULT_OK);
 
-        // TODO: consider to restore purchases from persistent storage
-        ArrayList<Purchase> purchaseHistory = getPurchasesFormConfig(packageName, type);
+        ArrayList<Purchase> purchaseHistory = _db.getInventory(packageName, type);
         int size = purchaseHistory.size();
 
         ArrayList<String> purchaseItemList = new ArrayList<String>(size);
@@ -256,27 +255,5 @@ public class BillingBinder extends IOpenInAppBillingService.Stub {
     @Override
     public int consumePurchase(int apiVersion, String packageName, String purchaseToken) throws RemoteException {
         return apiVersion < 3 ? RESULT_DEVELOPER_ERROR : _db.consume(purchaseToken);
-    }
-
-    // TODO:
-    private ArrayList<Purchase> getPurchasesFormConfig(String packageName, String type) {
-        ArrayList<Purchase> purchaseHistory = new ArrayList<Purchase>();
-//        ArrayList<String> inventoryList = _db.getApplication(packageName).getInventoryList();
-//        ArrayList<String> currentTypeInventoryList = new ArrayList<String>();
-//        for (String sku : inventoryList) {
-//            SkuDetails skuDetails = _db.getSkuDetails(packageName, sku);
-//            if (skuDetails != null && skuDetails.getType().equals(type)) {
-//                currentTypeInventoryList.add(sku);
-//            }
-//        }
-//        for (String sku : currentTypeInventoryList) {
-//            Purchase purchase = _db.createPurchase(packageName, sku, "");
-//            if (purchase == null) {
-//                Log.e(BillingApplication.TAG, "Couldn't create purchase from config: " + sku);
-//            } else {
-//                purchaseHistory.add(purchase);
-//            }
-//        }
-        return purchaseHistory;
     }
 }
