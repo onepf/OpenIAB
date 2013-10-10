@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.onepf.oms"
+          android:versionCode="1"
+          android:versionName="1.0">
+    <uses-sdk
+            android:minSdkVersion="8"
+            android:targetSdkVersion="17"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <application android:label="@string/app_name" android:name=".BillingApplication">
+        <activity android:name=".MainActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".PurchaseActivity"
+                  android:label="@string/app_name"
+                  android:process=":remote">
+        </activity>
+        <service android:exported="true" android:name=".AppstoreService" android:process=":remote">
+            <intent-filter >
+                <action android:name="org.onepf.oms.openappstore.BIND"/>
+            </intent-filter>
+        </service>
+        <service android:exported="true" android:name=".BillingService" android:process=":remote">
+            <intent-filter >
+                <action android:name="org.onepf.oms.billing.BIND"/>
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
