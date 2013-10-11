@@ -1,0 +1,53 @@
+{
+  "sku_cowboy_hat": {
+    "description": "Cool hat for the character. Adds +10 to show-off.",
+    "title": "Cowboy Hat",
+    "itemType": "ENTITLED",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FM39RYFRXX5YSUC%2Fimages%2F_f951a8de-79b1-4318-afa8-000f8d04062e_ece9f14b2c987416ab4838dd63729b2d"
+  },
+  "sku_medkit": {
+    "description": "Expendable for restoring player HP",
+    "title": "MedKit",
+    "itemType": "CONSUMABLE",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FM276AF3BMWA9C8%2Fimages%2F_d61c2cc0-7393-4672-b98a-8d28c47578b8_a7cb492847be7ebfc4a981ba57aec40c"
+  },
+  "sku_ammo": {
+    "description": "Weapon ammo. Kill 'em all!",
+    "title": "Ammo",
+    "itemType": "CONSUMABLE",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FMTRRINXECUKEB%2Fimages%2F_936d53ae-9539-4b63-ac99-040bb2302ac7_5ab89aade6606f41dda5cabbcc39d9a4"
+  },
+  "sku_infinite_ammo_weekly": {
+    "description": "Subscription for infinite ammo cheat",
+    "title": "Infinite Ammo",
+    "itemType": "SUBSCRIPTION",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FMQDQ9ZPJKEGWT%2Fimages%2F_9cc92035-3a68-4a5e-abb6-e6fb55ab7cb0_5230126951b9894ca8265e9ce2e7ed3a",
+    "subscriptionParent": "sku_infinite_ammo"
+  },
+  "sku_premium": {
+    "description": "Red color for your car",
+    "title": "Premium Upgrade: Red Color",
+    "itemType": "ENTITLED",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FM21KGKW42WYYNL%2Fimages%2F_9cbc6f46-9fd6-4aeb-8c80-2d1a00b272f8_137ceaf73d63da7aa18c079d8367ffab"
+  },
+  "sku_gas": {
+    "description": "Fulfil tank for 1/4",
+    "title": "Some Gas",
+    "itemType": "CONSUMABLE",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FM15KG0C1BK49B9%2Fimages%2F_59c1b075-c3f8-4c3a-ac91-5a9307ac7172_52a8cf3601aab22b2e2760c8eaf21587"
+  },
+  "sku_infinite_gas": {
+    "description": "For 1 month",
+    "title": "Infinite Gas Subscription",
+    "itemType": "SUBSCRIPTION",
+    "price": 0.0,
+    "smallIconUrl": "https://s3-external-1.amazonaws.com/com-amazon-mas-catalog/M3Q90L0VNS056B%2FM2NYN8TJDTDG86%2Fimages%2F_e58b3162-0c8a-43da-a766-5625d39b592f_434269651dead989e2eb402cbe2c511f",
+    "subscriptionParent": "org.onepf.trivialdrive.amazon.infinite_gas"
+  }
+}
