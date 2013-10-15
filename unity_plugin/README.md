@@ -57,6 +57,48 @@ Now you can run demo scene with some test buttons.
   OpenIAB.unbindService();
   ```
 
+  Here is example of the purchase event handling from our demo project:
+  
+  ```c#
+    private const string SKU_MEDKIT = "sku_medkit";
+    private const string SKU_AMMO = "sku_ammo";
+    private const string SKU_INFINITE_AMMO = "sku_infinite_ammo";
+    private const string SKU_COWBOY_HAT = "sku_cowboy_hat";
+
+    // Some game logic refs
+    [SerializeField]
+    private AmmoBox _playerAmmoBox = null;
+    [SerializeField]
+    private MedKitPack _playerMedKitPack = null;
+    [SerializeField]
+    private PlayerHat _playerHat = null;
+  
+    private void OnPurchaseSucceded(Purchase purchase) {
+        // Optional verification of the payload. Can be moved to a custom server
+        if (!VerifyDeveloperPayload(purchase.DeveloperPayload)) {
+            return;
+        }
+        switch (purchase.Sku) {
+            case SKU_MEDKIT:
+                OpenIAB.consumeProduct(purchase);
+                return;
+            case SKU_AMMO:
+                OpenIAB.consumeProduct(purchase);
+                return;
+            case SKU_COWBOY_HAT:
+                _playerHat.PutOn = true;
+                break;
+            case SKU_INFINITE_AMMO:
+                _playerAmmoBox.IsInfinite = true;
+                break;
+            default:
+                Debug.LogWarning("Unknown SKU: " + purchase.Sku);
+                break;
+        }
+    }
+    ```
+  
+
 API
 =====
 All work is done through the two classes: ``` OpenIAB ```, ``` OpenIABEventManager ```.
