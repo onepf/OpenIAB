@@ -1,25 +1,69 @@
 OpenIAB - Unity Plugin
 =====
-
 This library is Java part of our Unity plugin. 
 
 Take a look at our [example project](https://github.com/onepf/OpenIAB-angrybots) based on the Unity **AngryBots** demo.
 
 Integration
 =====
-
-One simple step. Download Unity [package](http://127.0.0.1) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
+Download Unity [package](http://127.0.0.1) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
 There is also ``` AndroidManifest.xml ``` in the /Assets/Plugins/Android. Developer can add project specific settings to it.
 
 Now you can run demo scene with some test buttons.
 
+5 Simple Steps
+=====
+1. Place **OpenIABEventManager** prefab on the current scene.
+
+
+2. Subscribe to the plugin events:
+  ```c#
+  private void OnEnable() {
+      OpenIABEventManager.billingSupportedEvent += billingSupportedEvent;
+      OpenIABEventManager.billingNotSupportedEvent += billingNotSupportedEvent;
+      OpenIABEventManager.queryInventorySucceededEvent += queryInventorySucceededEvent;
+      OpenIABEventManager.queryInventoryFailedEvent += queryInventoryFailedEvent;
+      OpenIABEventManager.purchaseSucceededEvent += purchaseSucceededEvent;
+      OpenIABEventManager.purchaseFailedEvent += purchaseFailedEvent;
+      OpenIABEventManager.consumePurchaseSucceededEvent += consumePurchaseSucceededEvent;
+      OpenIABEventManager.consumePurchaseFailedEvent += consumePurchaseFailedEvent;
+  }
+  ```
+
+3. Map sku's for different stores:
+  ```c#
+  private void Start() {
+      OpenIAB.mapSku(SKU, OpenIAB.STORE_GOOGLE, "google-play.sku");
+      OpenIAB.mapSku(SKU, STORE_CUSTOM, "onepf.sku");
+  }
+  ```
+
+4. Call ``` init ``` method passing it preferred stores list with public keys, in order to start billing service.
+  ```c#
+   OpenIAB.init(new Dictionary<string, string> {
+        {OpenIAB.STORE_GOOGLE, "public_key"},
+        {OpenIAB.STORE_TSTORE, "public_key"},
+        {OpenIAB.STORE_SAMSUNG, "public_key"},
+        {OpenIAB.STORE_YANDEX, "public_key"}
+    });
+  ```
+
+5. Use provided API to query inventory, make purchases, etc.
+  ```c#
+  OpenIAB.queryInventory();
+  
+  OpenIAB.purchaseProduct("s.k.u");
+
+  OpenIAB.unbindService();
+  ```
+
 API
 =====
-
 All work is done through the two classes: ``` OpenIAB ```, ``` OpenIABEventManager ```.
-First you need to place **OpenIABEventManager** prefab on the scene and subscribe to the following static events in ``` OpenIABEventManager ```:
 
-```
+Full list of the provided events:
+
+```c#
 // Fired after init is called when billing is supported on the device
 public static event Action billingSupportedEvent;
 
@@ -45,13 +89,9 @@ public static event Action<Purchase> consumePurchaseSucceededEvent;
 public static event Action<string> consumePurchaseFailedEvent;
 ```
 
-OpenIAB initializes itself in static constructor, but you need to call ``` init ``` method passing it preferred stores list with public keys, in order to start billing service.
+Full list of the provided methods:
 
-Then you can map sku's by calling ``` mapSku ``` and use rest of the API.
-
-This is full list of the provided methods:
-
-```
+```c#
 // Starts up the billing service. This will also check to see if in app billing is supported and fire the appropriate event
 public static void init(Dictionary<string, string> storeKeys);
 
