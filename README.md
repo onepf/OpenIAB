@@ -104,6 +104,10 @@ Appstore IAB feature support:
   </tr>
 </table>
 
+Unity Plugin
+=====
+There is [Unity plugin](/onepf/OpenIAB/unity_plugin) that will simplify integration. No need to write any java code.
+
 How Can I Help?
 =====
 * If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?labels=open+tasks&state=open">the list of open tasks</a>, check if any of these tasks is interesting for you, send a message to <a href="http://groups.google.com/group/opf_openiab">OpenIAB mailing list</a> how you want to help. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub. 
