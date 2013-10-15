@@ -71,8 +71,10 @@ And register reciever for Amazon
     </intent-filter>
 </receiver>
 ```
-https://github.com/oorlov/OpenIAB/blob/doc-update/samples/trivialdrive/AndroidManifest.xml#L33
 
+Unity Plugin
+=====
+There is also Unity engine [plugin](unity_plugin) that will simplify integration for C#/JavaScript developers. No need to write any java code.
 
 How OpenIAB Works
 =====
