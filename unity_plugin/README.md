@@ -3,6 +3,8 @@ OpenIAB - Unity Plugin
 
 This library is Java part of our Unity plugin. 
 
+Take a look at our [example project](https://github.com/onepf/OpenIAB-angrybots) based on the Unity **AngryBots** demo.
+
 Integration
 =====
 
