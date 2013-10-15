@@ -121,7 +121,6 @@ public class OpenIabHelper {
             if (skuMap.get(sku) != null) {
                 throw new IllegalArgumentException("Already specified sku: " + sku + ", storeSku: " + skuMap.get(sku));
             }
-            ;
             Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
             if (storeSkuMap == null) {
                 storeSkuMap = new HashMap<String, String>();
@@ -159,7 +158,15 @@ public class OpenIabHelper {
         }
     }
 
-    
+    public static List<String> getAllStoreSkus(final String appstoreName) {
+        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
+        List<String> result = new ArrayList<String>();
+        if (skuMap != null) {
+            result.addAll(skuMap.values());
+        }
+        return result;
+    }
+
     public interface OnOpenIabHelperInitFinished {
         public void onOpenIabHelperInitFinished();
     }
@@ -181,7 +188,7 @@ public class OpenIabHelper {
         this.mServiceManager = new AppstoreServiceManager(context, storeKeys, prefferedStores, new Appstore[] {
                     new GooglePlay(context, storeKeys.get(OpenIabHelper.NAME_GOOGLE))
                 ,   new AmazonAppstore(context)
-                ,   new SamsungApps(context, storeKeys.get(OpenIabHelper.NAME_SAMSUNG))
+                ,   new SamsungApps(context)
                 ,   new TStore(context, storeKeys.get(OpenIabHelper.NAME_TSTORE))
         });
     }
@@ -192,7 +199,7 @@ public class OpenIabHelper {
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         mServiceManager.startSetup(new AppstoreServiceManager.OnInitListener() {
             @Override
-            public void onInitFinished() {
+            public void onInitFinished() {// called in UI when the last openstore service is connected and analyzed  
                 
                 mAppstore = mServiceManager.selectBillingService();
                 if (mAppstore == null) {
@@ -204,6 +211,7 @@ public class OpenIabHelper {
                 mAppstoreBillingService = mAppstore.getInAppBillingService(); 
                 mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
                     public void onIabSetupFinished(IabResult result) {
+                        // TODO: if result is not ok, is setupDone true?
                         mSetupDone = true;
                         listener.onIabSetupFinished(result);
                     }

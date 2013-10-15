@@ -20,7 +20,7 @@ import org.json.JSONObject;
 
 /**
  * Represents an in-app billing purchase.
- * 
+ *
  * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere 
  * <p><b>TODO</b>: add getStoreSku() to use mapped value in Appstore's inner code
  */
@@ -46,8 +46,32 @@ public class Purchase implements Cloneable {
         mItemType = itemType;
     }
 
+    public void setOrderId(String orderId) {
+        mOrderId = orderId;
+    }
+
+    public void setPackageName(String packageName) {
+        mPackageName = packageName;
+    }
+
     public void setSku(String sku) {
         mSku = sku;
+    }
+
+    public void setPurchaseTime(long purchaseTime) {
+        mPurchaseTime = purchaseTime;
+    }
+
+    public void setPurchaseState(int purchaseState) {
+        mPurchaseState = purchaseState;
+    }
+
+    public void setDeveloperPayload(String developerPayload) {
+        mDeveloperPayload = developerPayload;
+    }
+
+    public void setToken(String token) {
+        mToken = token;
     }
 
     public Purchase(String itemType, String jsonPurchaseInfo, String signature, String appstoreName) throws JSONException {
@@ -64,7 +88,7 @@ public class Purchase implements Cloneable {
         mToken = o.optString("token", o.optString("purchaseToken"));
         mSignature = signature;
     }
-    
+
     public Object clone() {
         try {
             return super.clone();
@@ -119,6 +143,14 @@ public class Purchase implements Cloneable {
 
     @Override
     public String toString() {
-        return "PurchaseInfo(type:" + mItemType + "):" + mOriginalJson;
+        return "PurchaseInfo(type:" + mItemType + "): "
+                + "{\"orderId\":" + mOrderId
+                + ",\"packageName\":" + mPackageName
+                + ",\"productId\":" + mSku
+                + ",\"purchaseTime\":" + mPurchaseTime
+                + ",\"purchaseState\":" + mPurchaseState
+                + ",\"developerPayload\":" + mDeveloperPayload
+                + ",\"token\":" + mToken
+                + "}";
     }
 }

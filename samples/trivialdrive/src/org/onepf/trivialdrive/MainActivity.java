@@ -107,15 +107,15 @@ public class MainActivity extends Activity {
     static {
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
-        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_premium");
+        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003746");
 
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
-        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_gas");
+        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
 
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "samsung_sku_infinite_gas");
+        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
 
     }
     
@@ -155,7 +155,6 @@ public class MainActivity extends Activity {
          * of their own and then fake messages from the server.
          */
         String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
-        String samsungGroupId = "PLACE_HERE_SAMSUNG_GROUP_ID";
         String tstoreAppId = "PLACE_HERE_TSTORE_APP_ID";
         String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
 
@@ -172,7 +171,6 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Creating IAB helper.");
         Map<String, String> storeKeys = new HashMap<String, String>();
         storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
-        storeKeys.put(OpenIabHelper.NAME_SAMSUNG, samsungGroupId);
         storeKeys.put(OpenIabHelper.NAME_TSTORE, tstoreAppId);
         storeKeys.put("YandexPublicKey", YANDEX_PUBLIC_KEY);
         mHelper = new OpenIabHelper(this, storeKeys);
