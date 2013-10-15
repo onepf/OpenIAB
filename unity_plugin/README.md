@@ -6,7 +6,7 @@ This library is Java part of our Unity plugin.
 Integration
 =====
 
-One simple step. Download Unity [package](http://127.0.0.1) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/onepf/OpenIAB) library.
+One simple step. Download Unity [package](http://127.0.0.1) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
 There is also AndroidManifest.xml in the /Assets/Plugins/Android. Developer can add project specific settings to it.
 
 Now you can run demo scene with some test buttons.
@@ -14,8 +14,8 @@ Now you can run demo scene with some test buttons.
 API
 =====
 
-All work is done through the two classes: _OpenIAB_, _OpenIABEventManager_.
-First you need to place **OpenIABEventManager** prefab on the scene and subscribe to the following static events in _OpenIABEventManager_:
+All work is done through the two classes: ``` OpenIAB ```, ``` OpenIABEventManager ```.
+First you need to place **OpenIABEventManager** prefab on the scene and subscribe to the following static events in ``` OpenIABEventManager ```:
 
 ```
 // Fired after init is called when billing is supported on the device
