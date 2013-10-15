@@ -106,7 +106,7 @@ Appstore IAB feature support:
 
 Unity Plugin
 =====
-There is [Unity plugin](/onepf/OpenIAB/unity_plugin) that will simplify integration. No need to write any java code.
+There is also Unity engine [plugin](/onepf/OpenIAB/unity_plugin) that will simplify integration for C#/JavaScript developers. No need to write any java code.
 
 How Can I Help?
 =====
