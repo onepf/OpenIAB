@@ -8,7 +8,8 @@ Integration
 
 One simple step. Download Unity [package](http://127.0.0.1) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/onepf/OpenIAB) library.
 There is also AndroidManifest.xml in the /Assets/Plugins/Android. Developer can add project specific settings to it.
-You can run demo scene with some test buttons.
+
+Now you can run demo scene with some test buttons.
 
 API
 =====
@@ -43,7 +44,9 @@ public static event Action<string> consumePurchaseFailedEvent;
 ```
 
 OpenIAB initializes itself in static constructor, but you need to call _init_ method passing it preferred stores list with public keys, in order to start billing service.
+
 Then you can map sku's by calling _mapSku_ and use rest of the API.
+
 This is full list of the provided methods:
 
 ```
