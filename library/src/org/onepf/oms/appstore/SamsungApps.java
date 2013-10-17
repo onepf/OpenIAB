@@ -26,6 +26,14 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 
 /**
+ * <p>
+ * {@link #isPackageInstaller(String)} - there is no known reliable way to understand 
+ * SamsungApps is installer of Application   
+ * If you want SamsungApps to be used for purhases specify it in preffered stores by
+ * {@link OpenIabHelper#OpenIabHelper(Context, java.util.Map, String[])} </p>   
+ * 
+ * Supported purchase details   
+ * <pre>
  * PurchaseInfo(type:inapp): {
  *     "orderId"            :TPMTID20131011RUI0515895,    // Samsung's payment id
  *     "packageName"        :org.onepf.trivialdrive,
@@ -36,6 +44,7 @@ import android.content.pm.Signature;
  *                                                        // in OnConsumeFinishedListener. In other places it's equal empty string
  *     "token"              :3218a5f30dd56ca459b16155a207e8af7b2cfe80a54f2aed846b2bbbd547c400
  * }
+ * </pre>
  *
  * @author Ruslan Sayfutdinov
  * @since 10.10.2013
@@ -59,7 +68,7 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        return isDebugMode || isBillingAvailable(packageName);
+        return isDebugMode; // currently there is no reliable way to understand it
     }
 
     /**

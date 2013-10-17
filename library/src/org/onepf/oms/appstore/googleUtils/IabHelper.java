@@ -16,6 +16,7 @@
 package org.onepf.oms.appstore.googleUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.json.JSONException;
@@ -898,11 +899,18 @@ public class IabHelper implements AppstoreInAppBillingService {
         return verificationFailed ? IABHELPER_VERIFICATION_FAILED : BILLING_RESPONSE_RESULT_OK;
     }
 
+    /**
+     * @param inv - Inventory with application SKUs 
+     * @param moreSkus - storeSKUs (processed in {@link OpenIabHelper#queryInventory(boolean, List, List)} 
+     */
     int querySkuDetails(String itemType, Inventory inv, List<String> moreSkus)
             throws RemoteException, JSONException {
         logDebug("Querying SKU details.");
         ArrayList<String> skuList = new ArrayList<String>();
-        skuList.addAll(inv.getAllOwnedSkus(itemType));
+        final List<String> allOwnedSkus = inv.getAllOwnedSkus(itemType);
+        for (String sku : allOwnedSkus) {
+            skuList.add(OpenIabHelper.getStoreSku(appstore.getAppstoreName(), sku));
+        }
         if (moreSkus != null) skuList.addAll(moreSkus);
 
         if (skuList.size() == 0) {
@@ -931,6 +939,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         for (String thisResponse : responseList) {
             SkuDetails d = new SkuDetails(itemType, thisResponse);
+            d.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), d.getSku()));
             logDebug("Got sku details: " + d);
             inv.addSkuDetails(d);
         }

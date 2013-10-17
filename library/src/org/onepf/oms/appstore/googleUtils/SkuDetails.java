@@ -87,6 +87,10 @@ public class SkuDetails {
     public String getJson() {
         return mJson;
     }
+    
+    void setSku(String sku) {
+        this.mSku = sku;
+    }
 
     @Override
     public String toString() {
