@@ -251,9 +251,11 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 final Map<String, Item> items = itemDataResponse.getItemData();
                 for (final String key : items.keySet()) {
                     Item i = items.get(key);
-                    Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), i.getSku(), i.getPrice(), i.getDescription()));
+                    final String storeSku = i.getSku();
+                    Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
                     String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_SUBS : IabHelper.ITEM_TYPE_INAPP;
-                    SkuDetails skuDetails = new SkuDetails(itemType, i.getSku(), i.getTitle(), i.getPrice(), i.getDescription());
+                    String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku);
+                    SkuDetails skuDetails = new SkuDetails(itemType, sku, i.getTitle(), i.getPrice(), i.getDescription());
                     inventory.addSkuDetails(skuDetails);
                 }
                 break;
