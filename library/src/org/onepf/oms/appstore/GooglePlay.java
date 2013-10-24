@@ -37,7 +37,7 @@ import android.util.Log;
 public class GooglePlay extends DefaultAppstore {
     private static final String TAG = GooglePlay.class.getSimpleName();
 
-    private static final String ANDROID_INSTALLER = "com.android.vending";
+    public  static final String ANDROID_INSTALLER = "com.android.vending";
     private static final String GOOGLE_INSTALLER = "com.google.vending";
     public  static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
     

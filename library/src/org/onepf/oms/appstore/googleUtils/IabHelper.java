@@ -282,7 +282,9 @@ public class IabHelper implements AppstoreInAppBillingService {
      * IabHelper code is shared between OpenStore and Google Play, but services has different names  
      */
     protected Intent getServiceIntent() {
-        return new Intent(GooglePlay.VENDING_ACTION);
+        final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
+        intent.setPackage(GooglePlay.ANDROID_INSTALLER);
+        return intent;
     }
     
     /** Override to return needed service interface */
