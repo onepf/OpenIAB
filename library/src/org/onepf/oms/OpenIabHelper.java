@@ -261,16 +261,25 @@ public class OpenIabHelper {
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * See {@link #queryInventory(boolean, List, List)} for details
+     */
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
     /**
-     * 
-     * 
-     * @param querySkuDetails
-     * @param moreItemSkus
-     * @param moreSubsSkus - list of subscription skus to query regardless of ownership
+     * Queries the inventory. This will query all owned items from the server, as well as
+     * information on additional skus, if specified. This method may block or take long to execute.
+     * Do not call from a UI thread. For that, use the non-blocking version {@link #refreshInventoryAsync}.
+     *
+     * @param querySkuDetails if true, SKU details (price, description, etc) will be queried as well
+     *                        as purchase information.
+     * @param moreItemSkus    additional PRODUCT skus to query information on, regardless of ownership.
+     *                        Ignored if null or if querySkuDetails is false.
+     * @param moreSubsSkus    additional SUBSCRIPTIONS skus to query information on, regardless of ownership.
+     *                        Ignored if null or if querySkuDetails is false.
+     * @throws IabException if a problem occurs while refreshing the inventory.
      */
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
