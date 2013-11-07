@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="OpenIAB-root" default="help" basedir=".">
+
+    <property name="out.dir" value="bin"/>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Clean *********************** -->
+    <!-- ******************************************************* -->
+
+    <target name="clean">
+        <ant antfile="library/build.xml" target="clean" useNativeBasedir="yes"/>
+        <ant antfile="samples/trivialdrive/build.xml" target="clean" useNativeBasedir="yes"/>
+        <ant antfile="unity_plugin/build.xml" target="clean_plugin" useNativeBasedir="yes"/>
+        <delete dir="${out.dir}"/>
+    </target>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Build *********************** -->
+    <!-- ******************************************************* -->
+
+    <target name="build">
+        <mkdir dir="${out.dir}"/>
+
+        <!-- library -->
+        <ant antfile="library/build.xml" target="fat_jar" useNativeBasedir="yes"/>
+        <copy file="library/bin/openiab.jar" todir="${out.dir}"/>
+
+        <!-- Amazon version -->
+        <ant antfile="library/build.xml" target="amazon_jar" useNativeBasedir="yes"/>
+        <copy file="library/bin/openiab-amazon.jar" todir="${out.dir}"/>
+
+        <!-- Samsung version -->
+        <ant antfile="library/build.xml" target="samsung_jar" useNativeBasedir="yes"/>
+        <copy file="library/bin/openiab-samsung.jar" todir="${out.dir}"/>
+
+        <!-- Trivial Drive -->
+        <ant antfile="samples/trivialdrive/build.xml" target="debug" useNativeBasedir="yes"/>
+        <copy file="samples/trivialdrive/bin/TrivialDrive-debug.apk" tofile="${out.dir}/TrivialDrive.apk"/>
+
+        <!-- Unity plugin -->
+        <ant antfile="unity_plugin/build.xml" target="build" useNativeBasedir="yes"/>
+        <copy file="unity_plugin/bin/OpenIAB-plugin.unitypackage" todir="${out.dir}"/>
+    </target>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Help ************************ -->
+    <!-- ******************************************************* -->
+
+    <target name="help">
+        <echo>Android Ant Build. Available targets:</echo>
+        <echo>   help:      Displays this help.</echo>
+        <echo/>
+        <echo>   clean:     Removes output files created by other targets.</echo>
+        <echo/>
+        <echo>   build:     Builds the library, samples and unity plugin package.</echo>
+        <echo>              TrivialDrive.apk will be signed with a debug key.</echo>
+        <echo>              ANDROID_HOME env variable and 'unity.path' property should be defined.</echo>
+        <echo>              Binaries will be placed in the 'bin' folder.</echo>
+    </target>
+
+</project>

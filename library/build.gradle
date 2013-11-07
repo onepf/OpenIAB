@@ -1,11 +1,3 @@
-buildscript {
-    repositories {
-        maven { url 'http://repo1.maven.org/maven2' }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.3'
-    }
-}
 apply plugin: 'android-library'
 
 repositories {
@@ -17,16 +9,10 @@ repositories {
 }
 
 dependencies {
-    compile (
-            'com.google.code.gson:gson:2.2.2',
-            files(
-                    'libs/iap_plugin-dev-13.0.0.jar',
-                    'libs/in-app-purchasing-1.0.3.jar',
-                    'libs/plasma.jar'
-            ),
-    )
+    compile fileTree('libs')
 }
 
+// looking for android-sdk path in env.ANDROID_HOME
 android {
     compileSdkVersion 17
     buildToolsVersion "17.0.0"
@@ -41,7 +27,34 @@ android {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
             aidl.srcDirs = ['src']
-            res.srcDirs = ['res']
         }
     }
 }
+
+def createOpenIabLibraryJar() {
+    println "Creating OpenIAB jar..."
+    exec {
+        executable 'jar'
+        workingDir "build/classes/release"
+        args 'cf', '../../OpenIAB.jar', 'com', 'org'
+    }
+}
+
+def copyBuildToRoot() {
+    mkdir '../build'
+    copy {
+        from 'build/OpenIAB.jar'
+        into '../build'
+    }
+}
+
+clean << {
+    ant.delete(dir: "../build")
+}
+
+build << {
+    createOpenIabLibraryJar()
+    copyBuildToRoot()
+}
+
+defaultTasks 'build'

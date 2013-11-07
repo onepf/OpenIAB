@@ -1,0 +1,13 @@
+// common behavior
+subprojects {
+    // apply plugin section start
+    buildscript {
+        repositories {
+            mavenCentral()
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:0.6.+'
+        }
+    }
+    // apply plugin section end
+}

@@ -1,0 +1,130 @@
+apply plugin: 'android-library'
+
+repositories {
+    maven {
+        url 'https://github.com/Goddchen/mvn-repo/raw/master/'
+        mavenCentral()
+    }
+    maven { url 'http://repo1.maven.org/maven2' }
+}
+
+dependencies {
+    compile project(':library')
+    compile fileTree('libs')
+}
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "17.0.0"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 17
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+    }
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+String unity_path = "unity_src/Assets/Plugins/Android"
+
+def copyOpenIabLibraryClasses() {
+    copy {
+        from "../library/build/classes/release"
+        into "$buildDir/classes/release"
+    }
+}
+
+def createOpenIabFatJar() {
+    println "Creating fat plugin jar..."
+    exec {
+        executable 'jar'
+        workingDir "build/classes/release"
+        args 'cf', '../../OpenIAB-plugin.jar', 'com', 'org'
+    }
+}
+
+def copyPluginJarToUnity(unity_path) {
+    copy {
+        into unity_path
+        from "build/OpenIAB-plugin.jar"
+    }
+}
+
+def copySoDependenciesToUnity(unity_path) {
+    copy {
+        into unity_path
+        from "../library/libs/armeabi-v7a"
+        include "*.so"
+    }
+}
+
+def copyJarDependenciesToUnity(unity_path) {
+    copy {
+        into unity_path
+        from "../library/libs"
+        include "*.jar"
+    }
+}
+
+def buildPackage() {
+    println "Building Unity package..."
+
+    String unity_bin
+
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        unity_bin = '"C:\\Program Files (x86)\\Unity\\Editor\\Unity.exe"'
+    } else {
+        unity_bin = '/Applications/Unity/Unity.app/Contents/MacOS/Unity'
+    }
+
+    File projectPath = file('unity_src')
+    projectPath = file(projectPath.absolutePath)
+    File package_file = file('build/OpenIAB-plugin.unitypackage')
+    package_file = file(package_file.absolutePath)
+
+    exec {
+        executable unity_bin
+        args '-batchmode', '-projectPath', projectPath, '-exportPackage', 'Assets', package_file, '-quit'
+    }
+}
+
+def copyBuildToRoot() {
+    copy {
+        from 'build/OpenIAB-plugin.unitypackage'
+        into '../build'
+    }
+}
+
+// execute after default clean task
+clean << {
+    ant.delete(includeEmptyDirs: 'true') {
+        fileset(dir: file(unity_path), includes: '*.jar')
+    }
+    ant.delete(includeEmptyDirs: 'true') {
+        fileset(dir: file(unity_path), includes: '*.so')
+    }
+    ant.delete(includeEmptyDirs: 'true') {
+        fileset(dir: file(unity_path), includes: '*.meta')
+    }
+}
+
+// execute after default build task
+build << {
+    copyOpenIabLibraryClasses()
+    createOpenIabFatJar()
+    copyPluginJarToUnity(unity_path)
+    copySoDependenciesToUnity(unity_path)
+    copyJarDependenciesToUnity(unity_path)
+    buildPackage()
+    copyBuildToRoot()
+}
+
+defaultTasks 'build'
