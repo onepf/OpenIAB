@@ -1,0 +1,45 @@
+apply plugin: 'android'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':library')
+}
+
+// looking for android-sdk path in env.ANDROID_HOME
+android {
+    compileSdkVersion 17
+    buildToolsVersion "17.0.0"
+
+    defaultConfig {
+        minSdkVersion 8
+        targetSdkVersion 17
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+    }
+}
+
+def copyBuildToRoot() {
+    String targetDir = "../../build/apk"
+    mkdir targetDir
+    copy {
+        from 'build/apk'
+        into targetDir
+        include "*.apk"
+    }
+}
+
+build << {
+    copyBuildToRoot()
+}
+
+defaultTasks 'build'

@@ -47,7 +47,6 @@ local.properties
 *_i.c
 *_p.c
 *.ilk
-*.meta
 *.obj
 *.pch
 *.pdb
@@ -58,7 +57,6 @@ local.properties
 *.tlb
 *.tli
 *.tlh
-*.tmp
 *.vspscc
 .builds
 *.dotCover
@@ -167,3 +165,12 @@ pip-log.txt
 gen/
 *.java.d
 *.iml
+/.gradle/
+/out/
+
+# Unity package build files
+*.jar
+*.jar.meta
+*.so
+*.so.meta
+
