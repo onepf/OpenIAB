@@ -168,7 +168,7 @@
 
     <target name="clean_plugin" depends="clean">
         <delete>
-            <fileset dir="${unity.src.path}" excludes="*.xml"/>
+            <fileset dir="${unity.src.path}" excludes="*.xml, *.xml.meta"/>
         </delete>
     </target>
 </project>
