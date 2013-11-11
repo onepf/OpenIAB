@@ -95,13 +95,7 @@
     <!-- Amazon jar output directory -->
     <property name="out.amazon-jar.absolute.dir" location="${out.dir}/amazon-jar"/>
 
-    <!-- Samsung jar output directory -->
-    <property name="out.samsung-jar.absolute.dir" location="${out.dir}/samsung-jar"/>
-
     <target name="fat_jar" depends="release">
-        <unzip
-                src="${jar.libs.dir}/gson-2.2.2.jar"
-                dest="${out.fat-jar.absolute.dir}"/>
         <unzip
                 src="${jar.libs.dir}/iap_plugin-dev-13.0.0.jar"
                 dest="${out.fat-jar.absolute.dir}"/>
@@ -122,9 +116,6 @@
 
     <target name="amazon_jar" depends="release">
         <unzip
-                src="${jar.libs.dir}/gson-2.2.2.jar"
-                dest="${out.amazon-jar.absolute.dir}"/>
-        <unzip
                 src="${jar.libs.dir}/in-app-purchasing-1.0.3.jar"
                 dest="${out.amazon-jar.absolute.dir}"/>
 
@@ -138,24 +129,4 @@
         <jar destfile="${out.dir}/openiab-amazon.jar"
              basedir="${out.amazon-jar.absolute.dir}"/>
     </target>
-
-    <target name="samsung_jar" depends="release">
-        <unzip
-                src="${jar.libs.dir}/gson-2.2.2.jar"
-                dest="${out.samsung-jar.absolute.dir}"/>
-        <unzip
-                src="${jar.libs.dir}/iap_plugin-dev-13.0.0.jar"
-                dest="${out.samsung-jar.absolute.dir}"/>
-
-        <copy todir="${out.samsung-jar.absolute.dir}">
-            <fileset dir="${out.classes.absolute.dir}"/>
-        </copy>
-        <copy todir="${out.samsung-jar.absolute.dir}">
-            <fileset dir="${out.aidl.absolute.dir}"/>
-        </copy>
-
-        <jar destfile="${out.dir}/openiab-samsung.jar"
-             basedir="${out.samsung-jar.absolute.dir}"/>
-    </target>
-
 </project>
