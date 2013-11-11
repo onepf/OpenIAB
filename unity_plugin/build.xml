@@ -89,4 +89,86 @@
     <!-- version-tag: 1 -->
     <import file="${sdk.dir}/tools/ant/build.xml"/>
 
+    <!-- Set custom Unity path here -->
+    <!--<property name="unity.path" value=""/>-->
+
+    <property name="unity.mac.path" location="/Applications/Unity/Unity.app/Contents/MacOS/Unity"/>
+    <property name="unity.win.86.path" location="C:\Program Files\Unity\Editor\Unity.exe"/>
+    <property name="unity.win.64.path" location="C:\Program Files (x86)\Unity\Editor\Unity.exe"/>
+
+    <condition property="unity.path" value="${unity.mac.path}">
+        <available file="${unity.mac.path}"/>
+    </condition>
+    <condition property="unity.path" value="${unity.win.86.path}">
+        <available file="${unity.win.86.path}"/>
+    </condition>
+    <condition property="unity.path" value="${unity.win.64.path}">
+        <available file="${unity.win.64.path}"/>
+    </condition>
+
+    <fail message="Unity not found. Please make sure Unity is installed at default location or provide 'unity.path' property."
+          unless="unity.path"/>
+
+    <!-- Fat jar output folder -->
+    <property name="out.fat-jar.absolute.dir" location="${out.dir}/fat-jar"/>
+
+    <!-- Path to the Unity plugin source folder -->
+    <property name="unity.src.path" location="unity_src/Assets/Plugins/Android"/>
+
+    <!-- Absolute path to the Unity source project root -->
+    <property name="unity.root.absolute.path" location="unity_src"/>
+
+    <!-- Absolute path to the Unity package -->
+    <property name="unity.package.absolute.path" location="${out.dir}"/>
+
+    <target name="build" depends="clean_plugin, release">
+        <mkdir dir="${out.fat-jar.absolute.dir}"/>
+
+        <copy todir="${out.fat-jar.absolute.dir}">
+            <fileset dir="${out.classes.absolute.dir}"/>
+        </copy>
+
+        <copy todir="${out.fat-jar.absolute.dir}">
+            <fileset dir="../library/bin/classes"/>
+        </copy>
+
+        <copy todir="${out.fat-jar.absolute.dir}">
+            <fileset dir="../library/bin/aidl"/>
+        </copy>
+
+        <!-- Create plugin jar -->
+        <jar destfile="${out.dir}/OpenIAB-plugin.jar"
+             basedir="${out.fat-jar.absolute.dir}"/>
+
+        <!-- Copy plugin jar to Unity project -->
+        <copy todir="${unity.src.path}" file="${out.dir}/OpenIAB-plugin.jar"/>
+
+        <!-- Copy jar dependencies to Unity project -->
+        <copy todir="${unity.src.path}">
+            <fileset dir="../library/libs" includes="*.jar" excludes="android-support-v4.jar"/>
+        </copy>
+
+        <!-- Copy native dependencies to Unity project -->
+        <copy todir="${unity.src.path}">
+            <fileset dir="../library/libs/armeabi-v7a" includes="*.so"/>
+        </copy>
+
+        <echo message="Unity executable: ${unity.path}"/>
+        <echo message="Unity package source root: ${unity.root.absolute.path}"/>
+        <echo message="Unity package build: ${unity.root.absolute.path}"/>
+
+        <!-- Build Unity package -->
+        <exec executable="${unity.path}" failonerror="true" logerror="true">
+            <arg line="-batchmode"/>
+            <arg line="-projectPath ${unity.root.absolute.path}"/>
+            <arg line="-exportPackage Assets ${unity.package.absolute.path}/OpenIAB-plugin.unitypackage"/>
+            <arg value="-quit"/>
+        </exec>
+    </target>
+
+    <target name="clean_plugin" depends="clean">
+        <delete>
+            <fileset dir="${unity.src.path}" excludes="*.xml, *.xml.meta"/>
+        </delete>
+    </target>
 </project>

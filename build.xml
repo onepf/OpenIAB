@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="OpenIAB-root" default="help" basedir=".">
+
+    <property name="out.dir" value="bin"/>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Clean *********************** -->
+    <!-- ******************************************************* -->
+
+    <target name="clean">
+        <ant antfile="library/build.xml" target="clean" useNativeBasedir="yes"/>
+        <ant antfile="samples/trivialdrive/build.xml" target="clean" useNativeBasedir="yes"/>
+        <ant antfile="unity_plugin/build.xml" target="clean_plugin" useNativeBasedir="yes"/>
+        <delete dir="${out.dir}"/>
+    </target>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Build *********************** -->
+    <!-- ******************************************************* -->
+
+    <target name="build">
+        <mkdir dir="${out.dir}"/>
+
+        <!-- Library -->
+        <ant antfile="library/build.xml" target="release" useNativeBasedir="yes"/>
+        <copy file="library/bin/classes.jar" tofile="${out.dir}/openiab.jar"/>
+
+        <!-- Fat Amazon version -->
+        <ant antfile="library/build.xml" target="amazon_jar" useNativeBasedir="yes"/>
+        <copy file="library/bin/openiab-amazon.jar" todir="${out.dir}"/>
+
+        <!-- Trivial Drive -->
+        <ant antfile="samples/trivialdrive/build.xml" target="debug" useNativeBasedir="yes"/>
+        <copy file="samples/trivialdrive/bin/TrivialDrive-debug.apk" tofile="${out.dir}/TrivialDrive-debug.apk"/>
+        <ant antfile="samples/trivialdrive/build.xml" target="release" useNativeBasedir="yes"/>
+        <copy file="samples/trivialdrive/bin/TrivialDrive-release.apk" tofile="${out.dir}/TrivialDrive-release.apk" failonerror="false"/>
+
+        <!-- Local Store -->
+        <ant antfile="local_store/build.xml" target="debug" useNativeBasedir="yes"/>
+        <copy file="local_store/bin/local_store-debug.apk" tofile="${out.dir}/LocalStore-debug.apk"/>
+        <ant antfile="local_store/build.xml" target="release" useNativeBasedir="yes"/>
+        <copy file="local_store/bin/local_store-release.apk" tofile="${out.dir}/LocalStore-release.apk" failonerror="false"/>
+
+        <!-- Unity plugin -->
+        <ant antfile="unity_plugin/build.xml" target="build" useNativeBasedir="yes"/>
+        <copy file="unity_plugin/bin/OpenIAB-plugin.unitypackage" todir="${out.dir}"/>
+    </target>
+
+    <!-- ******************************************************* -->
+    <!-- ************************* Help ************************ -->
+    <!-- ******************************************************* -->
+
+    <target name="help">
+        <echo>Android Ant Build. Available targets:</echo>
+        <echo>   help:      Displays this help.</echo>
+        <echo/>
+        <echo>   clean:     Removes output files created by other targets.</echo>
+        <echo/>
+        <echo>   build:     Builds the library, local store, samples and unity plugin package.</echo>
+        <echo>              ANDROID_HOME env variable should be defined.</echo>
+        <echo>              Binaries will be placed in the 'bin' folder.</echo>
+        <echo/>
+        <echo>              TrivialDrive-debug.apk and LocalStore-debug.apk will be signed with a debug key.</echo>
+        <echo>              To build release versions you should specify keystore and alias in the 'ant.properties' of each project.</echo>
+        <echo>              For further instructions please check android documentation.</echo>
+        <echo/>
+        <echo>              If you want to build unity plugin package and Unity is installed at custom path, 'unity.path' property should be defined.</echo>
+    </target>
+
+</project>

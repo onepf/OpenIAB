@@ -33,6 +33,9 @@ Now you can run demo scene with some test buttons.
 3. Map sku's for different stores:
   ```c#
   private void Start() {
+	  // SKU's for iOS MUST be mapped. Mappings for other stores are optional
+	  OpenIAB.mapSku(SKU, OpenIAB_iOS.STORE, "some.ios.sku");
+
       OpenIAB.mapSku(SKU, OpenIAB.STORE_GOOGLE, "google-play.sku");
       OpenIAB.mapSku(SKU, STORE_CUSTOM, "onepf.sku");
   }
@@ -41,10 +44,10 @@ Now you can run demo scene with some test buttons.
 4. Call ``` init ``` method passing it preferred stores list with public keys, in order to start billing service.
   ```c#
    OpenIAB.init(new Dictionary<string, string> {
-        {OpenIAB.STORE_GOOGLE, "public_key"},
-        {OpenIAB.STORE_TSTORE, "public_key"},
-        {OpenIAB.STORE_SAMSUNG, "public_key"},
-        {OpenIAB.STORE_YANDEX, "public_key"}
+        {OpenIAB_Android.STORE_GOOGLE, "public_key"},
+        {OpenIAB_Android.STORE_TSTORE, "public_key"},
+        {OpenIAB_Android.STORE_SAMSUNG, "public_key"},
+        {OpenIAB_Android.STORE_YANDEX, "public_key"}
     });
   ```
 
@@ -129,6 +132,15 @@ public static event Action<Purchase> consumePurchaseSucceededEvent;
 
 // Fired when a call to consume a product fails
 public static event Action<string> consumePurchaseFailedEvent;
+
+// Fired when transaction was restored. iOS only
+public static event Action<string> transactionRestoredEvent;
+
+// Fired when transaction restoration process failed. iOS only
+public static event Action<string> restoreFailedEvent;
+
+// Fired when transaction restoration process succeeded. iOS only
+public static event Action restoreSucceededEvent;
 ```
 
 Full list of the provided methods:
@@ -157,4 +169,22 @@ public static void purchaseSubscription(string sku, string developerPayload="");
 
 // Sends out a request to consume the product
 public static void consumeProduct(Purchase purchase);
+
+// Restores purchases. Needed only for iOS store
+public static void restoreTransactions();
 ```
+
+Advanced
+=====
+You can reuse existing API and add support to a new platform by implementing ```IOpenIAB``` interface.
+Then you can create instance of your class in the ```OpenIAB```.
+```c#
+static OpenIAB() {
+#if UNITY_ANDROID
+	_billing = new OpenIAB_Android();
+#elif UNITY_IOS
+	_billing = new OpenIAB_iOS();
+#else
+	_billing = new OpenIAB_custom();
+#endif
+}
