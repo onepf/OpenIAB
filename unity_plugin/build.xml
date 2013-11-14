@@ -89,9 +89,6 @@
     <!-- version-tag: 1 -->
     <import file="${sdk.dir}/tools/ant/build.xml"/>
 
-    <!-- Set custom Unity path here -->
-    <!--<property name="unity.path" value=""/>-->
-
     <property name="unity.mac.path" location="/Applications/Unity/Unity.app/Contents/MacOS/Unity"/>
     <property name="unity.win.86.path" location="C:\Program Files\Unity\Editor\Unity.exe"/>
     <property name="unity.win.64.path" location="C:\Program Files (x86)\Unity\Editor\Unity.exe"/>
@@ -124,16 +121,22 @@
     <target name="build" depends="clean_plugin, release">
         <mkdir dir="${out.fat-jar.absolute.dir}"/>
 
-        <copy todir="${out.fat-jar.absolute.dir}">
-            <fileset dir="${out.classes.absolute.dir}"/>
-        </copy>
+        <!-- Unzip Amazon jar -->
+        <unzip
+                src="../library/libs/in-app-purchasing-1.0.3.jar"
+                dest="${out.fat-jar.absolute.dir}"/>
 
+        <!-- Copy library classes -->
         <copy todir="${out.fat-jar.absolute.dir}">
             <fileset dir="../library/bin/classes"/>
         </copy>
-
         <copy todir="${out.fat-jar.absolute.dir}">
             <fileset dir="../library/bin/aidl"/>
+        </copy>
+
+        <!-- Copy plugin classes -->
+        <copy todir="${out.fat-jar.absolute.dir}">
+            <fileset dir="${out.classes.absolute.dir}"/>
         </copy>
 
         <!-- Create plugin jar -->
@@ -144,14 +147,14 @@
         <copy todir="${unity.src.path}" file="${out.dir}/OpenIAB-plugin.jar"/>
 
         <!-- Copy jar dependencies to Unity project -->
-        <copy todir="${unity.src.path}">
-            <fileset dir="../library/libs" includes="*.jar" excludes="android-support-v4.jar"/>
-        </copy>
+        <!--<copy todir="${unity.src.path}">-->
+            <!--<fileset dir="../library/libs" includes="*.jar" excludes="android-support-v4.jar"/>-->
+        <!--</copy>-->
 
         <!-- Copy native dependencies to Unity project -->
-        <copy todir="${unity.src.path}">
-            <fileset dir="../library/libs/armeabi-v7a" includes="*.so"/>
-        </copy>
+        <!--<copy todir="${unity.src.path}">-->
+            <!--<fileset dir="../library/libs/armeabi-v7a" includes="*.so"/>-->
+        <!--</copy>-->
 
         <echo message="Unity executable: ${unity.path}"/>
         <echo message="Unity package source root: ${unity.root.absolute.path}"/>
