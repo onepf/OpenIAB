@@ -111,7 +111,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     // The request code used to launch purchase flow
     int mRequestCode;
 
-    // The item type of the current purchase flow
+	// The item type of the current purchase flow
     String mPurchasingItemType;
 
     // Public key for verifying signature, in base64 encoding
@@ -162,7 +162,9 @@ public class IabHelper implements AppstoreInAppBillingService {
     /** TODO: IabHelper for Google and OpenStore must not be same */
     private Appstore appstore;
 
-    /**
+	private boolean verifyPurchaseSignature;
+
+	/**
      * Creates an instance. After creation, it will not yet be ready to use. You must perform
      * setup by calling {@link #startSetup} and wait for setup to complete. This constructor does not
      * block and is safe to call from a UI thread.
@@ -174,10 +176,11 @@ public class IabHelper implements AppstoreInAppBillingService {
      *                        is NOT your "developer public key".
      * @param appstore TODO
      */
-    public IabHelper(Context ctx, String base64PublicKey, Appstore appstore) {
+    public IabHelper(Context ctx, String base64PublicKey, Appstore appstore, boolean verifyPurchaseSignature) {
         mContext = ctx.getApplicationContext();
         mSignatureBase64 = base64PublicKey;
         this.appstore = appstore;
+	    this.verifyPurchaseSignature = verifyPurchaseSignature;
         logDebug("IAB helper created.");
     }
 
@@ -1022,10 +1025,20 @@ public class IabHelper implements AppstoreInAppBillingService {
     }
 
     boolean isValidDataSignature(String base64PublicKey, String purchaseData, String signature) {
+	    if(!verifyPurchaseSignature) return isValidData(purchaseData, signature);
+
         boolean isValid = Security.verifyPurchase(base64PublicKey, purchaseData, signature);
         if (!isValid) {
             logWarn("Purchase signature verification **FAILED**.");
         }
         return isValid;
     }
+
+	boolean isValidData(String purchaseData, String signature) {
+		if (TextUtils.isEmpty(purchaseData) || TextUtils.isEmpty(signature)) {
+			Log.e(TAG, "Purchase verification failed: missing data.");
+			return false;
+		}
+		return true;
+	}
 }

@@ -25,12 +25,8 @@ import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.TStore;
-import org.onepf.oms.appstore.googleUtils.IabException;
-import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.*;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
-import org.onepf.oms.appstore.googleUtils.IabResult;
-import org.onepf.oms.appstore.googleUtils.Inventory;
-import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import android.app.Activity;
 import android.content.Context;
@@ -54,7 +50,7 @@ public class OpenIabHelper {
     // Is debug logging enabled?
     private static final boolean mDebugLog = false;
 
-    // Is setup done?
+	// Is setup done?
     private boolean mSetupDone = false;
 
     // Is an asynchronous operation in progress?
@@ -85,7 +81,7 @@ public class OpenIabHelper {
     public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
 
-    /** 
+    /**
      * NOTE: used as sync object in related methods<br>
      * 
      * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
@@ -180,17 +176,17 @@ public class OpenIabHelper {
     }
 
     public OpenIabHelper(Context context, Map<String, String> storeKeys) {
-        this(context, storeKeys, null);
+        this(context, storeKeys, null, Security.DEFAULT_CHECK_PURCHASE_SIGNATURE);
     }
     
-    public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
+    public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, boolean verifySignature) {
         this.mContext = context;
         this.mServiceManager = new AppstoreServiceManager(context, storeKeys, prefferedStores, new Appstore[] {
-                    new GooglePlay(context, storeKeys.get(OpenIabHelper.NAME_GOOGLE))
+                    new GooglePlay(context, storeKeys.get(OpenIabHelper.NAME_GOOGLE), verifySignature)
                 ,   new AmazonAppstore(context)
                 ,   new SamsungApps(context)
                 ,   new TStore(context, storeKeys.get(OpenIabHelper.NAME_TSTORE))
-        });
+        }, verifySignature);
     }
 
     /**
