@@ -40,17 +40,19 @@ public class GooglePlay extends DefaultAppstore {
     public  static final String ANDROID_INSTALLER = "com.android.vending";
     private static final String GOOGLE_INSTALLER = "com.google.vending";
     public  static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
-    
+
     private Context mContext;
     private IabHelper mBillingService;
     private String mPublicKey;
-    
+    private boolean verifyPurchaseSignature;
+
     // isDebugMode = true |-> always returns app installed via Google Play
     private final boolean isDebugMode = false;
 
-    public GooglePlay(Context context, String publicKey) {
+    public GooglePlay(Context context, String publicKey, boolean verifyPurchaseSignature) {
         mContext = context;
         mPublicKey = publicKey;
+	    this.verifyPurchaseSignature = verifyPurchaseSignature;
     }
 
     @Override
@@ -62,13 +64,13 @@ public class GooglePlay extends DefaultAppstore {
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
         return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
-    
+
     /**
-     * Assume Android app is published in Google Play in any case. 
-     * 
-     * @return true if Google Play is installed in the system   
+     * Assume Android app is published in Google Play in any case.
+     *
+     * @return true if Google Play is installed in the system
      */
-    @Override    
+    @Override
     public boolean isBillingAvailable(String packageName) {
         Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
         PackageManager packageManager = mContext.getPackageManager();
@@ -90,7 +92,7 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new IabHelper(mContext, mPublicKey, this);
+            mBillingService = new IabHelper(mContext, mPublicKey, this, verifyPurchaseSignature);
         }
         return mBillingService;
     }

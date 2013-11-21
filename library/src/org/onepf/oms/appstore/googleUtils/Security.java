@@ -37,9 +37,11 @@ import android.util.Log;
  * purchases as verified.
  */
 public class Security {
-    private static final String TAG = "IABUtil/Security";
+	private static final String TAG = "IABUtil/Security";
 
-    private static final String KEY_FACTORY_ALGORITHM = "RSA";
+	public static final boolean DEFAULT_CHECK_PURCHASE_SIGNATURE = true;
+
+	private static final String KEY_FACTORY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
 
     /**

@@ -37,6 +37,7 @@ import android.content.pm.ResolveInfo;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import org.onepf.oms.appstore.googleUtils.Security;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -55,12 +56,14 @@ public class AppstoreServiceManager {
     /** Developer preferred store names */
     private String[] prefferedStoreNames = new String[] {};
 
+	private boolean verifyPurchaseSignature;
+
     /**
      * @deprecated use {@link #AppstoreServiceManager(Context, Map, String[], Appstore[])} instead
      * @param appstores - additional stores to process as well as OpenStores
      */
     public AppstoreServiceManager(Context context, ArrayList<Appstore> appstores, Map<String, String> extra) {
-        this(context, extra, null, appstores.toArray(new Appstore[0]));
+        this(context, extra, null, appstores.toArray(new Appstore[0]), Security.DEFAULT_CHECK_PURCHASE_SIGNATURE);
     }
 
     /**
@@ -70,12 +73,14 @@ public class AppstoreServiceManager {
      * @param storeKeys - map [ storeName -> publicKey ]
      * @param prefferedStoreNames - will be used if package installer cannot be found
      * @param extraStores - extra stores to participate in store elections
+     * @param verifyPurchaseSignature - check signature or only validity of purchase data
      */
-    public AppstoreServiceManager(Context context, Map <String, String> storeKeys, String[] prefferedStoreNames, Appstore[] extraStores) {
+    public AppstoreServiceManager(Context context, Map <String, String> storeKeys, String[] prefferedStoreNames, Appstore[] extraStores, boolean verifyPurchaseSignature) {
         this.mContext = context;
         this.storeKeys = storeKeys;
         this.prefferedStoreNames = prefferedStoreNames != null ? prefferedStoreNames : new String[]{};
         this.appstores = extraStores != null ? new ArrayList<Appstore>(Arrays.asList(extraStores)) : new ArrayList<Appstore>();
+	    this.verifyPurchaseSignature = verifyPurchaseSignature;
     }
 
     /**
@@ -121,7 +126,7 @@ public class AppstoreServiceManager {
                         return;
                     }
                     
-                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext);
+                    final OpenAppstore openAppstore = new OpenAppstore(openAppstoreService, mContext, verifyPurchaseSignature);
 
                     String publicKey = storeKeys.get(appstoreName);
 

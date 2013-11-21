@@ -43,10 +43,12 @@ public class OpenAppstore extends DefaultAppstore {
     private Context context;
     private IOpenAppstore openAppstoreService;
     private AppstoreInAppBillingService mBillingService;
+	private boolean verifyPurchaseSignature;
 
-    public OpenAppstore(IOpenAppstore openAppstoreService, Context context) {
+    public OpenAppstore(IOpenAppstore openAppstoreService, Context context, boolean verifyPurchaseSignature) {
         this.context = context;
         this.openAppstoreService = openAppstoreService;
+	    this.verifyPurchaseSignature = verifyPurchaseSignature;
     }
 
     /**
@@ -67,7 +69,7 @@ public class OpenAppstore extends DefaultAppstore {
             return false;
         }
 
-        mBillingService = new IabHelper(context, publicKey, this) {
+        mBillingService = new IabHelper(context, publicKey, this, verifyPurchaseSignature) {
             @Override
             protected Intent getServiceIntent() {
                 return billingIntent;
