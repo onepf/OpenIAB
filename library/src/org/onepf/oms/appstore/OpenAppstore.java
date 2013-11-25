@@ -23,6 +23,7 @@ import org.onepf.oms.IOpenAppstore;
 import org.onepf.oms.IOpenInAppBillingService;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -43,9 +44,20 @@ public class OpenAppstore extends DefaultAppstore {
     private Context context;
     private IOpenAppstore openAppstoreService;
     private AppstoreInAppBillingService mBillingService;
+    
+    /** id of OpenStore */
+    private final String appstoreName;
+    
+    /** for debug purposes */
+    public  ComponentName componentName;
 
-    public OpenAppstore(Context context, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey) {
+    /**
+     * @param appstoreName TODO
+     * @param publicKey - used for signature verification. If <b>null</b> verification is disabled 
+     */
+    public OpenAppstore(Context context, String appstoreName, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey) {
         this.context = context;
+        this.appstoreName = appstoreName;
         this.openAppstoreService = openAppstoreService;
         if (billingIntent != null) {
             this.mBillingService = new IabHelper(context, publicKey, this) {
@@ -93,12 +105,7 @@ public class OpenAppstore extends DefaultAppstore {
 
     @Override
     public String getAppstoreName() {
-        try {
-            return openAppstoreService.getAppstoreName();
-        } catch (RemoteException e) {
-            Log.e(TAG, "getAppstoreName() AppstoreName is unavailable", e);
-            return null;
-        }
+        return appstoreName;
     }
 
     @Override
@@ -147,7 +154,7 @@ public class OpenAppstore extends DefaultAppstore {
     }
     
     public String toString() {
-        return "OpenStore {name: " + getAppstoreName() + "}";
+        return "OpenStore {name: " + appstoreName + ", component: " + componentName + "}";
         
     }
     
