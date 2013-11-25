@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +34,12 @@ import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.onepf.oms.appstore.googleUtils.Security;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -78,14 +81,7 @@ public class OpenIabHelper {
     /** selected appstore billing service */
     private AppstoreInAppBillingService mAppstoreBillingService;
     
-    /** Candidates for billing. If not provided by user than discovered OpenStores + extraStores
-     * {@link #discoverOpenStores(Context, List, Map, OnInitListener)}
-     */
-    private List<Appstore> availableStores;
-    private Map<String, String> storeKeys;
-    
-    /** Developer preferred store names */
-    private String[] prefferedStoreNames = new String[] {};
+    private final Options options;
 
     // Is setup done?
     private boolean mSetupDone = false;
@@ -103,9 +99,6 @@ public class OpenIabHelper {
 
     // The item type of the current purchase flow
     String mPurchasingItemType;
-
-    /** Check inventory before appstore election */
-    private boolean checkInventory = true;
     
     // Item types
     public static final String ITEM_TYPE_INAPP = "inapp";
@@ -219,6 +212,7 @@ public class OpenIabHelper {
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
         this(context, storeKeys, prefferedStores, null);
     }
+    
     /**
      * @param storeKeys - map [ storeName -> publicKey ]
      * @param prefferedStoreNames - will be used if package installer cannot be found
@@ -226,12 +220,21 @@ public class OpenIabHelper {
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
         this.context = context;
-        this.storeKeys = storeKeys;
-        this.prefferedStoreNames = prefferedStores != null ? prefferedStores : this.prefferedStoreNames;
+        this.options = new Options();
         
-        this.availableStores = availableStores != null ? new ArrayList<Appstore>(Arrays.asList(availableStores)) : null;
+        options.storeKeys = storeKeys;
+        options.prefferedStoreNames = prefferedStores != null ? prefferedStores : options.prefferedStoreNames;
+        options.availableStores = availableStores != null ? new ArrayList<Appstore>(Arrays.asList(availableStores)) : null;
     }
 
+    /**
+     * @param options - specify all neccessary options
+     */
+    public OpenIabHelper(Context context, Options options) {
+        this.context = context;
+        this.options = options;
+    }
+        
     /**
      *  Discover available stores and select the best billing service. 
      *  Calls listener when service is found.
@@ -240,26 +243,33 @@ public class OpenIabHelper {
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         this.notifyHandler = new Handler();
+        checkOptions(options);
         new Thread(new Runnable() {
             public void run() {
                 List<Appstore> stores2check = new ArrayList<Appstore>(); 
-                if (availableStores != null) {
-                    stores2check.addAll(availableStores);
+                if (options.availableStores != null) {
+                    stores2check.addAll(options.availableStores);
                 } else { // if appstores are not specified by user - lookup for all available stores
-                    final List<Appstore> openStores = discoverOpenStores(context, null, storeKeys);
+                    final List<Appstore> openStores = discoverOpenStores(context, null, options);
                     Log.d(TAG, "startSetup() discovered openstores: " + openStores.toString());
                     stores2check.addAll(openStores);
-                    stores2check.add(new GooglePlay(context, storeKeys.get(OpenIabHelper.NAME_GOOGLE)));
+                    if (options.verifyMode == Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(NAME_GOOGLE)) {
+                        // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
+                    } else {
+                        final String publicKey = options.verifyMode == Options.VERIFY_SKIP ? null 
+                                : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
+                        stores2check.add(new GooglePlay(context, publicKey));
+                    }
                     stores2check.add(new AmazonAppstore(context));
-                    stores2check.add(new TStore(context, storeKeys.get(OpenIabHelper.NAME_TSTORE)));
+                    stores2check.add(new TStore(context, options.storeKeys.get(OpenIabHelper.NAME_TSTORE)));
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
-                        // SamsungApps shows lot of unnecessary UI during init 
+                        // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
                         stores2check.add(new SamsungApps(context));
                     }
                 }
                 
-                if (checkInventory) {
+                if (options.checkInventory) {
                     Log.d(TAG, "startSetup() check inventory. stores: " + stores2check);
                     final List<Appstore> equippedStores = inventoryCheck(stores2check);
                     Log.d(TAG, "startSetup() equipped stores: " + equippedStores);
@@ -311,6 +321,23 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
+    /** Check options are valid */
+    public static void checkOptions(Options options) {
+        if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
+            for (Entry<String, String> entry : options.storeKeys.entrySet()) {
+                if (entry.getValue() == null) { 
+                    throw new IllegalArgumentException("Null publicKey for store: " + entry.getKey() + ", key: " + entry.getValue());
+                }
+                try {
+                    Security.generatePublicKey(entry.getValue());
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Invalid publicKey for store: " + entry.getKey() + ", key: " + entry.getValue(), e);
+                }
+            }
+        }
+        
+    }
+
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
         mSetupDone = true;
         notifyHandler.post(new Runnable() {
@@ -327,7 +354,7 @@ public class OpenIabHelper {
      * @param appstores - discovered OpenStores will be added here. Must be not null
      * @param listener - called back when all OpenStores collected and analyzed
      */
-    public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Map<String, String> storeKeys) {
+    public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
         PackageManager packageManager = context.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
@@ -352,10 +379,15 @@ public class OpenIabHelper {
                             Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
                         } else if (billingIntent == null) { // don't handle stores without billing support
                             Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
+                        } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) { 
+                            // don't connect to OpenStore if no key provided and verification is strict
+                            Log.e(TAG, "discoverOpenStores(): verification is required but publicKey is not provided: " + name);
                         } else {
-                            String publicKey = storeKeys.get(appstoreName);
-                            final OpenAppstore openAppstore = new OpenAppstore(context, openAppstoreService, billingIntent, publicKey);
-                            Log.d(TAG, "discoverOpenStores() add new open store by type: " + openAppstore.getAppstoreName());
+                            String publicKey = options.storeKeys.get(appstoreName);
+                            if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
+                            final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey);
+                            openAppstore.componentName = name;
+                            Log.d(TAG, "discoverOpenStores() add new OpenStore: " + openAppstore);
                             synchronized (result) {
                                 if (result.contains(openAppstore) == false) {
                                     result.add(openAppstore);
@@ -376,7 +408,7 @@ public class OpenIabHelper {
             }, Context.BIND_AUTO_CREATE);
         }
         try {
-            storesToCheck.await(DISCOVER_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            storesToCheck.await(options.discoveryTimeoutMs, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Log.e(TAG, "Interrupted: discovering OpenStores. ", e);
         }
@@ -426,7 +458,7 @@ public class OpenIabHelper {
             });
         }
         try {
-            storeRemains.await(INVENTORY_CHECK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Log.e(TAG, "selectBillingService()  inventory check is failed. candidates: " + candidates.size() 
                     + ", inventory remains: " + storeRemains.getCount() , e);
@@ -468,8 +500,8 @@ public class OpenIabHelper {
         if (candidates.size() == 0) return null;
         
         // lookup for developer preffered stores
-        for (int i = 0; i < prefferedStoreNames.length; i++) {
-            Appstore candidate = candidates.get(prefferedStoreNames[i]);
+        for (int i = 0; i < options.prefferedStoreNames.length; i++) {
+            Appstore candidate = candidates.get(options.prefferedStoreNames[i]);
             if (candidate != null) {
                 return candidate;
             }
@@ -713,6 +745,68 @@ public class OpenIabHelper {
 
     public interface OnOpenIabHelperInitFinished {
         public void onOpenIabHelperInitFinished();
+    }
+    
+    /**
+     * All options of OpenIAB can be found here
+     * 
+     * TODO: consider to use cloned instance of Options in OpenIABHelper   
+     */
+    public static class Options {
+        /** 
+         * Candidates for billing. If not provided by user than discovered OpenStores + GP/Amazon/Samsung
+         * {@link #discoverOpenStores(Context, List, Map, OnInitListener)}
+         */
+        public List<Appstore> availableStores;
+        
+        /**
+         * Wait specified amount of ms to find all OpenStores on device
+         */
+        public int discoveryTimeoutMs = DISCOVER_TIMEOUT_MS;
+        /** 
+         * Check user inventory in every store to select proper store
+         * <p>
+         * Will try to connect to each billingService and extract user's purchases.
+         * If purchases have been found in the only store that store will be used for further purchases. 
+         * If purchases have been found in multiple stores only such stores will be used for further elections    
+         */
+        public boolean checkInventory = false;
+        
+        /**
+         * Wait specified amount of ms to check inventory in all stores
+         */
+        public int checkInventoryTimeoutMs = INVENTORY_CHECK_TIMEOUT_MS;
+        
+        /** 
+         * OpenIAB could skip receipt verification by publicKey for GooglePlay and OpenStores 
+         * <p>
+         * Receipt could be verified in {@link OnIabPurchaseFinishedListener#onIabPurchaseFinished()}
+         * using {@link Purchase#getOriginalJson()} and {@link Purchase#getSignature()}
+         */
+        public int verifyMode = VERIFY_EVERYTHING;
+        /**
+         * Verify signatures in any store. 
+         * <p>
+         * By default in Google's IabHelper. Throws exception if key is not available or invalid.
+         * To prevent crashes OpenIAB wouldn't connect to OpenStore if no publicKey provided
+         */
+        public static final int VERIFY_EVERYTHING = 0;
+        /**
+         * Don't verify signatires. To perform verification on server-side
+         */
+        public static final int VERIFY_SKIP = 1;
+        /**
+         * Verify signatures only if publicKey is available. Otherwise skip verification. 
+         * <p>
+         * Developer is responsible for verify
+         */
+        public static final int VERIFY_ONLY_KNOWN = 2;
+        
+        /** <b>publicKey</b> should be specified for GooglePlay and OpenStores to verify reciept signature */
+        public Map<String, String> storeKeys;
+        
+        /** Developer preferred store names */
+        public String[] prefferedStoreNames = new String[] {};
     }
 
 }

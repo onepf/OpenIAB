@@ -160,7 +160,6 @@ public class MainActivity extends Activity {
          * of their own and then fake messages from the server.
          */
         String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
-        String tstoreAppId = "PLACE_HERE_TSTORE_APP_ID";
         String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
 
         // Some sanity checks to see if the developer (that's you!) really followed the
@@ -176,7 +175,6 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Creating IAB helper.");
         Map<String, String> storeKeys = new HashMap<String, String>();
         storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
-        storeKeys.put(OpenIabHelper.NAME_TSTORE, tstoreAppId);
         storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
 
         mHelper = new OpenIabHelper(this, storeKeys);

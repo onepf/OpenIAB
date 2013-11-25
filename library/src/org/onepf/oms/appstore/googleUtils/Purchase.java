@@ -21,6 +21,11 @@ import org.json.JSONObject;
 /**
  * Represents an in-app billing purchase.
  *
+ * Purchase contains all data from receipt, including signature.
+ * <p>
+ * To verify signature manually - use {@link #getOriginalJson()} and {@link #getSignature()}
+ * Appstore name purchase was done through can be accessed via {@link #getAppstoreName()}
+ *
  * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere 
  * <p><b>TODO</b>: add getStoreSku() to use mapped value in Appstore's inner code
  */

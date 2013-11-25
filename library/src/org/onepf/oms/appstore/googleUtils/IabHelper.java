@@ -103,10 +103,12 @@ public class IabHelper implements AppstoreInAppBillingService {
     // Context we were passed during initialization
     Context mContext;
 
-
     // Connection to the service
     IInAppBillingService mService;
     ServiceConnection mServiceConn;
+    
+    /** for debug purposes */
+    ComponentName componentName;
 
     // The request code used to launch purchase flow
     int mRequestCode;
@@ -230,6 +232,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 logDebug("Billing service connected.");
                 mService = getServiceFromBinder(service);
+                componentName = name;
                 String packageName = mContext.getPackageName();
                 try {
                     logDebug("Checking for in-app billing 3 support.");
@@ -1022,6 +1025,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     }
 
     boolean isValidDataSignature(String base64PublicKey, String purchaseData, String signature) {
+        if (base64PublicKey == null) return true;
         boolean isValid = Security.verifyPurchase(base64PublicKey, purchaseData, signature);
         if (!isValid) {
             logWarn("Purchase signature verification **FAILED**.");
