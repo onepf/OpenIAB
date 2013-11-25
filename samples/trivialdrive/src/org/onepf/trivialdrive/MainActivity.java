@@ -16,6 +16,7 @@
 package org.onepf.trivialdrive;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.onepf.oms.OpenIabHelper;
@@ -28,6 +29,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -119,7 +122,6 @@ public class MainActivity extends Activity {
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, "com.yandex.store", "org.onepf.trivialdrive.infinite_gas");
-
     }
     
     // (arbitrary) request code for the purchase flow
@@ -176,6 +178,7 @@ public class MainActivity extends Activity {
         storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
         storeKeys.put(OpenIabHelper.NAME_TSTORE, tstoreAppId);
         storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
+
         mHelper = new OpenIabHelper(this, storeKeys);
         
         // enable debug logging (for a production application, you should set this to false).

@@ -28,5 +28,9 @@ public abstract class DefaultAppstore implements Appstore {
     public AppstoreInAppBillingService getInAppBillingService() {
         return null;
     }
+    
+    public String toString() {
+        return "Store {name: " + getAppstoreName() + "}";
+    }
 
 }

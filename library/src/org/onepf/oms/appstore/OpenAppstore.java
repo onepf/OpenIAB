@@ -44,40 +44,21 @@ public class OpenAppstore extends DefaultAppstore {
     private IOpenAppstore openAppstoreService;
     private AppstoreInAppBillingService mBillingService;
 
-    public OpenAppstore(IOpenAppstore openAppstoreService, Context context) {
+    public OpenAppstore(Context context, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey) {
         this.context = context;
         this.openAppstoreService = openAppstoreService;
-    }
-
-    /**
-     * Prepare everything required to bind to remote billing service
-     * <p>
-     * <b>TODO:</b> not just prepare, but do bind service and return success or not
-     */
-    public boolean initBilling(final String publicKey) {
-        final Intent billingIntent;
-        try {
-            billingIntent = openAppstoreService.getBillingServiceIntent();
-        } catch (RemoteException e) {
-            Log.e(TAG, "initBilling() Cannot get intent: ", e);
-            return false;
+        if (billingIntent != null) {
+            this.mBillingService = new IabHelper(context, publicKey, this) {
+                @Override
+                protected Intent getServiceIntent() {
+                    return billingIntent;
+                }
+                @Override
+                protected IInAppBillingService getServiceFromBinder(IBinder service) {
+                    return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
+                }
+            };
         }
-
-        if (billingIntent == null) {
-            return false;
-        }
-
-        mBillingService = new IabHelper(context, publicKey, this) {
-            @Override
-            protected Intent getServiceIntent() {
-                return billingIntent;
-            }
-            @Override
-            protected IInAppBillingService getServiceFromBinder(IBinder service) {
-                return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
-            }
-        };
-        return true;
     }
 
     @Override
@@ -166,7 +147,7 @@ public class OpenAppstore extends DefaultAppstore {
     }
     
     public String toString() {
-        return "OpenStore {name: " + getAppstoreName() + "} "+ super.toString();
+        return "OpenStore {name: " + getAppstoreName() + "}";
         
     }
     

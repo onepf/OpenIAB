@@ -27,14 +27,15 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import java.util.List;
 
 /**
- * User: Boris Minaev
- * Date: 16.04.13
- * Time: 15:46
+ * 
+ * @author Oleg Orlov, Boris Minaev
+ * @since 16.04.13
  */
 public interface AppstoreInAppBillingService {
     /**
-     * Initialization of service. After initialization is completed listener.onIabSetupFinished() 
-     * must be called in UI thread 
+     * Establish connection to service.  
+     * 
+     * @param listener - called in UI-thread when initialization is completed  
      */
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
