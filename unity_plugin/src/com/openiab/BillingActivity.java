@@ -23,6 +23,7 @@ public class BillingActivity extends UnityPlayerActivity {
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         OpenIAB.instance().unbindService();
     }
 } 
