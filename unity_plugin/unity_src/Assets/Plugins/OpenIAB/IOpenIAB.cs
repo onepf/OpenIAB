@@ -9,11 +9,12 @@ namespace OnePF {
 		void mapSku(string sku, string storeName, string storeSku);
 		void unbindService();
 		bool areSubscriptionsSupported();
-		void queryInventory();
+        void queryInventory();
+		void queryInventory(string[] skus);
 		void purchaseProduct(string sku, string developerPayload="");
 		void purchaseSubscription(string sku, string developerPayload="");
 		void consumeProduct(Purchase purchase);
 		void restoreTransactions();
-			
+
 	}
 }

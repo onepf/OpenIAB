@@ -92,16 +92,14 @@ namespace OnePF {
             }
             return _plugin.Call<bool>("areSubscriptionsSupported");
         }
-		
+
         public void queryInventory() {
             if (!IsDevice()) {
 				return;
 			}
             _plugin.Call("queryInventory");
         }
-		
-        // TODO: implement on java side. does nothing for now
-        // Sends a request to get all completed purchases and product information
+
         public void queryInventory(string[] skus) {
             if (!IsDevice()) {              
                 return;
@@ -109,7 +107,7 @@ namespace OnePF {
             IntPtr jArrayPtr = AndroidJNIHelper.ConvertToJNIArray(skus);
             jvalue[] jArray = new jvalue[1];
             jArray[0].l = jArrayPtr;
-            IntPtr methodId = AndroidJNIHelper.GetMethodID(_plugin.GetRawClass(), "queryInventory");
+            IntPtr methodId = AndroidJNIHelper.GetMethodID(_plugin.GetRawClass(), "queryInventoryAndSkuDetails");
             AndroidJNI.CallVoidMethod(_plugin.GetRawObject(), methodId, jArray);
         }
 		

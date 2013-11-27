@@ -13,6 +13,7 @@ import org.json.JSONStringer;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,27 +57,37 @@ public class OpenIAB {
         OpenIabHelper.mapSku(sku, storeName, storeSku);
     }
 
-    public void init(HashMap<String, String> storeKeys) {
-        _helper = new OpenIabHelper(UnityPlayer.currentActivity, storeKeys);
-        createBroadcasts();
+    public void init(final HashMap<String, String> storeKeys) {
+        UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
 
-        // Start setup. This is asynchronous and the specified listener
-        // will be called once setup completes.
-        Log.d(TAG, "Starting setup.");
-        _helper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-                Log.d(TAG, "Setup finished.");
+                OpenIabHelper.Options options = new OpenIabHelper.Options();
+                options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
+                options.storeKeys = storeKeys;
 
-                if (result.isFailure()) {
-                    // Oh noes, there was a problem.
-                    Log.e(TAG, "Problem setting up in-app billing: " + result);
-                    UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_NOT_SUPPORTED_CALLBACK, result.getMessage());
-                    return;
-                }
+                _helper = new OpenIabHelper(UnityPlayer.currentActivity, options);
+                createBroadcasts();
 
-                // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
-                Log.d(TAG, "Setup successful.");
-                UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_SUPPORTED_CALLBACK, "");
+                // Start setup. This is asynchronous and the specified listener
+                // will be called once setup completes.
+                Log.d(TAG, "Starting setup.");
+                _helper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                    public void onIabSetupFinished(IabResult result) {
+                        Log.d(TAG, "Setup finished.");
+
+                        if (result.isFailure()) {
+                            // Oh noes, there was a problem.
+                            Log.e(TAG, "Problem setting up in-app billing: " + result);
+                            UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_NOT_SUPPORTED_CALLBACK, result.getMessage());
+                            return;
+                        }
+
+                        // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
+                        Log.d(TAG, "Setup successful.");
+                        UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_SUPPORTED_CALLBACK, "");
+                    }
+                });
             }
         });
     }
@@ -102,9 +113,14 @@ public class OpenIAB {
         });
     }
 
-    public void queryInventory(String[] skus) {
-        Log.i(TAG, skus.length + "");
-        _helper.queryInventoryAsync(_queryInventoryListener);
+    public void queryInventoryAndSkuDetails(final String[] skus) {
+        Log.i(TAG, "***** queryInventory - SKU list length: " + skus.length);
+        UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                _helper.queryInventoryAsync(true, Arrays.asList(skus), _queryInventoryListener);
+            }
+        });
     }
 
     public void purchaseProduct(final String sku, final String developerPayload) {

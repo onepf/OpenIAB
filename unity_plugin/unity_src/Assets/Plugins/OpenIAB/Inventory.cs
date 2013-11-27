@@ -41,12 +41,12 @@ namespace OnePF {
             StringBuilder str = new StringBuilder();
             str.Append("{purchaseMap:{");
             foreach (var pair in _purchaseMap) {
-                str.Append("\"" + pair.Key + "\":{" + pair.Value.ToString() + "}");
+                str.Append("\"" + pair.Key + "\":{" + pair.Value.ToString() + "},");
             }
             str.Append("},");
             str.Append("skuMap:{");
             foreach (var pair in _skuMap) {
-                str.Append("\"" + pair.Key + "\":{" + pair.Value.ToString() + "}");
+                str.Append("\"" + pair.Key + "\":{" + pair.Value.ToString() + "},");
             }
 			str.Append("}}");
             return str.ToString();

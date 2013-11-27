@@ -41,9 +41,14 @@ namespace OnePF {
             return _billing.areSubscriptionsSupported();
         }
 
-        // Sends a request to get all completed purchases and product information
+        // Sends a request to get all completed purchases
         public static void queryInventory() {
             _billing.queryInventory();
+        }
+
+        // Sends a request to get all completed purchases and specified skus information
+        public static void queryInventory(string[] skus) {
+            _billing.queryInventory(skus);
         }
 
         // Purchases the product with the given sku and developerPayload
