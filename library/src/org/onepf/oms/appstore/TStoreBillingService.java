@@ -33,6 +33,7 @@ import java.util.List;
  * Date: 16.05.13
  */
 public class TStoreBillingService implements AppstoreInAppBillingService {
+    private static final boolean mDebugLog = false;
     private static final String TAG = "IabHelper";
     private final Context mContext;
     private final String mAppId;
@@ -56,11 +57,11 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
         paramsBuilder.put(ParamsBuilder.KEY_PID, sku);
         Bundle req = mPlugin.sendPaymentRequest(paramsBuilder.build(), new TStoreRequestCallback(this, mContext, listener));
         if (req == null) {
-            Log.e(TAG, "TStore buy request failure");
+            if (mDebugLog) Log.e(TAG, "TStore buy request failure");
         } else {
             String mRequestId = req.getString(IapPlugin.EXTRA_REQUEST_ID);
             if (mRequestId == null || mRequestId.length() == 0) {
-                Log.e(TAG, "TStore request failure");
+                if (mDebugLog) Log.e(TAG, "TStore request failure");
             }
         }
     }

@@ -37,6 +37,7 @@ import android.util.Log;
  * purchases as verified.
  */
 public class Security {
+    private static final boolean mDebugLog = false;
     private static final String TAG = "IABUtil/Security";
 
     private static final String KEY_FACTORY_ALGORITHM = "RSA";
@@ -54,7 +55,7 @@ public class Security {
     public static boolean verifyPurchase(String base64PublicKey, String signedData, String signature) {
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey) 
                 || TextUtils.isEmpty(signature)) {
-            Log.e(TAG, "Purchase verification failed: missing data.");
+            if (mDebugLog) Log.e(TAG, "Purchase verification failed: missing data.");
             return false;
         }
         
@@ -77,10 +78,10 @@ public class Security {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
-            Log.e(TAG, "Invalid key specification.");
+            if (mDebugLog) Log.e(TAG, "Invalid key specification.");
             throw new IllegalArgumentException(e);
         } catch (Base64DecoderException e) {
-            Log.e(TAG, "Base64 decoding failed.");
+            if (mDebugLog) Log.e(TAG, "Base64 decoding failed.");
             throw new IllegalArgumentException(e);
         }
     }
@@ -101,18 +102,18 @@ public class Security {
             sig.initVerify(publicKey);
             sig.update(signedData.getBytes());
             if (!sig.verify(Base64.decode(signature))) {
-                Log.e(TAG, "Signature verification failed.");
+                if (mDebugLog) Log.e(TAG, "Signature verification failed.");
                 return false;
             }
             return true;
         } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "NoSuchAlgorithmException.");
+            if (mDebugLog) Log.e(TAG, "NoSuchAlgorithmException.");
         } catch (InvalidKeyException e) {
-            Log.e(TAG, "Invalid key specification.");
+            if (mDebugLog) Log.e(TAG, "Invalid key specification.");
         } catch (SignatureException e) {
-            Log.e(TAG, "Signature exception.");
+            if (mDebugLog) Log.e(TAG, "Signature exception.");
         } catch (Base64DecoderException e) {
-            Log.e(TAG, "Base64 decoding failed.");
+            if (mDebugLog) Log.e(TAG, "Base64 decoding failed.");
         }
         return false;
     }
