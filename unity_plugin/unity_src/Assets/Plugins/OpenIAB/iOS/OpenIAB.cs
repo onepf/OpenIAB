@@ -91,8 +91,12 @@ namespace OnePF {
 		public bool areSubscriptionsSupported() {
 			return true;
 		}
-		
-		public void queryInventory() {
+
+        public void queryInventory() {
+            queryInventory(null);
+        }
+
+		public void queryInventory(string[] skus) {
 			if (!IsDevice()) {
 				return;
 			}
