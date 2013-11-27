@@ -35,6 +35,7 @@ import org.onepf.oms.appstore.tstoreUtils.Response;
  * Date: 05.04.13
  */
 public class TStoreRequestCallback implements IapPlugin.RequestCallback {
+    private static final boolean mDebugLog = false;
     private static final String TAG = "IabHelper";
 
     private final Context mContext;
@@ -50,7 +51,7 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
 
     @Override
     public void onError(String reqid, String errcode, String errmsg) {
-        Log.e(TAG, "TStore error. onError() identifier:" + reqid + " code:" + errcode + " msg:" + errmsg);
+        if (mDebugLog) Log.e(TAG, "TStore error. onError() identifier:" + reqid + " code:" + errcode + " msg:" + errmsg);
         // TODO: support different error codes
         IabResult result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, errmsg);
     }
@@ -58,7 +59,7 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
     @Override
     public void onResponse(IapResponse data) {
         if (data == null || data.getContentLength() <= 0) {
-            Log.e(TAG, "onResponse() response data is null");
+            if (mDebugLog) Log.e(TAG, "onResponse() response data is null");
             return;
         }
         Response response = new GsonConverter().fromJson(data.getContentToString());

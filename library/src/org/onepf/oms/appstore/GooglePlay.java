@@ -35,6 +35,7 @@ import android.util.Log;
  */
 
 public class GooglePlay extends DefaultAppstore {
+    private static final boolean mDebugLog = false;
     private static final String TAG = GooglePlay.class.getSimpleName();
 
     public  static final String ANDROID_INSTALLER = "com.android.vending";
@@ -70,12 +71,12 @@ public class GooglePlay extends DefaultAppstore {
      */
     @Override    
     public boolean isBillingAvailable(String packageName) {
-        Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
+        if (mDebugLog) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
         PackageManager packageManager = mContext.getPackageManager();
         List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
         for (PackageInfo packageInfo : allPackages) {
             if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
-                Log.d(TAG, "Google supports billing");
+                if (mDebugLog) Log.d(TAG, "Google supports billing");
                 return true;
             }
         }

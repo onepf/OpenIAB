@@ -38,6 +38,7 @@ import com.android.vending.billing.IInAppBillingService;
  * @since 28.05.13
  */
 public class OpenAppstore extends DefaultAppstore {
+    private static final boolean mDebugLog = false;
     private static final String TAG = OpenAppstore.class.getSimpleName();
     
     private Context context;
@@ -66,7 +67,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.isPackageInstaller(packageName);
         } catch (RemoteException e) {
-            Log.w(TAG, "RemoteException: " + e.getMessage());
+            if (mDebugLog) Log.w(TAG, "RemoteException: " + e.getMessage());
             return false;
         }
     }
@@ -76,7 +77,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.isBillingAvailable(packageName);
         } catch (RemoteException e) {
-            Log.e(TAG, "isBillingAvailable() packageName: " + packageName, e);
+            if (mDebugLog) Log.e(TAG, "isBillingAvailable() packageName: " + packageName, e);
             return false;
         }
     }
@@ -86,7 +87,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getPackageVersion(packageName);
         } catch (RemoteException e) {
-            Log.e(TAG, "getPackageVersion() packageName: " + packageName, e);
+            if (mDebugLog) Log.e(TAG, "getPackageVersion() packageName: " + packageName, e);
             return Appstore.PACKAGE_VERSION_UNDEFINED;
         }
     }
@@ -96,7 +97,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getAppstoreName();
         } catch (RemoteException e) {
-            Log.e(TAG, "getAppstoreName() AppstoreName is unavailable", e);
+            if (mDebugLog) Log.e(TAG, "getAppstoreName() AppstoreName is unavailable", e);
             return null;
         }
     }
@@ -106,7 +107,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getProductPageIntent(packageName);
         } catch (RemoteException e) {
-            Log.w(TAG, "RemoteException: " + e.getMessage());
+            if (mDebugLog) Log.w(TAG, "RemoteException: " + e.getMessage());
             return null;
         }
     }
@@ -116,7 +117,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getRateItPageIntent(packageName);
         } catch (RemoteException e) {
-            Log.w(TAG, "RemoteException: " + e.getMessage());
+            if (mDebugLog) Log.w(TAG, "RemoteException: " + e.getMessage());
             return null;
         }
     }
@@ -126,7 +127,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getSameDeveloperPageIntent(packageName);
         } catch (RemoteException e) {
-            Log.w(TAG, "RemoteException: " + e.getMessage());
+            if (mDebugLog) Log.w(TAG, "RemoteException: " + e.getMessage());
             return null;
         }
     }
@@ -136,7 +137,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.areOutsideLinksAllowed();
         } catch (RemoteException e) {
-            Log.w(TAG, "RemoteException: " + e.getMessage());
+            if (mDebugLog) Log.w(TAG, "RemoteException: " + e.getMessage());
             return false;
         }
     }
