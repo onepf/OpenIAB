@@ -29,6 +29,7 @@ import android.util.Log;
  * Date: 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
+    private static final boolean mDebugLog = false;
     private static final String TAG = AmazonAppstore.class.getSimpleName();
     
     private volatile Boolean sandboxMode;// = false;
@@ -43,7 +44,7 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
+        if (mDebugLog) Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
         if (sandboxMode != null) {
             return !sandboxMode;
         }
@@ -53,11 +54,11 @@ public class AmazonAppstore extends DefaultAppstore {
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
                 sandboxMode = false;
             } catch (Throwable localThrowable) {
-                Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
+                if (mDebugLog) Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
                 sandboxMode = true;
             }
         }
-        Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        if (mDebugLog) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;
     }
 
