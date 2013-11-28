@@ -170,7 +170,7 @@ public class OpenIabHelper {
             Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
             if (skuMap != null && skuMap.get(sku) != null) {
                 currentStoreSku = skuMap.get(sku);
-                Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+                if (mDebugLog) Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
             }
             return currentStoreSku;
         }
@@ -182,7 +182,7 @@ public class OpenIabHelper {
             Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
             if (skuMap != null && skuMap.get(sku) != null) {
                 sku = skuMap.get(sku);
-                Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+                if (mDebugLog) Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
             }
             return sku;
         }
@@ -251,7 +251,7 @@ public class OpenIabHelper {
                     stores2check.addAll(options.availableStores);
                 } else { // if appstores are not specified by user - lookup for all available stores
                     final List<Appstore> openStores = discoverOpenStores(context, null, options);
-                    Log.d(TAG, "startSetup() discovered openstores: " + openStores.toString());
+                    if (mDebugLog) Log.d(TAG, "startSetup() discovered openstores: " + openStores.toString());
                     stores2check.addAll(openStores);
                     if (options.verifyMode == Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(NAME_GOOGLE)) {
                         // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
@@ -270,23 +270,23 @@ public class OpenIabHelper {
                 }
                 
                 if (options.checkInventory) {
-                    Log.d(TAG, "startSetup() check inventory. stores: " + stores2check);
+                    if (mDebugLog) Log.d(TAG, "startSetup() check inventory. stores: " + stores2check);
                     final List<Appstore> equippedStores = inventoryCheck(stores2check);
-                    Log.d(TAG, "startSetup() equipped stores: " + equippedStores);
+                    if (mDebugLog) Log.d(TAG, "startSetup() equipped stores: " + equippedStores);
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
-                        Log.d(TAG, "startSetup() selected store: " + mAppstore);
+                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
                     } 
                     if (mAppstore != null) {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
                         final IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK
                                 , "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                         fireSetupFinished(listener, result);
-                        Log.d(TAG, "startSetup() selected store: " + mAppstore);
+                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
                         return;
                     } 
                     // found no equipped stores. Select store based on store parameters
-                    Log.d(TAG, "startSetup() equipped elections: " + mAppstore);
+                    if (mDebugLog) Log.d(TAG, "startSetup() equipped elections: " + mAppstore);
                     IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     if (mAppstore == null) {
                         mAppstore = selectBillingService(stores2check);
@@ -295,17 +295,17 @@ public class OpenIabHelper {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
                         result = new IabResult(BILLING_RESPONSE_RESULT_OK
                                 , "Successfully initialized: " + mAppstore.getAppstoreName());
-                        Log.d(TAG, "startSetup() selected store: " + mAppstore);
+                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
                     } else {
                         result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE
                                 , "Billing isn't supported");
-                        Log.d(TAG, "startSetup() billing is not available");
+                        if (mDebugLog) Log.d(TAG, "startSetup() billing is not available");
                     }
                     fireSetupFinished(listener, result);
                 } else {                // no inventory check. Select store based on store parameters   
-                    Log.d(TAG, "startSetup() No inventory check. stores: " + stores2check);
+                    if (mDebugLog) Log.d(TAG, "startSetup() No inventory check. stores: " + stores2check);
                     mAppstore = selectBillingService(stores2check);
-                    Log.d(TAG, "startSetup() selected store: " + mAppstore);
+                    if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
                     if (mAppstore == null) {
                         IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                         fireSetupFinished(listener, iabResult);
@@ -369,7 +369,7 @@ public class OpenIabHelper {
             context.bindService(intentAppstore, new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
-                    Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
+                    if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
 
                     try {
@@ -378,7 +378,7 @@ public class OpenIabHelper {
                         if (appstoreName == null) { // no name - no service
                             Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
                         } else if (billingIntent == null) { // don't handle stores without billing support
-                            Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
+                            if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
                         } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) { 
                             // don't connect to OpenStore if no key provided and verification is strict
                             Log.e(TAG, "discoverOpenStores(): verification is required but publicKey is not provided: " + name);
@@ -402,7 +402,7 @@ public class OpenIabHelper {
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
+                    if (mDebugLog) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
                     //Nothing to do here
                 }
             }, Context.BIND_AUTO_CREATE);
@@ -447,7 +447,7 @@ public class OpenIabHelper {
                                 if (inventory.getAllPurchases().size() > 0) {
                                     equippedStores.add(appstore);
                                 }
-                                Log.d(TAG, "inventoryCheck() found: " + inventory.getAllPurchases().size() + " purchases in " + appstore.getAppstoreName());
+                                if (mDebugLog) Log.d(TAG, "inventoryCheck() found: " + inventory.getAllPurchases().size() + " purchases in " + appstore.getAppstoreName());
                             } catch (IabException e) {
                                 Log.e(TAG, "inventoryCheck() failed for " + appstore.getAppstoreName());
                             }
@@ -736,7 +736,7 @@ public class OpenIabHelper {
     }
 
     void logWarn(String msg) {
-        Log.w(TAG, "In-app billing warning: " + msg);
+        if (mDebugLog) Log.w(TAG, "In-app billing warning: " + msg);
     }
     
     public interface OnInitListener {

@@ -83,7 +83,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     public static final int QUERY_SKU_DETAILS_BATCH_SIZE = 20;
     
     // Is debug logging enabled?
-    boolean mDebugLog = true;
+    boolean mDebugLog = false;
     String mDebugTag = TAG;
 
     // Is setup done?
@@ -1021,7 +1021,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     }
 
     void logWarn(String msg) {
-        Log.w(mDebugTag, "In-app billing warning: " + msg);
+        if (mDebugLog) Log.w(mDebugTag, "In-app billing warning: " + msg);
     }
 
     boolean isValidDataSignature(String base64PublicKey, String purchaseData, String signature) {
