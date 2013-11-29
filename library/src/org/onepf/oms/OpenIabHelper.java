@@ -309,6 +309,7 @@ public class OpenIabHelper {
                     if (mAppstore == null) {
                         IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                         fireSetupFinished(listener, iabResult);
+                        return;
                     }
                     mAppstoreBillingService = mAppstore.getInAppBillingService(); 
                     mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
