@@ -31,6 +31,7 @@ import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
+import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -66,10 +67,17 @@ public class OpenIabHelper {
     private static final boolean mDebugLog = false;
     
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
+    
     /** */
     private static final int DISCOVER_TIMEOUT_MS = 5000;
-    /** */
-    private static final int INVENTORY_CHECK_TIMEOUT_MS = 5000;
+    
+    /** 
+     * for generic stores it takes 1.5 - 3sec
+     * <p>
+     * SamsungApps initialization is very time consuming (from 4 to 12 seconds). 
+     * TODO: Optimize: ~1sec is consumed for check account certification via account activity + ~3sec for actual setup
+     */
+    private static final int INVENTORY_CHECK_TIMEOUT_MS = 10000;
     
     private final Context context;
     
@@ -85,7 +93,15 @@ public class OpenIabHelper {
 
     // Is setup done?
     private boolean mSetupDone = false;
+    
+    /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't 
+     *  work until setup is completed. */
+    private volatile SamsungApps samsungInSetup;
 
+    /** used to track time used for {@link #startSetup(OnIabSetupFinishedListener)} 
+     * TODO: think about smarter time tracker (i.e. Logger built-in) */
+    private volatile static long started;
+    
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
     private boolean mAsyncInProgress = false;
@@ -234,7 +250,7 @@ public class OpenIabHelper {
         this.context = context;
         this.options = options;
     }
-        
+
     /**
      *  Discover available stores and select the best billing service. 
      *  Calls listener when service is found.
@@ -244,14 +260,15 @@ public class OpenIabHelper {
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         this.notifyHandler = new Handler();
         checkOptions(options);
+        started = System.currentTimeMillis();
         new Thread(new Runnable() {
             public void run() {
-                List<Appstore> stores2check = new ArrayList<Appstore>(); 
+                List<Appstore> stores2check = new ArrayList<Appstore>();
                 if (options.availableStores != null) {
                     stores2check.addAll(options.availableStores);
                 } else { // if appstores are not specified by user - lookup for all available stores
                     final List<Appstore> openStores = discoverOpenStores(context, null, options);
-                    if (mDebugLog) Log.d(TAG, "startSetup() discovered openstores: " + openStores.toString());
+                    if (mDebugLog) Log.d(TAG, in() + " " + "startSetup() discovered openstores: " + openStores.toString());
                     stores2check.addAll(openStores);
                     if (options.verifyMode == Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(NAME_GOOGLE)) {
                         // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
@@ -265,51 +282,39 @@ public class OpenIabHelper {
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
-                        stores2check.add(new SamsungApps(context));
+                        stores2check.add(new SamsungApps(context, options));
                     }
                 }
                 
+                for (Appstore store : stores2check) {
+                    if (store instanceof SamsungApps) samsungInSetup = (SamsungApps) store;
+                }
+                
                 if (options.checkInventory) {
-                    if (mDebugLog) Log.d(TAG, "startSetup() check inventory. stores: " + stores2check);
+                    IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                     final List<Appstore> equippedStores = inventoryCheck(stores2check);
-                    if (mDebugLog) Log.d(TAG, "startSetup() equipped stores: " + equippedStores);
+                    
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
-                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
+                        if (mDebugLog) Log.d(TAG, in() + " " + "select equipped");
                     } 
                     if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
-                        final IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK
-                                , "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
-                        fireSetupFinished(listener, result);
-                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
-                        return;
-                    } 
-                    // found no equipped stores. Select store based on store parameters
-                    if (mDebugLog) Log.d(TAG, "startSetup() equipped elections: " + mAppstore);
-                    IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-                    if (mAppstore == null) {
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                    } else {
+                        // found no equipped stores. Select store based on store parameters 
                         mAppstore = selectBillingService(stores2check);
+                        if (mDebugLog) Log.d(TAG, in() + " " + "select non-equipped");
                     }
                     if (mAppstore != null) {
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK
-                                , "Successfully initialized: " + mAppstore.getAppstoreName());
-                        if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
-                    } else {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE
-                                , "Billing isn't supported");
-                        if (mDebugLog) Log.d(TAG, "startSetup() billing is not available");
                     }
                     fireSetupFinished(listener, result);
                 } else {                // no inventory check. Select store based on store parameters   
-                    if (mDebugLog) Log.d(TAG, "startSetup() No inventory check. stores: " + stores2check);
                     mAppstore = selectBillingService(stores2check);
-                    if (mDebugLog) Log.d(TAG, "startSetup() selected store: " + mAppstore);
                     if (mAppstore == null) {
                         IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
                         fireSetupFinished(listener, iabResult);
-                        return;
                     }
                     mAppstoreBillingService = mAppstore.getInAppBillingService(); 
                     mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
@@ -340,6 +345,10 @@ public class OpenIabHelper {
     }
 
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
+        if (mDebugLog) Log.d(TAG, in() + " " + "fireSetupFinished() === SETUP DONE === result: " + result 
+            + (mAppstore != null ? ", appstore: " + mAppstore.getAppstoreName() : ""));
+        
+        samsungInSetup = null;
         mSetupDone = true;
         notifyHandler.post(new Runnable() {
            public void run() { 
@@ -382,7 +391,7 @@ public class OpenIabHelper {
                             if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
                         } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) { 
                             // don't connect to OpenStore if no key provided and verification is strict
-                            Log.e(TAG, "discoverOpenStores(): verification is required but publicKey is not provided: " + name);
+                            Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
                         } else {
                             String publicKey = options.storeKeys.get(appstoreName);
                             if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
@@ -433,6 +442,7 @@ public class OpenIabHelper {
                 candidates.put(appstore.getAppstoreName(), appstore);
             }
         }
+        if (mDebugLog) Log.d(TAG, in() + " " + candidates.size() + " inventory candidates");
         final List<Appstore> equippedStores = Collections.synchronizedList(new ArrayList<Appstore>());
         final CountDownLatch storeRemains = new CountDownLatch(candidates.size());
         // for every appstore: connect to billing service and check inventory 
@@ -441,6 +451,7 @@ public class OpenIabHelper {
             final AppstoreInAppBillingService billingService = entry.getValue().getInAppBillingService();
             billingService.startSetup(new OnIabSetupFinishedListener() {
                 public void onIabSetupFinished(IabResult result) {
+                    if (mDebugLog) Log.d(TAG, in() + " " + "billing set " + appstore.getAppstoreName());
                     new Thread(new Runnable() {
                         public void run() {
                             try {
@@ -448,7 +459,7 @@ public class OpenIabHelper {
                                 if (inventory.getAllPurchases().size() > 0) {
                                     equippedStores.add(appstore);
                                 }
-                                if (mDebugLog) Log.d(TAG, "inventoryCheck() found: " + inventory.getAllPurchases().size() + " purchases in " + appstore.getAppstoreName());
+                                if (mDebugLog) Log.d(TAG, in() + " " + "inventoryCheck() in " + appstore.getAppstoreName() + " found: " + inventory.getAllPurchases().size() + " purchases");
                             } catch (IabException e) {
                                 Log.e(TAG, "inventoryCheck() failed for " + appstore.getAppstoreName());
                             }
@@ -460,6 +471,7 @@ public class OpenIabHelper {
         }
         try {
             storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
+            if (mDebugLog) Log.d(TAG, in() + " " + "inventory check done");
         } catch (InterruptedException e) {
             Log.e(TAG, "selectBillingService()  inventory check is failed. candidates: " + candidates.size() 
                     + ", inventory remains: " + storeRemains.getCount() , e);
@@ -572,6 +584,14 @@ public class OpenIabHelper {
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+        if (mDebugLog) Log.d(TAG, in() + " " + "handleActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
+        if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
+            return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
+        }
+        if (!mSetupDone) {
+            if (mDebugLog) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
+            return false;
+        }
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
@@ -748,6 +768,10 @@ public class OpenIabHelper {
         public void onOpenIabHelperInitFinished();
     }
     
+    private static String in() {
+        return "in: " + (System.currentTimeMillis() - started);
+    }
+    
     /**
      * All options of OpenIAB can be found here
      * 
@@ -771,7 +795,7 @@ public class OpenIabHelper {
          * If purchases have been found in the only store that store will be used for further purchases. 
          * If purchases have been found in multiple stores only such stores will be used for further elections    
          */
-        public boolean checkInventory = false;
+        public boolean checkInventory = true;
         
         /**
          * Wait specified amount of ms to check inventory in all stores
@@ -804,10 +828,14 @@ public class OpenIabHelper {
         public static final int VERIFY_ONLY_KNOWN = 2;
         
         /** <b>publicKey</b> should be specified for GooglePlay and OpenStores to verify reciept signature */
-        public Map<String, String> storeKeys;
+        public Map<String, String> storeKeys = new HashMap<String, String>();
         
         /** Developer preferred store names */
         public String[] prefferedStoreNames = new String[] {};
+        
+        /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
+         * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
+        public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
     }
 
 }

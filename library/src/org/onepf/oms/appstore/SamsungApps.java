@@ -20,6 +20,7 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.OpenIabHelper.Options;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -57,13 +58,15 @@ public class SamsungApps extends DefaultAppstore {
     public static final String IAP_SERVICE_NAME = "com.sec.android.iap.service.iapService";
 
     private AppstoreInAppBillingService mBillingService;
-    private Context mContext;
+    private Context context;
+    private Options options;
 
     // isDebugMode = true -> always returns Samsung Apps is installer
     static final boolean isDebugMode = false;
 
-    public SamsungApps(Context context) {
-        mContext = context;
+    public SamsungApps(Context context, Options options) {
+        this.context = context;
+        this.options = options;
     }
 
     @Override
@@ -78,14 +81,14 @@ public class SamsungApps extends DefaultAppstore {
     public boolean isBillingAvailable(String packageName) {
         boolean iapInstalled = true;
         try {
-            PackageManager pm = mContext.getPackageManager();
+            PackageManager pm = context.getPackageManager();
             pm.getApplicationInfo(IAP_PACKAGE_NAME, PackageManager.GET_META_DATA);
         } catch (PackageManager.NameNotFoundException e) {
             iapInstalled = false;
         }
         if (iapInstalled) {
             try {
-                Signature[] signatures = mContext.getPackageManager().getPackageInfo(IAP_PACKAGE_NAME, PackageManager.GET_SIGNATURES).signatures;
+                Signature[] signatures = context.getPackageManager().getPackageInfo(IAP_PACKAGE_NAME, PackageManager.GET_SIGNATURES).signatures;
                 if (signatures[0].hashCode() != IAP_SIGNATURE_HASHCODE) {
                     iapInstalled = false;
                 }
@@ -110,7 +113,7 @@ public class SamsungApps extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new SamsungAppsBillingService(mContext);
+            mBillingService = new SamsungAppsBillingService(context, options);
         }
         return mBillingService;
     }
