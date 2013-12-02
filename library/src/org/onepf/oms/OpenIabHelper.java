@@ -550,7 +550,9 @@ public class OpenIabHelper {
     public void dispose() {
         logDebug("Disposing.");
         checkSetupDone("dispose");
-        mAppstoreBillingService.dispose();
+        if (mAppstoreBillingService != null) {
+            mAppstoreBillingService.dispose();
+        }
     }
 
     public boolean subscriptionsSupported() {
