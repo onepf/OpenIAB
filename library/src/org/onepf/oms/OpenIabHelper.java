@@ -143,16 +143,16 @@ public class OpenIabHelper {
     private static final Map <String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map <String, String>>();
         
     /**
-     * Map sku and storeSku for particular store.
+     * Map sku and storeSku for particular store. 
+     * <p>
+     * The best approach is to use SKU that unique in universe like <code>com.companyname.application.item</code>.
+     * Such SKU fit most of stores so it doesn't need to be mapped.
+     * <p>
+     * If best approach is not applicable use application inner SKU in code (usually it is SKU for Google Play)
+     * and map SKU from other stores using this method. OpenIAB will map SKU in both directions, 
+     * so you can use only your inner SKU
      * 
-     * TODO: returns smth with nice API like:
-     * <pre>
-     * mapSku(sku).store(GOOGLE_PLAY).to(SKU_MY1_GOOGLE).and(AMAZON_APPS).to(SKU_MY1_AMAZON)
-     * or
-     * mapStore(AMAZON_APPS).sku(SKU_MY2).to(SKU_MY2_AMAZON).sku(SKU_MY3).to(SKU_MY3_AMAZON)
-     * </pre>
-     * 
-     * @param sku - and
+     * @param sku - application inner SKU
      * @param storeSku - shouldn't duplicate already mapped values
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
      */
@@ -180,6 +180,14 @@ public class OpenIabHelper {
         }
     }
     
+    /**
+     * Return previously mapped store SKU for specified inner SKU
+     * @see #mapSku(String, String, String)
+     * 
+     * @param appstoreName
+     * @param sku - inner SKU
+     * @return SKU used in store for specified inner SKU
+     */
     public static String getStoreSku(final String appstoreName, String sku) {
         synchronized (sku2storeSkuMappings) {
             String currentStoreSku = sku;
@@ -192,6 +200,10 @@ public class OpenIabHelper {
         }
     }
     
+    /** 
+     * Return mapped application inner SKU using store name and store SKU. 
+     * @see #mapSku(String, String, String)
+     */
     public static String getSku(final String appstoreName, String storeSku) {
         synchronized (sku2storeSkuMappings) {
             String sku = storeSku;
@@ -217,22 +229,34 @@ public class OpenIabHelper {
         return result;
     }
 
+    /**
+     * Simple constructor for OpenIabHelper. 
+     * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
+     * 
+     * @param storeKeys - see {@link Options#storeKeys}
+     */
     public OpenIabHelper(Context context, Map<String, String> storeKeys) {
         this(context, storeKeys, null);
     }
     
     /**
-     * @param storeKeys - map [ storeName -> publicKey ]
-     * @param prefferedStoreNames - will be used if package installer cannot be found
+     * Simple constructor for OpenIabHelper. 
+     * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
+     * 
+     * @param storeKeys - see {@link Options#storeKeys}
+     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
         this(context, storeKeys, prefferedStores, null);
     }
     
     /**
-     * @param storeKeys - map [ storeName -> publicKey ]
-     * @param prefferedStoreNames - will be used if package installer cannot be found
-     * @param availableStores - exact list of stores to participate in store election
+     * Simple constructor for OpenIabHelper. 
+     * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
+     * 
+     * @param storeKeys - see {@link Options#storeKeys}
+     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
+     * @param availableStores - see {@link Options#availableStores}
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
         this.context = context;
@@ -244,6 +268,26 @@ public class OpenIabHelper {
     }
 
     /**
+     * Before start ensure you already have <li>
+     * - permission <code>org.onepf.openiab.permission.BILLING</code> in your AndroidManifest.xml<li>
+     * - publicKey for store you decided to work with (you can find it in Developer Console of your store)<li> 
+     * - map SKUs for your store if they differs using {@link #mapSku(String, String, String)}</li>
+     * 
+     * <p>
+     * You can specify publicKeys for stores (excluding Amazon and SamsungApps those don't use 
+     * verification based on RSA keys). See {@link Options#storeKeys} for details
+     * <p>
+     * By default verification will be performed for receipt from every store. To aviod verification 
+     * exception OpenIAB doesn't connect to store that key is not specified for
+     * <p>
+     * If you don't want to put publicKey in code and verify receipt remotely, you need to set
+     * {@link Options#verifyMode} to {@link Options#VERIFY_SKIP}.
+     * To make OpenIAB connect even to stores key is not specified for, use {@link Options#VERIFY_ONLY_KNOWN} 
+     * <p> 
+     * {@link Options#prefferedStoreNames} is useful option when you test your app on device with multiple 
+     * stores installed. Specify store name you want to work with here and it would be selected if you 
+     * install application using adb.
+     * 
      * @param options - specify all neccessary options
      */
     public OpenIabHelper(Context context, Options options) {
@@ -781,9 +825,16 @@ public class OpenIabHelper {
      * TODO: consider to use cloned instance of Options in OpenIABHelper   
      */
     public static class Options {
+        
         /** 
-         * Candidates for billing. If not provided by user than discovered OpenStores + GP/Amazon/Samsung
-         * {@link #discoverOpenStores(Context, List, Map, OnInitListener)}
+         * List of stores to be used for store elections. By default GooglePlay, Amazon, SamsungApps and 
+         * all installed OpenStores are used.
+         * <p>
+         * To specify your own list, you need to instantiate Appstore object manually.
+         * GooglePlay, Amazon and SamsungApps could be instantiated directly. OpenStore can be discovered 
+         * using {@link OpenIabHelper#discoverOpenStores(Context, List, Options)}
+         * <p>
+         * If you put only your instance of Appstore in this list OpenIAB will use it
          */
         public List<Appstore> availableStores;
         
@@ -830,10 +881,26 @@ public class OpenIabHelper {
          */
         public static final int VERIFY_ONLY_KNOWN = 2;
         
-        /** <b>publicKey</b> should be specified for GooglePlay and OpenStores to verify reciept signature */
+        /** 
+         * storeKeys is map of [ appstore name -> publicKeyBase64 ] 
+         * Put keys for all stores you support in this Map and pass it to instantiate {@link OpenIabHelper} 
+         * <p>
+         * <b>publicKey</b> key is used to verify receipt is created by genuine Appstore using 
+         * provided signature. It can be found in Developer Console of particular store
+         * <p>
+         * <b>name</b> of particular store can be provided by local_store tool if you run it on device.
+         * For Google Play OpenIAB uses {@link OpenIabHelper#NAME_GOOGLE}.
+         * <p>
+         * <p>Note:
+         * AmazonApps and SamsungApps doesn't use RSA keys for receipt verification, so you don't need 
+         * to specify it
+         */
         public Map<String, String> storeKeys = new HashMap<String, String>();
         
-        /** Developer preferred store names */
+        /**
+         * Used as priority list if store that installed app is not found and there are 
+         * multiple stores installed on device that supports billing.
+         */
         public String[] prefferedStoreNames = new String[] {};
         
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
