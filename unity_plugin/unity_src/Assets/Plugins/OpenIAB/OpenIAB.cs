@@ -26,7 +26,11 @@ namespace OnePF {
         public static void mapSku(string sku, string storeName, string storeSku) {
             _billing.mapSku(sku, storeName, storeSku);
         }
-		
+
+        public static void init(Options options) {
+            _billing.init(options);
+        }
+
         // Starts up the billing service. This will also check to see if in app billing is supported and fire the appropriate event
         public static void init(Dictionary<string, string> storeKeys) {
 			_billing.init(storeKeys);

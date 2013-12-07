@@ -58,14 +58,17 @@ public class OpenIAB {
     }
 
     public void init(final HashMap<String, String> storeKeys) {
+        OpenIabHelper.Options options = new OpenIabHelper.Options();
+        options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
+        options.storeKeys = storeKeys;
+
+        initWithOptions(options);
+    }
+
+    public void initWithOptions(final OpenIabHelper.Options options) {
         UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-                OpenIabHelper.Options options = new OpenIabHelper.Options();
-                options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
-                options.storeKeys = storeKeys;
-
                 _helper = new OpenIabHelper(UnityPlayer.currentActivity, options);
                 createBroadcasts();
 
