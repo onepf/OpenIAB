@@ -26,6 +26,7 @@ import org.onepf.oms.appstore.googleUtils.IabHelper;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -43,6 +44,7 @@ public class OpenAppstore extends DefaultAppstore {
     private static final String TAG = OpenAppstore.class.getSimpleName();
     
     private Context context;
+    private ServiceConnection serviceConn;
     private IOpenAppstore openAppstoreService;
     private AppstoreInAppBillingService mBillingService;
     
@@ -53,13 +55,13 @@ public class OpenAppstore extends DefaultAppstore {
     public  ComponentName componentName;
 
     /**
-     * @param appstoreName TODO
      * @param publicKey - used for signature verification. If <b>null</b> verification is disabled 
      */
-    public OpenAppstore(Context context, String appstoreName, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey) {
+    public OpenAppstore(Context context, String appstoreName, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey, ServiceConnection serviceConn) {
         this.context = context;
         this.appstoreName = appstoreName;
         this.openAppstoreService = openAppstoreService;
+        this.serviceConn = serviceConn;
         if (billingIntent != null) {
             this.mBillingService = new IabHelper(context, publicKey, this) {
                 @Override
@@ -70,6 +72,12 @@ public class OpenAppstore extends DefaultAppstore {
                 protected IInAppBillingService getServiceFromBinder(IBinder service) {
                     return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
                 }
+                @Override
+                public void dispose() {
+                    super.dispose();
+                    OpenAppstore.this.context.unbindService(OpenAppstore.this.serviceConn);
+                }
+                
             };
         }
     }

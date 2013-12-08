@@ -334,9 +334,11 @@ public class OpenIabHelper {
                     if (store instanceof SamsungApps) samsungInSetup = (SamsungApps) store;
                 }
                 
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
+                
                 if (options.checkInventory) {
-                    IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-                    final List<Appstore> equippedStores = inventoryCheck(stores2check);
+                    
+                    final List<Appstore> equippedStores = checkInventory(stores2check);
                     
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
@@ -356,17 +358,22 @@ public class OpenIabHelper {
                     fireSetupFinished(listener, result);
                 } else {                // no inventory check. Select store based on store parameters   
                     mAppstore = selectBillingService(stores2check);
-                    if (mAppstore == null) {
-                        IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-                        fireSetupFinished(listener, iabResult);
-                        return;
+                    if (mAppstore != null) {
+                        mAppstoreBillingService = mAppstore.getInAppBillingService(); 
+                        mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
+                            public void onIabSetupFinished(IabResult result) {
+                                fireSetupFinished(listener, result);
+                            }
+                        });
+                    } else {
+                        fireSetupFinished(listener, result);
                     }
-                    mAppstoreBillingService = mAppstore.getInAppBillingService(); 
-                    mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
-                        public void onIabSetupFinished(IabResult result) {
-                            fireSetupFinished(listener, result);
-                        }
-                    });
+                }
+                for (Appstore store : stores2check) {
+                    if (store != mAppstore && store.getInAppBillingService() != null) {
+                        store.getInAppBillingService().dispose();
+                        if (mDebugLog) Log.d(TAG, in() + " " + "startSetup() disposing " + store.getAppstoreName());
+                    }
                 }
             }
         }, "openiab-setup").start();
@@ -440,7 +447,7 @@ public class OpenIabHelper {
                         } else {
                             String publicKey = options.storeKeys.get(appstoreName);
                             if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
-                            final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey);
+                            final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, this);
                             openAppstore.componentName = name;
                             Log.d(TAG, "discoverOpenStores() add new OpenStore: " + openAppstore);
                             synchronized (result) {
@@ -478,7 +485,7 @@ public class OpenIabHelper {
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
      */
-    protected List<Appstore> inventoryCheck(final List<Appstore> availableStores) {
+    protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
         // candidates:
         Map<String, Appstore> candidates = new HashMap<String, Appstore>();
@@ -510,7 +517,7 @@ public class OpenIabHelper {
                             }
                             storeRemains.countDown();
                         }
-                    }, "inv-check-" + appstore.getAppstoreName()).start();;
+                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();;
                 }
             });
         }
@@ -835,6 +842,8 @@ public class OpenIabHelper {
          * using {@link OpenIabHelper#discoverOpenStores(Context, List, Options)}
          * <p>
          * If you put only your instance of Appstore in this list OpenIAB will use it
+         * 
+         * TODO: consider to use AppstoreFactory.get(storeName) -> Appstore instance
          */
         public List<Appstore> availableStores;
         

@@ -17,6 +17,8 @@
 package org.onepf.oms.appstore;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -24,10 +26,17 @@ import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
+
+import com.android.vending.billing.IInAppBillingService;
 
 /**
  * Author: Ruslan Sayfutdinov
@@ -42,16 +51,19 @@ public class GooglePlay extends DefaultAppstore {
     private static final String GOOGLE_INSTALLER = "com.google.vending";
     public  static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
     
-    private Context mContext;
+    public  static final int TIMEOUT_BILLING_SUPPORTED = 2000;
+    
+    private Context context;
     private IabHelper mBillingService;
-    private String mPublicKey;
+    private String publicKey;
+    private volatile Boolean billingAvailable = null; // undefined until isBillingAvailable() is called
     
     // isDebugMode = true |-> always returns app installed via Google Play
     private final boolean isDebugMode = false;
 
     public GooglePlay(Context context, String publicKey) {
-        mContext = context;
-        mPublicKey = publicKey;
+        this.context = context;
+        this.publicKey = publicKey;
     }
 
     @Override
@@ -59,28 +71,70 @@ public class GooglePlay extends DefaultAppstore {
         if (isDebugMode) {
             return true;
         }
-        PackageManager packageManager = mContext.getPackageManager();
+        PackageManager packageManager = context.getPackageManager();
         String installerPackageName = packageManager.getInstallerPackageName(packageName);
         return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
     }
     
     /**
      * Assume Android app is published in Google Play in any case. 
-     * 
+     * <ul><li>
+     * - check Google Play package is installed<li>
+     * - check Google Play Vending service is available<li>
+     * - check Google Play Vending supports v3 items TYPE_IN-APP (false if Google Play account doesn't exist)
+     * </ul>
      * @return true if Google Play is installed in the system   
      */
     @Override    
-    public boolean isBillingAvailable(String packageName) {
+    public boolean isBillingAvailable(final String packageName) {
         if (mDebugLog) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
-        PackageManager packageManager = mContext.getPackageManager();
+        if (billingAvailable != null) return billingAvailable; // return previosly checked result
+        // 
+        boolean packageExist = false;
+        PackageManager packageManager = context.getPackageManager();
         List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
         for (PackageInfo packageInfo : allPackages) {
             if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
                 if (mDebugLog) Log.d(TAG, "Google supports billing");
-                return true;
+                packageExist = true;
+                break;
             }
         }
-        return false;
+        //
+        billingAvailable = false;
+        if (packageExist) {
+            final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
+            intent.setPackage(GooglePlay.ANDROID_INSTALLER);
+            if (!context.getPackageManager().queryIntentServices(intent, 0).isEmpty()) {
+                final CountDownLatch latch = new CountDownLatch(1);
+                context.bindService(intent, new ServiceConnection() {
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                        IInAppBillingService mService = IInAppBillingService.Stub.asInterface(service);
+                        int response;
+                        try {
+                            response = mService.isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_INAPP);
+                            if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                                billingAvailable = true;
+                            } else {
+                                if (mDebugLog) Log.d(TAG, "isBillingAvailable() Google Play billing unavaiable");
+                            }
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "isBillingAvailable() RemoteException while setting up in-app billing", e);
+                        } finally {
+                            latch.countDown();
+                            context.unbindService(this);
+                        }
+                    }
+                    public void onServiceDisconnected(ComponentName name) {/*do nothing*/}
+                }, Context.BIND_AUTO_CREATE);
+                try {
+                    latch.await(TIMEOUT_BILLING_SUPPORTED, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "isBillingAvailable() billing is not supported. Initialization error. ", e);
+                }
+            }
+        }
+        return billingAvailable;
     }
 
     @Override
@@ -91,7 +145,7 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new IabHelper(mContext, mPublicKey, this);
+            mBillingService = new IabHelper(context, publicKey, this);
         }
         return mBillingService;
     }
