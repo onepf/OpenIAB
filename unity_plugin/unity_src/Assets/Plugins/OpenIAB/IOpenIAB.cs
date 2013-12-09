@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 namespace OnePF {
 	public interface IOpenIAB {
-	
+
+        void init(Options options);
 		void init(Dictionary<string, string> storeKeys=null);
 		void mapSku(string sku, string storeName, string storeSku);
 		void unbindService();

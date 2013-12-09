@@ -61,6 +61,11 @@ namespace OnePF {
 			_purchaseSet.Add(sku);
 		}
 
+        public void init(Options options) {
+            if (!IsDevice()) return;
+            init(options.storeKeys);
+        }
+
 		public void init(Dictionary<string, string> storeKeys=null) {
 			if (!IsDevice()) return;
 
