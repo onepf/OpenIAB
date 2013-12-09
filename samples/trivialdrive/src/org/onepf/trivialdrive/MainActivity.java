@@ -16,10 +16,10 @@
 package org.onepf.trivialdrive;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -29,12 +29,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 /**
@@ -140,6 +139,9 @@ public class MainActivity extends Activity {
     // The helper object
     OpenIabHelper mHelper;
 
+    /** is bililng setup is completed */
+    private boolean setupDone = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -197,6 +199,7 @@ public class MainActivity extends Activity {
 
                 // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
+                setupDone = true;
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
@@ -260,6 +263,10 @@ public class MainActivity extends Activity {
             return;
         }
 
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
+            return;
+        }
         // launch the gas purchase UI flow.
         // We will be notified of completion via mPurchaseFinishedListener
         setWaitScreen(true);
@@ -277,6 +284,12 @@ public class MainActivity extends Activity {
     // User clicked the "Upgrade to Premium" button.
     public void onUpgradeAppButtonClicked(View arg0) {
         Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
+        
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
+            return;
+        }
+
         setWaitScreen(true);
         
         /* TODO: for security, generate your payload here for verification. See the comments on 
@@ -291,6 +304,11 @@ public class MainActivity extends Activity {
     // "Subscribe to infinite gas" button clicked. Explain to user, then start purchase
     // flow for subscription.
     public void onInfiniteGasButtonClicked(View arg0) {
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
+            return;
+        }
+
         if (!mHelper.subscriptionsSupported()) {
             complain("Subscriptions not supported on your device yet. Sorry!");
             return;
@@ -309,8 +327,14 @@ public class MainActivity extends Activity {
     }
     
     @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        Log.d(TAG, "startActivityForResult() intent: " + intent + " requestCode: " + requestCode);
+        super.startActivityForResult(intent, requestCode);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
+        Log.d(TAG, "onActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
 
         // Pass on the activity result to the helper for handling
         if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
@@ -475,7 +499,11 @@ public class MainActivity extends Activity {
 
     void complain(String message) {
         Log.e(TAG, "**** TrivialDrive Error: " + message);
-        alert("Error: " + message);
+        if (AmazonAppstore.hasAmazonClasses()) { // Amazon moderators don't allow alert dialogs for in-apps
+            Toast.makeText(this, "Welcome back, Driver!", Toast.LENGTH_SHORT).show();
+        } else {
+            alert("Error: " + message);
+        }
     }
 
     void alert(String message) {

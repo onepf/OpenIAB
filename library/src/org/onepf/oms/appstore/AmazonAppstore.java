@@ -25,8 +25,12 @@ import android.content.Context;
 import android.util.Log;
 
 /**
- * Author: Ruslan Sayfutdinov
- * Date: 16.04.13
+ * Analize whether app is installed from Amazon Appstore.
+ * <p>
+ * Uses {@link #hasAmazonClasses()} to determine it techically
+ * 
+ * @author Oleg Orlov
+ * @since 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
     private static final boolean mDebugLog = false;
@@ -48,18 +52,30 @@ public class AmazonAppstore extends DefaultAppstore {
         if (sandboxMode != null) {
             return !sandboxMode;
         }
+        sandboxMode = hasAmazonClasses();
+        if (mDebugLog) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        return !sandboxMode;
+    }
+
+    /** 
+     * Tries to load Amazon <code>com.amazon.android.Kiwi</code> class.
+     * <p>
+     * Submitted .apk is not published to Amazon as is. It is re-packed with several Amazon-specific
+     * classes. We examine such classes to understand whether app is delivered by Amazon 
+     */
+    public static boolean hasAmazonClasses() {
+        boolean result;
         synchronized (AmazonAppstore.class) {
             try {
                 ClassLoader localClassLoader = AmazonAppstore.class.getClassLoader();
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
-                sandboxMode = false;
+                result = false;
             } catch (Throwable localThrowable) {
-                if (mDebugLog) Log.d(TAG, "isPackageInstaller() cannot load class com.amazon.android.Kiwi ");
-                sandboxMode = true;
+                if (mDebugLog) Log.d(TAG, "hasAmazonClasses() cannot load class com.amazon.android.Kiwi ");
+                result = true;
             }
         }
-        if (mDebugLog) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
-        return !sandboxMode;
+        return result;
     }
 
     /**
@@ -87,6 +103,4 @@ public class AmazonAppstore extends DefaultAppstore {
     public String getAppstoreName() {
         return OpenIabHelper.NAME_AMAZON;
     }
-
-
 }
