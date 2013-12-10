@@ -4,9 +4,18 @@ This library is Java part of our Unity plugin.
 
 Take a look at our [example project](https://github.com/onepf/OpenIAB-angrybots) based on the Unity **AngryBots** demo.
 
+Build Package
+=====
+Simply run ```ant build``` in the root folder of the repository. Then you can find package in the ```bin``` folder.
+We don't use latest APIs, so it should be possible to build this project with any somewhat recent Unity version.
+
+If you need to set custom Unity location, you can do so in the ```OpenIAB/unity_plugin/ant.properties``` file. e. g.
+```unity.path=C:/Program Files (x86)/Unity/Editor/Unity.exe```
+
+
 Integration
 =====
-Download Unity [package](https://github.com/onepf/OpenIAB/releases/download/TAG-OpenIAB-0.9/openiab-unity-plugin-0.2.unitypackage) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
+Build or download Unity [package](https://github.com/onepf/OpenIAB/releases/download/TAG-OpenIAB-0.9/openiab-unity-plugin-0.2.unitypackage) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
 There is also ``` AndroidManifest.xml ``` in the /Assets/Plugins/Android. Developer can add project specific settings to it.
 
 Now you can run demo scene with some test buttons.

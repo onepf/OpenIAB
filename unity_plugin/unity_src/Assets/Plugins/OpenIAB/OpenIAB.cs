@@ -27,11 +27,12 @@ namespace OnePF {
             _billing.mapSku(sku, storeName, storeSku);
         }
 
+        // Starts up the billing service. This will also check to see if in app billing is supported and fire the appropriate event
         public static void init(Options options) {
             _billing.init(options);
         }
 
-        // Starts up the billing service. This will also check to see if in app billing is supported and fire the appropriate event
+        [System.Obsolete("Please use overloaded version with 'Options' param")]
         public static void init(Dictionary<string, string> storeKeys) {
 			_billing.init(storeKeys);
         }
