@@ -47,13 +47,15 @@ public class OpenIABTest : MonoBehaviour {
             // Application public key
             var public_key = "key";
 
-            // Transmit list of supported stores
-            OpenIAB.init(new Dictionary<string, string> {
+            var options = new Options();
+            options.verifyMode = OptionsVerifyMode.VERIFY_SKIP;
+            options.storeKeys = new Dictionary<string, string> {
                 {OpenIAB_Android.STORE_GOOGLE, public_key},
-                {OpenIAB_Android.STORE_TSTORE, public_key},
-                {OpenIAB_Android.STORE_SAMSUNG, public_key},
                 {OpenIAB_Android.STORE_YANDEX, public_key}
-            });
+            };
+
+            // Transmit options and start the service
+            OpenIAB.init(options);
         }
 
         if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Test Purchase")) {
