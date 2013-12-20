@@ -691,7 +691,20 @@ public class OpenIabHelper {
         return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
     }
 
-    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+    /**
+     * Queries the inventory. This will query all owned items from the server, as well as
+     * information on additional skus, if specified. This method may block or take long to execute.
+     * Do not call from a UI thread. For that, use the non-blocking version {@link #refreshInventoryAsync}.
+     *
+     * @param querySkuDetails if true, SKU details (price, description, etc) will be queried as well
+     *                        as purchase information.
+     * @param moreItemSkus    additional PRODUCT skus to query information on, regardless of ownership.
+     *                        Ignored if null or if querySkuDetails is false.
+     * @param moreSubsSkus    additional SUBSCRIPTIONS skus to query information on, regardless of ownership.
+     *                        Ignored if null or if querySkuDetails is false.
+     * @throws IabException if a problem occurs while refreshing the inventory.
+     */
+    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus, final List<String> moreSubsSkus, final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventory");
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
@@ -699,13 +712,13 @@ public class OpenIabHelper {
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
                 try {
-                    inv = queryInventory(querySkuDetails, moreSkus);
+                    inv = queryInventory(querySkuDetails, moreItemSkus, moreSubsSkus);
                 } catch (IabException ex) {
                     result = ex.getResult();
                 }
-        
+                
                 flagEndAsync();
-        
+                
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
                 notifyHandler.post(new Runnable() {
@@ -717,10 +730,23 @@ public class OpenIabHelper {
         })).start();
     }
 
+    /**
+     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     */
+    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+        queryInventoryAsync(querySkuDetails, moreSkus, null, listener);
+    }
+
+    /**
+     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     */
     public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
         queryInventoryAsync(true, null, listener);
     }
 
+    /**
+     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     */
     public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
         queryInventoryAsync(querySkuDetails, null, listener);
     }
