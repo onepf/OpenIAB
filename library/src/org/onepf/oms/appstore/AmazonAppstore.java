@@ -52,7 +52,7 @@ public class AmazonAppstore extends DefaultAppstore {
         if (sandboxMode != null) {
             return !sandboxMode;
         }
-        sandboxMode = hasAmazonClasses();
+        sandboxMode = !hasAmazonClasses();
         if (mDebugLog) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;
     }
@@ -69,10 +69,10 @@ public class AmazonAppstore extends DefaultAppstore {
             try {
                 ClassLoader localClassLoader = AmazonAppstore.class.getClassLoader();
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
-                result = false;
+                result = true;
             } catch (Throwable localThrowable) {
                 if (mDebugLog) Log.d(TAG, "hasAmazonClasses() cannot load class com.amazon.android.Kiwi ");
-                result = true;
+                result = false;
             }
         }
         return result;
