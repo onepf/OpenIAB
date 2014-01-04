@@ -402,6 +402,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             IabResult r = new IabResult(IABHELPER_SUBSCRIPTIONS_NOT_AVAILABLE,
                     "Subscriptions are not available.");
             if (listener != null) listener.onIabPurchaseFinished(r, null);
+            flagEndAsync();
             return;
         }
 
@@ -414,6 +415,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
                 result = new IabResult(response, "Unable to buy item");
                 if (listener != null) listener.onIabPurchaseFinished(result, null);
+                flagEndAsync();
                 return;
             }
 
@@ -439,6 +441,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             result = new IabResult(IABHELPER_REMOTE_EXCEPTION, "Remote exception while starting purchase flow");
             if (listener != null) listener.onIabPurchaseFinished(result, null);
         }
+        flagEndAsync();
     }
 
     /**
