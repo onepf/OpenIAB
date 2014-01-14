@@ -31,7 +31,7 @@ namespace OnePF {
             AndroidJNI.AttachCurrentThread();
 
             // Find the plugin instance
-            using (var pluginClass = new AndroidJavaClass("com.openiab.OpenIAB")) {
+            using (var pluginClass = new AndroidJavaClass("org.onepf.openiab.UnityPlugin")) {
                 _plugin = pluginClass.CallStatic<AndroidJavaObject>("instance");
                 STORE_GOOGLE = pluginClass.GetStatic<string>("STORE_GOOGLE");
                 STORE_AMAZON = pluginClass.GetStatic<string>("STORE_AMAZON");

@@ -1,4 +1,4 @@
-package com.openiab;
+package org.onepf.openiab;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OpenIAB {
+public class UnityPlugin {
 
-    public static final String TAG = "OpenIAB-unity-plugin";
+    public static final String TAG = "OpenIAB-UnityPlugin";
     private static final String EVENT_MANAGER = "OpenIABEventManager";
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
@@ -37,18 +37,23 @@ public class OpenIAB {
     public static final String STORE_YANDEX = "YandexPublicKey";
 
     // (arbitrary) request code for the purchase flow
-    private static final int RC_REQUEST = 10001;
+    public static final int RC_REQUEST = 10001;
+    public static boolean sendRequest = false;
 
-    private static OpenIAB _instance;
+    private static UnityPlugin _instance;
     private OpenIabHelper _helper;
 
     public OpenIabHelper getHelper() {
         return _helper;
     }
 
-    public static OpenIAB instance() {
+    public IabHelper.OnIabPurchaseFinishedListener getPurchaseFinishedListener() {
+        return _purchaseFinishedListener;
+    }
+
+    public static UnityPlugin instance() {
         if (_instance == null) {
-            _instance = new OpenIAB();
+            _instance = new UnityPlugin();
         }
         return _instance;
     }
@@ -127,24 +132,11 @@ public class OpenIAB {
     }
 
     public void purchaseProduct(final String sku, final String developerPayload) {
-        try {
-            _helper.launchPurchaseFlow(UnityPlayer.currentActivity, sku, RC_REQUEST,
-                    _purchaseFinishedListener, developerPayload);
-        } catch (java.lang.IllegalStateException e) {
-            _purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Cannot start product purchase. Another operation is in progress."), null);
-            return;
-        }
-        Log.i("OpenIAB", "Starting product purchase.");
+        startProxyPurchaseActivity(sku, true, developerPayload);
     }
 
     public void purchaseSubscription(final String sku, final String developerPayload) {
-        try {
-            _helper.launchSubscriptionPurchaseFlow(UnityPlayer.currentActivity, sku, RC_REQUEST, _purchaseFinishedListener, developerPayload);
-        } catch (java.lang.IllegalStateException e) {
-            _purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Cannot start subscription purchase. Another operation is in progress."), null);
-            return;
-        }
-        Log.i("OpenIAB", "Starting subscription purchase.");
+        startProxyPurchaseActivity(sku, false, developerPayload);
     }
 
     public void consumeProduct(final String json) {
@@ -175,6 +167,17 @@ public class OpenIAB {
 
     // TODO: implement
     public void consumeProducts(String[] sku) {
+    }
+
+    private void startProxyPurchaseActivity(String sku, boolean inapp, String developerPayload) {
+        sendRequest = true;
+        Intent i = new Intent(UnityPlayer.currentActivity, UnityProxyActivity.class);
+        i.putExtra("sku", sku);
+        i.putExtra("inapp", inapp);
+        i.putExtra("developerPayload", developerPayload);
+
+        // Launch proxy purchase Activity - it will close itself down when we have a response
+        UnityPlayer.currentActivity.startActivity(i);
     }
 
     // Listener that's called when we finish querying the items and subscriptions we own
