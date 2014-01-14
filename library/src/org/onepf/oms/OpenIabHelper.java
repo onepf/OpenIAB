@@ -37,6 +37,7 @@ import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
+import org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
@@ -91,8 +92,10 @@ public class OpenIabHelper {
     
     private final Options options;
 
-    // Is setup done?
-    private boolean mSetupDone = false;
+    private static final int SETUP_RESULT_NOT_STARTED = -1;
+    private static final int SETUP_RESULT_SUCCESSFUL = 0;
+    private static final int SETUP_RESULT_FAILED = 1;
+    private int setupResult = SETUP_RESULT_NOT_STARTED;
     
     /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't 
      *  work until setup is completed. */
@@ -401,7 +404,7 @@ public class OpenIabHelper {
             + (mAppstore != null ? ", appstore: " + mAppstore.getAppstoreName() : ""));
         
         samsungInSetup = null;
-        mSetupDone = true;
+        setupResult = result.isSuccess() ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         notifyHandler.post(new Runnable() {
            public void run() { 
                listener.onIabSetupFinished(result);
@@ -642,7 +645,7 @@ public class OpenIabHelper {
         if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
             return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
         }
-        if (!mSetupDone) {
+        if (setupResult != SETUP_RESULT_SUCCESSFUL) {
             if (mDebugLog) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
             return false;
         }
@@ -805,9 +808,13 @@ public class OpenIabHelper {
 
     // Checks that setup was done; if not, throws an exception.
     void checkSetupDone(String operation) {
-        if (!mSetupDone) {
+        if (setupResult == SETUP_RESULT_NOT_STARTED) {
             logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
             throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
+        }
+        if (setupResult == SETUP_RESULT_FAILED) {
+            logError("Illegal state for operation (" + operation + "): IAB helper setup failed");
+            throw new IllegalStateException("IAB helper setup failed. Can't perform operation: " + operation);
         }
     }
 
