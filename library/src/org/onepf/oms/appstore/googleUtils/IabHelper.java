@@ -104,7 +104,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     Context mContext;
 
     // Connection to the service
-    IInAppBillingService mService;
+    volatile IInAppBillingService mService;
     ServiceConnection mServiceConn;
     
     /** for debug purposes */
@@ -128,6 +128,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
     public static final int BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED = 7;
     public static final int BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED = 8;
+    public static final int BILLING_RESPONSE_SERVICE_NOT_CONNECTED = 9;
 
     // IAB Helper error codes
     public static final int IABHELPER_ERROR_BASE = -1000;
@@ -408,8 +409,14 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         try {
             logDebug("Constructing buy intent for " + sku + ", item type: " + itemType);
-            Bundle buyIntentBundle = mService.getBuyIntent(3, getPackageName(), sku, itemType, extraData);
-            int response = getResponseCodeFromBundle(buyIntentBundle);
+            Bundle buyIntentBundle = null;
+            int response;
+            try {
+                buyIntentBundle = mService.getBuyIntent(3, getPackageName(), sku, itemType, extraData);
+                response = getResponseCodeFromBundle(buyIntentBundle);
+            } catch (NullPointerException npe) {
+                response = BILLING_RESPONSE_SERVICE_NOT_CONNECTED;
+            }
             if (response != BILLING_RESPONSE_RESULT_OK) {
                 logError("Unable to buy item, Error response: " + getResponseDesc(response));
 
@@ -696,7 +703,12 @@ public class IabHelper implements AppstoreInAppBillingService {
             }
 
             logDebug("Consuming sku: " + sku + ", token: " + token);
-            int response = mService.consumePurchase(3, getPackageName(), token);
+            int response;
+            try {
+                response = mService.consumePurchase(3, getPackageName(), token);
+            } catch (NullPointerException npe) {
+                response = BILLING_RESPONSE_SERVICE_NOT_CONNECTED;
+            }
             if (response == BILLING_RESPONSE_RESULT_OK) {
                 logDebug("Successfully consumed sku: " + sku);
             } else {
@@ -776,7 +788,7 @@ public class IabHelper implements AppstoreInAppBillingService {
         String[] iab_msgs = ("0:OK/1:User Canceled/2:Unknown/" +
                 "3:Billing Unavailable/4:Item unavailable/" +
                 "5:Developer Error/6:Error/7:Item Already Owned/" +
-                "8:Item not owned").split("/");
+                "8:Item not owned/9:Service not connected").split("/");
         String[] iabhelper_msgs = ("0:OK/-1001:Remote exception during initialization/" +
                 "-1002:Bad response received/" +
                 "-1003:Purchase signature verification failed/" +
@@ -862,9 +874,15 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         do {
             logDebug("Calling getPurchases with continuation token: " + continueToken);
-            Bundle ownedItems = mService.getPurchases(3, getPackageName(), itemType, continueToken);
+            Bundle ownedItems = null;
+            int response;
+            try {
+                ownedItems = mService.getPurchases(3, getPackageName(), itemType, continueToken);
+                response = getResponseCodeFromBundle(ownedItems);
+            } catch (NullPointerException npe) {
+                response = BILLING_RESPONSE_SERVICE_NOT_CONNECTED;
+            }
 
-            int response = getResponseCodeFromBundle(ownedItems);
             logDebug("Owned items response: " + String.valueOf(response));
             if (response != BILLING_RESPONSE_RESULT_OK) {
                 logDebug("getPurchases() failed: " + getResponseDesc(response));
@@ -953,7 +971,13 @@ public class IabHelper implements AppstoreInAppBillingService {
         for (ArrayList<String> batch : batches) {
             Bundle querySkus = new Bundle();
             querySkus.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, batch);
-            Bundle skuDetails = mService.getSkuDetails(3, mContext.getPackageName(), itemType, querySkus);
+            Bundle skuDetails;
+            try {
+                skuDetails = mService.getSkuDetails(3, mContext.getPackageName(), itemType, querySkus);
+            } catch (NullPointerException npe) {
+                logDebug("getSkuDetails() failed: " + getResponseDesc(BILLING_RESPONSE_SERVICE_NOT_CONNECTED));
+                return BILLING_RESPONSE_SERVICE_NOT_CONNECTED;
+            }
 
             if (!skuDetails.containsKey(RESPONSE_GET_SKU_DETAILS_LIST)) {
                 int response = getResponseCodeFromBundle(skuDetails);
