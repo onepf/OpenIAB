@@ -607,6 +607,7 @@ public class OpenIabHelper {
         if (mAppstoreBillingService != null) {
             mAppstoreBillingService.dispose();
         }
+        setupResult = SETUP_RESULT_NOT_STARTED;
     }
 
     public boolean subscriptionsSupported() {
