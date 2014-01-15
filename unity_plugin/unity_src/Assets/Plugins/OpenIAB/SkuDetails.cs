@@ -31,7 +31,7 @@ namespace OnePF {
 			Sku = OpenIAB_iOS.StoreSku2Sku(storeKitProduct.identifier);
 			//Debug.Log(storeKitProduct.identifier);
 
-			Price = storeKitProduct.localPrice;
+			Price = storeKitProduct.localPrice + storeKitProduct.priceSymbol;
 			//Debug.Log(storeKitProduct.localPrice);
 
 			Title = storeKitProduct.localizedTitle;
