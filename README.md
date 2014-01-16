@@ -85,6 +85,8 @@ And register reciever for Amazon
 # GOOGLE
 -keep class com.android.vending.billing.**
 
+# SAMSUNG
+-keep class com.sec.android.iap.**
 
 Unity Plugin
 =====
