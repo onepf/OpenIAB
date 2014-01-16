@@ -71,6 +71,20 @@ And register reciever for Amazon
     </intent-filter>
 </receiver>
 ```
+10. Add the following strings to your proguard config
+
+# TStore
+-dontwarn android.webkit.WebView
+
+# AMAZON
+-dontwarn com.amazon.**
+-keep class com.amazon.** {*;}
+-keepattributes *Annotation*
+-dontoptimize
+
+# GOOGLE
+-keep class com.android.vending.billing.**
+
 
 Unity Plugin
 =====
