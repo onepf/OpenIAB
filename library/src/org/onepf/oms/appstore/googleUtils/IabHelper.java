@@ -119,6 +119,9 @@ public class IabHelper implements AppstoreInAppBillingService {
     // Public key for verifying signature, in base64 encoding
     String mSignatureBase64 = null;
 
+    //number of reconnections
+    int reconnectionNumber;
+
     // Billing response codes
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_USER_CANCELED = 1;
@@ -226,11 +229,17 @@ public class IabHelper implements AppstoreInAppBillingService {
             public void onServiceDisconnected(ComponentName name) {
                 logDebug("Billing service disconnected.");
                 mService = null;
+                while (reconnectionNumber++ <= 3) {
+                    if (mContext.bindService(getServiceIntent(), mServiceConn, Context.BIND_AUTO_CREATE)) {
+                        break;
+                    }
+                }
             }
 
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 logDebug("Billing service connected.");
+                reconnectionNumber = 0;
                 mService = getServiceFromBinder(service);
                 componentName = name;
                 String packageName = mContext.getPackageName();
