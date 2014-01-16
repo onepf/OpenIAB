@@ -73,6 +73,7 @@ And register reciever for Amazon
 ```
 10. Add the following strings to your proguard config
 
+```
 # TStore
 -dontwarn android.webkit.WebView
 
@@ -87,6 +88,7 @@ And register reciever for Amazon
 
 # SAMSUNG
 -keep class com.sec.android.iap.**
+```
 
 Unity Plugin
 =====
