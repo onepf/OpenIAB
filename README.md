@@ -75,7 +75,19 @@ And register reciever for Amazon
 
 ```
 # TStore
+-keep class com.skplanet.dodo.**{*;}
+-keep class com.skplanet.internal.dodo.**{*;}
+-keep class com.skplanet.internal.dodo.dev.**{*;}
+-keep class com.skplanet.internal.dodo.util.**{*;}
+-keep class com.skplanet.pmss.secure.**{*;}
+-keep public class android.net.http.SslError
+-keep public class android.webkit.WebViewClient
+-keep class com.tmoney.aidl.**{*;}
 -dontwarn android.webkit.WebView
+-dontwarn android.net.http.SslError
+-dontwarn android.webkit.WebViewClient
+-keepattributes Signature
+-dontshrink
 
 # AMAZON
 -dontwarn com.amazon.**
