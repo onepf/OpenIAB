@@ -89,9 +89,6 @@ public class IabHelper implements AppstoreInAppBillingService {
     // Is setup done?
     boolean mSetupDone = false;
 
-    // Has this object been disposed of? (If so, we should ignore callbacks, etc)
-    boolean mDisposed = false;
-
     // Are subscriptions supported?
     boolean mSubscriptionsSupported = false;
 
@@ -190,13 +187,11 @@ public class IabHelper implements AppstoreInAppBillingService {
      * Enables or disable debug logging through LogCat.
      */
     public void enableDebugLogging(boolean enable, String tag) {
-        checkNotDisposed();
         mDebugLog = enable;
         mDebugTag = tag;
     }
 
     public void enableDebugLogging(boolean enable) {
-        checkNotDisposed();
         mDebugLog = enable;
     }
 
@@ -222,7 +217,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      */
     public void startSetup(final OnIabSetupFinishedListener listener) {
         // If already set up, can't do it again.
-        checkNotDisposed();
         if (mSetupDone) throw new IllegalStateException("IAB helper is already set up.");
 
         // Connection to IAB service
@@ -236,7 +230,6 @@ public class IabHelper implements AppstoreInAppBillingService {
 
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                if (mDisposed) return;
                 logDebug("Billing service connected.");
                 mService = getServiceFromBinder(service);
                 componentName = name;
@@ -321,23 +314,16 @@ public class IabHelper implements AppstoreInAppBillingService {
         if (mServiceConn != null) {
             logDebug("Unbinding from service.");
             if (mContext != null) mContext.unbindService(mServiceConn);
+            mServiceConn = null;
+            mService = null;
+            mPurchaseListener = null;
         }
-        mDisposed = true;
-        mContext = null;
-        mServiceConn = null;
-        mService = null;
-        mPurchaseListener = null;
-    }
-
-    private void checkNotDisposed() {
-        if (mDisposed) throw new IllegalStateException("IabHelper was disposed of, so it cannot be used.");
     }
 
     /**
      * Returns whether subscriptions are supported.
      */
     public boolean subscriptionsSupported() {
-        checkNotDisposed();
         return mSubscriptionsSupported;
     }
 
@@ -408,7 +394,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      */
     public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    OnIabPurchaseFinishedListener listener, String extraData) {
-        checkNotDisposed();
         checkSetupDone("launchPurchaseFlow");
         flagStartAsync("launchPurchaseFlow");
         IabResult result;
@@ -423,6 +408,13 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         try {
             logDebug("Constructing buy intent for " + sku + ", item type: " + itemType);
+            if (mService == null) {
+                logError("Unable to buy item, Error response: service is not connected.");
+                result = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Unable to buy item");
+                if (listener != null) listener.onIabPurchaseFinished(result, null);
+                flagEndAsync();
+                return;
+            }
             Bundle buyIntentBundle = mService.getBuyIntent(3, getPackageName(), sku, itemType, extraData);
             int response = getResponseCodeFromBundle(buyIntentBundle);
             if (response != BILLING_RESPONSE_RESULT_OK) {
@@ -476,7 +468,6 @@ public class IabHelper implements AppstoreInAppBillingService {
         IabResult result;
         if (requestCode != mRequestCode) return false;
 
-        checkNotDisposed();
         checkSetupDone("handleActivityResult");
 
         // end of async purchase operation
@@ -584,7 +575,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      */
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus,
                                     List<String> moreSubsSkus) throws IabException {
-        checkNotDisposed();
         checkSetupDone("queryInventory");
         try {
             Inventory inv = new Inventory();
@@ -651,7 +641,6 @@ public class IabHelper implements AppstoreInAppBillingService {
                                     final List<String> moreSkus,
                                     final QueryInventoryFinishedListener listener) {
         final Handler handler = new Handler();
-        checkNotDisposed();
         checkSetupDone("queryInventory");
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
@@ -660,8 +649,7 @@ public class IabHelper implements AppstoreInAppBillingService {
                 Inventory inv = null;
                 try {
                     inv = queryInventory(querySkuDetails, moreSkus);
-                }
-                catch (IabException ex) {
+                } catch (IabException ex) {
                     result = ex.getResult();
                 }
 
@@ -669,13 +657,11 @@ public class IabHelper implements AppstoreInAppBillingService {
 
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
-                if (!mDisposed && listener != null) {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            listener.onQueryInventoryFinished(result_f, inv_f);
-                        }
-                    });
-                }
+                handler.post(new Runnable() {
+                    public void run() {
+                        listener.onQueryInventoryFinished(result_f, inv_f);
+                    }
+                });
             }
         })).start();
     }
@@ -700,7 +686,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      *          if there is a problem during consumption.
      */
     public void consume(Purchase itemInfo) throws IabException {
-        checkNotDisposed();
         checkSetupDone("consume");
 
         if (!itemInfo.mItemType.equals(ITEM_TYPE_INAPP)) {
@@ -718,6 +703,10 @@ public class IabHelper implements AppstoreInAppBillingService {
             }
 
             logDebug("Consuming sku: " + sku + ", token: " + token);
+            if (mService == null) {
+                logDebug("Error consuming consuming sku " + sku + ". Service is not connected.");
+                throw new IabException(BILLING_RESPONSE_RESULT_ERROR, "Error consuming sku " + sku);
+            }
             int response = mService.consumePurchase(3, getPackageName(), token);
             if (response == BILLING_RESPONSE_RESULT_OK) {
                 logDebug("Successfully consumed sku: " + sku);
@@ -770,7 +759,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      * @param listener The listener to notify when the consumption operation finishes.
      */
     public void consumeAsync(Purchase purchase, OnConsumeFinishedListener listener) {
-        checkNotDisposed();
         checkSetupDone("consume");
         List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
@@ -784,7 +772,6 @@ public class IabHelper implements AppstoreInAppBillingService {
      * @param listener  The listener to notify when the consumption operation finishes.
      */
     public void consumeAsync(List<Purchase> purchases, OnConsumeMultiFinishedListener listener) {
-        checkNotDisposed();
         checkSetupDone("consume");
         consumeAsyncInternal(purchases, null, listener);
     }
@@ -886,6 +873,10 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         do {
             logDebug("Calling getPurchases with continuation token: " + continueToken);
+            if(mService==null){
+                logDebug("getPurchases() failed: service is not connected.");
+                return BILLING_RESPONSE_RESULT_ERROR;
+            }
             Bundle ownedItems = mService.getPurchases(3, getPackageName(), itemType, continueToken);
 
             int response = getResponseCodeFromBundle(ownedItems);
@@ -977,6 +968,10 @@ public class IabHelper implements AppstoreInAppBillingService {
         for (ArrayList<String> batch : batches) {
             Bundle querySkus = new Bundle();
             querySkus.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, batch);
+            if (mService == null) {
+                logError("unable to get sku details: service is not connected.");
+                return IABHELPER_BAD_RESPONSE;
+            }
             Bundle skuDetails = mService.getSkuDetails(3, mContext.getPackageName(), itemType, querySkus);
 
             if (!skuDetails.containsKey(RESPONSE_GET_SKU_DETAILS_LIST)) {
@@ -1021,14 +1016,14 @@ public class IabHelper implements AppstoreInAppBillingService {
                 }
 
                 flagEndAsync();
-                if (!mDisposed && singleListener != null) {
+                if (singleListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
                             singleListener.onConsumeFinished(purchases.get(0), results.get(0));
                         }
                     });
                 }
-                if (!mDisposed && multiListener != null) {
+                if (multiListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
                             multiListener.onConsumeMultiFinished(purchases, results);

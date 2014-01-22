@@ -95,6 +95,7 @@ public class OpenIabHelper {
     private static final int SETUP_RESULT_NOT_STARTED = -1;
     private static final int SETUP_RESULT_SUCCESSFUL = 0;
     private static final int SETUP_RESULT_FAILED = 1;
+    private static final int SETUP_DISPOSED = 2;
     private int setupResult = SETUP_RESULT_NOT_STARTED;
     
     /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't 
@@ -305,6 +306,11 @@ public class OpenIabHelper {
      *  Should be called from UI thread
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+        if (listener == null) return;
+        if (setupResult != SETUP_RESULT_NOT_STARTED) {
+            fireSetupFinished(listener, new IabResult(BILLING_RESPONSE_RESULT_ERROR, "IAB was disposed of, cannot be set up again"));
+            return;
+        }
         this.notifyHandler = new Handler();
         checkOptions(options);
         started = System.currentTimeMillis();
@@ -607,7 +613,7 @@ public class OpenIabHelper {
         if (mAppstoreBillingService != null) {
             mAppstoreBillingService.dispose();
         }
-        setupResult = SETUP_RESULT_NOT_STARTED;
+        setupResult = SETUP_DISPOSED;
     }
 
     public boolean subscriptionsSupported() {
@@ -710,6 +716,7 @@ public class OpenIabHelper {
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus, final List<String> moreSubsSkus, final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventory");
+        if(listener == null) return;
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
@@ -720,9 +727,9 @@ public class OpenIabHelper {
                 } catch (IabException ex) {
                     result = ex.getResult();
                 }
-                
+
                 flagEndAsync();
-                
+
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
                 notifyHandler.post(new Runnable() {
@@ -775,6 +782,8 @@ public class OpenIabHelper {
     void consumeAsyncInternal(final List<Purchase> purchases,
                               final IabHelper.OnConsumeFinishedListener singleListener,
                               final IabHelper.OnConsumeMultiFinishedListener multiListener) {
+        checkSetupDone("consume");
+        if (singleListener == null && multiListener == null) return;
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
@@ -816,6 +825,10 @@ public class OpenIabHelper {
         if (setupResult == SETUP_RESULT_FAILED) {
             logError("Illegal state for operation (" + operation + "): IAB helper setup failed");
             throw new IllegalStateException("IAB helper setup failed. Can't perform operation: " + operation);
+        }
+        if (setupResult == SETUP_DISPOSED) {
+            logError("Illegal state for operation (" + operation + "): IAB helper was disposed of");
+            throw new IllegalStateException("IAB helper was disposed of. Can't perform operation: " + operation);
         }
     }
 
