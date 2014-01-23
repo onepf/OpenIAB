@@ -384,22 +384,6 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
-    private static String setupStateToString(int setupState) {
-        String state;
-        if (setupState == SETUP_RESULT_NOT_STARTED) {
-            state = " IAB helper is not set up.";
-        } else if (setupState == SETUP_DISPOSED) {
-            state = "IAB helper was disposed of.";
-        } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
-            state = "IAB helper is set up.";
-        } else if (setupState == SETUP_RESULT_FAILED) {
-            state = "IAB helper setup failed.";
-        } else {
-            throw new IllegalStateException("Wrong setup state: " + setupState);
-        }
-        return state;
-    }
-
     /** Check options are valid */
     public static void checkOptions(Options options) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
@@ -889,7 +873,24 @@ public class OpenIabHelper {
     void logWarn(String msg) {
         if (mDebugLog) Log.w(TAG, "In-app billing warning: " + msg);
     }
-    
+
+
+    private static String setupStateToString(int setupState) {
+        String state;
+        if (setupState == SETUP_RESULT_NOT_STARTED) {
+            state = " IAB helper is not set up.";
+        } else if (setupState == SETUP_DISPOSED) {
+            state = "IAB helper was disposed of.";
+        } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
+            state = "IAB helper is set up.";
+        } else if (setupState == SETUP_RESULT_FAILED) {
+            state = "IAB helper setup failed.";
+        } else {
+            throw new IllegalStateException("Wrong setup state: " + setupState);
+        }
+        return state;
+    }
+
     public interface OnInitListener {
         public void onInitFinished();
     }
