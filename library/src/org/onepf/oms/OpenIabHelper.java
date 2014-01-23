@@ -16,14 +16,8 @@
 
 package org.onepf.oms;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -95,7 +89,8 @@ public class OpenIabHelper {
     private static final int SETUP_RESULT_NOT_STARTED = -1;
     private static final int SETUP_RESULT_SUCCESSFUL = 0;
     private static final int SETUP_RESULT_FAILED = 1;
-    private int setupResult = SETUP_RESULT_NOT_STARTED;
+    private static final int SETUP_DISPOSED = 2;
+    private int setupState = SETUP_RESULT_NOT_STARTED;
     
     /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't 
      *  work until setup is completed. */
@@ -305,6 +300,13 @@ public class OpenIabHelper {
      *  Should be called from UI thread
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+        if (listener == null){
+            throw new IllegalArgumentException("Setup listener must be not null!");
+        }
+        if (setupState != SETUP_RESULT_NOT_STARTED) {
+            String state = setupStateToString(setupState);
+            throw new IllegalStateException("Couldn't be set up. Current state: " + state);
+        }
         this.notifyHandler = new Handler();
         checkOptions(options);
         started = System.currentTimeMillis();
@@ -400,11 +402,12 @@ public class OpenIabHelper {
     }
 
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
+        if (setupState == SETUP_DISPOSED) return;
         if (mDebugLog) Log.d(TAG, in() + " " + "fireSetupFinished() === SETUP DONE === result: " + result 
             + (mAppstore != null ? ", appstore: " + mAppstore.getAppstoreName() : ""));
         
         samsungInSetup = null;
-        setupResult = result.isSuccess() ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
+        setupState = result.isSuccess() ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         notifyHandler.post(new Runnable() {
            public void run() { 
                listener.onIabSetupFinished(result);
@@ -607,7 +610,7 @@ public class OpenIabHelper {
         if (mAppstoreBillingService != null) {
             mAppstoreBillingService.dispose();
         }
-        setupResult = SETUP_RESULT_NOT_STARTED;
+        setupState = SETUP_DISPOSED;
     }
 
     public boolean subscriptionsSupported() {
@@ -646,7 +649,7 @@ public class OpenIabHelper {
         if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
             return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
         }
-        if (setupResult != SETUP_RESULT_SUCCESSFUL) {
+        if (setupState != SETUP_RESULT_SUCCESSFUL) {
             if (mDebugLog) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
             return false;
         }
@@ -710,6 +713,9 @@ public class OpenIabHelper {
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus, final List<String> moreSubsSkus, final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventory");
+        if (listener == null) {
+             throw new IllegalArgumentException("Inventory listener must be not null");
+        }
         flagStartAsync("refresh inventory");
         (new Thread(new Runnable() {
             public void run() {
@@ -720,16 +726,18 @@ public class OpenIabHelper {
                 } catch (IabException ex) {
                     result = ex.getResult();
                 }
-                
+
                 flagEndAsync();
-                
+
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
-                notifyHandler.post(new Runnable() {
-                    public void run() {
-                        listener.onQueryInventoryFinished(result_f, inv_f);
-                    }
-                });
+                if (setupState != SETUP_DISPOSED) {
+                    notifyHandler.post(new Runnable() {
+                        public void run() {
+                            listener.onQueryInventoryFinished(result_f, inv_f);
+                        }
+                    });
+                }
             }
         })).start();
     }
@@ -738,6 +746,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(querySkuDetails, moreSkus, null, listener);
     }
 
@@ -745,6 +757,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(true, null, listener);
     }
 
@@ -752,6 +768,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
@@ -763,18 +783,27 @@ public class OpenIabHelper {
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
+        checkSetupDone("consumeAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Consume listener must be not null!");
+        }
         List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
 
     public void consumeAsync(List<Purchase> purchases, IabHelper.OnConsumeMultiFinishedListener listener) {
+        checkSetupDone("consumeAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Consume listener must be not null!");
+        }
         consumeAsyncInternal(purchases, null, listener);
     }
 
     void consumeAsyncInternal(final List<Purchase> purchases,
                               final IabHelper.OnConsumeFinishedListener singleListener,
                               final IabHelper.OnConsumeMultiFinishedListener multiListener) {
+        checkSetupDone("consume");
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
@@ -789,14 +818,14 @@ public class OpenIabHelper {
                 }
 
                 flagEndAsync();
-                if (singleListener != null) {
+                if (setupState != SETUP_DISPOSED && singleListener != null) {
                     notifyHandler.post(new Runnable() {
                         public void run() {
                             singleListener.onConsumeFinished(purchases.get(0), results.get(0));
                         }
                     });
                 }
-                if (multiListener != null) {
+                if (setupState != SETUP_DISPOSED && multiListener != null) {
                     notifyHandler.post(new Runnable() {
                         public void run() {
                             multiListener.onConsumeMultiFinished(purchases, results);
@@ -809,13 +838,10 @@ public class OpenIabHelper {
 
     // Checks that setup was done; if not, throws an exception.
     void checkSetupDone(String operation) {
-        if (setupResult == SETUP_RESULT_NOT_STARTED) {
-            logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
-            throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
-        }
-        if (setupResult == SETUP_RESULT_FAILED) {
-            logError("Illegal state for operation (" + operation + "): IAB helper setup failed");
-            throw new IllegalStateException("IAB helper setup failed. Can't perform operation: " + operation);
+        String stateToString = setupStateToString(setupState);
+        if (setupState != SETUP_RESULT_SUCCESSFUL) {
+            logError("Illegal state for operation (" + operation + "): " + stateToString);
+            throw new IllegalStateException(stateToString + " Can't perform operation: " + operation);
         }
     }
 
@@ -847,7 +873,24 @@ public class OpenIabHelper {
     void logWarn(String msg) {
         if (mDebugLog) Log.w(TAG, "In-app billing warning: " + msg);
     }
-    
+
+
+    private static String setupStateToString(int setupState) {
+        String state;
+        if (setupState == SETUP_RESULT_NOT_STARTED) {
+            state = " IAB helper is not set up.";
+        } else if (setupState == SETUP_DISPOSED) {
+            state = "IAB helper was disposed of.";
+        } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
+            state = "IAB helper is set up.";
+        } else if (setupState == SETUP_RESULT_FAILED) {
+            state = "IAB helper setup failed.";
+        } else {
+            throw new IllegalStateException("Wrong setup state: " + setupState);
+        }
+        return state;
+    }
+
     public interface OnInitListener {
         public void onInitFinished();
     }
