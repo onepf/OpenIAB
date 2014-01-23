@@ -305,15 +305,7 @@ public class OpenIabHelper {
         }
         if (setupState != SETUP_RESULT_NOT_STARTED) {
             String state;
-            if (setupState == SETUP_DISPOSED) {
-                state = "disposed of";
-            } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
-                state = "set up";
-            } else if (setupState == SETUP_RESULT_FAILED) {
-                state = "failed to set up";
-            } else {
-                throw new IllegalStateException("Wrong setup state: " + setupState);
-            }
+            state = setupStateToString();
             throw new IllegalStateException("Couldn't be set up. Current state: " + state);
         }
         this.notifyHandler = new Handler();
@@ -391,6 +383,20 @@ public class OpenIabHelper {
                 }
             }
         }, "openiab-setup").start();
+    }
+
+    private String setupStateToString() {
+        String state;
+        if (setupState == SETUP_DISPOSED) {
+            state = "disposed of";
+        } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
+            state = "set up";
+        } else if (setupState == SETUP_RESULT_FAILED) {
+            state = "failed to set up";
+        } else {
+            throw new IllegalStateException("Wrong setup state: " + setupState);
+        }
+        return state;
     }
 
     /** Check options are valid */
