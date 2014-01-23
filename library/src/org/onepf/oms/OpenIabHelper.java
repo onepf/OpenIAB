@@ -304,8 +304,7 @@ public class OpenIabHelper {
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
         if (setupState != SETUP_RESULT_NOT_STARTED) {
-            String state;
-            state = setupStateToString();
+            String state = setupStateToString(setupState);
             throw new IllegalStateException("Couldn't be set up. Current state: " + state);
         }
         this.notifyHandler = new Handler();
@@ -385,14 +384,16 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
-    private String setupStateToString() {
+    private static String setupStateToString(int setupState) {
         String state;
-        if (setupState == SETUP_DISPOSED) {
-            state = "disposed of";
+        if (setupState == SETUP_RESULT_NOT_STARTED) {
+            state = " IAB helper is not set up.";
+        } else if (setupState == SETUP_DISPOSED) {
+            state = "IAB helper was disposed of.";
         } else if (setupState == SETUP_RESULT_SUCCESSFUL) {
-            state = "set up";
+            state = "IAB helper is set up.";
         } else if (setupState == SETUP_RESULT_FAILED) {
-            state = "failed to set up";
+            state = "IAB helper setup failed.";
         } else {
             throw new IllegalStateException("Wrong setup state: " + setupState);
         }
@@ -761,6 +762,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(querySkuDetails, moreSkus, null, listener);
     }
 
@@ -768,6 +773,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(true, null, listener);
     }
 
@@ -775,6 +784,10 @@ public class OpenIabHelper {
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
+        checkSetupDone("queryInventoryAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Inventory listener must be not null!");
+        }
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
@@ -786,12 +799,20 @@ public class OpenIabHelper {
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
+        checkSetupDone("consumeAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Consume listener must be not null!");
+        }
         List<Purchase> purchases = new ArrayList<Purchase>();
         purchases.add(purchase);
         consumeAsyncInternal(purchases, listener, null);
     }
 
     public void consumeAsync(List<Purchase> purchases, IabHelper.OnConsumeMultiFinishedListener listener) {
+        checkSetupDone("consumeAsync");
+        if (listener == null) {
+            throw new IllegalArgumentException("Consume listener must be not null!");
+        }
         consumeAsyncInternal(purchases, null, listener);
     }
 
@@ -799,9 +820,6 @@ public class OpenIabHelper {
                               final IabHelper.OnConsumeFinishedListener singleListener,
                               final IabHelper.OnConsumeMultiFinishedListener multiListener) {
         checkSetupDone("consume");
-        if (singleListener == null && multiListener == null) {
-            throw new IllegalArgumentException("both consume listeners are null");
-        }
         flagStartAsync("consume");
         (new Thread(new Runnable() {
             public void run() {
@@ -836,17 +854,10 @@ public class OpenIabHelper {
 
     // Checks that setup was done; if not, throws an exception.
     void checkSetupDone(String operation) {
-        if (setupState == SETUP_RESULT_NOT_STARTED) {
-            logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
-            throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
-        }
-        if (setupState == SETUP_RESULT_FAILED) {
-            logError("Illegal state for operation (" + operation + "): IAB helper setup failed");
-            throw new IllegalStateException("IAB helper setup failed. Can't perform operation: " + operation);
-        }
-        if (setupState == SETUP_DISPOSED) {
-            logError("Illegal state for operation (" + operation + "): IAB helper was disposed of");
-            throw new IllegalStateException("IAB helper was disposed of. Can't perform operation: " + operation);
+        String stateToString = setupStateToString(setupState);
+        if (setupState != SETUP_RESULT_SUCCESSFUL) {
+            logError("Illegal state for operation (" + operation + "): " + stateToString);
+            throw new IllegalStateException(stateToString + " Can't perform operation: " + operation);
         }
     }
 
