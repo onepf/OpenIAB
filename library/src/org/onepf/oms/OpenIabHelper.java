@@ -612,7 +612,6 @@ public class OpenIabHelper {
     
     public void dispose() {
         logDebug("Disposing.");
-        checkSetupDone("dispose");
         if (mAppstoreBillingService != null) {
             mAppstoreBillingService.dispose();
         }
