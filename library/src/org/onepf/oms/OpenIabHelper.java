@@ -309,7 +309,9 @@ public class OpenIabHelper {
         if (listener == null){
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
-        if (setupState != SETUP_RESULT_NOT_STARTED) {
+        if (setupState != SETUP_RESULT_NOT_STARTED || setupState != SETUP_RESULT_FAILED) {
+            // Try to setup if it hasn't been set up already or the last setup
+            // failed.
             String state = setupStateToString(setupState);
             throw new IllegalStateException("Couldn't be set up. Current state: " + state);
         }
@@ -839,6 +841,13 @@ public class OpenIabHelper {
                 }
             }
         })).start();
+    }
+    
+    /**
+     * @return True if this OpenIabHelper instance is set up successfully.
+     */
+    public boolean setupSuccessful() {
+        return setupState == SETUP_RESULT_SUCCESSFUL;
     }
 
     // Checks that setup was done; if not, throws an exception.
