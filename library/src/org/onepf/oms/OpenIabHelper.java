@@ -516,6 +516,10 @@ public class OpenIabHelper {
             billingService.startSetup(new OnIabSetupFinishedListener() {
                 public void onIabSetupFinished(IabResult result) {
                     if (mDebugLog) Log.d(TAG, in() + " " + "billing set " + appstore.getAppstoreName());
+                    if(result.isFailure()) {
+                        storeRemains.countDown();
+                        return;
+                    }
                     new Thread(new Runnable() {
                         public void run() {
                             try {
