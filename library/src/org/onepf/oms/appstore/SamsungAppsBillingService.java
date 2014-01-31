@@ -339,17 +339,11 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
 
     private String getItemGroupId(String sku) {
         String[] skuParts = sku.split("/");
-        if (skuParts.length != 2) {
-            throw new IllegalStateException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID");
-        }
         return skuParts[0];
     }
 
     private String getItemId(String sku) {
         String[] skuParts = sku.split("/");
-        if (skuParts.length != 2) {
-            throw new IllegalStateException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID");
-        }
         return skuParts[1];
     }
 
