@@ -404,7 +404,13 @@ public class OpenIabHelper {
                 }
             }
         }
-        
+        // verify Samsung SKUs if defined
+        List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        if (!allStoreSkus.isEmpty()) {
+            for (String sku : allStoreSkus) {
+                SamsungApps.checkSku(sku);
+            }
+        }
     }
 
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
@@ -878,7 +884,6 @@ public class OpenIabHelper {
     void logWarn(String msg) {
         if (mDebugLog) Log.w(TAG, "In-app billing warning: " + msg);
     }
-
 
     private static String setupStateToString(int setupState) {
         String state;
