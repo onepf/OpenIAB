@@ -440,46 +440,50 @@ public class OpenIabHelper {
             String name = info.serviceInfo.name;
             Intent intentAppstore = new Intent(intentAppstoreServices);
             intentAppstore.setClassName(packageName, name);
-            context.bindService(intentAppstore, new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName name, IBinder service) {
-                    if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
-                    IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+            try {
+                context.bindService(intentAppstore, new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                        if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
+                        IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
 
-                    try {
-                        String appstoreName = openAppstoreService.getAppstoreName();
-                        Intent billingIntent = openAppstoreService.getBillingServiceIntent();
-                        if (appstoreName == null) { // no name - no service
-                            Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
-                        } else if (billingIntent == null) { // don't handle stores without billing support
-                            if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
-                        } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) { 
-                            // don't connect to OpenStore if no key provided and verification is strict
-                            Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
-                        } else {
-                            String publicKey = options.storeKeys.get(appstoreName);
-                            if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
-                            final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, this);
-                            openAppstore.componentName = name;
-                            Log.d(TAG, "discoverOpenStores() add new OpenStore: " + openAppstore);
-                            synchronized (result) {
-                                if (result.contains(openAppstore) == false) {
-                                    result.add(openAppstore);
+                        try {
+                            String appstoreName = openAppstoreService.getAppstoreName();
+                            Intent billingIntent = openAppstoreService.getBillingServiceIntent();
+                            if (appstoreName == null) { // no name - no service
+                                Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
+                            } else if (billingIntent == null) { // don't handle stores without billing support
+                                if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
+                            } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) {
+                                // don't connect to OpenStore if no key provided and verification is strict
+                                Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
+                            } else {
+                                String publicKey = options.storeKeys.get(appstoreName);
+                                if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
+                                final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, this);
+                                openAppstore.componentName = name;
+                                Log.d(TAG, "discoverOpenStores() add new OpenStore: " + openAppstore);
+                                synchronized (result) {
+                                    if (result.contains(openAppstore) == false) {
+                                        result.add(openAppstore);
+                                    }
                                 }
                             }
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "discoverOpenStores() ComponentName: " + name, e);
                         }
-                    } catch (RemoteException e) {
-                        Log.e(TAG, "discoverOpenStores() ComponentName: " + name, e);
+                        storesToCheck.countDown();
                     }
-                    storesToCheck.countDown();
-                }
 
-                @Override
-                public void onServiceDisconnected(ComponentName name) {
-                    if (mDebugLog) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
-                    //Nothing to do here
-                }
-            }, Context.BIND_AUTO_CREATE);
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+                        if (mDebugLog) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
+                        //Nothing to do here
+                    }
+                }, Context.BIND_AUTO_CREATE);
+            }catch (SecurityException e){
+                Log.e(TAG, "bindService() failed for " + packageName, e);
+            }
         }
         try {
             storesToCheck.await(options.discoveryTimeoutMs, TimeUnit.MILLISECONDS);
