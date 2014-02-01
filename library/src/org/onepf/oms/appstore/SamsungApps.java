@@ -25,6 +25,7 @@ import org.onepf.oms.OpenIabHelper.Options;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.text.TextUtils;
 
 /**
  * <p>
@@ -121,5 +122,21 @@ public class SamsungApps extends DefaultAppstore {
     @Override
     public String getAppstoreName() {
         return OpenIabHelper.NAME_SAMSUNG;
+    }
+
+    public static void checkSku(String sku) {
+        String[] skuParts = sku.split("/");
+        if (skuParts.length != 2) {
+            throw new IllegalArgumentException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
+        }
+        for (int i = 0; i < skuParts.length; i++) {
+            if (!TextUtils.isDigitsOnly(skuParts[i])) {
+                if (i == 0) {
+                    throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
+                } else if (i == 1) {
+                    throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_ID.");
+                }
+            }
+        }
     }
 }
