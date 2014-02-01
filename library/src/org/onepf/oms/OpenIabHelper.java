@@ -441,7 +441,7 @@ public class OpenIabHelper {
             Intent intentAppstore = new Intent(intentAppstoreServices);
             intentAppstore.setClassName(packageName, name);
             try {
-                context.bindService(intentAppstore, new ServiceConnection() {
+                boolean isBound = context.bindService(intentAppstore, new ServiceConnection() {
                     @Override
                     public void onServiceConnected(ComponentName name, IBinder service) {
                         if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
@@ -481,8 +481,12 @@ public class OpenIabHelper {
                         //Nothing to do here
                     }
                 }, Context.BIND_AUTO_CREATE);
+                if (!isBound) {
+                   storesToCheck.countDown();
+                }
             }catch (SecurityException e){
                 Log.e(TAG, "bindService() failed for " + packageName, e);
+                storesToCheck.countDown();
             }
         }
         try {
