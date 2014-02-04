@@ -263,7 +263,7 @@ public class OpenIabHelper {
      * @param availableStores - see {@link Options#availableStores}
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.options = new Options();
         
         options.storeKeys = storeKeys;
@@ -295,7 +295,7 @@ public class OpenIabHelper {
      * @param options - specify all neccessary options
      */
     public OpenIabHelper(Context context, Options options) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.options = options;
     }
 
@@ -314,7 +314,7 @@ public class OpenIabHelper {
             throw new IllegalStateException("Couldn't be set up. Current state: " + state);
         }
         this.notifyHandler = new Handler();
-        checkOptions(options);
+        checkOptions(options, context);
         started = System.currentTimeMillis();
         new Thread(new Runnable() {
             public void run() {
@@ -391,7 +391,7 @@ public class OpenIabHelper {
     }
 
     /** Check options are valid */
-    public static void checkOptions(Options options) {
+    public static void checkOptions(Options options, Context context) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
             for (Entry<String, String> entry : options.storeKeys.entrySet()) {
                 if (entry.getValue() == null) { 
@@ -406,10 +406,17 @@ public class OpenIabHelper {
         }
         // verify Samsung SKUs if defined
         List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
-        if (!allStoreSkus.isEmpty()) {
+        boolean hasSamsungSKUsInAppSettings = !allStoreSkus.isEmpty();
+        if (hasSamsungSKUsInAppSettings) {
             for (String sku : allStoreSkus) {
                 SamsungApps.checkSku(sku);
             }
+            Intent paymentActivityIntent = new Intent();
+            paymentActivityIntent.setClassName(context.getPackageName(), "org.onepf.oms.appstore.SamsungAppsBillingService$StartServiceActivity");
+            if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
+                throw new IllegalStateException("to support Samsung Apps org.onepf.oms.appstore.SamsungAppsBillingService$StartServiceActivity must be declared in app manifest!");
+            }
+
         }
     }
 
