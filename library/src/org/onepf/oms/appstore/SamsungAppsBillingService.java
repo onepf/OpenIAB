@@ -14,7 +14,7 @@
  *        limitations under the License.
  ******************************************************************************/
 
-        package org.onepf.oms.appstore;
+package org.onepf.oms.appstore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,13 +39,16 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.sec.android.iap.IAPConnector;
@@ -147,6 +150,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private int mRequestCode;
     private String mItemGroupId;
     private String mExtraData;
+    //receiver to handle broadcast from helper activity
+    private BroadcastReceiver resultReceiver;
 
     public SamsungAppsBillingService(Context context, Options options) {
         this.mContext = context;
@@ -156,11 +161,19 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     @Override
     public void startSetup(final OnIabSetupFinishedListener listener) {
         this.setupListener = listener;
-
-        ComponentName com = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, ACCOUNT_ACTIVITY_NAME);
-        Intent intent = new Intent();
-        intent.setComponent(com);
-        ((Activity)mContext).startActivityForResult(intent, options.samsungCertificationRequestCode);
+        final Intent intent = new Intent(mContext, StartServiceActivity.class);
+        intent.putExtra(StartServiceActivity.EXTRA_REQUEST_CODE, String.valueOf(options.samsungCertificationRequestCode));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        resultReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                handleActivityResult(intent.getIntExtra(StartServiceActivity.REQUEST_CODE, Activity.RESULT_OK),
+                        intent.getIntExtra(StartServiceActivity.RESULT_CODE, options.checkInventoryTimeoutMs), intent);
+                mContext.unregisterReceiver(resultReceiver);
+            }
+        };
+        mContext.registerReceiver(resultReceiver, new IntentFilter(StartServiceActivity.RESULT_ACTION));
+        mContext.startActivity(intent);
     }
 
     @Override
@@ -435,5 +448,54 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             }
         }
         return items.size() == ITEM_RESPONSE_COUNT;
+    }
+
+    public static class StartServiceActivity extends Activity {
+        private static final String EXTRA_REQUEST_CODE = "org.onepf.REQUEST_CODE";
+        private static final String RESULT_ACTION = "org.onepf.RESULT_ACTION";
+        private static final String RESULT_CODE = "org.onepf.RESULT_CODE";
+        private static final String REQUEST_CODE = "org.onepf.REQUEST_CODe";
+        private int requestCode;
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            String stringExtra = getIntent().getStringExtra(EXTRA_REQUEST_CODE);
+            if (TextUtils.isEmpty(stringExtra)) {
+                throw new IllegalStateException("REQUEST CODE EXTRA IS EMPTY.");
+            }
+            try {
+                this.requestCode = Integer.parseInt(stringExtra);
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("REQUEST CODE EXTRA VALUE IS NOT AN INTEGER NUMBER.");
+            }
+            ComponentName com = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, ACCOUNT_ACTIVITY_NAME);
+            Intent intent = new Intent();
+            intent.setComponent(com);
+            startActivityForResult(intent, requestCode);
+        }
+
+        @Override
+        protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+            if (this.requestCode == requestCode) {
+                Intent intent = new Intent(RESULT_ACTION);
+                intent.putExtra(REQUEST_CODE, requestCode);
+                intent.putExtra(RESULT_CODE, resultCode);
+                sendBroadcast(intent);
+            }
+            finish();
+        }
+
+        //todo is it required?
+        @Override
+        public void onBackPressed() {
+            super.onBackPressed();
+            Intent intent = new Intent(RESULT_ACTION);
+            intent.putExtra(REQUEST_CODE, requestCode);
+            intent.putExtra(RESULT_CODE, Activity.RESULT_CANCELED);
+            sendBroadcast(intent);
+            finish();
+        }
+
     }
 }

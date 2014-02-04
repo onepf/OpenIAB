@@ -59,5 +59,12 @@
                     android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
             </intent-filter>
         </receiver>
+        <!--android:theme="@android:style/Theme.NoDisplay"-->
+        <!--<activity android:name="org.onepf.oms.appstore.SamsungAppsBillingService$StartServiceActivity"-->
+        <!--android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"-->
+        <!--/>-->
+        <activity android:name="org.onepf.oms.appstore.SamsungAppsBillingService$StartServiceActivity"
+                  android:theme="@android:style/Theme.NoDisplay"
+                />
     </application>
 </manifest>
