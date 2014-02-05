@@ -70,7 +70,7 @@ public class SamsungApps extends DefaultAppstore {
     private Activity activity;
     private Options options;
     //isSamsungTestMode = true -> always returns Samsung Apps is installer and billing is available
-    public static boolean isSamsungTestMode = true;
+    public static boolean isSamsungTestMode;
     private boolean debugLog;
     private Boolean isBillingAvailable;
 
