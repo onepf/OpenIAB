@@ -237,7 +237,8 @@ public class OpenIabHelper {
      * Simple constructor for OpenIabHelper. 
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
-     * @param storeKeys - see {@link Options#storeKeys}
+     * @param storeKeys see {@link Options#storeKeys}
+     * @param context if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys) {
         this(context, storeKeys, null);
@@ -247,8 +248,9 @@ public class OpenIabHelper {
      * Simple constructor for OpenIabHelper. 
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
-     * @param storeKeys - see {@link Options#storeKeys}
-     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
+     * @param storeKeys see {@link Options#storeKeys}
+     * @param prefferedStores see {@link Options#prefferedStoreNames}
+     * @param context if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
         this(context, storeKeys, prefferedStores, null);
@@ -258,11 +260,13 @@ public class OpenIabHelper {
      * Simple constructor for OpenIabHelper. 
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
-     * @param storeKeys - see {@link Options#storeKeys}
-     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
-     * @param availableStores - see {@link Options#availableStores}
+     * @param storeKeys see {@link Options#storeKeys}
+     * @param prefferedStores see {@link Options#prefferedStoreNames}
+     * @param availableStores see {@link Options#availableStores}
+     * @param context if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
+        checkForSamsungSpecialConditions(context);
         this.context = context;
         this.options = new Options();
         
@@ -292,9 +296,11 @@ public class OpenIabHelper {
      * stores installed. Specify store name you want to work with here and it would be selected if you 
      * install application using adb.
      * 
-     * @param options - specify all neccessary options
+     * @param options specify all necessary options
+     * @param context if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Options options) {
+        checkForSamsungSpecialConditions(context);
         this.context = context;
         this.options = options;
     }
@@ -904,7 +910,17 @@ public class OpenIabHelper {
         }
         return state;
     }
-    
+
+    private void checkForSamsungSpecialConditions(Context context) {
+        List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        if (!allStoreSkus.isEmpty()) { // it means that Samsung is among the candidates
+            if (!(context instanceof Activity)) {
+                // Dear developers, we've made a mistake in the first version of Samsung support. Now there is no way to fix it not changing the API. Sorry about this.
+                throw new IllegalStateException("To support Samsung context must be an Activity. Dear developers, we've made a mistake in the first version of Samsung support. Now there is no way to fix it not changing the API. Sorry about this.");
+            }
+        }
+    }
+
     public interface OnInitListener {
         public void onInitFinished();
     }
