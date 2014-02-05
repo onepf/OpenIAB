@@ -337,7 +337,7 @@ public class OpenIabHelper {
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
-                        stores2check.add(new SamsungApps(context, options));
+                        stores2check.add(new SamsungApps((Activity) context, options));
                     }
                 }
                 
