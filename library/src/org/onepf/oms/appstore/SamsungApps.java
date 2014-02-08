@@ -16,6 +16,8 @@
 
 package org.onepf.oms.appstore;
 
+import android.app.Activity;
+import android.util.Log;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -26,6 +28,12 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.text.TextUtils;
+import org.onepf.oms.appstore.googleUtils.IabException;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * <p>
@@ -58,52 +66,92 @@ public class SamsungApps extends DefaultAppstore {
     public static final String IAP_PACKAGE_NAME = "com.sec.android.iap";
     public static final String IAP_SERVICE_NAME = "com.sec.android.iap.service.iapService";
 
-    private AppstoreInAppBillingService mBillingService;
-    private Context context;
+    private AppstoreInAppBillingService billingService;
+    private Activity activity;
     private Options options;
+    
+    // isSamsungTestMode = true -> always returns Samsung Apps is installer and billing is available
+    public static boolean isSamsungTestMode;
+    private boolean debugLog;
+    
+    private Boolean isBillingAvailable;
 
-    // isDebugMode = true -> always returns Samsung Apps is installer
-    static final boolean isDebugMode = false;
-
-    public SamsungApps(Context context, Options options) {
-        this.context = context;
+    public SamsungApps(Activity activity, Options options) {
+        this.activity = activity;
         this.options = options;
     }
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        return isDebugMode; // currently there is no reliable way to understand it
+        return isSamsungTestMode; // currently there is no reliable way to understand it
     }
 
     /**
-     * @return true if Samsung Apps is installed in the system
+     * @return true if Samsung Apps is installed in the system and a returned inventory contains info about the app's skus
      */
     @Override
     public boolean isBillingAvailable(String packageName) {
-        boolean iapInstalled = true;
+        if (isBillingAvailable != null) {
+            return isBillingAvailable;
+        }
+        
+        if (isSamsungTestMode) {
+            if (debugLog) Log.d(TAG, "isBillingAvailable() billing is supported in test mode.");
+            isBillingAvailable = true;
+            return isBillingAvailable;
+        }
+
+        boolean iapInstalled = false;
+        
         try {
-            PackageManager pm = context.getPackageManager();
+            PackageManager pm = activity.getPackageManager();
             pm.getApplicationInfo(IAP_PACKAGE_NAME, PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            iapInstalled = false;
-        }
-        if (iapInstalled) {
-            try {
-                Signature[] signatures = context.getPackageManager().getPackageInfo(IAP_PACKAGE_NAME, PackageManager.GET_SIGNATURES).signatures;
-                if (signatures[0].hashCode() != IAP_SIGNATURE_HASHCODE) {
-                    iapInstalled = false;
-                }
-            } catch (Exception e) {
-                iapInstalled = false;
+            Signature[] signatures = activity.getPackageManager().getPackageInfo(IAP_PACKAGE_NAME, PackageManager.GET_SIGNATURES).signatures;
+            if (signatures[0].hashCode() == IAP_SIGNATURE_HASHCODE) {
+                iapInstalled = true;
             }
+        } catch (Exception e) {
+            if (debugLog) Log.d(TAG, "isBillingAvailable() Samsung IAP Service is not installed");
         }
-//        if (!iapInstalled) {
-//            Intent intent = new Intent();
-//            intent.setData(Uri.parse("samsungapps://ProductDetail/com.sec.android.iap"));
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-//            mContext.startActivity(intent);
-//        }
-        return isDebugMode || iapInstalled;
+
+        isBillingAvailable = false;
+        if (!iapInstalled) {
+            return isBillingAvailable;
+        }
+
+        final CountDownLatch mainLatch = new CountDownLatch(1);
+        getInAppBillingService().startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(final IabResult result) {
+                if (result.isSuccess()) {
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                Inventory inventory = getInAppBillingService().queryInventory(true, OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
+                                if (inventory.mSkuMap != null && inventory.mSkuMap.size() > 0) {
+                                    isBillingAvailable = true;
+                                }
+                            } catch (IabException e) {
+                                Log.e(TAG, "isBillingAvailable() failed", e);
+                            } finally {
+                                getInAppBillingService().dispose();
+                                mainLatch.countDown();
+                            }
+                        }
+                    }).start();
+                } else {
+                    getInAppBillingService().dispose();
+                    mainLatch.countDown();
+                }
+            }
+        });
+
+        try {
+            mainLatch.await();
+        } catch (InterruptedException e) {
+            Log.e(TAG, "isBillingAvailable() interrupted", e);
+        }
+
+        return isBillingAvailable;
     }
 
     @Override
@@ -113,10 +161,10 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
-        if (mBillingService == null) {
-            mBillingService = new SamsungAppsBillingService(context, options);
+        if (billingService == null) {
+            billingService = new SamsungAppsBillingService(activity, options);
         }
-        return mBillingService;
+        return billingService;
     }
 
     @Override

@@ -238,6 +238,7 @@ public class OpenIabHelper {
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
      * @param storeKeys - see {@link Options#storeKeys}
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys) {
         this(context, storeKeys, null);
@@ -248,7 +249,8 @@ public class OpenIabHelper {
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
      * @param storeKeys - see {@link Options#storeKeys}
-     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
+     * @param prefferedStores - see {@link Options#prefferedStoreNames}
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
         this(context, storeKeys, prefferedStores, null);
@@ -259,8 +261,9 @@ public class OpenIabHelper {
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      * 
      * @param storeKeys - see {@link Options#storeKeys}
-     * @param prefferedStoreNames - see {@link Options#prefferedStoreNames}
+     * @param prefferedStores - see {@link Options#prefferedStoreNames}
      * @param availableStores - see {@link Options#availableStores}
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
         this.context = context;
@@ -269,6 +272,8 @@ public class OpenIabHelper {
         options.storeKeys = storeKeys;
         options.prefferedStoreNames = prefferedStores != null ? prefferedStores : options.prefferedStoreNames;
         options.availableStores = availableStores != null ? new ArrayList<Appstore>(Arrays.asList(availableStores)) : null;
+        
+        checkSettings(options, context);
     }
 
     /**
@@ -292,11 +297,14 @@ public class OpenIabHelper {
      * stores installed. Specify store name you want to work with here and it would be selected if you 
      * install application using adb.
      * 
-     * @param options - specify all neccessary options
+     * @param options - specify all necessary options
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Options options) {
         this.context = context;
         this.options = options;
+        
+        checkSettings(options, context);
     }
 
     /**
@@ -313,8 +321,7 @@ public class OpenIabHelper {
             String state = setupStateToString(setupState);
             throw new IllegalStateException("Couldn't be set up. Current state: " + state);
         }
-        this.notifyHandler = new Handler();
-        checkOptions(options);
+        this.notifyHandler = new Handler();        
         started = System.currentTimeMillis();
         new Thread(new Runnable() {
             public void run() {
@@ -337,7 +344,7 @@ public class OpenIabHelper {
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
-                        stores2check.add(new SamsungApps(context, options));
+                        stores2check.add(new SamsungApps((Activity) context, options));
                     }
                 }
                 
@@ -394,7 +401,7 @@ public class OpenIabHelper {
     public static void checkOptions(Options options) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
             for (Entry<String, String> entry : options.storeKeys.entrySet()) {
-                if (entry.getValue() == null) { 
+                if (entry.getValue() == null) {
                     throw new IllegalArgumentException("Null publicKey for store: " + entry.getKey() + ", key: " + entry.getValue());
                 }
                 try {
@@ -404,11 +411,40 @@ public class OpenIabHelper {
                 }
             }
         }
-        // verify Samsung SKUs if defined
+    }
+
+    private static void checkSettings(Options options, Context context){
+        checkOptions(options);
+        checkSamsung(context);
+    }
+
+    private static void checkSamsung(Context context) {
         List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
-        if (!allStoreSkus.isEmpty()) {
+        if (!allStoreSkus.isEmpty()) { // it means that Samsung is among the candidates
             for (String sku : allStoreSkus) {
                 SamsungApps.checkSku(sku);
+            }
+            if (!(context instanceof Activity)) {
+                //
+                // Unfortunately, SamsungApps requires to launch their own "Certification Activity"
+                // in order to connect to billing service. So it's also needed for OpenIAB.
+                //
+                // Because of SKU for SamsungApps are specified,
+                // intance of Activity needs to be passed to OpenIAB constructor to launch
+                // Samsung Cerfitication Activity.
+                // Activity also need to pass activityResult to OpenIABHelper.handleActivityResult()
+                //
+                //
+                throw new IllegalArgumentException(
+                                  "\n "
+                                + "\nContext is not instance of Activity."
+                                + "\nUnfortunately, SamsungApps requires to launch their own Certification Activity "
+                                + "\nin order to connect to billing service. So it's also needed for OpenIAB."                                
+                                + "\n "
+                                + "\nBecause of SKU for SamsungApps are specified, instance of Activity needs to be passed "
+                                + "\nto OpenIAB constructor to launch Samsung Cerfitication Activity."
+                                + "\nActivity should call OpenIabHelper#handleActivityResult()."
+                                + "\n ");
             }
         }
     }
@@ -904,7 +940,7 @@ public class OpenIabHelper {
         }
         return state;
     }
-    
+
     public interface OnInitListener {
         public void onInitFinished();
     }

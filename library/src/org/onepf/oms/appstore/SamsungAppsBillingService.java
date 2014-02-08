@@ -14,7 +14,7 @@
  *        limitations under the License.
  ******************************************************************************/
 
-        package org.onepf.oms.appstore;
+package org.onepf.oms.appstore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ import com.sec.android.iap.IAPConnector;
 public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private static final int ITEM_RESPONSE_COUNT = 100;
 
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = true;
     private static final String TAG = SamsungAppsBillingService.class.getSimpleName();
 
     private static final int HONEYCOMB_MR1 = 12;
@@ -67,7 +67,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     public static final int IAP_MODE_COMMERCIAL = 0;
     public static final int IAP_MODE_TEST_SUCCESS = 1;
     public static final int IAP_MODE_TEST_FAIL = -1;
-    private static final int CURRENT_MODE = SamsungApps.isDebugMode ? IAP_MODE_TEST_SUCCESS : IAP_MODE_COMMERCIAL;
+    private static final int CURRENT_MODE = SamsungApps.isSamsungTestMode ? IAP_MODE_TEST_SUCCESS : IAP_MODE_COMMERCIAL;
 
     public static final String IAP_SERVICE_NAME = "com.sec.android.iap.service.iapService";
     public static final String ACCOUNT_ACTIVITY_NAME = "com.sec.android.iap.activity.AccountActivity";
@@ -133,12 +133,12 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     public static final int IAP_ERROR_CONFIRM_INBOX = -1006;
     // ========================================================================
 
-    public boolean mIsBind = false;
-    private IAPConnector mIapConnector = null;
-    private Context mContext;
+    private volatile boolean isBound;
+    private IAPConnector mIapConnector;
+    private Activity activity;
     private Options options;
-    private ServiceConnection mServiceConnection;
-    private String mPurchasingItemType;
+    private ServiceConnection serviceConnection;
+    private String purchasingItemType;
 
     private OnIabSetupFinishedListener setupListener = null;
     // The listener registered on launchPurchaseFlow, which we have to call back when
@@ -148,8 +148,8 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private String mItemGroupId;
     private String mExtraData;
 
-    public SamsungAppsBillingService(Context context, Options options) {
-        this.mContext = context;
+    public SamsungAppsBillingService(Activity context, Options options) {
+        this.activity = context;
         this.options = options;
     }
 
@@ -160,7 +160,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         ComponentName com = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, ACCOUNT_ACTIVITY_NAME);
         Intent intent = new Intent();
         intent.setComponent(com);
-        ((Activity)mContext).startActivityForResult(intent, options.samsungCertificationRequestCode);
+        activity.startActivityForResult(intent, options.samsungCertificationRequestCode);
     }
 
     @Override
@@ -187,7 +187,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 itemInbox = null;
                 try {
                     if (mDebugLog) Log.d(TAG, "getItemsInbox, startNum = " + startNum + ", endNum = " + endNum);
-                    itemInbox = mIapConnector.getItemsInbox(mContext.getPackageName(), itemGroupId, startNum, endNum, "19700101", today);
+                    itemInbox = mIapConnector.getItemsInbox(activity.getPackageName(), itemGroupId, startNum, endNum, "19700101", today);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Samsung getItemsInbox: " + e.getMessage());
                 }
@@ -218,7 +218,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                     do {
                         itemList = null;
                         try {
-                            itemList = mIapConnector.getItemList(CURRENT_MODE, mContext.getPackageName(), itemGroupId, startNum, endNum, ITEM_TYPE_ALL);
+                            itemList = mIapConnector.getItemList(CURRENT_MODE, activity.getPackageName(), itemGroupId, startNum, endNum, ITEM_TYPE_ALL);
                         } catch (RemoteException e) {
                             Log.e(TAG, "Samsung getItemList: " + e.getMessage());
                         }
@@ -248,7 +248,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         intent.putExtras(bundle);
         mRequestCode = requestCode;
         mPurchaseListener = listener;
-        mPurchasingItemType = itemType;
+        purchasingItemType = itemType;
         mItemGroupId = itemGroupId;
         mExtraData = extraData;
         if (mDebugLog) Log.d(TAG, "Request code: " + requestCode);
@@ -310,9 +310,9 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                     Log.e(TAG, "JSON parse error: " + e.getMessage());
                 }
 
-                purchase.setItemType(mPurchasingItemType);
+                purchase.setItemType(purchasingItemType);
                 purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_SAMSUNG, mItemGroupId + '/' + itemId));
-                purchase.setPackageName(mContext.getPackageName());
+                purchase.setPackageName(activity.getPackageName());
                 purchase.setPurchaseState(0);
                 purchase.setDeveloperPayload(mExtraData);
             }
@@ -330,10 +330,11 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
 
     @Override
     public void dispose() {
-        if (mContext != null && mServiceConnection != null) {
-            mContext.unbindService(mServiceConnection);
+        if (serviceConnection != null && isBound) {
+            activity.getApplicationContext().unbindService(serviceConnection);
+            isBound = false;
         }
-        mServiceConnection = null;
+        serviceConnection = null;
         mIapConnector = null;
     }
 
@@ -350,7 +351,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     }
 
     private void bindIapService() {
-        mServiceConnection = new ServiceConnection() {
+        serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 mIapConnector = IAPConnector.Stub.asInterface(service);
@@ -363,12 +364,10 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             }
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                mIapConnector = null;
-                mServiceConnection = null;
             }
         };
         Intent serviceIntent = new Intent(IAP_SERVICE_NAME);
-        mContext.bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        isBound = activity.getApplicationContext().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -386,7 +385,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 }
             }
         } catch (RemoteException e) {
-            if (mDebugLog) Log.d(TAG, "Init IAP: " + e.getMessage());
+            Log.e(TAG, "Init IAP: " + e.getMessage());
         }
         setupListener.onIabSetupFinished(new IabResult(errorCode, errorMsg));
     }
@@ -413,7 +412,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                         Purchase purchase = new Purchase(OpenIabHelper.NAME_SAMSUNG);
                         purchase.setItemType(itemType);
                         purchase.setSku(sku);
-                        purchase.setPackageName(mContext.getPackageName());
+                        purchase.setPackageName(activity.getPackageName());
                         purchase.setPurchaseState(0);
                         purchase.setDeveloperPayload("");
 
