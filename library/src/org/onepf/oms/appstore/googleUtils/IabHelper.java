@@ -83,7 +83,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     public static final int QUERY_SKU_DETAILS_BATCH_SIZE = 20;
     
     // Is debug logging enabled?
-    boolean mDebugLog = false;
+    boolean mDebugLog = OpenIabHelper.Options.loggingEnabled;
     String mDebugTag = TAG;
 
     // Is setup done?

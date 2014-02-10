@@ -65,7 +65,7 @@ import android.util.Log;
 public class OpenIabHelper {
     private static final String TAG = OpenIabHelper.class.getSimpleName();
     // Is debug logging enabled?
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = Options.loggingEnabled;
     
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     
@@ -1042,6 +1042,11 @@ public class OpenIabHelper {
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+
+        /**
+         * Is debug logging enabled?
+         */
+        public static boolean loggingEnabled = false;
     }
 
 }

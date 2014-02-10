@@ -44,7 +44,7 @@ import com.android.vending.billing.IInAppBillingService;
  */
 
 public class GooglePlay extends DefaultAppstore {
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = OpenIabHelper.Options.loggingEnabled;
     private static final String TAG = GooglePlay.class.getSimpleName();
 
     public  static final String ANDROID_INSTALLER = "com.android.vending";
