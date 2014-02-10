@@ -47,6 +47,7 @@ import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import com.amazon.inapp.purchasing.Receipt;
 import com.amazon.inapp.purchasing.SubscriptionPeriod;
+import com.google.gson.Gson;
 
 /**
  * Amazon billing service impl
@@ -288,6 +289,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 case SUCCESSFUL :
                     final Receipt receipt = purchaseResponse.getReceipt();
                     final String storeSku = receipt.getSku();
+                    
+                    purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
                     purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE :
@@ -320,7 +323,16 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         }
     }
     
-    @Override
+    /**
+     * Converts purchase response to json for transfer with purchase object  
+     * @param purchaseResponse
+     * @return
+     */
+    private String generateOriginalJson(PurchaseResponse purchaseResponse) {
+    	return new Gson().toJson(purchaseResponse);
+	}
+
+	@Override
     public void consume(Purchase itemInfo) {
         // Nothing to do here
     }

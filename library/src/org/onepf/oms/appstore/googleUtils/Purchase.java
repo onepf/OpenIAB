@@ -46,6 +46,10 @@ public class Purchase implements Cloneable {
         if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
         this.appstoreName = appstoreName;
     }
+    
+    public void setOriginalJson(String originalJson) {
+        mOriginalJson = originalJson;
+    }
 
     public void setItemType(String itemType) {
         mItemType = itemType;

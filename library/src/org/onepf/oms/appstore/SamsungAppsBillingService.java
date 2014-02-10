@@ -303,6 +303,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 try {
                     JSONObject purchaseJson = new JSONObject(purchaseData);
 
+					purchase.setOriginalJson(purchaseData);
                     purchase.setOrderId(purchaseJson.getString(JSON_KEY_PAYMENT_ID));
                     purchase.setPurchaseTime(Long.parseLong(purchaseJson.getString(JSON_KEY_PURCHASE_DATE)));
                     purchase.setToken(purchaseJson.getString(JSON_KEY_PURCHASE_ID));
