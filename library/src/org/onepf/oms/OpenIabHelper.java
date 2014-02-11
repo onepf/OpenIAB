@@ -80,7 +80,10 @@ public class OpenIabHelper {
      */
     private static final int INVENTORY_CHECK_TIMEOUT_MS = 10000;
     
+    /** Used for all communication with Android services  */
     private final Context context;
+    /** Necessary to initialize SamsungApps. For other stuff {@link #context} is used */
+    private Activity activity;
     
     private Handler notifyHandler = null;
     
@@ -266,8 +269,11 @@ public class OpenIabHelper {
      * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.options = new Options();
+        if (context instanceof Activity) {
+            this.activity = (Activity) context;
+        }
         
         options.storeKeys = storeKeys;
         options.prefferedStoreNames = prefferedStores != null ? prefferedStores : options.prefferedStoreNames;
@@ -301,8 +307,11 @@ public class OpenIabHelper {
      * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Options options) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.options = options;
+        if (context instanceof Activity) {
+            this.activity = (Activity) context;
+        }
         
         checkSettings(options, context);
     }
@@ -344,7 +353,7 @@ public class OpenIabHelper {
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
-                        stores2check.add(new SamsungApps((Activity) context, options));
+                        stores2check.add(new SamsungApps(activity, options));
                     }
                 }
                 
