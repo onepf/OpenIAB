@@ -60,7 +60,12 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     
-    /** Only for verification all requests are for the same users */
+    /** 
+     * Only for verification all requests are for the same user
+     * <p>Not expected to be undefined after setup is completed
+     * <p>Initialized at {@link #onGetUserIdResponse(GetUserIdResponse)} if GetUserIdRequestStatus.SUCCESSFUL 
+     * durint startSetup().
+     */
     private String currentUserId;
     
     /** Maintained internally by 
@@ -156,7 +161,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
         if (mDebugLog) Log.v(TAG, "onPurchaseUpdatesResponse() reqStatus: " + purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus() + "reqId: " + purchaseUpdatesResponse.getRequestId());
         
-        if (!purchaseUpdatesResponse.getUserId().equals(currentUserId)) {
+        if (!currentUserId.equals(purchaseUpdatesResponse.getUserId())) {
             if (mDebugLog) Log.w(TAG, "onPurchaseUpdatesResponse() Current UserId: " + currentUserId + ", purchase UserId: " + purchaseUpdatesResponse.getUserId());
             inventoryLatch.countDown();
             return;
@@ -280,7 +285,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         IabResult result = null;
         Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
         
-        if (!purchaseResponse.getUserId().equals(currentUserId)) {
+        if (!currentUserId.equals(purchaseResponse.getUserId())) {
             if (mDebugLog) Log.w(TAG, "onPurchaseResponse() userId: " + currentUserId + ", purchase.userId: " + purchaseResponse.getUserId());
             result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "userId doesn't match purchase.userId");
         } else {
