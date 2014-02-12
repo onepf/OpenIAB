@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+
+
+# Searches for other PostprocessBuildPlayer scripts and executes them. Make sure the other script
+# have a name suffix with an underscore "_" like "PostprocessBuildPlayer_AnotherBuild" or whatever.
+#
+# Based on script by Rob Terrell, rob@stinkbot.com
+#
+
+use File::Glob ':glob';
+
+
+# Dont run on any builds that are not iPhone builds
+if( $ARGV[1] ne "iPhone" )
+{
+	exit;
+}
+
+
+
+# Grab all the PostprocessBuildPlayer files
+@files = bsd_glob( "Assets/Editor/postprocessbuildplayer_*", GLOB_NOCASE );
+
+foreach $file( @files )
+{
+	if( !( $file =~ m/\./ ) )
+	{
+		system( "chmod", "755", $file );
+		print "PostProcessBuildPlayer: calling " . $file . "\n";
+		system( $file, $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $ARGV[5], $ARGV[6] );
+	}
+}
+
+# now we run the runner.py directly
+$installPath = $ARGV[0];
+$currDir = `pwd`;
+chomp $currDir;

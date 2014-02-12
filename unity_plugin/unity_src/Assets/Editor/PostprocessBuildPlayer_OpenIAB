@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+import sys
+import os.path
+import os.listdir
+import copytree.shutil
+import mod_pbxproj
+
+if sys.argv[2] != "iPhone": sys.exit()
+
+pbx_object_path = os.path.join(sys.argv[1], 'Unity-iPhone.xcodeproj/project.pbxproj')
+pbx_object = XcodeProject.Load(pbx_file_path)
+
+pbx_object.add_file('System/Library/Frameworks/StoreKit.framework', tree='SDKROOT')
+
+pbx_object.add_other_ldflags('-ObjC')
+
+pbx_object.save()
