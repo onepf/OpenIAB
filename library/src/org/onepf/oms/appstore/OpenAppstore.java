@@ -36,7 +36,7 @@ import com.android.vending.billing.IInAppBillingService;
  * @since 28.05.13
  */
 public class OpenAppstore extends DefaultAppstore {
-    private static final boolean mDebugLog = OpenIabHelper.Options.loggingEnabled;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = OpenAppstore.class.getSimpleName();
     
     private Context context;

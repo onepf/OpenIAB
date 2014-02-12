@@ -58,7 +58,7 @@ import com.sec.android.iap.IAPConnector;
 public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private static final int ITEM_RESPONSE_COUNT = 100;
 
-    private static final boolean mDebugLog = Options.loggingEnabled;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = SamsungAppsBillingService.class.getSimpleName();
 
     private static final int HONEYCOMB_MR1 = 12;

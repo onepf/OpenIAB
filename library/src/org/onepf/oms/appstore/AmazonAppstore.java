@@ -33,7 +33,7 @@ import android.util.Log;
  * @since 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final boolean mDebugLog = OpenIabHelper.Options.loggingEnabled;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = AmazonAppstore.class.getSimpleName();
     
     private volatile Boolean sandboxMode;// = false;

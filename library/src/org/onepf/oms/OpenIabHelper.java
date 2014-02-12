@@ -65,7 +65,7 @@ import android.util.Log;
 public class OpenIabHelper {
     private static final String TAG = OpenIabHelper.class.getSimpleName();
     // Is debug logging enabled?
-    private static final boolean mDebugLog = Options.loggingEnabled;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     
@@ -952,7 +952,10 @@ public class OpenIabHelper {
     private static String in() {
         return "in: " + (System.currentTimeMillis() - started);
     }
-    
+
+    public static boolean isDebugEnabled() {
+        return Options.loggingEnabled != null ? Options.loggingEnabled : Log.isLoggable(TAG, Log.DEBUG);
+    }
     /**
      * All options of OpenIAB can be found here
      * 
@@ -1045,8 +1048,10 @@ public class OpenIabHelper {
 
         /**
          * Is debug logging enabled?
+         * null means that {@link android.util.Log#isLoggable(String, int)}, where TAG = {@link org.onepf.oms.OpenIabHelper#TAG} and logLevel={@link android.util.Log#DEBUG}, is used.
+         * true/false value means that the user has specified flag and this value will be used.
          */
-        public static boolean loggingEnabled = false;
+        public static Boolean loggingEnabled = null;
     }
 
 }
