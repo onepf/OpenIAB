@@ -55,7 +55,7 @@ import com.amazon.inapp.purchasing.SubscriptionPeriod;
  * @since 16.04.13
  */
 public class AmazonAppstoreBillingService extends BasePurchasingObserver implements AppstoreInAppBillingService {
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = AmazonAppstoreBillingService.class.getSimpleName();
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();

@@ -16,11 +16,7 @@
 
 package org.onepf.oms.appstore;
 
-import org.onepf.oms.Appstore;
-import org.onepf.oms.AppstoreInAppBillingService;
-import org.onepf.oms.DefaultAppstore;
-import org.onepf.oms.IOpenAppstore;
-import org.onepf.oms.IOpenInAppBillingService;
+import org.onepf.oms.*;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 
 import android.content.ComponentName;
@@ -40,7 +36,7 @@ import com.android.vending.billing.IInAppBillingService;
  * @since 28.05.13
  */
 public class OpenAppstore extends DefaultAppstore {
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = OpenAppstore.class.getSimpleName();
     
     private Context context;

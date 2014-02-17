@@ -65,7 +65,7 @@ import android.util.Log;
 public class OpenIabHelper {
     private static final String TAG = OpenIabHelper.class.getSimpleName();
     // Is debug logging enabled?
-    private static final boolean mDebugLog = false;
+    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     
@@ -969,7 +969,10 @@ public class OpenIabHelper {
     private static String in() {
         return "in: " + (System.currentTimeMillis() - started);
     }
-    
+
+    public static boolean isDebugEnabled() {
+        return Options.loggingEnabled != null ? Options.loggingEnabled : Log.isLoggable(TAG, Log.DEBUG);
+    }
     /**
      * All options of OpenIAB can be found here
      * 
@@ -1059,6 +1062,13 @@ public class OpenIabHelper {
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+
+        /**
+         * Is debug logging enabled?
+         * null means that {@link android.util.Log#isLoggable(String, int)}, where TAG = {@link org.onepf.oms.OpenIabHelper#TAG} and logLevel={@link android.util.Log#DEBUG}, is used.
+         * true/false value means that the user has specified flag and this value will be used.
+         */
+        public static Boolean loggingEnabled = null;
     }
 
 }
