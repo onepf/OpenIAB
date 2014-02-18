@@ -1,0 +1,12 @@
+<fortumo-products>
+    <product id="product_id1" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf" consumbale="true"/>
+    <product id="product_id2" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf" consumbale="true"/>
+    <product id="product_id3" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf"
+             consumbale="true"/>
+    <product id="product_id4" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf"
+             consumbale="true"/>
+    <product id="product_id5" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf"
+             consumbale="true"/>
+    <product id="product_id6" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf"
+             consumbale="true"/>
+</fortumo-products>
