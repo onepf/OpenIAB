@@ -11,8 +11,12 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.onepfUtils.InappsXMLParser;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by akarimova on 23.12.13.
@@ -261,4 +265,30 @@ public class FortumoStore extends DefaultAppstore {
                 "  ...");
     }
 
+    public static void checkSettings(Context context) {
+        checkManifest(context);
+        checkJars();
+        checkDataXmlFiles(context);
+    }
+
+    private static void checkJars() {
+        try {
+            OpenIabHelper.class.getClassLoader().loadClass("mp.MpUtils");
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Can't load Fortumo SDK classes.");
+        }
+    }
+
+    private static void checkDataXmlFiles(Context context) {
+        try {
+            final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
+            final boolean hasProductFile = strings.contains(InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME);
+            final boolean hasFortumoDetailsFile = strings.contains(FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
+            if (!(hasProductFile && hasFortumoDetailsFile)) {
+                throw new IllegalStateException("Can't find required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Can't find required xml files");
+        }
+    }
 }
