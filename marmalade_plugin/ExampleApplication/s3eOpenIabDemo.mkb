@@ -1,0 +1,53 @@
+#!/usr/bin/env mkb
+
+subprojects
+{
+    iwnui
+    ../s3eOpenIab.mkf
+}
+
+files 
+{
+	s3eOpenIabDemo.cpp
+	ExampleUI.cpp
+}
+
+deployments
+{
+	name='openiab-marmalade-demo'
+	caption='OpenIAB Marmalade Demo'
+	version-major=0
+	version-minor=0
+	version-revision=1
+  	manufacturer='OnePF'
+  	provider='OnePF'
+
+	["Android"]
+	android-manifest='AndroidManifest.xml'
+	android-pkgname='org.onepf.marmalade.demo'
+
+  	["iOS"]
+    iphone-appid='com.provectus.hogtest'
+    #iphone-provisioning-profile="data/HOG_AdHoc.mobileprovision"
+	#iphone-splash="data/Default~iphone.png"
+	#iphone-icon="data/icons/iPhoneIcon.png"
+	#iphone-icon-ipad="data/icons/iPadIcon.png"
+	#iphone-icon-high-res="data/icons/iPhone4Icon.png"
+	#iphone-sign-for-distribution='1'
+}
+#### AUTO GENERATED deployment settings from DeployTool.exe. Do not edit below this line ####
+deployments
+{
+	["Android"]
+	["Default"]
+	assets='Default'
+	iphone-enable-4inch-retina=1
+	iphone-splash-full-orient=1
+	iphone-splash-retina-generate=1
+	["iOS"]
+	assets='Default'
+	iphone-enable-4inch-retina=1
+	iphone-provisioning-profile='data/HOG_Dev.mobileprovision'
+	iphone-splash-full-orient=1
+	iphone-splash-retina-generate=1
+}

@@ -1,0 +1,55 @@
+options
+{
+	# Define COCOS2DX_ROOT env variable or set path to the Cocos2d-x library root folder
+	module_path="$COCOS2DX_ROOT/cocos2dx/proj.marmalade/;$COCOS2DX_ROOT/CocosDenshion/proj.marmalade/"
+	s3e-data-dir = "../Resources/"
+}
+
+includepaths
+{
+	../Classes
+}
+
+subprojects
+{
+	IwGL
+	cocos2dx
+	CocosDenshion
+	../../s3eOpenIab.mkf
+}
+
+assets
+{
+	(../Resources)
+	.
+}
+
+files
+{
+	[Main]
+	(src)
+	Main.h
+	Main.cpp
+
+	(../Classes)
+	AppDelegate.h
+	AppDelegate.cpp
+	GameOverScene.cpp
+	GameOverScene.h
+	HelloWorldScene.cpp
+	HelloWorldScene.h
+	ShopScene.cpp
+	ShopScene.h
+}
+
+deployments
+{
+	["Default"]
+	android-manifest='AndroidManifest.xml'
+	name="openiab-marmalade-cocos-demo"
+	caption="OpenIAB Marmalade Game"
+	version-major=0
+	version-minor=0
+	version-revision=1
+	android-pkgname='org.onepf.marmalade.cocos.demo'
+}

@@ -1,0 +1,164 @@
+
+CIwUIButton
+{
+    name "button"
+    style <button>
+}
+
+CIwUILabel
+{
+    name "label"
+    style <label_medium>
+}
+
+CIwUICheckBox
+{
+    name "checkbox"
+    style <checkbox>
+}
+
+CIwUIImage
+{
+    name "image"
+    sizeToContent true
+}
+
+CIwUIProgressBar
+{
+    name "progressbar"
+    style <progressBar>
+}
+
+CIwUISlider
+{
+    name "sliderbar"
+    style <slider>
+}
+
+CIwUITabBar
+{
+    name "tabbar"
+}
+
+CIwUITextField
+{
+    name "textfield"
+    
+    style <textField>
+}
+
+CIwUITableViewItem
+{
+    name "TableViewItem"
+ 
+    style <table_item>
+}
+
+CIwUIPickerView
+{
+    name "Picker"
+
+    style <picker>
+}
+
+CIwUIElement
+{
+    name "NavigationBar"
+
+    style <NavigationBar>
+}
+
+CIwUIImage
+{
+    name "toolbar"
+
+    style <toolbar>
+}
+
+CIwUIButton
+{
+    name "toolbarbutton"
+
+    style <toolbarbutton>
+}
+
+CIwUIImage
+{
+    name "alertdialog"
+
+    style <alertdialogbackground>
+
+    CIwUIImage
+    {
+        name "dialog"
+
+        style <alertdialog>
+
+        CIwUILabel
+        {
+            name "title"
+
+            style <alertdialogtitle>
+        }
+
+        CIwUILabel
+        {
+            name "message"
+
+            style <alertdialogmessage>
+        }
+
+        CIwUIButton
+        {
+            name "positiveButton"
+
+            style <alertdialogbutton>
+        }
+
+        CIwUIButton
+        {
+            name "negativeButton"
+
+            style <alertdialogbutton>
+        }
+
+        CIwUIButton
+        {
+            name "neutralButton"
+
+            style <alertdialogbutton>
+        }
+
+        CIwUILayout
+        {
+            CIwUILayoutVertical
+            {
+                border { 16 16 }
+
+                element { name "title" }
+                element { name "message" }
+                element { name "positiveButton" }
+                element { name "negativeButton" }
+                element { name "neutralButton" }
+            }
+        }
+    }
+
+    CIwUILayoutForm
+    {
+        formSize { 100 100 }
+        
+        element 
+        { 
+            name "dialog" 
+
+            alignH centre
+            alignV middle
+
+            left   { val 15 }
+            right  { val 85 }
+            top    { val 15 }
+            bottom { val 85 }
+        }   
+    }
+}

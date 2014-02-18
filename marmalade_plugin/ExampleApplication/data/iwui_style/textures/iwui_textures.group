@@ -1,0 +1,39 @@
+CIwResGroup
+{
+    name    iwui_textures
+
+    .\background.tga
+    .\button_down.tga
+    .\button_up.tga
+    .\checkbox_cross.tga
+    .\checkbox_style.tga
+    .\dialog.tga
+    .\focus.tga
+    .\progressBar_arrowHead.tga
+    .\progressBar_background.tga
+    .\progressBar_style.tga
+    .\slider_background.tga
+    .\slider_bar.tga
+    .\slider_marker.tga
+    .\radio_buttonDown.tga
+    .\radio_buttonUp.tga
+    .\radio_left_buttonDown.tga
+    .\radio_left_buttonUp.tga
+    .\radio_right_buttonDown.tga
+    .\radio_right_buttonUp.tga
+    .\textField_background.tga
+    .\textField_cursor.tga
+    .\indicator-0.tga
+    .\indicator-1.tga
+    .\indicator-2.tga
+    .\indicator-3.tga
+    .\indicator-4.tga
+    .\indicator-5.tga
+    .\indicator-6.tga
+    .\indicator-7.tga
+    .\spinner.tga
+    .\tableitem_down.tga
+    .\tableitem_focus.tga
+    .\tableitem_greypanel.tga
+    .\tableitem_selected.tga
+}

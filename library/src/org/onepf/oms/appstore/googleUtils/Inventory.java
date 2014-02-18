@@ -96,6 +96,11 @@ public class Inventory {
         return new ArrayList<Purchase>(mPurchaseMap.values());
     }
 
+    /** Added for Marmalade extension */
+    public List<SkuDetails> getAllSkus(){
+        return new ArrayList<SkuDetails>(mSkuMap.values());
+    }
+
     public void addSkuDetails(SkuDetails d) {
         mSkuMap.put(d.getSku(), d);
     }

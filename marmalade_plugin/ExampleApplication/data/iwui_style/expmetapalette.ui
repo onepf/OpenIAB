@@ -1,0 +1,248 @@
+CIwUIElement
+{
+	name ExpMetaPalette/Layouts
+
+	CIwUIElement
+	{
+		name			Layered
+		
+		CIwUILayout
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Vertical
+		
+		CIwUILayoutVertical
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Horizontal
+		
+		CIwUILayoutHorizontal
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Grid
+		
+		CIwUILayoutGrid
+		{
+			numColumns 2
+			numRows 2
+		}
+	}
+	CIwUIScrollableView
+	{
+		name			ScrollableVertical
+		
+		clipped true
+		updatable true
+
+		CIwUIFocusHandlerTab
+		{
+			name "Focus"
+		}
+		
+		CIwUILayoutVertical
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Panel
+		
+		// Background
+		CIwUIImage { name "Background" texture Background }
+
+		CIwUIElement 
+		{
+			name "Base"
+		}
+
+		CIwUILayout
+		{
+			sizeToSpace	true
+
+			element { name "Background" }
+			element { name "Base" }
+		}
+	}
+}
+CIwUIElement
+{
+	name ExpMetaPalette/Controls
+
+	CIwUIElement
+	{
+		name Element
+		size { 50 50 }
+	}
+	CIwUIImage
+	{
+		name "Image"
+		texture Image
+		sizeToContent true
+	}
+	CIwUIButton
+	{
+		name "Button"
+		style <button>
+		caption "Button"
+	}
+	CIwUITabBar
+	{
+		name "TabBar"
+		sizeToContent true
+		radioButtonStyles {
+			{ caption "left" style <radio_left> } 
+			{ caption "centre" style <radio_centre> } 
+			{ caption "right"  style <radio_right> } 
+		}
+	}
+	CIwUICheckBox
+	{
+		name "CheckBox"
+		style <checkbox>
+		caption "CheckBox"
+	}
+	CIwUILabel
+	{
+		name "Label"
+		style <label_medium>
+		caption "Label"	
+	}
+	CIwUITextField
+	{
+		name	"TextField"
+		style	<textField>
+		caption	"Text Field"
+		size { 50 37 }
+	}
+	CIwUIProgressBar
+	{
+		name "Progress"
+		style <progressBar>
+		size { 70 32 }
+	}
+	CIwUISlider
+	{
+		name "Slider"
+		style <slider>
+		size { 70 37 }
+	}
+
+}
+
+CIwUIElement
+{
+	name ExpMetaPalette/Dialogs
+	CIwUIAlertDialog
+	{
+		name "AlertDialog"
+		sizeToContent true
+		margin { 16 16 }
+		
+		background { drawableType border border { 16, 16 } texture dialog }
+		labelStyle { caption "AlertDialog" parent "<label_medium>" }
+		buttonStyles {
+			{ caption "Ok" parent "<button>" }
+			{ caption "Cancel" parent "<button>" }
+		}
+	}
+}
+CIwUIElement
+{
+	name ExpMetaPalette:l/ChangeLayout
+
+	CIwUIElement
+	{
+		name			NoLayout
+	}
+	CIwUIElement
+	{
+		name			Layered
+		
+		CIwUILayout
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Vertical
+		
+		CIwUILayoutVertical
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Horizontal
+		
+		CIwUILayoutHorizontal
+		{
+		}
+	}
+	CIwUIElement
+	{
+		name			Grid
+		
+		CIwUILayoutGrid
+		{
+			numColumns 2
+			numRows 2
+		}
+	}
+}
+CIwUIElement
+{
+	name ExpMetaPalette:f/ChangeFocus
+
+	CIwUIElement
+	{
+		name			NoFocus
+	}
+	CIwUIElement
+	{
+		name			FocusHandler2D
+		
+		CIwUIFocusHandler2D
+		{
+			name	FocusHandler2D
+		}
+	}
+	CIwUIElement
+	{
+		name			FocusHandlerTab
+		
+		CIwUIFocusHandlerTab
+		{
+			name	FocusHandlerTab
+		}
+	}
+}
+CIwUIElement
+{
+	name ExpMetaPalette:s/Spacer
+
+	CIwUIElement
+	{
+		name			Spacer
+		
+		CIwUILayout
+		{
+			element {
+				CIwUILayoutSpacer {
+					name "Spacer"
+					sizeMin  { 30 30 }
+					sizeMax  { 30 30 }
+					sizeHint  { 30 30 }
+				}
+			}
+		}
+	}
+}

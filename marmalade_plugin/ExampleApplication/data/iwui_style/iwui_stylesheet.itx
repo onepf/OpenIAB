@@ -1,0 +1,12 @@
+//*****************************************************************************
+//* iwui_stylesheet.itx
+//*
+//* Stylesheet wrapper for the Ideaworks User Interface Look & Feel styles
+//*
+//*****************************************************************************
+CIwUIStylesheet
+{
+	name iwui
+	
+	include "iwui_style/iwui_propertysets.itx"
+}
