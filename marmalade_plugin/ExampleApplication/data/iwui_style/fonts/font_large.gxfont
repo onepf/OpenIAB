@@ -1,0 +1,14 @@
+//Temp file created by AS Font Builder (User: stevenj At: 02/03/11 15:51:42)
+//Command Line:
+//:  -fontdesc "0;-24;0;0;0;400;0;0;0;0;3;2;1;34;Verdana" 5 4 0  -pad 0 0 
+//:  -col #FFFFFF -shadow 0 -spacing 4 -force16 0
+
+CIwGxFont
+{
+	utf8 1
+	image font_large.tga
+	charmap " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ•€"
+
+	kerning 1
+	default " "
+}

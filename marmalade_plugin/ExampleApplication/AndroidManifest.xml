@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="${PACKAGENAME}"
+      android:versionCode="${VERSIONCODE}"
+      android:versionName="${VERSIONNAME}"
+      android:installLocation="${INSTALLLOCATION}"
+      >
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"${EXTRA_ATTRIBS}>
+        <activity android:name=".${CLASSNAME}"
+                  android:label="@string/app_name"
+                  android:configChanges="locale|keyboardHidden|orientation"
+                  android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <provider android:name="com.ideaworks3d.marmalade.VFSProvider"
+                  android:authorities="zzzz${HASHNAME}.VFSProvider"
+                  android:exported="false"
+                  android:multiprocess="true"
+        >
+        </provider>
+        ${EXTRA_APPLICATION_MANIFESTS}
+    </application>
+    <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="8"/>
+	<!-- Required by Marmalade internally. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.BATTERY_STATS"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.SET_ORIENTATION"/>
+    <uses-permission android:name="android.permission.DEVICE_POWER"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- The following permissions are optional unless required by your application: -->
+    <!-- Required if using the sdcard (AndroidUseSdcard=1). -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- Required by s3eContacts. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+    <!-- Required by s3eSoundRecord. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Required by s3eCamera. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Required by s3eSMS. -->
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <!-- Required by s3eLocation. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Required by s3eAndroidLVL.mkb to check licensing. -->
+    <uses-permission android:name="com.android.vending.CHECK_LICENSE" />
+    <!-- Required by s3eAndroidInAppBilling to initiate in-app transactions -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- Required by s3eAndroidZeroConf to allow multicast receive -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    ${SUPPORTS_GL_TEXTURE}
+    ${EXTRA_MANIFESTS}
+</manifest>

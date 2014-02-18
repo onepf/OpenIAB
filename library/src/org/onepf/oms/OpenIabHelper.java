@@ -843,6 +843,36 @@ public class OpenIabHelper {
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
+    public void queryInventoryAsync(final List<String> inAppSkus,
+                               final List<String> subSkus,
+                               final IabHelper.QueryInventoryFinishedListener listener) {
+        final Handler handler = new Handler();
+        checkSetupDone("queryInventory");
+        flagStartAsync("refresh inventory");
+        (new Thread(new Runnable() {
+            public void run() {
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Sku details retrieved successfully.");
+                Inventory inv = null;
+                try {
+                    inv = queryInventory(true, inAppSkus, subSkus);
+                }
+                catch (IabException ex) {
+                    result = ex.getResult();
+                }
+
+                flagEndAsync();
+
+                final IabResult result_f = result;
+                final Inventory inv_f = inv;
+                handler.post(new Runnable() {
+                    public void run() {
+                        listener.onQueryInventoryFinished(result_f, inv_f);
+                    }
+                });
+            }
+        })).start();
+    }
+
     public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
         Purchase purchaseStoreSku = (Purchase) itemInfo.clone(); // TODO: use Purchase.getStoreSku()

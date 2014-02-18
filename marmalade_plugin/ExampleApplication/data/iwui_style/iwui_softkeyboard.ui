@@ -1,0 +1,137 @@
+CIwUIPropertySet 
+{
+    name "<balloon_style>"
+
+    font "font_small"
+    textColour { 45 45 45 255 }
+    alignH "centre"
+    alignV "middle"
+    displayLength 300
+    balloonSize  { 70 70 }
+    background
+    {
+        drawableType "border"
+        texture "textField_background"
+        border  { 12 12 }
+    }
+}
+
+CIwUIPropertySet 
+{
+    name "<softkeyboard_all_in_one>"
+
+    font        "font_small"
+    textColour  { 45 45 45 255 }
+    alignH      "centre"
+    alignV      "middle"
+
+    buttonUp
+    {
+        drawableType "border"
+        texture "button_up"
+        border  { 12 12 }
+    }
+
+    buttonDown
+    {
+        drawableType "border"
+        texture "button_down"
+        border  { 12 12 }
+    }
+}
+
+CIwUIPropertySet 
+{
+    name "<softkeyboard_lower_key_label>"
+
+    sizeToContent   true
+    font            "font_small"
+    textColour      { 45 45 45 255 }
+    alignH          "centre"
+    alignV          "middle"
+}
+
+CIwUIPropertySet 
+{
+    name "<softkeyboard_keys_style>"
+
+    wrapLeft "wrap"
+    wrapRight "wrap"
+    wrapUp "none"
+    wrapDown "stop"
+}
+
+CIwUISoftKeyboard 
+{
+    name "soft_keyboard"
+
+    sizeToContent true
+    cursorDelay 1500
+    cursorFlashPeriod 1200
+
+    CIwUIElement 
+    {
+        name "PanelContainer"
+        CIwUILayout 
+        {
+            name "Layout"
+            sizeToSpace true
+        }
+    }
+
+    CIwUILayoutForm 
+    {
+        name "Form"
+        sizeToSpace true
+        formSize  { 320 480 }
+
+        element
+        {
+            name "symbols_chooser"
+            left 
+            { 
+                val 0 
+            }
+            right 
+            { 
+                val 320 
+            }
+            top 
+            { 
+                val 40 
+            }
+            bottom 
+            { 
+                val 480 
+            }
+        }
+        
+        element 
+        {
+            name "PanelContainer"
+
+            top 
+            { 
+                val 233
+            }
+            right 
+            { 
+                val 320
+            }
+            left 
+            { 
+                val 0
+            }
+            bottom
+            { 
+                val 480
+            }
+            alignV "bottom"
+        }
+    }
+    
+    CIwUIFocusHandlerTab 
+    {
+        name "Focus1"
+    }
+}
