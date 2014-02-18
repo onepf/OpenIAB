@@ -38,6 +38,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
+        IabResult result = null;
         if (!MpUtils.isPaymentBroadcastEnabled(context)) {
             try {
                 Class permissionClass = Class.forName(context.getPackageName() + ".Manifest$permission");
@@ -45,20 +46,19 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 String permissionString = (String) paymentBroadcastPermission.get(null);
                 MpUtils.enablePaymentBroadcast(context, permissionString);
             } catch (Exception ignored) {
-                listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "PAYMENT_BROADCAST_PERMISSION is NOT declared."));
-                return;
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "PAYMENT_BROADCAST_PERMISSION is NOT declared.");
             }
         }
-        try {
-            fortumoInapps = FortumoBillingService.getFortumoInapps(context);
-        } catch (IOException e) {
-            listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Parsing error."));
-            return;
-        } catch (XmlPullParserException e) {
-            listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Parsing error."));
-            return;
+        if (result == null) {
+            try {
+                fortumoInapps = FortumoBillingService.getFortumoInapps(context);
+            } catch (IOException e) {
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Parsing error.");
+            } catch (XmlPullParserException e) {
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Parsing error.");
+            }
         }
-        listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Fortumo billing service is ok")); //todo redo
+        listener.onIabSetupFinished(result != null ? result : new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Fortumo billing service is ok"));
     }
 
     @Override
@@ -208,19 +208,6 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 //        purchase.setItemType(FortumoStore.getSkuType(fortumoSku));
         return purchase;
     }
-
-
-//    private static boolean isItemConsumable(PaymentResponse paymentResponse) {
-//        boolean consumable = false;
-//        List<String> allStoreSkus = OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_FORTUMO);
-//        for (String fortumoSku : allStoreSkus) {
-//            if (FortumoStore.getSkuName(fortumoSku).equals(paymentResponse.getProductName())) {
-//                consumable = FortumoStore.isSkuConsumable(fortumoSku);
-//                break;
-//            }
-//        }
-//        return consumable;
-//    }
 
     public static Map<String, FortumoProduct> getFortumoInapps(Context context) throws IOException, XmlPullParserException {
         Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
