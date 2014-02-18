@@ -15,11 +15,9 @@
 
 package org.onepf.trivialdrive;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.fortumo.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -73,7 +71,7 @@ import android.widget.Toast;
  * It's at this point (and not when the user drives) that the "gas"
  * item is CONSUMED. Consumption should always happen when your game
  * world was safely updated to apply the effect of the purchase. So,
- * in an example scenario:
+ * in an fortumo_products_description scenario:
  *
  * BEFORE:      tank at 1/2
  * ON PURCHASE: tank at 1/2, "gas" item is owned
@@ -111,16 +109,23 @@ public class MainActivity extends Activity {
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003746");
         OpenIabHelper.mapSku(SKU_PREMIUM, "com.yandex.store", "org.onepf.trivialdrive.premium");
+//        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_FORTUMO,
+//                FortumoStore.sku(SKU_PREMIUM, OpenIabHelper.ITEM_TYPE_INAPP, false, "c5729224f5c89d63c37d8fbbada50867", "6481773efc593a70ee03167b3f8813cf"));
 
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
-        OpenIabHelper.mapSku(SKU_GAS, "com.yandex.store", "org.onepf.trivialdrive.gas");
+//        OpenIabHelper.mapSku(SKU_GAS, "com.yandex.store", "org.onepf.trivialdrive.gas");
+//        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_FORTUMO, FortumoStore.sku(SKU_GAS, OpenIabHelper.ITEM_TYPE_INAPP, true, "c5729224f5c89d63c37d8fbbada50867",
+//                "6481773efc593a70ee03167b3f8813cf"));
 
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, "com.yandex.store", "org.onepf.trivialdrive.infinite_gas");
+        //Fortumo doesn't support subscriptions for most countries. Added this sku  just to check.
+//        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_FORTUMO, FortumoStore.sku(SKU_INFINITE_GAS, OpenIabHelper.ITEM_TYPE_SUBS, true, "c5729224f5c89d63c37d8fbbada50867",
+//                "6481773efc593a70ee03167b3f8813cf"));
     }
     
     // (arbitrary) request code for the purchase flow
@@ -156,33 +161,36 @@ public class MainActivity extends Activity {
          *
          * Instead of just storing the entire literal string here embedded in the
          * program,  construct the key at runtime from pieces or
-         * use bit manipulation (for example, XOR with some other string) to hide
+         * use bit manipulation (for fortumo_products_description, XOR with some other string) to hide
          * the actual key.  The key itself is not secret information, but we don't
          * want to make it easy for an attacker to replace the public key with one
          * of their own and then fake messages from the server.
          */
-        String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
-        String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
-
-        // Some sanity checks to see if the developer (that's you!) really followed the
-        // instructions to run this sample (don't put these checks on your app!)
-        if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
-            throw new RuntimeException("Please put your app's public key in MainActivity.java. See README.");
-        }
-        if (getPackageName().startsWith("com.example")) {
-            throw new RuntimeException("Please change the sample's package name! See README.");
-        }
+//        String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
+//        String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
+//
+//        // Some sanity checks to see if the developer (that's you!) really followed the
+//        // instructions to run this sample (don't put these checks on your app!)
+//        if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
+//            throw new RuntimeException("Please put your app's public key in MainActivity.java. See README.");
+//        }
+//        if (getPackageName().startsWith("com.fortumo_products_description")) {
+//            throw new RuntimeException("Please change the sample's package name! See README.");
+//        }
         
         // Create the helper, passing it our context and the public key to verify signatures with
-        Log.d(TAG, "Creating IAB helper.");
-        Map<String, String> storeKeys = new HashMap<String, String>();
-        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
-//      storeKeys.put(OpenIabHelper.NAME_AMAZON, "Unavailable. Amazon doesn't support RSA verification. So this mapping is not needed"); //
-//      storeKeys.put(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
-        storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
+//        Log.d(TAG, "Creating IAB helper.");
+//        Map<String, String> storeKeys = new HashMap<String, String>();
+//        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
+//        storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
+//
+//        mHelper = new OpenIabHelper(this, storeKeys);
 
-        mHelper = new OpenIabHelper(this, storeKeys);
-        
+        OpenIabHelper.Options options = new OpenIabHelper.Options();
+        options.verifyMode = OpenIabHelper.Options.VERIFY_EVERYTHING;
+        options.supportFortumo = true;
+        mHelper = new OpenIabHelper(this, options);
+
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);
 

@@ -23,16 +23,25 @@
             android:minSdkVersion="8"
             android:targetSdkVersion="15"/>
 
+    <!-- Define your own permission to protect payment broadcast -->
+    <permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"
+                android:label="Read payment status"
+                android:protectionLevel="signature"/>
+    <!-- "signature" permission granted automatically by system, without notifying user. -->
+    <uses-permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"/>
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="com.tmoney.vending.INBILLING"/>
     <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
-    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-    
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+
+
     <permission android:name="com.tmoney.vending.INBILLING"/>
 
     <meta-data
@@ -61,5 +70,25 @@
                     android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
             </intent-filter>
         </receiver>
+
+        <!--Fortumo start-->
+        <receiver android:name="mp.MpSMSReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="mp.MpService"/>
+        <service android:name="mp.StatusUpdateService"/>
+        <activity android:name="mp.MpActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
+
+        <receiver android:name="org.onepf.oms.appstore.fortumo.FortumoPaymentReceiver"
+                  android:permission="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION">
+            <intent-filter>
+                <action android:name="mp.info.PAYMENT_STATUS_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <!--Fortumo end-->
     </application>
 </manifest>
