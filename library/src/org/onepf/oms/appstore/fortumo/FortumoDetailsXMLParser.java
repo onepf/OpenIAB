@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class FortumoDetailsXMLParser {
     private static final String TAG = FortumoDetailsXMLParser.class.getSimpleName();
-    public static final String FORTUMO_PRODUCTS_FILE_NAME = "fortumo_products.xml";
+    public static final String INAPP_PRODUCTS_FILE_NAME = "inapp_products.xml";
 
     //TAGS
     private static final String FORTUMO_PRODUCTS_TAG = "fortumo-products";
@@ -29,7 +29,7 @@ public class FortumoDetailsXMLParser {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
         XmlPullParser parser = factory.newPullParser();
-        parser.setInput(context.getAssets().open(FORTUMO_PRODUCTS_FILE_NAME), null);
+        parser.setInput(context.getAssets().open(INAPP_PRODUCTS_FILE_NAME), null);
         FortumoSku sku = null;
         HashMap<String, FortumoSku> map = null;
         int eventType = parser.getEventType();
