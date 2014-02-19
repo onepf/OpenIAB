@@ -3,6 +3,7 @@ package org.onepf.oms.appstore.onepfUtils;
 import android.text.TextUtils;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created by akarimova on 14.02.14.
@@ -88,6 +89,10 @@ public class BaseInappProduct {
         }
     }
 
+    public String getTitle() {
+        return getTitleByLocale(Locale.getDefault().toString());
+    }
+
     public void addDescriptionLocalization(String locale, String description) {
         localeToDescriptionMap.put(locale, description);
     }
@@ -99,6 +104,10 @@ public class BaseInappProduct {
         } else {
             return baseDescription;
         }
+    }
+
+    public String getDescription() {
+        return getDescriptionByLocale(Locale.getDefault().toString());
     }
 
     public void addCountryPrice(String countryCode, float price) {

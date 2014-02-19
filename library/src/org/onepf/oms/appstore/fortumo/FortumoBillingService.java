@@ -61,36 +61,36 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     @Override
     public void launchPurchaseFlow(final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         this.purchaseFinishedListener = listener;
-        final FortumoProduct fortumoProduct = fortumoInapps.get(sku);
         this.activityRequestCode = requestCode;
-        PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
-                setConsumable(fortumoProduct.isConsumable()).
-                setProductName(fortumoProduct.getProductId()).
-                setDisplayString(fortumoProduct.getTitleByLocale(Locale.getDefault().toString())).
-                build();
-        FortumoStore.startPaymentActivityForResult(act, requestCode, paymentRequest);
+        final FortumoProduct fortumoProduct = fortumoInapps.get(sku);
+        if (fortumoProduct == null) {
+            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR, "Required sku " + sku + " was not declared in xml files."), null);
+        } else {
+            PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
+                    setConsumable(fortumoProduct.isConsumable()).
+                    setProductName(fortumoProduct.getProductId()).
+                    setDisplayString(fortumoProduct.getTitle()).
+                    build();
+            FortumoStore.startPaymentActivityForResult(act, requestCode, paymentRequest);
+        }
     }
 
     @Override
     public boolean handleActivityResult(int requestCode, int resultCode, Intent intent) {
         if (activityRequestCode != requestCode) return false;
         if (intent == null) {
-            if (purchaseFinishedListener != null) {
-                purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in Fortumo IAB result"), null);
-            }
+            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in Fortumo IAB result"), null);
         }
         PaymentResponse paymentResponse = new PaymentResponse(intent);
         Purchase purchase = purchaseFromPaymentResponse(context, paymentResponse);
         int errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
-        String errorMsg = "";
+        String errorMsg = "Error during purchase.";
         if (resultCode == Activity.RESULT_OK) {
             if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
                 errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
             }
         }
-        if (purchaseFinishedListener != null) {
-            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
-        }
+        purchaseFinishedListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
         return true;
     }
 

@@ -46,6 +46,6 @@ public class FortumoProduct extends BaseInappProduct {
     }
 
     public SkuDetails toSkuDetails(String price) {
-        return new SkuDetails(OpenIabHelper.ITEM_TYPE_INAPP, getProductId(), getDescriptionByLocale(Locale.getDefault().toString()), price, getDescriptionByLocale(Locale.getDefault().toString()));
+        return new SkuDetails(OpenIabHelper.ITEM_TYPE_INAPP, getProductId(), getTitle(), price, getDescription());
     }
 }
