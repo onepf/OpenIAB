@@ -18,56 +18,62 @@
           package="org.onepf.trivialdrive"
           android:versionCode="10"
           android:versionName="0.9.2">
-
     <uses-sdk
             android:minSdkVersion="8"
             android:targetSdkVersion="15"/>
 
-    <!-- Define your own permission to protect payment broadcast -->
+    <!--fortumo sends and receives sms to process payment-->
+    <!--<uses-feature android:name="android.hardware.telephony" android:required="false"/>-->
+
+    <!-- Fortumo: define your own permission to protect payment broadcast -->
     <permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"
                 android:label="Read payment status"
                 android:protectionLevel="signature"/>
     <!-- "signature" permission granted automatically by system, without notifying user. -->
     <uses-permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"/>
+    <!--google-->
     <uses-permission android:name="com.android.vending.BILLING"/>
+    <!--fortumo-->
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
+    <!--for all-->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!--t-store-->
+    <uses-permission android:name="com.tmoney.vending.INBILLING"/>
+    <!--amazon-->
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
+    <!--open store-->
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+
+    <!--todo check for which stores-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.tmoney.vending.INBILLING"/>
-    <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
-    <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
-    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
-
-
-    <permission android:name="com.tmoney.vending.INBILLING"/>
-
-    <meta-data
-            android:name="iap:api_version"
-            android:value="13"/>
 
     <application
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
+        <meta-data
+                android:name="iap:api_version"
+                android:value="13"/>
         <activity
-            android:name="org.onepf.trivialdrive.MainActivity"
-            android:label="@string/title_activity_main"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize"
-            >
+                android:name="org.onepf.trivialdrive.MainActivity"
+                android:label="@string/title_activity_main"
+                android:screenOrientation="portrait"
+                android:configChanges="orientation|screenSize"
+                >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!--amazon -->
         <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
             <intent-filter>
                 <action
-                    android:name="com.amazon.inapp.purchasing.NOTIFY"
-                    android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
+                        android:name="com.amazon.inapp.purchasing.NOTIFY"
+                        android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
             </intent-filter>
         </receiver>
 

@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class InappsXMLParser {
     private static final String TAG = InappsXMLParser.class.getSimpleName();
-    public static final String IN_APP_PRODUCTS_FILE_NAME = "fortumo_products_description.xml";
+    public static final String IN_APP_PRODUCTS_FILE_NAME = "inapps_products.xml";
 
     //TAGS
     private static final String SUBSCRIPTIONS_TAG = "subscriptions";

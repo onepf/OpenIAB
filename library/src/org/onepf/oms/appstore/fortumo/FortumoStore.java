@@ -49,10 +49,7 @@ public class FortumoStore extends DefaultAppstore {
     @Override
     public boolean isBillingAvailable(String packageName) {
         //SMS support is required to make payments
-        if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
-            return false;
-        }
-        return true;
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
     }
 
     @Override
@@ -267,6 +264,7 @@ public class FortumoStore extends DefaultAppstore {
 
     /**
      * Checks all required by Fortumo elements
+     *
      * @param context must be not null
      */
     public static void checkSettings(Context context) {
@@ -288,6 +286,7 @@ public class FortumoStore extends DefaultAppstore {
 
     /**
      * To support Fortumo 2 files need to be added: a file with all inapp-products description and a file with fortumo-specific elements (service id, service inapp secret, is item consumable or not)
+     *
      * @param context to get access to asset manager
      */
     private static void checkDataXmlFiles(Context context) {

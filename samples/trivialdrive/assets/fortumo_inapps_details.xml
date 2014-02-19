@@ -1,0 +1,4 @@
+<fortumo-products>
+    <product id="sku_gas" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf" consumbale="true"/>
+    <product id="sku_premium" service-id="c5729224f5c89d63c37d8fbbada50867" service-inapp-secret="6481773efc593a70ee03167b3f8813cf" consumbale="false"/>
+</fortumo-products>

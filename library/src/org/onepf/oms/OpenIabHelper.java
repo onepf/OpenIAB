@@ -138,6 +138,7 @@ public class OpenIabHelper {
     public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
     public static final String NAME_FORTUMO = "Fortumo";
+    public static final String NAME_YANDEX = "com.yandex.store";
 
     /** 
      * NOTE: used as sync object in related methods<br>
@@ -175,7 +176,6 @@ public class OpenIabHelper {
             if (skuMap.get(sku) != null) {
                 throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
             }
-            ;
             Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
             if (storeSkuMap == null) {
                 storeSkuMap = new HashMap<String, String>();

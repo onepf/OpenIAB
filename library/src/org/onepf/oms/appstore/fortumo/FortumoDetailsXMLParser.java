@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class FortumoDetailsXMLParser {
     private static final String TAG = FortumoDetailsXMLParser.class.getSimpleName();
-    public static final String INAPP_PRODUCTS_FILE_NAME = "inapp_products.xml";
+    public static final String INAPP_PRODUCTS_FILE_NAME = "fortumo_inapps_details.xml";
 
     //TAGS
     private static final String FORTUMO_PRODUCTS_TAG = "fortumo-products";
