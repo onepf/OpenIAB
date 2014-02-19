@@ -8,9 +8,6 @@ import android.text.TextUtils;
 import mp.MpUtils;
 import mp.PaymentRequest;
 import mp.PaymentResponse;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.*;
@@ -64,8 +61,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     @Override
     public void launchPurchaseFlow(final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         this.purchaseFinishedListener = listener;
-        final FortumoProduct fortumoProduct = fortumoInapps.get("product_id1");
-        //todo check for null
+        final FortumoProduct fortumoProduct = fortumoInapps.get(sku);
         this.activityRequestCode = requestCode;
         PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
                 setConsumable(fortumoProduct.isConsumable()).
@@ -73,8 +69,6 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 setDisplayString(fortumoProduct.getTitleByLocale(Locale.getDefault().toString())).
                 build();
         FortumoStore.startPaymentActivityForResult(act, requestCode, paymentRequest);
-
-//        }
     }
 
     @Override
@@ -103,49 +97,59 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         Inventory inventory = new Inventory();
-//        SharedPreferences sharedPreferences = context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
-//
-//        String messageId = sharedPreferences.getString(FortumoStore.SHARED_PREFS_PAYMENT_TO_HANDLE, "");
-//        if (!TextUtils.isEmpty(messageId) && !messageId.equals("-1")) {
-//            PaymentResponse paymentResponse = MpUtils.getPaymentResponse(context, Long.valueOf(messageId));
-//            if (paymentResponse != null) {
-//                Purchase purchase = purchaseFromPaymentResponse(context, paymentResponse);
-////                if (isItemConsumable(paymentResponse)) {
-////                    addConsumableItem(purchase);
-////                }
-//                if (true) {
-//                    addConsumableItem(purchase);
-//                }
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.remove(FortumoStore.SHARED_PREFS_PAYMENT_TO_HANDLE);
-//                editor.commit();
-//            }
-//        }
-//
-//        //Non-consumable items from Fortumo
-//        List<String> allFortumoSkus = OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_FORTUMO);
-//        for (String sku : allFortumoSkus) {
-//            boolean consumable = FortumoStore.isSkuConsumable(sku);
-//            String skuName = FortumoStore.getSkuName(sku);
-//            if (!consumable) {
-//                List purchaseHistory = MpUtils.getPurchaseHistory(context, FortumoStore.getSkuServiceId(sku), FortumoStore.getSkuAppSecret(sku), 5000);
-//                for (int i = 0; i < purchaseHistory.size(); i++) {
-//                    PaymentResponse paymentResponse = (PaymentResponse) purchaseHistory.get(i);
-//                    if (paymentResponse.getProductName().equals(skuName)) {
-//                        inventory.addPurchase(purchaseFromPaymentResponse(context, paymentResponse));
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        //Consumable items from shared prefs
-//        ArrayList<Purchase> consumableSkus = getConsumablePurchases();
-//        for (Purchase purchase : consumableSkus) {
-//            inventory.addPurchase(purchase);
-//        }
+        SharedPreferences sharedPreferences = context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
+        String messageId = sharedPreferences.getString(FortumoStore.SHARED_PREFS_PAYMENT_TO_HANDLE, "");
+        if (!TextUtils.isEmpty(messageId) && !messageId.equals("-1")) {
+            PaymentResponse paymentResponse = MpUtils.getPaymentResponse(context, Long.valueOf(messageId));
+            if (paymentResponse != null) {
+                Purchase purchase = purchaseFromPaymentResponse(context, paymentResponse);
+                if (purchase.getItemType().equals(OpenIabHelper.ITEM_TYPE_SUBS)) {
+                    //todo an exception
+                }
+                final FortumoProduct fortumoProduct = fortumoInapps.get(purchase.getSku());
+                if (fortumoProduct.isConsumable()) {
+                    inventory.addPurchase(purchase);
+                }
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove(FortumoStore.SHARED_PREFS_PAYMENT_TO_HANDLE);
+                editor.commit();
+            }
+        }
 
-//        return inventory;
+        final Collection<FortumoProduct> inappProducts = fortumoInapps.values();
+        for (FortumoProduct fortumoProduct : inappProducts) {
+            if (!fortumoProduct.isConsumable()) {
+                final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 5000); //todo what does the last param mean???
+                if (purchaseHistory != null && purchaseHistory.size() > 0) {
+                    for (Object response : purchaseHistory) {
+                        PaymentResponse paymentResponse = (PaymentResponse) response;
+                        if (paymentResponse.getProductName().equals(fortumoProduct.getProductId())) {
+                            inventory.addPurchase(purchaseFromPaymentResponse(context, paymentResponse));
+                            if (querySkuDetails) {
+                                fortumoProduct.toSkuDetails(paymentResponse.getPriceAmount() + " " + paymentResponse.getPriceCurrency());
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (querySkuDetails && moreItemSkus != null && moreItemSkus.size() > 0) {
+            for (String name : moreItemSkus) {
+                final FortumoProduct fortumoProduct = fortumoInapps.get(name);
+                if (fortumoProduct != null) {
+                    final List fetchedPriceData = MpUtils.getFetchedPriceData(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret());
+                    if (fetchedPriceData != null && fetchedPriceData.size() > 0) {
+                        inventory.addSkuDetails(fortumoProduct.toSkuDetails((String) fetchedPriceData.get(0)));
+                    } else {
+                        //todo throw an exception?
+                    }
+                } else {
+                    //todo throw an exception?
+                }
+            }
+        }
         return inventory;
     }
 
@@ -159,53 +163,17 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         //do nothing
     }
 
-    /**
-     * Returns consumable purchases from shared preferences
-     */
-    private ArrayList<Purchase> getConsumablePurchases() {
-        ArrayList<Purchase> purchases = new ArrayList<Purchase>();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
-        String consumableSkuString = sharedPreferences.getString(FortumoStore.SHARED_PREFS_FORTUMO_CONSUMABLE_SKUS, "");
-        try {
-            JSONArray jsonArray;
-            if (TextUtils.isEmpty(consumableSkuString)) {
-                jsonArray = new JSONArray();
-            } else {
-                jsonArray = new JSONArray(consumableSkuString);
-            }
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject object = (JSONObject) jsonArray.get(i);
-                purchases.add(convertJsonToPurchase(context, object));
-            }
-        } catch (JSONException e) {
-            SharedPreferences.Editor edit = sharedPreferences.edit();
-            edit.remove(FortumoStore.SHARED_PREFS_FORTUMO_CONSUMABLE_SKUS);
-            edit.commit();
-        }
-        return purchases;
-    }
 
     private static Purchase purchaseFromPaymentResponse(Context context, PaymentResponse paymentResponse) {
         Purchase purchase = new Purchase(OpenIabHelper.NAME_FORTUMO);
         purchase.setSku(paymentResponse.getProductName());
-        purchase.setPackageName(context.getPackageName());
-        String openFortumoSku = OpenIabHelper.getStoreSku(OpenIabHelper.NAME_FORTUMO, paymentResponse.getProductName());
-//        purchase.setItemType(FortumoStore.getSkuType(openFortumoSku));
+        purchase.setPackageName(context.getPackageName()); //todo remove?
         purchase.setOrderId(paymentResponse.getPaymentCode());
         Date date = paymentResponse.getDate();
         if (date != null) {
             purchase.setPurchaseTime(date.getTime());
         }
-        return purchase;
-    }
-
-    private static Purchase convertJsonToPurchase(Context context, JSONObject object) throws JSONException {
-        Purchase purchase = new Purchase(OpenIabHelper.NAME_FORTUMO);
-        purchase.setSku(object.getString("sku"));
-        purchase.setOrderId(object.getString("order_id"));
-        purchase.setPackageName(context.getPackageName());
-        String fortumoSku = OpenIabHelper.getStoreSku(OpenIabHelper.NAME_FORTUMO, object.getString("sku"));
-//        purchase.setItemType(FortumoStore.getSkuType(fortumoSku));
+        purchase.setItemType(OpenIabHelper.ITEM_TYPE_INAPP); //todo probably in the future subs will be supported
         return purchase;
     }
 
@@ -219,6 +187,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         final Map<String, FortumoSku> fortumoSkuDetailsMap = fortumoDetailsXMLParser.parse(context);
 
         for (BaseInappProduct inappProduct : allProducts) {
+            //Fortumo doesn't support subscriptions
             final boolean isItem = !(inappProduct instanceof SubscriptionInappProduct);
             if (isItem) {
                 final String productId = inappProduct.getProductId();

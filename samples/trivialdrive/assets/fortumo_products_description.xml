@@ -1,6 +1,6 @@
 <inapp-products>
     <items>
-        <item id="product_id1" publish-state="unpublished">
+        <item id="sku_gas" publish-state="unpublished">
             <summary>
                 <summary-base>
                     <title>title</title>
@@ -28,7 +28,7 @@
                 <price-local country="KM">5000.00</price-local>
             </price>
         </item>
-        <item id="product_id2" publish-state="unpublished">
+        <item id="gas" publish-state="unpublished">
             <summary>
                 <summary-base>
                     <title>title</title>

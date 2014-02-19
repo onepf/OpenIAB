@@ -1,6 +1,10 @@
 package org.onepf.oms.appstore.fortumo;
 
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.onepf.oms.appstore.onepfUtils.BaseInappProduct;
+
+import java.util.Locale;
 
 /**
  * Created by akarimova on 17.02.14.
@@ -39,5 +43,9 @@ public class FortumoProduct extends BaseInappProduct {
 
     public void setInAppSecret(String inAppSecret) {
         this.inAppSecret = inAppSecret;
+    }
+
+    public SkuDetails toSkuDetails(String price) {
+        return new SkuDetails(OpenIabHelper.ITEM_TYPE_INAPP, getProductId(), getDescriptionByLocale(Locale.getDefault().toString()), price, getDescriptionByLocale(Locale.getDefault().toString()));
     }
 }
