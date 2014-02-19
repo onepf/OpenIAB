@@ -77,6 +77,10 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
     @Override
     public boolean handleActivityResult(int requestCode, int resultCode, Intent intent) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(FortumoStore.SHARED_PREFS_PAYMENT_TO_HANDLE);
+        editor.commit();
         if (activityRequestCode != requestCode) return false;
         if (intent == null) {
             purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in Fortumo IAB result"), null);
@@ -160,7 +164,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
     @Override
     public void dispose() {
-        //do nothing
+        purchaseFinishedListener = null;
     }
 
 
