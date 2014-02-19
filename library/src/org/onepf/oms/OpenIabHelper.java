@@ -358,44 +358,97 @@ public class OpenIabHelper {
                         stores2check.add(new SamsungApps(activity, options));
                     }
                 }
-                
+
+                //todo redo
+                boolean hasFortumoInSetup = false;
                 for (Appstore store : stores2check) {
-                    if (store instanceof SamsungApps) samsungInSetup = (SamsungApps) store;
+                    if (store instanceof SamsungApps) {
+                        samsungInSetup = (SamsungApps) store;
+                    } else if (store instanceof FortumoStore) {
+                        hasFortumoInSetup = true;
+                    }
                 }
-                
-                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-                
+
+                final IabResult[] result = {new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported")};
+
                 if (options.checkInventory) {
-                    
+
                     final List<Appstore> equippedStores = checkInventory(stores2check);
-                    
+
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
                         if (mDebugLog) Log.d(TAG, in() + " " + "select equipped");
-                    } 
+                    }
                     if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                        result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                     } else {
-                        // found no equipped stores. Select store based on store parameters 
+                        // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
+                        if (mAppstore != null) {
+                            result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                        }
                         if (mDebugLog) Log.d(TAG, in() + " " + "select non-equipped");
                     }
                     if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
+                    } else {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            final FortumoStore fortumoStore = new FortumoStore(context);
+                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
+                                final CountDownLatch latch = new CountDownLatch(1);
+                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
+                                    @Override
+                                    public void onIabSetupFinished(IabResult setupResult) {
+                                        if (setupResult.isSuccess()) {
+                                            mAppstore = fortumoStore;
+                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
+                                        }
+                                        result[0] = setupResult;
+                                        latch.countDown();
+                                    }
+                                });
+                                try {
+                                    latch.await();
+                                } catch (InterruptedException e) {
+                                    Log.e(TAG, "Fortumo setup was interrupted", e);
+                                }
+                            }
+                        }
                     }
-                    fireSetupFinished(listener, result);
-                } else {                // no inventory check. Select store based on store parameters   
+                    fireSetupFinished(listener, result[0]);
+                } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
                     if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService(); 
+                        mAppstoreBillingService = mAppstore.getInAppBillingService();
                         mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
                             public void onIabSetupFinished(IabResult result) {
                                 fireSetupFinished(listener, result);
                             }
                         });
                     } else {
-                        fireSetupFinished(listener, result);
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            final FortumoStore fortumoStore = new FortumoStore(context);
+                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
+                                final CountDownLatch latch = new CountDownLatch(1);
+                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
+                                    @Override
+                                    public void onIabSetupFinished(IabResult setupResult) {
+                                        if (setupResult.isSuccess()) {
+                                            mAppstore = fortumoStore;
+                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
+                                        }
+                                        result[0] = setupResult;
+                                        latch.countDown();
+                                    }
+                                });
+                                try {
+                                    latch.await();
+                                } catch (InterruptedException e) {
+                                    Log.e(TAG, "Fortumo setup was interrupted", e);
+                                }
+                            }
+                        }
+                        fireSetupFinished(listener, result[0]);
                     }
                 }
                 for (Appstore store : stores2check) {
