@@ -293,12 +293,12 @@ public class FortumoStore extends DefaultAppstore {
         try {
             final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
             final boolean hasProductFile = strings.contains(InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME);
-            final boolean hasFortumoDetailsFile = strings.contains(FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+            final boolean hasFortumoDetailsFile = strings.contains(FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
             if (!(hasProductFile && hasFortumoDetailsFile)) {
-                throw new IllegalStateException("To support Fortumo you need the following xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+                throw new IllegalStateException("To support Fortumo you need the following xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Can't parse the required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+            throw new IllegalStateException("Can't parse the required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
         }
     }
 }

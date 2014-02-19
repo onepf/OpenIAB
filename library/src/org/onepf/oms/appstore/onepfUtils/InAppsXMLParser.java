@@ -37,15 +37,15 @@ public class InappsXMLParser {
     private static final String PERIOD_ATTR = "period";
     private static final String AUTOFILL_ATTR = "autofill";
 
-    public List<BaseInappProduct> parse(Context context) throws XmlPullParserException, IOException {
+    public List<InappBaseProduct> parse(Context context) throws XmlPullParserException, IOException {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
         XmlPullParser parser = factory.newPullParser();
         parser.setInput(context.getAssets().open(IN_APP_PRODUCTS_FILE_NAME), null);
 
-        BaseInappProduct currentProduct = null;
-        List<BaseInappProduct> itemsList = null;
-        List<SubscriptionInappProduct> subscriptionList = null;
+        InappBaseProduct currentProduct = null;
+        List<InappBaseProduct> itemsList = null;
+        List<InappSubscriptionProduct> subscriptionList = null;
         String title = null;
         String about = null;
         String currentLocale = null;
@@ -60,11 +60,11 @@ public class InappsXMLParser {
                 case XmlPullParser.START_TAG:
                     boolean isSubscription = tagName.equals(SUBSCRIPTION_TAG);
                     if (tagName.equals(ITEMS_TAG)) {
-                        itemsList = new ArrayList<BaseInappProduct>();
+                        itemsList = new ArrayList<InappBaseProduct>();
                     } else if (tagName.equals(SUBSCRIPTIONS_TAG)) {
-                        subscriptionList = new ArrayList<SubscriptionInappProduct>();
+                        subscriptionList = new ArrayList<InappSubscriptionProduct>();
                     } else if (tagName.equals(ITEM_TAG) || isSubscription) {
-                        currentProduct = new BaseInappProduct();
+                        currentProduct = new InappBaseProduct();
                         currentProduct.setProductId(parser.getAttributeValue(null, ID_ATTR));
                         currentProduct.setPublished(parser.getAttributeValue(null, PUBLISH_STATE_ATTR));
                         if (isSubscription) {
@@ -90,7 +90,7 @@ public class InappsXMLParser {
                         itemsList.add(currentProduct);
                         currentProduct = null;
                     } else if (tagName.equals(SUBSCRIPTION_TAG)) {
-                        SubscriptionInappProduct subscriptionProduct = new SubscriptionInappProduct(currentProduct, currentSubPeriod);
+                        InappSubscriptionProduct subscriptionProduct = new InappSubscriptionProduct(currentProduct, currentSubPeriod);
                         subscriptionList.add(subscriptionProduct);
                         currentSubPeriod = null;
                         currentProduct = null;
@@ -120,7 +120,7 @@ public class InappsXMLParser {
             eventType = parser.next();
         }
 
-        ArrayList<BaseInappProduct> productList = new ArrayList<BaseInappProduct>();
+        ArrayList<InappBaseProduct> productList = new ArrayList<InappBaseProduct>();
         productList.addAll(itemsList);
         productList.addAll(subscriptionList);
         return productList;

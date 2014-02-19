@@ -4,13 +4,13 @@ package org.onepf.oms.appstore.onepfUtils;
 /**
  * Created by akarimova on 17.02.14.
  */
-public class SubscriptionInappProduct extends BaseInappProduct {
+public class InappSubscriptionProduct extends InappBaseProduct {
     public static final String ONE_MONTH = "oneMonth";
     public static final String ONE_YEAR = "oneYear";
 
     private String period;
 
-    public SubscriptionInappProduct(BaseInappProduct otherProduct, String period) {
+    public InappSubscriptionProduct(InappBaseProduct otherProduct, String period) {
         super(otherProduct);
         this.period = period;
     }

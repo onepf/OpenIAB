@@ -11,10 +11,12 @@ import mp.PaymentResponse;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.*;
-import org.onepf.oms.appstore.onepfUtils.BaseInappProduct;
+import org.onepf.oms.appstore.onepfUtils.InappBaseProduct;
+import org.onepf.oms.appstore.onepfUtils.InappSubscriptionProduct;
 import org.onepf.oms.appstore.onepfUtils.InappsXMLParser;
-import org.onepf.oms.appstore.onepfUtils.SubscriptionInappProduct;
+import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -185,24 +187,146 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
         //get all products
         InappsXMLParser inappsXMLParser = new InappsXMLParser();
-        final List<BaseInappProduct> allProducts = inappsXMLParser.parse(context);
+        final List<InappBaseProduct> allProducts = inappsXMLParser.parse(context);
         //get fortumo sku details
         final FortumoDetailsXMLParser fortumoDetailsXMLParser = new FortumoDetailsXMLParser();
-        final Map<String, FortumoSku> fortumoSkuDetailsMap = fortumoDetailsXMLParser.parse(context);
+        final Map<String, FortumoDetailsXMLParser.FortumoDetails> fortumoSkuDetailsMap = fortumoDetailsXMLParser.parse(context);
 
-        for (BaseInappProduct inappProduct : allProducts) {
+        for (InappBaseProduct inappProduct : allProducts) {
             //Fortumo doesn't support subscriptions
-            final boolean isItem = !(inappProduct instanceof SubscriptionInappProduct);
+            final boolean isItem = !(inappProduct instanceof InappSubscriptionProduct);
             if (isItem) {
                 final String productId = inappProduct.getProductId();
-                final FortumoSku fortumoSku = fortumoSkuDetailsMap.get(productId);
-                if (fortumoSku == null) {
-                    throw new IllegalStateException("Fortumo sku details were not found");
+                final FortumoDetailsXMLParser.FortumoDetails fortumoDetails = fortumoSkuDetailsMap.get(productId);
+                if (fortumoDetails == null) {
+                    throw new IllegalStateException("Fortumo inapp product details were not found");
                 }
-                FortumoProduct fortumoProduct = new FortumoProduct(inappProduct, fortumoSku.isConsumable(), fortumoSku.getServiceId(), fortumoSku.getServiceInAppSecret());
+                FortumoProduct fortumoProduct = new FortumoProduct(inappProduct, fortumoDetails);
                 map.put(productId, fortumoProduct);
             }
         }
         return map;
+    }
+
+
+    static class FortumoProduct extends InappBaseProduct {
+        private boolean consumable;
+        private String serviceId;
+        private String inAppSecret;
+
+        public FortumoProduct(InappBaseProduct otherProduct, FortumoDetailsXMLParser.FortumoDetails fortumoDetails) {
+            super(otherProduct);
+            this.consumable = fortumoDetails.isConsumable();
+            this.serviceId = fortumoDetails.getServiceId();
+            this.inAppSecret = fortumoDetails.getServiceInAppSecret();
+        }
+
+        public boolean isConsumable() {
+            return consumable;
+        }
+
+        public void setConsumable(boolean consumable) {
+            this.consumable = consumable;
+        }
+
+        public String getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getInAppSecret() {
+            return inAppSecret;
+        }
+
+        public void setInAppSecret(String inAppSecret) {
+            this.inAppSecret = inAppSecret;
+        }
+
+        public SkuDetails toSkuDetails(String price) {
+            return new SkuDetails(OpenIabHelper.ITEM_TYPE_INAPP, getProductId(), getTitle(), price, getDescription());
+        }
+    }
+
+
+    static class FortumoDetailsXMLParser {
+        private static final String TAG = FortumoDetailsXMLParser.class.getSimpleName();
+        public static final String INAPP_PRODUCTS_FILE_NAME = "fortumo_inapps_details.xml";
+
+        //TAGS
+        private static final String FORTUMO_PRODUCTS_TAG = "fortumo-products";
+        private static final String PRODUCT_TAG = "product";
+        //ATTRS
+        private static final String ID_ATTR = "id";
+        private static final String SERVICE_ID_ATTR = "service-id";
+        private static final String SERVICE_INAPP_SECRET_ATTR = "service-inapp-secret";
+        private static final String CONSUMABLE_ATTR = "consumable";
+
+        public Map<String, FortumoDetails> parse(Context context) throws XmlPullParserException, IOException {
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            XmlPullParser parser = factory.newPullParser();
+            parser.setInput(context.getAssets().open(INAPP_PRODUCTS_FILE_NAME), null);
+            FortumoDetails sku = null;
+            HashMap<String, FortumoDetails> map = null;
+            int eventType = parser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                String tagname = parser.getName();
+                switch (eventType) {
+                    case XmlPullParser.START_TAG:
+                        if (tagname.equals(FORTUMO_PRODUCTS_TAG)) {
+                            map = new HashMap<String, FortumoDetails>();
+                        } else if (tagname.equalsIgnoreCase(PRODUCT_TAG)) {
+                            sku = new FortumoDetails(parser.getAttributeValue(null, ID_ATTR), Boolean.parseBoolean(parser.getAttributeValue(null, CONSUMABLE_ATTR)),
+                                    parser.getAttributeValue(null, SERVICE_ID_ATTR), parser.getAttributeValue(null, SERVICE_INAPP_SECRET_ATTR));
+                        }
+                        break;
+
+                    case XmlPullParser.END_TAG:
+                        if (tagname.equals(PRODUCT_TAG)) {
+                            map.put(sku.getId(), sku);
+                            sku = null;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                eventType = parser.next();
+            }
+            return map;
+        }
+
+        static class FortumoDetails {
+            private String id;
+            private String serviceId;
+            private String serviceInAppSecret;
+            private boolean consumable;
+
+            public FortumoDetails(String id, boolean consumable, String serviceId, String serviceInAppSecret) {
+                this.id = id;
+                this.consumable = consumable;
+                this.serviceId = serviceId;
+                this.serviceInAppSecret = serviceInAppSecret;
+            }
+
+            public String getId() {
+                return id;
+            }
+
+            public boolean isConsumable() {
+                return consumable;
+            }
+
+            public String getServiceId() {
+                return serviceId;
+            }
+
+            public String getServiceInAppSecret() {
+                return serviceInAppSecret;
+            }
+        }
     }
 }

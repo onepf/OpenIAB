@@ -10,10 +10,7 @@ import java.util.Locale;
  */
 
 //todo add check
-public class BaseInappProduct {
-    //    //available types
-//    public static final int TYPE_ITEM = 1;
-//    public static final int TYPE_SUBS = 2;
+public class InappBaseProduct {
     public static final String PUBLISHED = "published";
     public static final String UNPUBLISHED = "unpublished";
 
@@ -32,10 +29,10 @@ public class BaseInappProduct {
     private float basePrice;
     private final HashMap<String, Float> localeToPrice = new HashMap<String, Float>();
 
-    public BaseInappProduct() {
+    public InappBaseProduct() {
     }
 
-    public BaseInappProduct(BaseInappProduct otherProduct) {
+    public InappBaseProduct(InappBaseProduct otherProduct) {
         this.published = otherProduct.published;
         this.productId = otherProduct.productId;
         this.baseTitle = otherProduct.baseTitle;
