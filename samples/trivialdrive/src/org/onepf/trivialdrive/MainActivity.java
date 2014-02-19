@@ -141,7 +141,7 @@ public class MainActivity extends Activity {
     /**
      * is bililng setup is completed
      */
-    private boolean setupDone = false;
+    private Boolean setupDone;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 Log.d(TAG, "Setup finished.");
-
+                setupDone = result.isSuccess();
                 if (!result.isSuccess()) {
                     // Oh noes, there was a problem.
                     complain("Problem setting up in-app billing: " + result);
@@ -223,7 +223,6 @@ public class MainActivity extends Activity {
 
                 // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
-                setupDone = true;
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
@@ -287,10 +286,10 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!checkSetup()) {
             return;
         }
+
         // launch the gas purchase UI flow.
         // We will be notified of completion via mPurchaseFinishedListener
         setWaitScreen(true);
@@ -309,8 +308,7 @@ public class MainActivity extends Activity {
     public void onUpgradeAppButtonClicked(View arg0) {
         Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
 
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!checkSetup()) {
             return;
         }
 
@@ -325,11 +323,11 @@ public class MainActivity extends Activity {
                 mPurchaseFinishedListener, payload);
     }
 
+
     // "Subscribe to infinite gas" button clicked. Explain to user, then start purchase
     // flow for subscription.
     public void onInfiniteGasButtonClicked(View arg0) {
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!checkSetup()) {
             return;
         }
 
@@ -348,6 +346,18 @@ public class MainActivity extends Activity {
         mHelper.launchPurchaseFlow(this,
                 SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
                 RC_REQUEST, mPurchaseFinishedListener, payload);
+    }
+
+    private boolean checkSetup() {
+        if (setupDone == null) {
+            complain("Billing Setup is not completed yet");
+            return false;
+        } else if (!setupDone) {
+            complain("Billing Setup was failed");
+            return false;
+        }else{
+            return true;
+        }
     }
 
     @Override
