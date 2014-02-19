@@ -16,7 +16,6 @@
 
 package org.onepf.oms;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,7 +33,6 @@ import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
-import org.onepf.oms.appstore.fortumo.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -57,9 +55,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import org.onepf.oms.appstore.onepfUtils.InappsXMLParser;
 
 /**
+ *
+ *
  * @author Boris Minaev, Oleg Orlov
  * @since 16.04.13
  */
@@ -75,31 +74,23 @@ public class OpenIabHelper {
 
     /**
      * for generic stores it takes 1.5 - 3sec
-     * <p/>
+     * <p>
      * SamsungApps initialization is very time consuming (from 4 to 12 seconds).
      * TODO: Optimize: ~1sec is consumed for check account certification via account activity + ~3sec for actual setup
      */
     private static final int INVENTORY_CHECK_TIMEOUT_MS = 10000;
 
-    /**
-     * Used for all communication with Android services
-     */
+    /** Used for all communication with Android services  */
     private final Context context;
-    /**
-     * Necessary to initialize SamsungApps. For other stuff {@link #context} is used
-     */
+    /** Necessary to initialize SamsungApps. For other stuff {@link #context} is used */
     private Activity activity;
 
     private Handler notifyHandler = null;
 
-    /**
-     * selected appstore
-     */
+    /** selected appstore */
     private Appstore mAppstore;
 
-    /**
-     * selected appstore billing service
-     */
+    /** selected appstore billing service */
     private AppstoreInAppBillingService mAppstoreBillingService;
 
     private final Options options;
@@ -110,16 +101,12 @@ public class OpenIabHelper {
     private static final int SETUP_DISPOSED = 2;
     private int setupState = SETUP_RESULT_NOT_STARTED;
 
-    /**
-     * SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't
-     * work until setup is completed.
-     */
+    /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't
+     *  work until setup is completed. */
     private volatile SamsungApps samsungInSetup;
 
-    /**
-     * used to track time used for {@link #startSetup(OnIabSetupFinishedListener)}
-     * TODO: think about smarter time tracker (i.e. Logger built-in)
-     */
+    /** used to track time used for {@link #startSetup(OnIabSetupFinishedListener)}
+     * TODO: think about smarter time tracker (i.e. Logger built-in) */
     private volatile static long started;
 
     // Is an asynchronous operation in progress?
@@ -149,32 +136,31 @@ public class OpenIabHelper {
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
-    public static final String NAME_FORTUMO = "Fortumo";
 
     /**
      * NOTE: used as sync object in related methods<br>
-     * <p/>
+     *
      * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
      */
-    private static final Map<String, Map<String, String>> sku2storeSkuMappings = new HashMap<String, Map<String, String>>();
+    private static final Map <String, Map<String, String>> sku2storeSkuMappings = new HashMap<String, Map <String, String>>();
 
     /**
      * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
      */
-    private static final Map<String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map<String, String>>();
+    private static final Map <String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map <String, String>>();
 
     /**
      * Map sku and storeSku for particular store.
-     * <p/>
+     * <p>
      * The best approach is to use SKU that unique in universe like <code>com.companyname.application.item</code>.
      * Such SKU fit most of stores so it doesn't need to be mapped.
-     * <p/>
+     * <p>
      * If best approach is not applicable use application inner SKU in code (usually it is SKU for Google Play)
      * and map SKU from other stores using this method. OpenIAB will map SKU in both directions,
      * so you can use only your inner SKU
      *
-     * @param sku       - application inner SKU
-     * @param storeSku  - shouldn't duplicate already mapped values
+     * @param sku - application inner SKU
+     * @param storeSku - shouldn't duplicate already mapped values
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
      */
     public static void mapSku(String sku, String storeName, String storeSku) {
@@ -187,6 +173,7 @@ public class OpenIabHelper {
             if (skuMap.get(sku) != null) {
                 throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
             }
+            ;
             Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
             if (storeSkuMap == null) {
                 storeSkuMap = new HashMap<String, String>();
@@ -202,11 +189,11 @@ public class OpenIabHelper {
 
     /**
      * Return previously mapped store SKU for specified inner SKU
+     * @see #mapSku(String, String, String)
      *
      * @param appstoreName
-     * @param sku          - inner SKU
+     * @param sku - inner SKU
      * @return SKU used in store for specified inner SKU
-     * @see #mapSku(String, String, String)
      */
     public static String getStoreSku(final String appstoreName, String sku) {
         synchronized (sku2storeSkuMappings) {
@@ -222,7 +209,6 @@ public class OpenIabHelper {
 
     /**
      * Return mapped application inner SKU using store name and store SKU.
-     *
      * @see #mapSku(String, String, String)
      */
     public static String getSku(final String appstoreName, String storeSku) {
@@ -255,7 +241,7 @@ public class OpenIabHelper {
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      *
      * @param storeKeys - see {@link Options#storeKeys}
-     * @param context   - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys) {
         this(context, storeKeys, null);
@@ -265,9 +251,9 @@ public class OpenIabHelper {
      * Simple constructor for OpenIabHelper.
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      *
-     * @param storeKeys       - see {@link Options#storeKeys}
+     * @param storeKeys - see {@link Options#storeKeys}
      * @param prefferedStores - see {@link Options#prefferedStoreNames}
-     * @param context         - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores) {
         this(context, storeKeys, prefferedStores, null);
@@ -277,10 +263,10 @@ public class OpenIabHelper {
      * Simple constructor for OpenIabHelper.
      * <p>See {@link OpenIabHelper#OpenIabHelper(Context, Options)} for details
      *
-     * @param storeKeys       - see {@link Options#storeKeys}
+     * @param storeKeys - see {@link Options#storeKeys}
      * @param prefferedStores - see {@link Options#prefferedStoreNames}
      * @param availableStores - see {@link Options#availableStores}
-     * @param context         - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
+     * @param context - if you want to support Samsung Apps you must pass an Activity, in other cases any context is acceptable
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
         this.context = context.getApplicationContext();
@@ -301,18 +287,18 @@ public class OpenIabHelper {
      * - permission <code>org.onepf.openiab.permission.BILLING</code> in your AndroidManifest.xml<li>
      * - publicKey for store you decided to work with (you can find it in Developer Console of your store)<li>
      * - map SKUs for your store if they differs using {@link #mapSku(String, String, String)}</li>
-     * <p/>
-     * <p/>
+     *
+     * <p>
      * You can specify publicKeys for stores (excluding Amazon and SamsungApps those don't use
      * verification based on RSA keys). See {@link Options#storeKeys} for details
-     * <p/>
+     * <p>
      * By default verification will be performed for receipt from every store. To aviod verification
      * exception OpenIAB doesn't connect to store that key is not specified for
-     * <p/>
+     * <p>
      * If you don't want to put publicKey in code and verify receipt remotely, you need to set
      * {@link Options#verifyMode} to {@link Options#VERIFY_SKIP}.
      * To make OpenIAB connect even to stores key is not specified for, use {@link Options#VERIFY_ONLY_KNOWN}
-     * <p/>
+     * <p>
      * {@link Options#prefferedStoreNames} is useful option when you test your app on device with multiple
      * stores installed. Specify store name you want to work with here and it would be selected if you
      * install application using adb.
@@ -331,13 +317,13 @@ public class OpenIabHelper {
     }
 
     /**
-     * Discover available stores and select the best billing service.
-     * Calls listener when service is found.
-     * <p/>
-     * Should be called from UI thread
+     *  Discover available stores and select the best billing service.
+     *  Calls listener when service is found.
+     *
+     *  Should be called from UI thread
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
-        if (listener == null) {
+        if (listener == null){
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
         if (setupState != SETUP_RESULT_NOT_STARTED) {
@@ -353,11 +339,10 @@ public class OpenIabHelper {
                     stores2check.addAll(options.availableStores);
                 } else { // if appstores are not specified by user - lookup for all available stores
                     final List<Appstore> openStores = discoverOpenStores(context, null, options);
-                    if (mDebugLog)
-                        Log.d(TAG, in() + " " + "startSetup() discovered openstores: " + openStores.toString());
+                    if (mDebugLog) Log.d(TAG, in() + " " + "startSetup() discovered openstores: " + openStores.toString());
                     stores2check.addAll(openStores);
                     if (options.verifyMode == Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(NAME_GOOGLE)) {
-                        // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
+                        // don't work with GooglePlay if verifyMode is strict and no publicKey provided
                     } else {
                         final String publicKey = options.verifyMode == Options.VERIFY_SKIP ? null
                                 : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
@@ -366,23 +351,17 @@ public class OpenIabHelper {
                     stores2check.add(new AmazonAppstore(context));
                     stores2check.add(new TStore(context, options.storeKeys.get(OpenIabHelper.NAME_TSTORE)));
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {
-                        // SamsungApps shows lot of UI stuff during init 
+                        // SamsungApps shows lot of UI stuff during init
                         // try it only if samsung SKUs are specified
                         stores2check.add(new SamsungApps(activity, options));
                     }
                 }
 
-                //todo redo
-                boolean hasFortumoInSetup = false;
                 for (Appstore store : stores2check) {
-                    if (store instanceof SamsungApps) {
-                        samsungInSetup = (SamsungApps) store;
-                    } else if (store instanceof FortumoStore) {
-                        hasFortumoInSetup = true;
-                    }
+                    if (store instanceof SamsungApps) samsungInSetup = (SamsungApps) store;
                 }
 
-                final IabResult[] result = {new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported")};
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
 
                 if (options.checkInventory) {
 
@@ -393,43 +372,18 @@ public class OpenIabHelper {
                         if (mDebugLog) Log.d(TAG, in() + " " + "select equipped");
                     }
                     if (mAppstore != null) {
-                        result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                     } else {
-                        // found no equipped stores. Select store based on store parameters 
+                        // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
-                        if (mAppstore != null) {
-                            result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
-                        }
                         if (mDebugLog) Log.d(TAG, in() + " " + "select non-equipped");
                     }
                     if (mAppstore != null) {
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
-                    } else {
-                        if (!hasFortumoInSetup && options.supportFortumo) {
-                            final FortumoStore fortumoStore = new FortumoStore(context);
-                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
-                                final CountDownLatch latch = new CountDownLatch(1);
-                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
-                                    @Override
-                                    public void onIabSetupFinished(IabResult setupResult) {
-                                        if (setupResult.isSuccess()) {
-                                            mAppstore = fortumoStore;
-                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
-                                        }
-                                        result[0] = setupResult;
-                                        latch.countDown();
-                                    }
-                                });
-                                try {
-                                    latch.await();
-                                } catch (InterruptedException e) {
-                                    Log.e(TAG, "Fortumo setup was interrupted", e);
-                                }
-                            }
-                        }
                     }
-                    fireSetupFinished(listener, result[0]);
-                } else {   // no inventory check. Select store based on store parameters
+                    fireSetupFinished(listener, result);
+                } else {                // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
                     if (mAppstore != null) {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
@@ -439,29 +393,7 @@ public class OpenIabHelper {
                             }
                         });
                     } else {
-                        if (!hasFortumoInSetup && options.supportFortumo) {
-                            final FortumoStore fortumoStore = new FortumoStore(context);
-                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
-                                final CountDownLatch latch = new CountDownLatch(1);
-                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
-                                    @Override
-                                    public void onIabSetupFinished(IabResult setupResult) {
-                                        if (setupResult.isSuccess()) {
-                                            mAppstore = fortumoStore;
-                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
-                                        }
-                                        result[0] = setupResult;
-                                        latch.countDown();
-                                    }
-                                });
-                                try {
-                                    latch.await();
-                                } catch (InterruptedException e) {
-                                    Log.e(TAG, "Fortumo setup was interrupted", e);
-                                }
-                            }
-                        }
-                        fireSetupFinished(listener, result[0]);
+                        fireSetupFinished(listener, result);
                     }
                 }
                 for (Appstore store : stores2check) {
@@ -474,9 +406,7 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
-    /**
-     * Check options are valid
-     */
+    /** Check options are valid */
     public static void checkOptions(Options options) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
             for (Entry<String, String> entry : options.storeKeys.entrySet()) {
@@ -492,25 +422,9 @@ public class OpenIabHelper {
         }
     }
 
-    private static void checkSettings(Options options, Context context) {
+    private static void checkSettings(Options options, Context context){
         checkOptions(options);
         checkSamsung(context);
-        checkFortumo(options, context);
-    }
-
-    private static void checkFortumo(Options options, Context context) {
-        boolean checkFortumo = options.supportFortumo;
-        if (!checkFortumo && options.availableStores != null) {
-            for (Appstore store : options.availableStores) {
-                if (store instanceof FortumoStore) {
-                    checkFortumo = true;
-                    break;
-                }
-            }
-        }
-        if (checkFortumo) {
-            FortumoStore.checkSettings(context);
-        }
     }
 
     private static void checkSamsung(Context context) {
@@ -559,16 +473,17 @@ public class OpenIabHelper {
     }
 
     /**
-     * Discover all OpenStore services, checks them and build open stores list<br>.
+     * Discover all OpenStore services, checks them and build {@link #availableStores} list<br>.
      * Time is limited by 5 seconds
      *
      * @param appstores - discovered OpenStores will be added here. Must be not null
+     * @param listener - called back when all OpenStores collected and analyzed
      */
-    public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> appstores, final Options options) {
+    public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
         PackageManager packageManager = context.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
-        final List<Appstore> result = appstores != null ? appstores : new ArrayList<Appstore>(infoList.size());
+        final List<Appstore> result = dest != null ? dest : new ArrayList<Appstore>(infoList.size());
 
         final CountDownLatch storesToCheck = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
@@ -580,8 +495,7 @@ public class OpenIabHelper {
                 boolean isBound = context.bindService(intentAppstore, new ServiceConnection() {
                     @Override
                     public void onServiceConnected(ComponentName name, IBinder service) {
-                        if (mDebugLog)
-                            Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
+                        if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
                         IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
 
                         try {
@@ -590,8 +504,7 @@ public class OpenIabHelper {
                             if (appstoreName == null) { // no name - no service
                                 Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
                             } else if (billingIntent == null) { // don't handle stores without billing support
-                                if (mDebugLog)
-                                    Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
+                                if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
                             } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) {
                                 // don't connect to OpenStore if no key provided and verification is strict
                                 Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
@@ -615,15 +528,14 @@ public class OpenIabHelper {
 
                     @Override
                     public void onServiceDisconnected(ComponentName name) {
-                        if (mDebugLog)
-                            Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
+                        if (mDebugLog) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
                         //Nothing to do here
                     }
                 }, Context.BIND_AUTO_CREATE);
                 if (!isBound) {
                     storesToCheck.countDown();
                 }
-            } catch (SecurityException e) {
+            }catch (SecurityException e){
                 Log.e(TAG, "bindService() failed for " + packageName, e);
                 storesToCheck.countDown();
             }
@@ -639,10 +551,10 @@ public class OpenIabHelper {
     /**
      * Connects to Billing Service of each store. Request list of user purchases (inventory)
      *
+     * @see {@link OpenIabHelper#INVENTORY_CHECK_TIMEOUT_MS} to set timout value
+     *
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
-     * @see {@link OpenIabHelper#INVENTORY_CHECK_TIMEOUT_MS} to set timout value
-     * @see {@link OpenIabHelper#INVENTORY_CHECK_TIMEOUT_MS} to set timout value
      */
     protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
@@ -656,14 +568,14 @@ public class OpenIabHelper {
         if (mDebugLog) Log.d(TAG, in() + " " + candidates.size() + " inventory candidates");
         final List<Appstore> equippedStores = Collections.synchronizedList(new ArrayList<Appstore>());
         final CountDownLatch storeRemains = new CountDownLatch(candidates.size());
-        // for every appstore: connect to billing service and check inventory 
+        // for every appstore: connect to billing service and check inventory
         for (Map.Entry<String, Appstore> entry : candidates.entrySet()) {
             final Appstore appstore = entry.getValue();
             final AppstoreInAppBillingService billingService = entry.getValue().getInAppBillingService();
             billingService.startSetup(new OnIabSetupFinishedListener() {
                 public void onIabSetupFinished(IabResult result) {
                     if (mDebugLog) Log.d(TAG, in() + " " + "billing set " + appstore.getAppstoreName());
-                    if (result.isFailure()) {
+                    if(result.isFailure()) {
                         storeRemains.countDown();
                         return;
                     }
@@ -674,15 +586,13 @@ public class OpenIabHelper {
                                 if (inventory.getAllPurchases().size() > 0) {
                                     equippedStores.add(appstore);
                                 }
-                                if (mDebugLog)
-                                    Log.d(TAG, in() + " " + "inventoryCheck() in " + appstore.getAppstoreName() + " found: " + inventory.getAllPurchases().size() + " purchases");
+                                if (mDebugLog) Log.d(TAG, in() + " " + "inventoryCheck() in " + appstore.getAppstoreName() + " found: " + inventory.getAllPurchases().size() + " purchases");
                             } catch (IabException e) {
                                 Log.e(TAG, "inventoryCheck() failed for " + appstore.getAppstoreName());
                             }
                             storeRemains.countDown();
                         }
-                    }, "inv-check[" + appstore.getAppstoreName() + "]").start();
-                    ;
+                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();;
                 }
             });
         }
@@ -691,25 +601,26 @@ public class OpenIabHelper {
             if (mDebugLog) Log.d(TAG, in() + " " + "inventory check done");
         } catch (InterruptedException e) {
             Log.e(TAG, "selectBillingService()  inventory check is failed. candidates: " + candidates.size()
-                    + ", inventory remains: " + storeRemains.getCount(), e);
+                    + ", inventory remains: " + storeRemains.getCount() , e);
         }
         return equippedStores;
     }
 
     /**
      * Lookup for requested service in store based on isPackageInstaller() & isBillingAvailable()
-     * <p/>
+     * <p>
      * Scenario:
      * <li>
      * - look for installer: if exists and supports billing service - we done <li>
      * - rest of stores who support billing considered as candidates<p><li>
-     * <p/>
+     *
      * - find candidate according to [prefferedStoreNames]. if found - we done<p><li>
-     * <p/>
+     *
      * - select candidate randomly from 3 groups based on published package version<li>
-     * - published version == app.versionCode<li>
-     * - published version  > app.versionCode<li>
-     * - published version < app.versionCode
+     *   - published version == app.versionCode<li>
+     *   - published version  > app.versionCode<li>
+     *   - published version < app.versionCode
+     *
      */
     protected Appstore selectBillingService(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
@@ -752,7 +663,7 @@ public class OpenIabHelper {
                 higherVersion.add(candidate);
             }
         }
-        // use random if found stores with same version of package  
+        // use random if found stores with same version of package
         if (sameVersion.size() > 0) {
             return sameVersion.get(new Random().nextInt(sameVersion.size()));
         } else if (higherVersion.size() > 0) {  // or one of higher version
@@ -771,9 +682,6 @@ public class OpenIabHelper {
     }
 
     public boolean subscriptionsSupported() {
-        if (mAppstore != null) {
-            if (mAppstore instanceof FortumoStore) return false;
-        }
         // TODO: implement this
         return true;
     }
@@ -805,14 +713,12 @@ public class OpenIabHelper {
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
-        if (mDebugLog)
-            Log.d(TAG, in() + " " + "handleActivityResult() requestCode: " + requestCode + " resultCode: " + resultCode + " data: " + data);
+        if (mDebugLog) Log.d(TAG, in() + " " + "handleActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
         if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
             return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
         }
         if (setupState != SETUP_RESULT_SUCCESSFUL) {
-            if (mDebugLog)
-                Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode + " resultCode: " + resultCode + " data: " + data);
+            if (mDebugLog) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
             return false;
         }
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
@@ -1066,7 +972,7 @@ public class OpenIabHelper {
 
     /**
      * All options of OpenIAB can be found here
-     * <p/>
+     *
      * TODO: consider to use cloned instance of Options in OpenIABHelper
      */
     public static class Options {
@@ -1074,13 +980,13 @@ public class OpenIabHelper {
         /**
          * List of stores to be used for store elections. By default GooglePlay, Amazon, SamsungApps and
          * all installed OpenStores are used.
-         * <p/>
+         * <p>
          * To specify your own list, you need to instantiate Appstore object manually.
          * GooglePlay, Amazon and SamsungApps could be instantiated directly. OpenStore can be discovered
          * using {@link OpenIabHelper#discoverOpenStores(Context, List, Options)}
-         * <p/>
+         * <p>
          * If you put only your instance of Appstore in this list OpenIAB will use it
-         * <p/>
+         *
          * TODO: consider to use AppstoreFactory.get(storeName) -> Appstore instance
          */
         public List<Appstore> availableStores;
@@ -1091,7 +997,7 @@ public class OpenIabHelper {
         public int discoveryTimeoutMs = DISCOVER_TIMEOUT_MS;
         /**
          * Check user inventory in every store to select proper store
-         * <p/>
+         * <p>
          * Will try to connect to each billingService and extract user's purchases.
          * If purchases have been found in the only store that store will be used for further purchases.
          * If purchases have been found in multiple stores only such stores will be used for further elections
@@ -1105,14 +1011,14 @@ public class OpenIabHelper {
 
         /**
          * OpenIAB could skip receipt verification by publicKey for GooglePlay and OpenStores
-         * <p/>
+         * <p>
          * Receipt could be verified in {@link OnIabPurchaseFinishedListener#onIabPurchaseFinished()}
          * using {@link Purchase#getOriginalJson()} and {@link Purchase#getSignature()}
          */
         public int verifyMode = VERIFY_EVERYTHING;
         /**
          * Verify signatures in any store.
-         * <p/>
+         * <p>
          * By default in Google's IabHelper. Throws exception if key is not available or invalid.
          * To prevent crashes OpenIAB wouldn't connect to OpenStore if no publicKey provided
          */
@@ -1123,7 +1029,7 @@ public class OpenIabHelper {
         public static final int VERIFY_SKIP = 1;
         /**
          * Verify signatures only if publicKey is available. Otherwise skip verification.
-         * <p/>
+         * <p>
          * Developer is responsible for verify
          */
         public static final int VERIFY_ONLY_KNOWN = 2;
@@ -1131,13 +1037,13 @@ public class OpenIabHelper {
         /**
          * storeKeys is map of [ appstore name -> publicKeyBase64 ]
          * Put keys for all stores you support in this Map and pass it to instantiate {@link OpenIabHelper}
-         * <p/>
+         * <p>
          * <b>publicKey</b> key is used to verify receipt is created by genuine Appstore using
          * provided signature. It can be found in Developer Console of particular store
-         * <p/>
+         * <p>
          * <b>name</b> of particular store can be provided by local_store tool if you run it on device.
          * For Google Play OpenIAB uses {@link OpenIabHelper#NAME_GOOGLE}.
-         * <p/>
+         * <p>
          * <p>Note:
          * AmazonApps and SamsungApps doesn't use RSA keys for receipt verification, so you don't need
          * to specify it
@@ -1148,18 +1054,11 @@ public class OpenIabHelper {
          * Used as priority list if store that installed app is not found and there are
          * multiple stores installed on device that supports billing.
          */
-        public String[] prefferedStoreNames = new String[]{};
+        public String[] prefferedStoreNames = new String[] {};
 
-        /**
-         * Used for SamsungApps setup. Specify your own value if default one interfere your code.
-         * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION}
-         */
+        /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
+         * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
-
-        /**
-         * Is Fortumo supported?
-         */
-        public boolean supportFortumo = false;
     }
 
 }
