@@ -1,5 +1,6 @@
 package org.onepf.oms.appstore.onepfUtils;
 
+
 /**
  * Created by akarimova on 17.02.14.
  */
@@ -20,6 +21,9 @@ public class SubscriptionInappProduct extends BaseInappProduct {
     }
 
     public void setPeriod(String period) {
+        if (!period.equals(ONE_MONTH) && !period.equals(ONE_YEAR)) {
+            throw new IllegalStateException("Wrong period value!");
+        }
         this.period = period;
     }
 }

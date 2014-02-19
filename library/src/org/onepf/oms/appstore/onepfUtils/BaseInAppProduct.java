@@ -11,12 +11,14 @@ import java.util.Locale;
 
 //todo add check
 public class BaseInappProduct {
-    //available types
-    public static final int TYPE_ITEM = 1;
-    public static final int TYPE_SUBS = 2;
+    //    //available types
+//    public static final int TYPE_ITEM = 1;
+//    public static final int TYPE_SUBS = 2;
+    public static final String PUBLISHED = "published";
+    public static final String UNPUBLISHED = "unpublished";
 
     //publish state
-    private String published;
+    private boolean published;
     //product id
     private String productId;
     //title
@@ -52,12 +54,15 @@ public class BaseInappProduct {
         this.productId = productId;
     }
 
-    public String isPublished() {
+    public boolean isPublished() {
         return published;
     }
 
     public void setPublished(String published) {
-        this.published = published;
+        if (!published.equals(PUBLISHED) && !published.equals(UNPUBLISHED)) {
+            throw new IllegalArgumentException("Wrong \"publish-state\" attr value " + published);
+        }
+        this.published = published.equals(PUBLISHED);
     }
 
     public String getBaseTitle() {

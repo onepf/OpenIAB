@@ -107,7 +107,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                     //todo an exception
                 }
                 final FortumoProduct fortumoProduct = fortumoInapps.get(purchase.getSku());
-                if (fortumoProduct.isConsumable()) {
+                if (fortumoProduct != null && fortumoProduct.isConsumable()) {
                     inventory.addPurchase(purchase);
                 }
                 SharedPreferences.Editor editor = sharedPreferences.edit();
