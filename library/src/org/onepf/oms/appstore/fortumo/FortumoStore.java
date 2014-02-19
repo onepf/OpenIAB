@@ -265,30 +265,41 @@ public class FortumoStore extends DefaultAppstore {
                 "  ...");
     }
 
+    /**
+     * Checks all required by Fortumo elements
+     * @param context must be not null
+     */
     public static void checkSettings(Context context) {
         checkManifest(context);
         checkJars();
         checkDataXmlFiles(context);
     }
 
+    /**
+     * Checks for the presence of fortumo classes
+     */
     private static void checkJars() {
         try {
-            OpenIabHelper.class.getClassLoader().loadClass("mp.MpUtils");
+            FortumoStore.class.getClassLoader().loadClass("mp.MpUtils");
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Can't load Fortumo SDK classes.");
+            throw new IllegalStateException("To support Fortumo a fortumo jar is needed.");
         }
     }
 
+    /**
+     * To support Fortumo 2 files need to be added: a file with all inapp-products description and a file with fortumo-specific elements (service id, service inapp secret, is item consumable or not)
+     * @param context to get access to asset manager
+     */
     private static void checkDataXmlFiles(Context context) {
         try {
             final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
             final boolean hasProductFile = strings.contains(InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME);
             final boolean hasFortumoDetailsFile = strings.contains(FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
             if (!(hasProductFile && hasFortumoDetailsFile)) {
-                throw new IllegalStateException("Can't find required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
+                throw new IllegalStateException("To support Fortumo you need the following xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Can't find required xml files");
+            throw new IllegalStateException("Can't parse the required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoDetailsXMLParser.FORTUMO_PRODUCTS_FILE_NAME);
         }
     }
 }
