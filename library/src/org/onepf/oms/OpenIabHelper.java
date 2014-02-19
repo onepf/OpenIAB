@@ -33,6 +33,7 @@ import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
+import org.onepf.oms.appstore.fortumo.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -426,7 +427,24 @@ public class OpenIabHelper {
     private static void checkSettings(Options options, Context context){
         checkOptions(options);
         checkSamsung(context);
+        checkFortumo(options, context);
     }
+
+    private static void checkFortumo(Options options, Context context) {
+        boolean checkFortumo = options.supportFortumo;
+        if (!checkFortumo && options.availableStores != null) {
+            for (Appstore store : options.availableStores) {
+                if (store instanceof FortumoStore) {
+                    checkFortumo = true;
+                    break;
+                }
+            }
+        }
+        if (checkFortumo) {
+            FortumoStore.checkSettings(context);
+        }
+    }
+
 
     private static void checkSamsung(Context context) {
         List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
@@ -683,8 +701,12 @@ public class OpenIabHelper {
     }
 
     public boolean subscriptionsSupported() {
+        if (mAppstore != null) {
+            if (mAppstore instanceof FortumoStore) return false;
+        }
         // TODO: implement this
         return true;
+
     }
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
@@ -1060,6 +1082,12 @@ public class OpenIabHelper {
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+
+        /**
+         * Is Fortumo supported?
+         */
+        public boolean supportFortumo = false;
+
     }
 
 }
