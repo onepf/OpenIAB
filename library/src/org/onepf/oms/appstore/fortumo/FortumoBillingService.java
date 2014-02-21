@@ -73,7 +73,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                             setProductName(fortumoProduct.getProductId()).
                             setDisplayString(fortumoProduct.getTitle()).
                             build();
-                    FortumoStore.startPaymentActivityForResult(act, requestCode, paymentRequest);
+                    startPaymentActivityForResult(act, requestCode, paymentRequest);
                 }
             } else {
                 PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
@@ -81,7 +81,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                         setProductName(fortumoProduct.getProductId()).
                         setDisplayString(fortumoProduct.getTitle()).
                         build();
-                FortumoStore.startPaymentActivityForResult(act, requestCode, paymentRequest);
+                startPaymentActivityForResult(act, requestCode, paymentRequest);
             }
         }
     }
@@ -224,6 +224,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             map.put(productId, fortumoProduct);
         }
         return map;
+    }
+
+    static void startPaymentActivityForResult(Activity activity, int requestCode, PaymentRequest paymentRequest) {
+        Intent localIntent = paymentRequest.toIntent(activity);
+        activity.startActivityForResult(localIntent, requestCode);
     }
 
 

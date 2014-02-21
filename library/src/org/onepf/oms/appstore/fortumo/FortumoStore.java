@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import mp.*;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -68,12 +67,6 @@ public class FortumoStore extends DefaultAppstore {
         return billingService;
     }
 
-
-    static void startPaymentActivityForResult(Activity activity, int requestCode, PaymentRequest paymentRequest) {
-        Intent localIntent = paymentRequest.toIntent(activity);
-        activity.startActivityForResult(localIntent, requestCode);
-    }
-
     private static void checkPermission(Context context, String paramString) {
         if (context.checkCallingOrSelfPermission(paramString) != PackageManager.PERMISSION_GRANTED)
             throwFortumoNotConfiguredException(String.format("Required permission \"%s\" is NOT granted.", paramString));
@@ -129,19 +122,19 @@ public class FortumoStore extends DefaultAppstore {
         checkPermission(context, "android.permission.SEND_SMS");
 
         Intent paymentActivityIntent = new Intent();
-        paymentActivityIntent.setClassName(context.getPackageName(), MpActivity.class.getName());
+        paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
         if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
             throwFortumoNotConfiguredException("mp.MpActivity is NOT declared.");
         }
 
         Intent mpServerIntent = new Intent();
-        mpServerIntent.setClassName(context.getPackageName(), MpService.class.getName());
+        mpServerIntent.setClassName(context.getPackageName(), "mp.MpService");
         if (context.getPackageManager().resolveService(mpServerIntent, 0) == null) {
             throwFortumoNotConfiguredException("mp.MpService is NOT declared.");
         }
 
         Intent statusUpdateServiceIntent = new Intent();
-        statusUpdateServiceIntent.setClassName(context.getPackageName(), StatusUpdateService.class.getName());
+        statusUpdateServiceIntent.setClassName(context.getPackageName(), "mp.StatusUpdateService");
         if (context.getPackageManager().resolveService(statusUpdateServiceIntent, 0) == null) {
             throwFortumoNotConfiguredException("mp.StatusUpdateService is NOT declared.");
         }
