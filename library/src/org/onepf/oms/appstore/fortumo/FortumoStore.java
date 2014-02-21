@@ -1,12 +1,10 @@
 package org.onepf.oms.appstore.fortumo;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.text.TextUtils;
 import mp.*;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -14,7 +12,6 @@ import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
@@ -131,17 +128,6 @@ public class FortumoStore extends DefaultAppstore {
         checkPermission(context, "android.permission.RECEIVE_SMS");
         checkPermission(context, "android.permission.SEND_SMS");
 
-//        String appDeclaredPermission = null;
-//        try {
-//            Class permissionClass = Class.forName(context.getPackageName() + ".Manifest$permission");
-//            Field paymentBroadcastPermission = permissionClass.getField("PAYMENT_BROADCAST_PERMISSION");
-//            appDeclaredPermission = (String) paymentBroadcastPermission.get(null);
-//        } catch (Exception ignored) {
-//        }
-//        if (TextUtils.isEmpty(appDeclaredPermission)) {
-//            throwFortumoNotConfiguredException("PAYMENT_BROADCAST_PERMISSION is NOT declared.");
-//        }
-
         Intent paymentActivityIntent = new Intent();
         paymentActivityIntent.setClassName(context.getPackageName(), MpActivity.class.getName());
         if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
@@ -234,7 +220,7 @@ public class FortumoStore extends DefaultAppstore {
             final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
             final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
             if (!(hasProductFile && hasFortumoDetailsFile)) {
-                throw new IllegalStateException("To support Fortumo you need the following xml files: " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoStore.FORTUMO_DETATILS_FILE_NAME);
+                throw new IllegalStateException("To support Fortumo you need to assets the following xml files: " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoStore.FORTUMO_DETATILS_FILE_NAME);
             }
         } catch (IOException e) {
             throw new IllegalStateException("Can't parse the required xml files: " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoStore.FORTUMO_DETATILS_FILE_NAME);
@@ -254,8 +240,7 @@ public class FortumoStore extends DefaultAppstore {
 
     static String getMessageIdInPending(Context context, String productId) {
         final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
-        final String messageIdForProduct = fortumoSharedPrefs.getString(productId, null);
-        return messageIdForProduct;
+        return fortumoSharedPrefs.getString(productId, null);
     }
 
     static void removePendingProduct(Context context, String productId) {
