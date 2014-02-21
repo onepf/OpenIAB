@@ -73,17 +73,6 @@ public class FortumoStore extends DefaultAppstore {
 
 
     static void startPaymentActivityForResult(Activity activity, int requestCode, PaymentRequest paymentRequest) {
-        if (!MpUtils.isPaymentBroadcastEnabled(activity)) {
-            try {
-                Class permissionClass = Class.forName(activity.getPackageName() + ".Manifest$permission");
-                Field paymentBroadcastPermission = permissionClass.getField("PAYMENT_BROADCAST_PERMISSION");
-                String permissionString = (String) paymentBroadcastPermission.get(null);
-                MpUtils.enablePaymentBroadcast(activity, permissionString);
-            } catch (Exception e) {
-                throwFortumoNotConfiguredException("PAYMENT_BROADCAST_PERMISSION is NOT declared.");
-            }
-        }
-
         Intent localIntent = paymentRequest.toIntent(activity);
         activity.startActivityForResult(localIntent, requestCode);
     }
@@ -92,32 +81,6 @@ public class FortumoStore extends DefaultAppstore {
         if (context.checkCallingOrSelfPermission(paramString) != PackageManager.PERMISSION_GRANTED)
             throwFortumoNotConfiguredException(String.format("Required permission \"%s\" is NOT granted.", paramString));
     }
-
-
-//    public static String sku(String skuName, String skuType, boolean consumable, String serviceId, String appSecret) {
-//        if (skuName.trim().indexOf(',') != -1) {
-//            throw new IllegalStateException("Can't create a Fortumo SKU: SKU name contains \',\' .");
-//        }
-//        if (!skuType.trim().equals(IabHelper.ITEM_TYPE_INAPP) && !skuType.trim().equals(IabHelper.ITEM_TYPE_SUBS)) {
-//            throw new IllegalStateException("Can't create a Fortumo SKU: unknown SKU type: " + skuType);
-//        }
-//        if (TextUtils.isEmpty(serviceId)) {
-//            throw new IllegalStateException("Can't create a Fortumo SKU: service id is empty.");
-//        }
-//        if (TextUtils.isEmpty(appSecret)) {
-//            throw new IllegalStateException("Can't create a Fortumo SKU: app secret is empty.");
-//        }
-//        return String.format("%s,%s,%s,%s,%s", skuName.trim(), skuType.trim(), consumable, serviceId.trim(), appSecret.trim());
-//    }
-
-//    private static String[] splitOpenSkuDescription(String openSkuDescription) {
-//        String[] splitArray = openSkuDescription.split(",");
-//        if (splitArray.length != SKU_DESC_ARRAY_LENGTH) {
-//            throw new IllegalStateException("Fortumo-specific SKU must contain the following elements:\nSKU name: string,\nSKU type: subs or inapp,\n" +
-//                    "Consumable: true or false,\nService ID: string,\nIn-application secret: string");
-//        }
-//        return splitArray;
-//    }
 
 
     /**
@@ -150,16 +113,6 @@ public class FortumoStore extends DefaultAppstore {
      * <activity android:name="mp.MpActivity"
      * android:theme="@android:style/Theme.Translucent.NoTitleBar"
      * android:configChanges="orientation|keyboardHidden|screenSize" />
-     *
-     * <!-- Declare OpenIAB BroadcastReceiver to track payment status,
-     * should be protected by "signature" permission -->
-     * <receiver android:name="org.onepf.oms.appstore.fortumo.FortumoPaymentReceiver"
-     * android:permission="com.your.domain.PAYMENT_BROADCAST_PERMISSION">
-     * <intent-filter>
-     * <action android:name="mp.info.PAYMENT_STATUS_CHANGED" />
-     * </intent-filter>
-     * </receiver>
-     *
      * <!-- Other application objects -->
      * <activity android:label="@string/app_name" android:name=".YourActivity">
      * <intent-filter>
@@ -178,16 +131,16 @@ public class FortumoStore extends DefaultAppstore {
         checkPermission(context, "android.permission.RECEIVE_SMS");
         checkPermission(context, "android.permission.SEND_SMS");
 
-        String appDeclaredPermission = null;
-        try {
-            Class permissionClass = Class.forName(context.getPackageName() + ".Manifest$permission");
-            Field paymentBroadcastPermission = permissionClass.getField("PAYMENT_BROADCAST_PERMISSION");
-            appDeclaredPermission = (String) paymentBroadcastPermission.get(null);
-        } catch (Exception ignored) {
-        }
-        if (TextUtils.isEmpty(appDeclaredPermission)) {
-            throwFortumoNotConfiguredException("PAYMENT_BROADCAST_PERMISSION is NOT declared.");
-        }
+//        String appDeclaredPermission = null;
+//        try {
+//            Class permissionClass = Class.forName(context.getPackageName() + ".Manifest$permission");
+//            Field paymentBroadcastPermission = permissionClass.getField("PAYMENT_BROADCAST_PERMISSION");
+//            appDeclaredPermission = (String) paymentBroadcastPermission.get(null);
+//        } catch (Exception ignored) {
+//        }
+//        if (TextUtils.isEmpty(appDeclaredPermission)) {
+//            throwFortumoNotConfiguredException("PAYMENT_BROADCAST_PERMISSION is NOT declared.");
+//        }
 
         Intent paymentActivityIntent = new Intent();
         paymentActivityIntent.setClassName(context.getPackageName(), MpActivity.class.getName());
@@ -205,12 +158,6 @@ public class FortumoStore extends DefaultAppstore {
         statusUpdateServiceIntent.setClassName(context.getPackageName(), StatusUpdateService.class.getName());
         if (context.getPackageManager().resolveService(statusUpdateServiceIntent, 0) == null) {
             throwFortumoNotConfiguredException("mp.StatusUpdateService is NOT declared.");
-        }
-
-        try {
-            context.getPackageManager().getReceiverInfo(new ComponentName(context.getPackageName(), FortumoPaymentReceiver.class.getName()), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            throwFortumoNotConfiguredException("org.onepf.oms.appstore.fortumo.FortumoPaymentReceiver is NOT declared.");
         }
     }
 
@@ -243,15 +190,6 @@ public class FortumoStore extends DefaultAppstore {
                 "  <activity android:name=\"mp.MpActivity\" \n" +
                 "             android:theme=\"@android:style/Theme.Translucent.NoTitleBar\"\n" +
                 "             android:configChanges=\"orientation|keyboardHidden|screenSize\" />\n" +
-                "\n" +
-                "    <!-- add OpenIAB BroadcastReceiver to track payment status,\n" +
-                "    should be protected by \"signature\" permission -->\n" +
-                "  <receiver android:name=\"org.onepf.oms.appstore.fortumo.FortumoPaymentReceiver\" \n" +
-                "            android:permission=\"com.your.domain.PAYMENT_BROADCAST_PERMISSION\">\n" +
-                "    <intent-filter>\n" +
-                "      <action android:name=\"mp.info.PAYMENT_STATUS_CHANGED\" />\n" +
-                "    </intent-filter>\n" +
-                "  </receiver>\n" +
                 "\n" +
                 "  <!-- Other application objects -->\n" +
                 "  <activity android:label=\"@string/app_name\" android:name=\".YourActivity\">\n" +

@@ -1,6 +1,6 @@
 <inapp-products>
     <items>
-        <item id="sku_gas11" publish-state="published">
+        <item id="sku_gas" publish-state="published">
             <summary>
                 <summary-base>
                     <title>1/4 of gas tank</title>

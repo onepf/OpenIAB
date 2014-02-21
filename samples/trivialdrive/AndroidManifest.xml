@@ -21,16 +21,6 @@
     <uses-sdk
             android:minSdkVersion="8"
             android:targetSdkVersion="15"/>
-
-    <!--fortumo sends and receives sms to process payment-->
-    <!--<uses-feature android:name="android.hardware.telephony" android:required="false"/>-->
-
-    <!-- Fortumo: define your own permission to protect payment broadcast -->
-    <permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"
-                android:label="Read payment status"
-                android:protectionLevel="signature"/>
-    <!-- "signature" permission granted automatically by system, without notifying user. -->
-    <uses-permission android:name="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION"/>
     <!--google-->
     <uses-permission android:name="com.android.vending.BILLING"/>
     <!--fortumo-->
@@ -88,13 +78,6 @@
         <activity android:name="mp.MpActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:configChanges="orientation|keyboardHidden|screenSize"/>
-
-        <receiver android:name="org.onepf.oms.appstore.fortumo.FortumoPaymentReceiver"
-                  android:permission="org.onepf.trivialdrive.PAYMENT_BROADCAST_PERMISSION">
-            <intent-filter>
-                <action android:name="mp.info.PAYMENT_STATUS_CHANGED"/>
-            </intent-filter>
-        </receiver>
         <!--Fortumo end-->
     </application>
 </manifest>
