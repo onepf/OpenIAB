@@ -1,6 +1,7 @@
-package org.onepf.oms.appstore.onepfUtils;
+package org.onepf.oms.appstore.fortumo;
 
 import android.content.Context;
+import android.util.Pair;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -14,7 +15,6 @@ import java.util.List;
  */
 public class InappsXMLParser {
     private static final String TAG = InappsXMLParser.class.getSimpleName();
-    public static final String IN_APP_PRODUCTS_FILE_NAME = "inapps_products.xml";
 
     //TAGS
     private static final String SUBSCRIPTIONS_TAG = "subscriptions";
@@ -37,11 +37,12 @@ public class InappsXMLParser {
     private static final String PERIOD_ATTR = "period";
     private static final String AUTOFILL_ATTR = "autofill";
 
-    public List<InappBaseProduct> parse(Context context) throws XmlPullParserException, IOException {
+
+    public Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse(Context context) throws XmlPullParserException, IOException {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
         XmlPullParser parser = factory.newPullParser();
-        parser.setInput(context.getAssets().open(IN_APP_PRODUCTS_FILE_NAME), null);
+        parser.setInput(context.getAssets().open(FortumoStore.IN_APP_PRODUCTS_FILE_NAME), null);
 
         InappBaseProduct currentProduct = null;
         List<InappBaseProduct> itemsList = null;
@@ -119,11 +120,7 @@ public class InappsXMLParser {
             }
             eventType = parser.next();
         }
-
-        ArrayList<InappBaseProduct> productList = new ArrayList<InappBaseProduct>();
-        productList.addAll(itemsList);
-        productList.addAll(subscriptionList);
-        return productList;
+        return new Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>>(itemsList, subscriptionList);
     }
 
 }

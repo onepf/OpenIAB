@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
     static final String SKU_PREMIUM = "sku_premium";
-    static final String SKU_GAS = "sku_gas";
+    static final String SKU_GAS = "sku_gas11";
 
     // SKU for our subscription (infinite gas)
     static final String SKU_INFINITE_GAS = "sku_infinite_gas";

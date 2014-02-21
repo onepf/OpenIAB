@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 import mp.*;
@@ -11,7 +12,6 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.onepfUtils.InappsXMLParser;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -27,9 +27,10 @@ import java.util.List;
  * This class was made to provide in-app purchasing compatibility with other, "real", stores.
  */
 public class FortumoStore extends DefaultAppstore {
-    static final String SHARED_PREFS_FORTUMO = "shared_prefs_fortumo";
-    static final String SHARED_PREFS_FORTUMO_CONSUMABLE_SKUS = "shared_prefs_fortumo_consumable_skus";
-    static final String SHARED_PREFS_PAYMENT_TO_HANDLE = "shared_prefs_payment_to_handle";
+    public static final String IN_APP_PRODUCTS_FILE_NAME = "inapps_products.xml";
+    public static final String FORTUMO_DETATILS_FILE_NAME = "fortumo_inapps_details.xml";
+
+    static final String SHARED_PREFS_FORTUMO = "onepf_shared_prefs_fortumo";
 
 
     private Context context;
@@ -292,13 +293,38 @@ public class FortumoStore extends DefaultAppstore {
     private static void checkDataXmlFiles(Context context) {
         try {
             final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
-            final boolean hasProductFile = strings.contains(InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME);
-            final boolean hasFortumoDetailsFile = strings.contains(FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+            final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
+            final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
             if (!(hasProductFile && hasFortumoDetailsFile)) {
-                throw new IllegalStateException("To support Fortumo you need the following xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+                throw new IllegalStateException("To support Fortumo you need the following xml files: " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoStore.FORTUMO_DETATILS_FILE_NAME);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Can't parse the required xml files: " + InappsXMLParser.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoBillingService.FortumoDetailsXMLParser.INAPP_PRODUCTS_FILE_NAME);
+            throw new IllegalStateException("Can't parse the required xml files: " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + "&" + FortumoStore.FORTUMO_DETATILS_FILE_NAME);
         }
     }
+
+    static SharedPreferences getFortumoSharedPrefs(Context context) {
+        return context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
+    }
+
+    static void addPendingPayment(Context context, String productId, String messageId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        final SharedPreferences.Editor editor = fortumoSharedPrefs.edit();
+        editor.putString(productId, messageId);
+        editor.commit();
+    }
+
+    static String getMessageIdInPending(Context context, String productId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        final String messageIdForProduct = fortumoSharedPrefs.getString(productId, null);
+        return messageIdForProduct;
+    }
+
+    static void removePendingProduct(Context context, String productId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        final SharedPreferences.Editor edit = fortumoSharedPrefs.edit();
+        edit.remove(productId);
+        edit.commit();
+    }
+
 }

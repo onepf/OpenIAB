@@ -1,4 +1,4 @@
-package org.onepf.oms.appstore.onepfUtils;
+package org.onepf.oms.appstore.fortumo;
 
 
 /**

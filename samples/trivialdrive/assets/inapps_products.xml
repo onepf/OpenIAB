@@ -1,6 +1,6 @@
 <inapp-products>
     <items>
-        <item id="sku_gas" publish-state="published">
+        <item id="sku_gas11" publish-state="published">
             <summary>
                 <summary-base>
                     <title>1/4 of gas tank</title>
@@ -64,14 +64,14 @@
                     <!--<description>fdfdfdfdfdfdfdfdfdffdfdfdffdfdfdffdfsfsfsfsdf</description>-->
                 <!--</summary-localization>-->
             <!--</summary>-->
-            <!--<price autofill="false">-->
-                <!--<price-base>1000.00</price-base>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-            <!--</price>-->
+            <!--<fortumoPrice autofill="false">-->
+                <!--<fortumoPrice-base>1000.00</fortumoPrice-base>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+            <!--</fortumoPrice>-->
         <!--</subscription>-->
         <!--<subscription id="string" publish-state="unpublished" period="oneYear">-->
             <!--<summary>-->
@@ -92,14 +92,14 @@
                     <!--<description>fdfdfdfdfdfdfdfdfdffdfdfdffdfdfdffdfsfsfsfsdf</description>-->
                 <!--</summary-localization>-->
             <!--</summary>-->
-            <!--<price autofill="false">-->
-                <!--<price-base>1000.00</price-base>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-                <!--<price-local country="RU">1000.00</price-local>-->
-            <!--</price>-->
+            <!--<fortumoPrice autofill="false">-->
+                <!--<fortumoPrice-base>1000.00</fortumoPrice-base>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+                <!--<fortumoPrice-local country="RU">1000.00</fortumoPrice-local>-->
+            <!--</fortumoPrice>-->
         <!--</subscription>-->
     </subscriptions>
 </inapp-products>
