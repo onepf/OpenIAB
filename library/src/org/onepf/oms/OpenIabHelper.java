@@ -16,6 +16,7 @@
 
 package org.onepf.oms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -494,9 +495,97 @@ public class OpenIabHelper {
             }
         }
         if (checkFortumo) {
-            FortumoStore.checkSettings(context);
+            StringBuilder resultBuilder = new StringBuilder();
+
+            //jar
+            StringBuilder jarResultBuilder = new StringBuilder(" \n");
+            try {
+                FortumoStore.class.getClassLoader().loadClass("mp.MpUtils");
+            } catch (ClassNotFoundException e) {
+                jarResultBuilder.append(" - Fortumo classes CAN'T be loaded.");
+            }
+
+            //manifest
+            StringBuilder manifestResultBuilder = new StringBuilder(" \n");
+            checkPermission(context, "android.permission.INTERNET", manifestResultBuilder);
+            checkPermission(context, "android.permission.ACCESS_NETWORK_STATE", manifestResultBuilder);
+            checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
+            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
+            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
+
+            Intent paymentActivityIntent = new Intent();
+            paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
+            if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
+                formatComponentStatus(" - mp.MpActivity is NOT declared.", manifestResultBuilder);
+            }
+
+            Intent mpServerIntent = new Intent();
+            mpServerIntent.setClassName(context.getPackageName(), "mp.MpService");
+            if (context.getPackageManager().resolveService(mpServerIntent, 0) == null) {
+               formatComponentStatus(" - mp.MpService is NOT declared.", manifestResultBuilder);
+            }
+
+            Intent statusUpdateServiceIntent = new Intent();
+            statusUpdateServiceIntent.setClassName(context.getPackageName(), "mp.StatusUpdateService");
+            if (context.getPackageManager().resolveService(statusUpdateServiceIntent, 0) == null) {
+                formatComponentStatus(" - mp.StatusUpdateService is NOT declared.", manifestResultBuilder);
+            }
+
+            //xml
+            StringBuilder xmlStringBuilder = new StringBuilder(" \n");
+            try {
+                final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
+                final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
+                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
+                if (!hasProductFile) {
+                    xmlStringBuilder.append(" - file " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + " NOT found in /assets.");
+                }
+                if (!hasFortumoDetailsFile) {
+                    if (!hasProductFile) {
+                        xmlStringBuilder.append('\n');
+                    }
+                    xmlStringBuilder.append(" - file " + FortumoStore.FORTUMO_DETATILS_FILE_NAME + " NOT found in /assets.");
+                }
+            } catch (IOException e) {
+                if (xmlStringBuilder.length() > 0) {
+                    xmlStringBuilder.append('\n');
+                }
+                xmlStringBuilder.append("- parsing assets error.");
+            }
+
+            if (jarResultBuilder.length() > 0 || manifestResultBuilder.length() > 0 || xmlStringBuilder.length() > 0) {
+                resultBuilder.append("\nFortumo setup failed for the following reasons");
+                resultBuilder.append(jarResultBuilder);
+                resultBuilder.append(xmlStringBuilder);
+                resultBuilder.append(manifestResultBuilder);
+//                resultBuilder.append("\n* ensure that");
+//                resultBuilder.append("\n* Fortumo classes are available in runtime");
+//                resultBuilder.append('\n').append(FortumoStore.IN_APP_PRODUCTS_FILE_NAME).append(" and ").append(FortumoStore.FORTUMO_DETATILS_FILE_NAME).append(" were added to /assets");
+//                resultBuilder.append("\n* AndroidManifest.xml contains all required elements");
+            }
+            if (resultBuilder.length() > 0) {
+                throw new IllegalStateException(resultBuilder.toString(), null);
+            }
+        }
+
+    }
+
+    private static void checkPermission(Context context, String paramString, StringBuilder builder) {
+        if (context.checkCallingOrSelfPermission(paramString) != PackageManager.PERMISSION_GRANTED) {
+            if (builder.length() > 0) {
+                builder.append('\n');
+            }
+            builder.append(String.format(" - Required permission \"%s\" is NOT granted.", paramString));
         }
     }
+
+    private static void formatComponentStatus(String message, StringBuilder messageBuilder){
+        if (messageBuilder.length() > 0) {
+            messageBuilder.append('\n');
+        }
+        messageBuilder.append(message);
+    }
+
 
 
     private static void checkSamsung(Context context) {
@@ -1045,7 +1134,7 @@ public class OpenIabHelper {
     private static String in() {
         return "in: " + (System.currentTimeMillis() - started);
     }
-    
+
     /**
      * All options of OpenIAB can be found here
      * 
