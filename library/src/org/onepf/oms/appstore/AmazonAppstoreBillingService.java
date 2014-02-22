@@ -161,7 +161,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
         if (mDebugLog) Log.v(TAG, "onPurchaseUpdatesResponse() reqStatus: " + purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus() + "reqId: " + purchaseUpdatesResponse.getRequestId());
         
-        if (!currentUserId.equals(purchaseUpdatesResponse.getUserId())) {
+        if ((currentUserId != null) && !currentUserId.equals(purchaseUpdatesResponse.getUserId())) {
             if (mDebugLog) Log.w(TAG, "onPurchaseUpdatesResponse() Current UserId: " + currentUserId + ", purchase UserId: " + purchaseUpdatesResponse.getUserId());
             inventoryLatch.countDown();
             return;
@@ -285,7 +285,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         IabResult result = null;
         Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
         
-        if (!currentUserId.equals(purchaseResponse.getUserId())) {
+        if ((currentUserId != null) && !currentUserId.equals(purchaseResponse.getUserId())) {
             if (mDebugLog) Log.w(TAG, "onPurchaseResponse() userId: " + currentUserId + ", purchase.userId: " + purchaseResponse.getUserId());
             result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "userId doesn't match purchase.userId");
         } else {
