@@ -5,12 +5,12 @@
     <property name="out.dir" value="bin"/>
 	<property environment="env"/>
 	<property name="mkb" value="${env.S3E_DIR}/bin/mkb.bat"/>
-	
-    <target name="build">
+
+    <target name="build" if="env.S3E_DIR">
 		<mkdir dir="${out.dir}"/>
 		
 		<!-- Build Demo Application .apk -->
-        <exec executable="${mkb}" failonerror="true" logerror="true">
+        <exec executable="${mkb}" failonerror="false" logerror="false">
 			<arg line="s3eOpenIabDemo.mkb"/>
             <arg line="--default-buildenv=VC10"/>
             <arg line="--make --arm --compiler=gcc"/>

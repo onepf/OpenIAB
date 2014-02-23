@@ -46,8 +46,8 @@
         <copy file="unity_plugin/bin/OpenIAB-plugin.unitypackage" todir="${out.dir}"/>
 		
 		<!-- Marmalade demo -->
-		<ant antfile="marmalade_plugin/ExampleApplication/build.xml" target="build" useNativeBasedir="yes"/>
-		<copy file="marmalade_plugin/ExampleApplication/bin/MarmaladeDemo.apk" todir="${out.dir}"/>
+		<ant antfile="samples/marmalade_example/build.xml" target="build" useNativeBasedir="yes"/>
+		<copy file="samples/marmalade_example/bin/OpenIabMarmaladeDemo.apk" todir="${out.dir}"/>
 		
     </target>
 
