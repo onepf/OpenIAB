@@ -5,9 +5,6 @@ Summary
 
 OpenIAB Extension for Marmalade.
 
-Current Version: 1.0.2
-Target Marmalade SDK: 6.2.2
-
 This extension provides an interface to the most mobile stores via Google Play In-app Billing Version 3 API, which is supported on devices
 from Android 2.2 (Froyo API 7) onwards. The devices need to have target stores installed. The 
 extension has been tested using Marmalade SDK 7.0, and should work on all higher versions.
