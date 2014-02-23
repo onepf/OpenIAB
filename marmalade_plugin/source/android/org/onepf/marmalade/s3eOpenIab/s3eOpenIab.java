@@ -135,7 +135,7 @@ class s3eOpenIab {
         if (subSkus != null)
             subsList = Arrays.asList(subSkus);
 
-        mHelper.queryInventoryAsync(inAppList, subsList, mGotSkusListener);
+        mHelper.queryInventoryAsync(true, inAppList, subsList, mGotSkusListener);
     }
 
     public void s3eOpenIabMapSku(String sku, String storeName, String storeSku) {
