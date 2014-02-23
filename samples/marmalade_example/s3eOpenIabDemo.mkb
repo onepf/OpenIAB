@@ -3,7 +3,7 @@
 subprojects
 {
     iwnui
-    ../s3eOpenIab.mkf
+    ../../marmalade_plugin/s3eOpenIab.mkf
 }
 
 files 
@@ -28,18 +28,5 @@ deployments
 
   	["iOS"]
     iphone-appid='com.provectus.hogtest'
-    #iphone-provisioning-profile="data/HOG_AdHoc.mobileprovision"
-	#iphone-splash="data/Default~iphone.png"
-	#iphone-icon="data/icons/iPhoneIcon.png"
-	#iphone-icon-ipad="data/icons/iPadIcon.png"
-	#iphone-icon-high-res="data/icons/iPhone4Icon.png"
-	#iphone-sign-for-distribution='1'
-}
-#### AUTO GENERATED deployment settings from DeployTool.exe. Do not edit below this line ####
-deployments
-{
-	["Android"]
-	["Default"]
-	assets='Default'
-	["iOS"]
+    #iphone-provisioning-profile="provision/profile/path"
 }
