@@ -1,0 +1,9 @@
+/build_s3eandroidgoogleplaybilling_android_linux_scons_arm/
+/build_s3eandroidgoogleplaybilling_android_java/
+/build_s3eopeniab_android_java/
+/build_s3eopeniab_android_linux_scons_arm/
+/lib/
+/build_s3eopeniab_iphone_iphone_scons_arm/
+/build_s3eopeniab_iphone_iphone_scons_x86/
+/*.sublime-project
+/*.sublime-workspace
