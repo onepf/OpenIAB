@@ -47,16 +47,6 @@ public class Purchase implements Cloneable {
         this.appstoreName = appstoreName;
     }
 
-    /**
-     * Marmalade hack
-     */
-    public static Purchase createFromToken(String token) {
-        Purchase p = new Purchase("");
-        p.mToken = token;
-        p.mItemType = IabHelper.ITEM_TYPE_INAPP;
-        return p;
-    }
-
     public void setItemType(String itemType) {
         mItemType = itemType;
     }

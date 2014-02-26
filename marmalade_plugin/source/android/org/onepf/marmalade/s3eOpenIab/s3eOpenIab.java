@@ -13,6 +13,7 @@ import android.util.Log;
 import com.ideaworks3d.marmalade.LoaderAPI;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.*;
+import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -112,11 +113,6 @@ class s3eOpenIab {
         LoaderAPI.getActivity().startActivity(i);
     }
 
-    /**
-     * The IabHelper adopts a rather obtuse approach to combining inventory with purchased products that doesn't
-     * really fit our use pattern, so we've added our own version to the end of IabHelper.
-     */
-
     public void s3eOpenIabRequestProductInformation(String[] inAppSkus, String[] subSkus) {
         Log.d(TAG, "s3eOpenIabRequestProductInformation called for:");
         if (inAppSkus != null)
@@ -191,7 +187,9 @@ class s3eOpenIab {
             return;
         }
         // construct a Purchase the helper is happy with
-        Purchase purchase = Purchase.createFromToken(purchaseToken);
+        Purchase purchase = new Purchase("");
+        purchase.setItemType();
+        purchase.setToken(purchaseToken);
         // kick off the async query
         mHelper.consumeAsync(purchase, mConsumeFinishedListener);
     }

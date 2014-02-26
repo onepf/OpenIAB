@@ -17,7 +17,7 @@
             <arg line="--deploy=android"/>
         </exec>
 		
-		<copy file="build_s3eopeniabdemo_vc10\deployments\default\android\release\arm\s3eOpenIabDemo.apk" tofile="${out.dir}/OpenIabMarmaladeDemo.apk"/>
+		<copy file="build_s3eopeniabdemo_vc10\deployments\default\android\release\arm\openiab-marmalade-demo.apk" tofile="${out.dir}/openiab-marmalade-demo.apk"/>
 	</target>
 
 </project>
