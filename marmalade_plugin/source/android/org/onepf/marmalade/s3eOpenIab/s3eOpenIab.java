@@ -13,9 +13,11 @@ import android.util.Log;
 import com.ideaworks3d.marmalade.LoaderAPI;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.*;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -188,7 +190,7 @@ class s3eOpenIab {
         }
         // construct a Purchase the helper is happy with
         Purchase purchase = new Purchase("");
-        purchase.setItemType();
+        purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
         purchase.setToken(purchaseToken);
         // kick off the async query
         mHelper.consumeAsync(purchase, mConsumeFinishedListener);
@@ -284,7 +286,7 @@ class s3eOpenIab {
         // apparently there's no way to check if the JNI has bound this native function other than catch it
         try {
             if (inv != null) {
-                List<SkuDetails> skus = inv.getAllSkus();
+                List<SkuDetails> skus = new ArrayList<SkuDetails>(inv.mSkuMap.values());
                 S3eBillingItemInfo[] s = new S3eBillingItemInfo[skus.size()];
                 for (int i = 0; i < skus.size(); i++)
                     s[i] = new S3eBillingItemInfo(skus.get(i));
