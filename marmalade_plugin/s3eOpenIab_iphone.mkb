@@ -1,0 +1,20 @@
+#!/usr/bin/env mkb
+# Builder mkb file for the s3eOpenIab extension on iphone
+platform IPHONE
+
+options
+{
+    lib
+    output-name="lib/iphone/libs3eOpenIab.a"
+    output-name-debug="lib/iphone/libs3eOpenIab_d.a"
+}
+define S3E_BUILD_EXT
+
+subprojects
+{
+    s3eOpenIab_build
+    s3eIOSAppStoreBilling
+}
+
+#subproject "$MARMALADE_ROOT/extensions/s3eIOSAppStoreBilling/s3eIOSAppStoreBilling.mkf"
+#subproject s3eOpenIab_build
