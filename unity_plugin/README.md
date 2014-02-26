@@ -183,6 +183,51 @@ public static void consumeProduct(Purchase purchase);
 public static void restoreTransactions();
 ```
 
+Android
+=====
+OpenIAB uses proxy activity instead of inheriting Unity activity to simplify integration with other plugins.
+If you already have ```AndroidManifest.xml``` in your project, simply add there our permissions, receiver and activity declaration.
+
+```
+<application ... >
+    
+    ...
+    
+    <activity android:name="org.onepf.openiab.UnityProxyActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen">
+        </activity>
+        
+    <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
+        <intent-filter>
+            <action
+                android:name="com.amazon.inapp.purchasing.NOTIFY"
+                android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
+        </intent-filter>
+    </receiver>
+    
+</application>
+
+...
+
+<uses-permission android:name="com.android.vending.BILLING"/>
+<uses-permission android:name="android.permission.RECEIVE_SMS"/>
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="com.tmoney.vending.INBILLING"/>
+<uses-permission android:name="com.yandex.store.permission.BILLING"/>
+<uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
+<uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+
+...
+
+<permission android:name="com.tmoney.vending.INBILLING"/>
+```
+
+
 Advanced
 =====
 You can reuse existing API and add support to a new platform by implementing ```IOpenIAB``` interface.
