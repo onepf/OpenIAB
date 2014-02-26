@@ -1,0 +1,32 @@
+#!/usr/bin/env mkb
+
+subprojects
+{
+    iwnui
+    ../../marmalade_plugin/s3eOpenIab.mkf
+}
+
+files 
+{
+	s3eOpenIabDemo.cpp
+	ExampleUI.cpp
+}
+
+deployments
+{
+	name='openiab-marmalade-demo'
+	caption='OpenIAB Marmalade Demo'
+	version-major=0
+	version-minor=0
+	version-revision=1
+  	manufacturer='OnePF'
+  	provider='OnePF'
+
+	["Android"]
+	android-manifest='AndroidManifest.xml'
+	android-pkgname='org.onepf.marmalade.demo'
+
+  	["iOS"]
+    iphone-appid='com.provectus.hogtest'
+    #iphone-provisioning-profile="provision/profile/path"
+}
