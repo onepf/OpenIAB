@@ -24,10 +24,12 @@ import java.util.regex.Pattern;
  * Created by akarimova on 23.12.13.
  */
 public class FortumoBillingService implements AppstoreInAppBillingService {
-    private Context context;
+    private static final String SHARED_PREFS_FORTUMO = "onepf_shared_prefs_fortumo";
+
     private int activityRequestCode;
+    private Context context;
+    private Map<String, FortumoProduct> inappsMap;
     private IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener;
-    private Map<String, FortumoProduct> fortumoInapps;
 
     public FortumoBillingService(Context context) {
         this.context = context;
@@ -37,13 +39,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         IabResult result = null;
         try {
-            fortumoInapps = FortumoBillingService.getFortumoInapps(context);
-        } catch (IOException e) {
-            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Fortumo: parsing error.");
-        } catch (XmlPullParserException e) {
-            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Fortumo: parsing error.");
+            inappsMap = FortumoBillingService.getFortumoInapps(context);
         } catch (IabException e) {
             result = e.getResult();
+        } catch (Exception e) {
+            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Fortumo: setup failed.");
         }
         listener.onIabSetupFinished(result != null ? result : new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Fortumo: successful setup."));
     }
@@ -52,37 +52,36 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     public void launchPurchaseFlow(final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         this.purchaseFinishedListener = listener;
         this.activityRequestCode = requestCode;
-        final FortumoProduct fortumoProduct = fortumoInapps.get(sku);
-        if (fortumoProduct == null) {
-            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR, "Required sku " + sku + " was not declared in xml files."), null);
+        final FortumoProduct fortumoProduct = inappsMap.get(sku);
+        if (null == fortumoProduct) {
+            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR, String.format("Required product %s was not defined in xml files.", sku)), null);
         } else {
-            if (fortumoProduct.isConsumable()) {
-                final String messageIdInPending = FortumoStore.getMessageIdInPending(context, fortumoProduct.getProductId());
-                if (!TextUtils.isEmpty(messageIdInPending) && !messageIdInPending.equals("-1")) {
-                    final PaymentResponse paymentResponse = MpUtils.getPaymentResponse(context, Long.valueOf(messageIdInPending));
-                    if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
-                        final Purchase purchase = purchaseFromPaymentResponse(context, paymentResponse);
-                        purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Requested sku status is pending"), purchase);
-                    } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_FAILED || paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_USE_ALTERNATIVE_METHOD) {
-                        purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Failed to buy purchase"), null);
-                    } else {
-                        purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED, "Requested sku status is pending"), null);
-                    }
+            final String messageId = getMessageIdInPending(context, fortumoProduct.getProductId());
+            if (fortumoProduct.isConsumable() && !TextUtils.isEmpty(messageId) && !messageId.equals("-1")) {
+                final PaymentResponse paymentResponse = MpUtils.getPaymentResponse(context, Long.valueOf(messageId));
+                IabResult result;
+                Purchase purchase = null;
+                final int billingStatus = paymentResponse.getBillingStatus();
+                if (billingStatus == MpUtils.MESSAGE_STATUS_BILLED) {
+                    purchase = purchaseFromPaymentResponse(context, paymentResponse);
+                    result = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "Purchase was successful.");
+                } else if (billingStatus == MpUtils.MESSAGE_STATUS_FAILED || billingStatus == MpUtils.MESSAGE_STATUS_USE_ALTERNATIVE_METHOD) {
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase was failed.");
                 } else {
-                    PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
-                            setConsumable(fortumoProduct.isConsumable()).
-                            setProductName(fortumoProduct.getProductId()).
-                            setDisplayString(fortumoProduct.getTitle()).
-                            build();
-                    startPaymentActivityForResult(act, requestCode, paymentRequest);
+                    result = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING, "Purchase is in pending.");
                 }
+                if (result.getResponse() != OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING) {
+                    removePendingProduct(context, sku);
+                }
+                purchaseFinishedListener.onIabPurchaseFinished(result, purchase);
             } else {
                 PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret()).
                         setConsumable(fortumoProduct.isConsumable()).
                         setProductName(fortumoProduct.getProductId()).
                         setDisplayString(fortumoProduct.getTitle()).
                         build();
-                startPaymentActivityForResult(act, requestCode, paymentRequest);
+                Intent localIntent = paymentRequest.toIntent(act);
+                act.startActivityForResult(localIntent, requestCode);
             }
         }
     }
@@ -92,32 +91,33 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         if (activityRequestCode != requestCode) return false;
         if (intent == null) {
             purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in Fortumo IAB result"), null);
-        }
-        int errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
-        String errorMsg = "Error during purchase.";
-        Purchase purchase = null;
-        if (resultCode == Activity.RESULT_OK) {
-            PaymentResponse paymentResponse = new PaymentResponse(intent);
-            purchase = purchaseFromPaymentResponse(context, paymentResponse);
-            if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
-                errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
-            } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_PENDING) {
-                errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
-                errorMsg = "Purchase status is pending";
-                if (fortumoInapps.get(paymentResponse.getProductName()).isConsumable()) {
-                    FortumoStore.addPendingPayment(context, paymentResponse.getProductName(), String.valueOf(paymentResponse.getMessageId()));
-                    purchase = null; //todo?
+        } else {
+            int errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
+            String errorMsg = "Purchase error.";
+            Purchase purchase = null;
+            if (resultCode == Activity.RESULT_OK) {
+                PaymentResponse paymentResponse = new PaymentResponse(intent);
+                purchase = purchaseFromPaymentResponse(context, paymentResponse);
+                if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
+                    errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
+                } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_PENDING) {
+                    errorCode = OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING;
+                    errorMsg = "Purchase is pending";
+                    if (inappsMap.get(paymentResponse.getProductName()).isConsumable()) {
+                        addPendingPayment(context, paymentResponse.getProductName(), String.valueOf(paymentResponse.getMessageId()));
+                        purchase = null;
+                    }
                 }
             }
+            purchaseFinishedListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
         }
-        purchaseFinishedListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
         return true;
     }
 
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         Inventory inventory = new Inventory();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(FortumoStore.SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
         final Map<String, ?> preferenceMap = sharedPreferences.getAll();
         if (preferenceMap != null) {
             final SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -139,7 +139,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             }
             editor.commit();
         }
-        final Collection<FortumoProduct> inappProducts = fortumoInapps.values();
+        final Collection<FortumoProduct> inappProducts = inappsMap.values();
         for (FortumoProduct fortumoProduct : inappProducts) {
             if (!fortumoProduct.isConsumable()) {
                 final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 10);
@@ -160,7 +160,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
         if (querySkuDetails && moreItemSkus != null && moreItemSkus.size() > 0) {
             for (String name : moreItemSkus) {
-                final FortumoProduct fortumoProduct = fortumoInapps.get(name);
+                final FortumoProduct fortumoProduct = inappsMap.get(name);
                 if (fortumoProduct != null) {
                     inventory.addSkuDetails(fortumoProduct.toSkuDetails(fortumoProduct.getFortumoPrice()));
                 } else {
@@ -173,7 +173,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
     @Override
     public void consume(Purchase itemInfo) throws IabException {
-        FortumoStore.removePendingProduct(context, itemInfo.getSku());
+        removePendingProduct(context, itemInfo.getSku());
     }
 
     @Override
@@ -199,7 +199,6 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         final Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
         final InappsXMLParser inappsXMLParser = new InappsXMLParser();
         final Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse = inappsXMLParser.parse(context);
-        //Fortumo doesn't support subscriptions, we don't work with them.
         final List<InappBaseProduct> allItems = parse.first;
         final FortumoProductCreator fortumoDetailsXMLParser = new FortumoProductCreator();
         final Map<String, FortumoProductCreator.FortumoDetails> fortumoSkuDetailsMap = fortumoDetailsXMLParser.parse(context);
@@ -225,11 +224,6 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             map.put(productId, fortumoProduct);
         }
         return map;
-    }
-
-    static void startPaymentActivityForResult(Activity activity, int requestCode, PaymentRequest paymentRequest) {
-        Intent localIntent = paymentRequest.toIntent(activity);
-        activity.startActivityForResult(localIntent, requestCode);
     }
 
 
@@ -281,6 +275,31 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         public void setFortumoPrice(String fortumoPrice) {
             this.fortumoPrice = fortumoPrice;
         }
+    }
+
+
+    static void addPendingPayment(Context context, String productId, String messageId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        final SharedPreferences.Editor editor = fortumoSharedPrefs.edit();
+        editor.putString(productId, messageId);
+        editor.commit();
+    }
+
+    static String getMessageIdInPending(Context context, String productId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        return fortumoSharedPrefs.getString(productId, null);
+    }
+
+    static void removePendingProduct(Context context, String productId) {
+        final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
+        final SharedPreferences.Editor edit = fortumoSharedPrefs.edit();
+        edit.remove(productId);
+        edit.commit();
+    }
+
+
+    static SharedPreferences getFortumoSharedPrefs(Context context) {
+        return context.getSharedPreferences(SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
     }
 
 

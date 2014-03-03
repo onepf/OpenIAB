@@ -96,8 +96,9 @@ public class InappsXMLParser {
                                 inWrongNode(SUBSCRIPTION_TAG, SUBSCRIPTIONS_TAG);
                             }
                             currentSubPeriod = parser.getAttributeValue(null, PERIOD_ATTR);
-                            if (!("oneMonth".equals(currentSubPeriod) || "oneYear".equals(currentSubPeriod))) {
-                                throw new IllegalStateException(String.format("Wrong \"period\" value: %s. Must be \"oneMonth\" or \"oneYear\".", currentSubPeriod));
+                            if (!(InappSubscriptionProduct.ONE_MONTH.equals(currentSubPeriod) || InappSubscriptionProduct.ONE_YEAR.equals(currentSubPeriod))) {
+                                throw new IllegalStateException(String.format("Wrong \"period\" value: %s. Must be \"%s\" or \"%s\".", currentSubPeriod, InappSubscriptionProduct.ONE_MONTH,
+                                        InappSubscriptionProduct.ONE_YEAR));
                             }
                             insideSub = true;
                         } else {
@@ -114,8 +115,8 @@ public class InappsXMLParser {
                         }
                         currentProduct.setProductId(sku);
                         final String publishState = parser.getAttributeValue(null, PUBLISH_STATE_ATTR);
-                        if (!("unpublished".equals(publishState) || "published".equals(publishState))) {
-                            throw new IllegalStateException(String.format("Wrong publish state value: %s. Must be \"published\"|\"unpublished\"", publishState));
+                        if (!(InappBaseProduct.UNPUBLISHED.equals(publishState) || InappBaseProduct.PUBLISHED.equals(publishState))) {
+                            throw new IllegalStateException(String.format("Wrong publish state value: %s. Must be \"%s\" or \"%s\"", publishState, InappBaseProduct.UNPUBLISHED, InappBaseProduct.PUBLISHED));
                         }
                         currentProduct.setPublished(publishState);
                     } else if (tagName.equals(SUMMARY_TAG)) {
