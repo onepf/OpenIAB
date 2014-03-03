@@ -553,7 +553,7 @@ public class OpenIabHelper {
                 xmlStringBuilder.append("- parsing assets error.");
             }
 
-            if (jarResultBuilder.length() > 0 || manifestResultBuilder.length() > 0 || xmlStringBuilder.length() > 0) {
+            if (jarResultBuilder.toString().trim().length() > 0 || manifestResultBuilder.toString().trim().length() > 0 || xmlStringBuilder.toString().trim().length() > 0) {
                 resultBuilder.append("\nFortumo setup failed for the following reasons");
                 resultBuilder.append(jarResultBuilder);
                 resultBuilder.append(xmlStringBuilder);
