@@ -18,6 +18,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by akarimova on 23.12.13.
@@ -285,6 +286,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
     static class FortumoProductCreator {
         private static final String TAG = FortumoProductCreator.class.getSimpleName();
+        private static final Pattern skuPattern = Pattern.compile("([a-z]|[0-9]){1}[a-z0-9._]*");
 
         //TAGS
         private static final String FORTUMO_PRODUCTS_TAG = "fortumo-products";
@@ -300,25 +302,37 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             factory.setNamespaceAware(true);
             XmlPullParser parser = factory.newPullParser();
             parser.setInput(context.getAssets().open(FortumoStore.FORTUMO_DETATILS_FILE_NAME), null);
+
+            HashMap<String, FortumoDetails> map = new HashMap<String, FortumoDetails>();
             FortumoDetails sku = null;
-            HashMap<String, FortumoDetails> map = null;
+            boolean insideFortumoProducts = false;
+
             int eventType = parser.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT) {
-                String tagname = parser.getName();
+                String tagName = parser.getName();
                 switch (eventType) {
                     case XmlPullParser.START_TAG:
-                        if (tagname.equals(FORTUMO_PRODUCTS_TAG)) {
-                            map = new HashMap<String, FortumoDetails>();
-                        } else if (tagname.equalsIgnoreCase(PRODUCT_TAG)) {
-                            sku = new FortumoDetails(parser.getAttributeValue(null, ID_ATTR), Boolean.parseBoolean(parser.getAttributeValue(null, CONSUMABLE_ATTR)),
+                        if (tagName.equals(FORTUMO_PRODUCTS_TAG)) {
+                            insideFortumoProducts = true;
+                        } else if (tagName.equalsIgnoreCase(PRODUCT_TAG)) {
+                            if (!insideFortumoProducts) {
+                                throw new IllegalStateException(String.format("%s is not inside %s", PRODUCT_TAG, FORTUMO_PRODUCTS_TAG));
+                            }
+                            final String skuValue = parser.getAttributeValue(null, ID_ATTR);
+                            if (!skuPattern.matcher(skuValue).matches()) {
+                                throw new IllegalStateException(String.format("Wrong SKU: %s. SKU must match \"([a-z]|[0-9]){1}[a-z0-9._]*\".", skuValue));
+                            }
+                            sku = new FortumoDetails(skuValue, Boolean.parseBoolean(parser.getAttributeValue(null, CONSUMABLE_ATTR)),
                                     parser.getAttributeValue(null, SERVICE_ID_ATTR), parser.getAttributeValue(null, SERVICE_INAPP_SECRET_ATTR));
                         }
                         break;
 
                     case XmlPullParser.END_TAG:
-                        if (tagname.equals(PRODUCT_TAG)) {
+                        if (tagName.equals(PRODUCT_TAG)) {
                             map.put(sku.getId(), sku);
                             sku = null;
+                        } else if (tagName.equals(FORTUMO_PRODUCTS_TAG)) {
+                            insideFortumoProducts = false;
                         }
                         break;
 
