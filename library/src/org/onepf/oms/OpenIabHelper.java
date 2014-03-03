@@ -399,26 +399,7 @@ public class OpenIabHelper {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
                     } else {
                         if (!hasFortumoInSetup && options.supportFortumo) {
-                            final FortumoStore fortumoStore = new FortumoStore(context);
-                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
-                                final CountDownLatch latch = new CountDownLatch(1);
-                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
-                                    @Override
-                                    public void onIabSetupFinished(IabResult setupResult) {
-                                        if (setupResult.isSuccess()) {
-                                            mAppstore = fortumoStore;
-                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
-                                        }
-                                        result[0] = setupResult;
-                                        latch.countDown();
-                                    }
-                                });
-                                try {
-                                    latch.await();
-                                } catch (InterruptedException e) {
-                                    Log.e(TAG, "Fortumo setup was interrupted", e);
-                                }
-                            }
+                            tryFortumoStore(result);
                         }
                     }
                     fireSetupFinished(listener, result[0]);
@@ -433,26 +414,7 @@ public class OpenIabHelper {
                         });
                     } else {
                         if (!hasFortumoInSetup && options.supportFortumo) {
-                            final FortumoStore fortumoStore = new FortumoStore(context);
-                            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
-                                final CountDownLatch latch = new CountDownLatch(1);
-                                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
-                                    @Override
-                                    public void onIabSetupFinished(IabResult setupResult) {
-                                        if (setupResult.isSuccess()) {
-                                            mAppstore = fortumoStore;
-                                            mAppstoreBillingService = mAppstore.getInAppBillingService();
-                                        }
-                                        result[0] = setupResult;
-                                        latch.countDown();
-                                    }
-                                });
-                                try {
-                                    latch.await();
-                                } catch (InterruptedException e) {
-                                    Log.e(TAG, "Fortumo setup was interrupted", e);
-                                }
-                            }
+                            tryFortumoStore(result);
                         }
                         fireSetupFinished(listener, result[0]);
                     }
@@ -465,6 +427,29 @@ public class OpenIabHelper {
                 }
             }
         }, "openiab-setup").start();
+    }
+
+    private void tryFortumoStore(final IabResult[] result) {
+            final FortumoStore fortumoStore = new FortumoStore(context);
+            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
+                final CountDownLatch latch = new CountDownLatch(1);
+                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
+                    @Override
+                    public void onIabSetupFinished(IabResult setupResult) {
+                        if (setupResult.isSuccess()) {
+                            mAppstore = fortumoStore;
+                            mAppstoreBillingService = mAppstore.getInAppBillingService();
+                        }
+                        result[0] = setupResult;
+                        latch.countDown();
+                    }
+                });
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    Log.e(TAG, "Fortumo setup was interrupted", e);
+                }
+            }
     }
 
     /** Check options are valid */
@@ -769,7 +754,7 @@ public class OpenIabHelper {
                             }
                             storeRemains.countDown();
                         }
-                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();;
+                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();
                 }
             });
         }
