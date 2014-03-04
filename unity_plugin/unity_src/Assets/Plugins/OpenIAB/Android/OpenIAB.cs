@@ -70,12 +70,10 @@ namespace OnePF {
             return j_HashMap;
         }
 
-        public void init(Options options)
-        {
+        public void init(Options options) {
             if (!IsDevice()) return;
 
-            using (var j_options = new AndroidJavaObject("org.onepf.openiab.UnityOptions"))
-            {
+            using (var j_options = new AndroidJavaObject("org.onepf.oms.OpenIabHelper$Options")) {
                 j_options.Set<int>("discoveryTimeoutMs", options.discoveryTimeoutMs);
                 j_options.Set<bool>("checkInventory", options.checkInventory);
                 j_options.Set<int>("checkInventoryTimeoutMs", options.checkInventoryTimeoutMs);
@@ -85,13 +83,7 @@ namespace OnePF {
                 j_options.Set("storeKeys", j_storeKeys);
                 j_storeKeys.Dispose();
 
-                IntPtr fieldId = AndroidJNI.GetFieldID(j_options.GetRawClass(), "prefferedStoreNames", "[Ljava/lang/String;");
-                IntPtr arr = AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames);
-                AndroidJNI.SetObjectField(j_options.GetRawObject(), fieldId, arr);
-
-                fieldId = AndroidJNI.GetFieldID(j_options.GetRawClass(), "availableStores", "[Ljava/lang/String;");
-                arr = AndroidJNIHelper.ConvertToJNIArray(options.availableStores);
-                AndroidJNI.SetObjectField(j_options.GetRawObject(), fieldId, arr);
+                j_options.Set("prefferedStoreNames", AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames));
 
                 _plugin.Call("initWithOptions", j_options);
             }

@@ -10,15 +10,9 @@ import com.unity3d.player.UnityPlayer;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
-import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.GooglePlay;
-import org.onepf.oms.appstore.SamsungApps;
-import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,56 +63,18 @@ public class UnityPlugin {
     }
 
     public void init(final HashMap<String, String> storeKeys) {
-        UnityOptions options = new UnityOptions();
+        OpenIabHelper.Options options = new OpenIabHelper.Options();
         options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
         options.storeKeys = storeKeys;
 
-        // TODO: init with OpenIabHelper.Options
         initWithOptions(options);
     }
 
-    public void initWithOptions(final UnityOptions options) {
+    public void initWithOptions(final OpenIabHelper.Options options) {
         UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                OpenIabHelper.Options o = new OpenIabHelper.Options();
-                o.checkInventory = options.checkInventory;
-                o.verifyMode = options.verifyMode;
-                o.storeKeys = options.storeKeys;
-                o.checkInventoryTimeoutMs = options.checkInventoryTimeoutMs;
-                o.discoveryTimeoutMs = options.discoveryTimeoutMs;
-                o.prefferedStoreNames = options.prefferedStoreNames;
-
-                Activity activity = UnityPlayer.currentActivity;
-
-                // TODO: consider adding public method for this in the OpenIabHelper
-                if (options.availableStores.length > 0) {
-                    o.availableStores = new ArrayList<Appstore>(options.availableStores.length);
-                    for (String storeName : options.availableStores) {
-                        if (storeName.equals(OpenIabHelper.NAME_GOOGLE)) {
-                            if (options.verifyMode == OpenIabHelper.Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(OpenIabHelper.NAME_GOOGLE)) {
-                                // don't work with GooglePlay if verifyMode is strict and no publicKey provided
-                            } else {
-                                final String publicKey = options.verifyMode == OpenIabHelper.Options.VERIFY_SKIP ? null
-                                        : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
-                                o.availableStores.add(new GooglePlay(activity, publicKey));
-                            }
-                        }
-                        if (storeName.equals(OpenIabHelper.NAME_AMAZON)) {
-                            o.availableStores.add(new AmazonAppstore(activity));
-                        }
-                        if (storeName.equals(OpenIabHelper.NAME_TSTORE)) {
-                            o.availableStores.add(new TStore(activity, options.storeKeys.get(OpenIabHelper.NAME_TSTORE)));
-                        }
-                        if (storeName.equals(OpenIabHelper.NAME_SAMSUNG)) {
-                            if (OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG).size() > 0) {
-                                o.availableStores.add(new SamsungApps(activity, o));
-                            }
-                        }
-                    }
-                }
-
-                _helper = new OpenIabHelper(activity, o);
+                _helper = new OpenIabHelper(UnityPlayer.currentActivity, options);
                 createBroadcasts();
 
                 // Start setup. This is asynchronous and the specified listener
