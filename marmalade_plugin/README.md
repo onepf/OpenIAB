@@ -16,7 +16,9 @@ Instructions:
 -------------
 
 - Set up IAP for your product in the Google Developer Console or another store
-- Copy this folder into your project path and add the relative path to the extension mkf file to your main mkb. For instance: 
+- Copy this folder into your project path and add the relative path to the extension mkf file to your main mkb.
+All dependencies are already set in the extension mkf.
+For instance: 
 
 ```
 subprojects
@@ -35,10 +37,9 @@ key).
 Example Application
 -------------------
 
-- I have included an Example app. In order to get it to work you will need to:
-	- Replace the publicKey string with your Base64 public license key from the Google Developer console -> Services & APIs.
-	- Edit the inAppSkus and subSkus string arrays to match your IAP product names.
-	- Provision your own keystore for signing the app.
+- Replace the publicKey string with your Base64 public license key from the Google Developer console -> Services & APIs.
+- Edit the inAppSkus and subSkus string arrays to match your IAP product names.
+- Provision your own keystore for signing the app.
 
 What does this extension support?
 ---------------------------------
@@ -78,7 +79,3 @@ Hints (Important)
 - Before you've published the App you will need to add a test account in order to test it.
 - Don't use your developer account (the one that owns the Developer account) as a test account (Google state this won't work).
 - Devices need to have an up to date Google Play Store installed or you will get S3E_OPENIAB_RESULT_BILLING_UNAVAILABLE.
-
-
-
-

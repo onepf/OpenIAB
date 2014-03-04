@@ -45,6 +45,12 @@
         <ant antfile="unity_plugin/build.xml" target="build" useNativeBasedir="yes"/>
         <copy file="unity_plugin/bin/OpenIAB-plugin.unitypackage" todir="${out.dir}"/>
 		
+        <!-- Marmalade plugin zip -->
+        <zip destfile="${out.dir}/marmalade.zip">
+            <zipfileset dir="${out.dir}" includes="openiab-amazon.jar" fullpath="${out.dir}/openiab-amazon.jar" />
+            <zipfileset dir="marmalade_plugin" />
+        </zip>
+
 		<!-- Marmalade demo -->
 		<ant antfile="samples/marmalade_example/build.xml" target="build" useNativeBasedir="yes"/>
 		<copy file="samples/marmalade_example/bin/openiab-marmalade-demo.apk" todir="${out.dir}"/>
