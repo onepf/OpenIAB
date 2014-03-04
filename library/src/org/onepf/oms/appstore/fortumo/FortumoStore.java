@@ -16,7 +16,14 @@ import org.onepf.oms.OpenIabHelper;
  * This class was made to provide in-app purchasing compatibility with other, "real", stores.
  */
 public class FortumoStore extends DefaultAppstore {
+    /**
+     * Contains information about all in-app products
+     */
     public static final String IN_APP_PRODUCTS_FILE_NAME = "inapps_products.xml";
+
+    /**
+     * Contains additional information about Fortumo services
+     */
     public static final String FORTUMO_DETATILS_FILE_NAME = "fortumo_inapps_details.xml";
 
     private Context context;
@@ -35,7 +42,7 @@ public class FortumoStore extends DefaultAppstore {
 
     @Override
     public boolean isBillingAvailable(String packageName) {
-        //SMS support is required to make payments
+        //SMS are required to make payments
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
     }
 

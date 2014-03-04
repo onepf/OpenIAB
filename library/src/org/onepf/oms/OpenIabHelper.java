@@ -75,11 +75,6 @@ public class OpenIabHelper {
     private static final int DISCOVER_TIMEOUT_MS = 5000;
 
     /**
-     * Pending Fortumo status code
-     */
-    public static final int BILLING_RESPONSE_RESULT_ITEM_IN_PENDING = 10042;
-
-    /**
      * for generic stores it takes 1.5 - 3sec
      * <p>
      * SamsungApps initialization is very time consuming (from 4 to 12 seconds). 

@@ -30,6 +30,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     private Context context;
     private Map<String, FortumoProduct> inappsMap;
     private IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener;
+    private String developerPayload;
 
     public FortumoBillingService(Context context) {
         this.context = context;
@@ -52,6 +53,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     public void launchPurchaseFlow(final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         this.purchaseFinishedListener = listener;
         this.activityRequestCode = requestCode;
+        this.developerPayload = extraData;
         final FortumoProduct fortumoProduct = inappsMap.get(sku);
         if (null == fortumoProduct) {
             purchaseFinishedListener.onIabPurchaseFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR, String.format("Required product %s was not defined in xml files.", sku)), null);
@@ -65,13 +67,12 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 if (billingStatus == MpUtils.MESSAGE_STATUS_BILLED) {
                     purchase = purchaseFromPaymentResponse(context, paymentResponse);
                     result = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "Purchase was successful.");
+                    removePendingProduct(context, sku);
                 } else if (billingStatus == MpUtils.MESSAGE_STATUS_FAILED || billingStatus == MpUtils.MESSAGE_STATUS_USE_ALTERNATIVE_METHOD) {
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase was failed.");
-                } else {
-                    result = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING, "Purchase is in pending.");
-                }
-                if (result.getResponse() != OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING) {
                     removePendingProduct(context, sku);
+                } else {
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase is in pending.");
                 }
                 purchaseFinishedListener.onIabPurchaseFinished(result, purchase);
             } else {
@@ -98,10 +99,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             if (resultCode == Activity.RESULT_OK) {
                 PaymentResponse paymentResponse = new PaymentResponse(intent);
                 purchase = purchaseFromPaymentResponse(context, paymentResponse);
+                purchase.setDeveloperPayload(developerPayload);
                 if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
                     errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
                 } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_PENDING) {
-                    errorCode = OpenIabHelper.BILLING_RESPONSE_RESULT_ITEM_IN_PENDING;
+                    errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
                     errorMsg = "Purchase is pending";
                     if (inappsMap.get(paymentResponse.getProductName()).isConsumable()) {
                         addPendingPayment(context, paymentResponse.getProductName(), String.valueOf(paymentResponse.getMessageId()));
@@ -109,6 +111,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                     }
                 }
             }
+            developerPayload = null;
             purchaseFinishedListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
         }
         return true;
