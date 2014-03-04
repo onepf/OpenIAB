@@ -16,7 +16,6 @@
 
 package org.onepf.oms.appstore;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +29,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -92,20 +90,8 @@ public class GooglePlay extends DefaultAppstore {
     public boolean isBillingAvailable(final String packageName) {
         if (isDebugLog()) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
         if (billingAvailable != null) return billingAvailable; // return previosly checked result
-        // 
-        boolean packageExist = false;
-        PackageManager packageManager = context.getPackageManager();
-        List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
-        for (PackageInfo packageInfo : allPackages) {
-            if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
-                if (isDebugLog()) Log.d(TAG, "Google supports billing");
-                packageExist = true;
-                break;
-            }
-        }
-        //
         billingAvailable = false;
-        if (packageExist) {
+        if (packageExists(context, ANDROID_INSTALLER) || packageExists(context, GOOGLE_INSTALLER)) {
             final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
             intent.setPackage(GooglePlay.ANDROID_INSTALLER);
             if (!context.getPackageManager().queryIntentServices(intent, 0).isEmpty()) {
@@ -156,6 +142,16 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public String getAppstoreName() {
         return OpenIabHelper.NAME_GOOGLE;
+    }
+
+    private boolean packageExists(Context context, String packageName) {
+        try {
+            context.getPackageManager().getPackageInfo(packageName, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException ignored) {
+            if (isDebugLog()) {Log.d(TAG, String.format("%s package was not found.", packageName));}
+            return false;
+        }
     }
 
 }
