@@ -473,11 +473,12 @@ public class OpenIabHelper {
     }
 
     /**
-     * Discover all OpenStore services, checks them and build {@link #availableStores} list<br>.
-     * Time is limited by 5 seconds  
+     * Discover all OpenStore services, checks them and build {@link #availableStores} list<br>.  
      * 
-     * @param appstores - discovered OpenStores will be added here. Must be not null
-     * @param listener - called back when all OpenStores collected and analyzed
+     * @param dest    - discovered OpenStores will be added here. If <b>null</b> new List() will be created
+     * @param options - settings for Appstore discovery like verifyMode and timeouts
+     * 
+     * @return dest or new List with discovered Appstores   
      */
     public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
         PackageManager packageManager = context.getPackageManager();
