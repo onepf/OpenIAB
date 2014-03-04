@@ -16,6 +16,7 @@
 
 package org.onepf.oms.appstore;
 
+import android.content.pm.PackageManager;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;

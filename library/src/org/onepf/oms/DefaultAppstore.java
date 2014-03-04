@@ -1,5 +1,6 @@
 package org.onepf.oms;
 
+import android.content.Context;
 import android.content.Intent;
 
 public abstract class DefaultAppstore implements Appstore {
@@ -32,5 +33,4 @@ public abstract class DefaultAppstore implements Appstore {
     public String toString() {
         return "Store {name: " + getAppstoreName() + "}";
     }
-
 }
