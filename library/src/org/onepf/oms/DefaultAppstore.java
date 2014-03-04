@@ -33,9 +33,4 @@ public abstract class DefaultAppstore implements Appstore {
     public String toString() {
         return "Store {name: " + getAppstoreName() + "}";
     }
-
-    public static boolean isPackageInstaller(Context appContext, String installer) {
-        String installerPackageName = appContext.getPackageManager().getInstallerPackageName(appContext.getPackageName());
-        return installerPackageName != null && installerPackageName.equals(installer);
-    }
 }

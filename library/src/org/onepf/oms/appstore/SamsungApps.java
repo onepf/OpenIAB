@@ -84,7 +84,7 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        return isPackageInstaller(activity, SAMSUNG_INSTALLER) || isSamsungTestMode;
+        return OpenIabHelper.isPackageInstaller(activity, SAMSUNG_INSTALLER) || isSamsungTestMode;
     }
 
     /**

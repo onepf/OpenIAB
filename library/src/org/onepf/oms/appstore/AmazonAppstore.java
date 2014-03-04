@@ -56,7 +56,7 @@ public class AmazonAppstore extends DefaultAppstore {
         if (sandboxMode != null) {
             return !sandboxMode;
         }
-        boolean amazonIsInstaller = isPackageInstaller(context, AMAZON_INSTALLER);
+        boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
         sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
         if (isDebugLog()) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;

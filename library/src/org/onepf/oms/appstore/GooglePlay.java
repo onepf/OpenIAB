@@ -74,7 +74,7 @@ public class GooglePlay extends DefaultAppstore {
         if (isDebugMode) {
             return true;
         }
-        return isPackageInstaller(context, ANDROID_INSTALLER);
+        return OpenIabHelper.isPackageInstaller(context, ANDROID_INSTALLER);
     }
     
     /**
