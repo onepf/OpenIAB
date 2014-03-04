@@ -61,6 +61,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class SamsungApps extends DefaultAppstore {
     private static final String TAG = SamsungApps.class.getSimpleName();
+    private static final String SAMSUNG_INSTALLER = "com.sec.android.app.samsungapps";
 
     private static final int IAP_SIGNATURE_HASHCODE = 0x7a7eaf4b;
     public static final String IAP_PACKAGE_NAME = "com.sec.android.iap";
@@ -83,7 +84,7 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        return isSamsungTestMode; // currently there is no reliable way to understand it
+        return OpenIabHelper.isPackageInstaller(activity, SAMSUNG_INSTALLER) || isSamsungTestMode;
     }
 
     /**

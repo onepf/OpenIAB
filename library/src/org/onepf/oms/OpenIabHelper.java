@@ -985,6 +985,10 @@ public class OpenIabHelper {
         OpenIabHelper.TAG = tag;
     }
 
+    public static boolean isPackageInstaller(Context appContext, String installer) {
+        String installerPackageName = appContext.getPackageManager().getInstallerPackageName(appContext.getPackageName());
+        return installerPackageName != null && installerPackageName.equals(installer);
+    }
 
     /**
      * All options of OpenIAB can be found here
