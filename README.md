@@ -13,27 +13,27 @@ could implement to support all the built APK files using this library.
 How To add OpenIAB into your app
 =====
 1. Download library from GitHub
-``` 
-git clone https://github.com/onepf/OpenIAB.git
-```
+    ``` 
+    git clone https://github.com/onepf/OpenIAB.git
+    ```
 
 2. Link /library to project as Android Library
 
 3. Instantiate ``` new OpenIabHelper ```  and call ``` mHelper.startSetup() ```. 
 When setup is done call  ``` mHelper.queryInventory() ```
-```java
-  mHelper = new OpenIabHelper(this, storeKeys);
-  mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-      public void onIabSetupFinished(IabResult result) {
-          if (!result.isSuccess()) {
-              complain("Problem setting up in-app billing: " + result);
-              return;
-          }
-          Log.d(TAG, "Setup successful. Querying inventory.");
-              mHelper.queryInventoryAsync(mGotInventoryListener);
-          }
-  });
-```
+    ```java
+      mHelper = new OpenIabHelper(this, storeKeys);
+      mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+          public void onIabSetupFinished(IabResult result) {
+              if (!result.isSuccess()) {
+                  complain("Problem setting up in-app billing: " + result);
+                  return;
+              }
+              Log.d(TAG, "Setup successful. Querying inventory.");
+                  mHelper.queryInventoryAsync(mGotInventoryListener);
+              }
+      });
+    ```
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L186
 
 4. Handle results of ``` mHelper.queryInventory() ``` in listener and update UI to show what is purchased
@@ -57,50 +57,50 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L173
 
 9. Add permissions required for OpenIAB in your AndroidManifest.xml
-```xml
-<uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-```
+    ```xml
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
+    ```
 And register reciever for Amazon
-```xml
-<receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
-    <intent-filter>
-        <action
-            android:name="com.amazon.inapp.purchasing.NOTIFY"
-            android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
-        />
-    </intent-filter>
-</receiver>
-```
+    ```xml
+    <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
+        <intent-filter>
+            <action
+                android:name="com.amazon.inapp.purchasing.NOTIFY"
+                android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
+            />
+        </intent-filter>
+    </receiver>
+    ```
 10. Add the following strings to your proguard config
 
-```
-# TStore
--keep class com.skplanet.dodo.**{*;}
--keep class com.skplanet.internal.dodo.**{*;}
--keep class com.skplanet.internal.dodo.dev.**{*;}
--keep class com.skplanet.internal.dodo.util.**{*;}
--keep class com.skplanet.pmss.secure.**{*;}
--keep public class android.net.http.SslError
--keep public class android.webkit.WebViewClient
--keep class com.tmoney.aidl.**{*;}
--dontwarn android.webkit.WebView
--dontwarn android.net.http.SslError
--dontwarn android.webkit.WebViewClient
--keepattributes Signature
--dontshrink
-
-# AMAZON
--dontwarn com.amazon.**
--keep class com.amazon.** {*;}
--keepattributes *Annotation*
--dontoptimize
-
-# GOOGLE
--keep class com.android.vending.billing.**
-
-# SAMSUNG
--keep class com.sec.android.iap.**
-```
+    ```
+    # TStore
+    -keep class com.skplanet.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.dev.**{*;}
+    -keep class com.skplanet.internal.dodo.util.**{*;}
+    -keep class com.skplanet.pmss.secure.**{*;}
+    -keep public class android.net.http.SslError
+    -keep public class android.webkit.WebViewClient
+    -keep class com.tmoney.aidl.**{*;}
+    -dontwarn android.webkit.WebView
+    -dontwarn android.net.http.SslError
+    -dontwarn android.webkit.WebViewClient
+    -keepattributes Signature
+    -dontshrink
+    
+    # AMAZON
+    -dontwarn com.amazon.**
+    -keep class com.amazon.** {*;}
+    -keepattributes *Annotation*
+    -dontoptimize
+    
+    # GOOGLE
+    -keep class com.android.vending.billing.**
+    
+    # SAMSUNG
+    -keep class com.sec.android.iap.**
+    ```
 
 Unity Plugin
 =====
