@@ -223,6 +223,10 @@ public class MainActivity extends Activity {
 
                 // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
+//                final ArrayList<String> arrayList = new ArrayList<String>();
+//                arrayList.add(SKU_PREMIUM);
+//                arrayList.add(SKU_GAS);
+//                mHelper.queryInventoryAsync(true, arrayList, mGotInventoryListener);
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });

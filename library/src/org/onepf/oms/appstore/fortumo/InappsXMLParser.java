@@ -178,10 +178,12 @@ public class InappsXMLParser {
                     } else if (tagName.equals(SUBSCRIPTIONS_TAG)) {
                         insideSubs = false;
                     } else if (tagName.equals(ITEM_TAG)) {
+                        currentProduct.validateItem();
                         itemsList.add(currentProduct);
                         currentProduct = null;
                     } else if (tagName.equals(SUBSCRIPTION_TAG)) {
                         InappSubscriptionProduct subscriptionProduct = new InappSubscriptionProduct(currentProduct, currentSubPeriod);
+                        subscriptionProduct.validateItem();
                         subscriptionList.add(subscriptionProduct);
                         currentSubPeriod = null;
                         currentProduct = null;

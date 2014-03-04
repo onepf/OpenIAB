@@ -9,7 +9,6 @@ import java.util.Locale;
  * Created by akarimova on 14.02.14.
  */
 
-//todo add check
 public class InappBaseProduct {
     public static final String PUBLISHED = "published";
     public static final String UNPUBLISHED = "unpublished";
@@ -142,6 +141,8 @@ public class InappBaseProduct {
     }
 
     public void validateItem() {
-        //todo
+        if (TextUtils.isEmpty(productId) || TextUtils.isEmpty(baseTitle) || TextUtils.isEmpty(baseDescription) || basePrice == 0) {
+            throw new IllegalStateException("in-app product is not valid");
+        }
     }
 }

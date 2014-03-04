@@ -1,6 +1,8 @@
 package org.onepf.oms.appstore.fortumo;
 
 
+import android.text.TextUtils;
+
 /**
  * Created by akarimova on 17.02.14.
  */
@@ -25,5 +27,13 @@ public class InappSubscriptionProduct extends InappBaseProduct {
             throw new IllegalStateException("Wrong period value!");
         }
         this.period = period;
+    }
+
+    @Override
+    public void validateItem() {
+        super.validateItem();
+        if (TextUtils.isEmpty(period)) {
+            throw new IllegalStateException("subscription is not valid");
+        }
     }
 }

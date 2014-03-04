@@ -241,6 +241,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             this.consumable = fortumoDetails.isConsumable();
             this.serviceId = fortumoDetails.getServiceId();
             this.inAppSecret = fortumoDetails.getServiceInAppSecret();
+            this.fortumoPrice = fortumoPrice;
         }
 
         public boolean isConsumable() {
