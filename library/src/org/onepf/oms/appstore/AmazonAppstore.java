@@ -16,6 +16,7 @@
 
 package org.onepf.oms.appstore;
 
+import android.content.pm.PackageManager;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -34,6 +35,7 @@ import android.util.Log;
  */
 public class AmazonAppstore extends DefaultAppstore {
     private static final String TAG = AmazonAppstore.class.getSimpleName();
+    private static final String AMAZON_INSTALLER = "com.amazon.venezia";
 
     private static boolean isDebugLog() {
         return OpenIabHelper.isDebugLog();
@@ -41,21 +43,23 @@ public class AmazonAppstore extends DefaultAppstore {
     
     private volatile Boolean sandboxMode;// = false;
     
-    private final Context mContext;
+    private final Context context;
     
     private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
-        mContext = context;
+        this.context = context;
     }
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        if (isDebugLog()) Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
         if (sandboxMode != null) {
             return !sandboxMode;
         }
-        sandboxMode = !hasAmazonClasses();
+        PackageManager packageManager = context.getPackageManager();
+        String installerPackageName = packageManager.getInstallerPackageName(packageName);
+        boolean amazonIsInstaller = installerPackageName != null && installerPackageName.equals(AMAZON_INSTALLER);
+        sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
         if (isDebugLog()) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;
     }
@@ -97,7 +101,7 @@ public class AmazonAppstore extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new AmazonAppstoreBillingService(mContext);
+            mBillingService = new AmazonAppstoreBillingService(context);
         }
         return mBillingService;
     }
