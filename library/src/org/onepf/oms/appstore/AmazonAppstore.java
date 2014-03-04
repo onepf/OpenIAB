@@ -56,9 +56,7 @@ public class AmazonAppstore extends DefaultAppstore {
         if (sandboxMode != null) {
             return !sandboxMode;
         }
-        PackageManager packageManager = context.getPackageManager();
-        String installerPackageName = packageManager.getInstallerPackageName(packageName);
-        boolean amazonIsInstaller = installerPackageName != null && installerPackageName.equals(AMAZON_INSTALLER);
+        boolean amazonIsInstaller = isPackageInstaller(context, AMAZON_INSTALLER);
         sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
         if (isDebugLog()) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;

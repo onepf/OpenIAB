@@ -74,9 +74,7 @@ public class GooglePlay extends DefaultAppstore {
         if (isDebugMode) {
             return true;
         }
-        PackageManager packageManager = context.getPackageManager();
-        String installerPackageName = packageManager.getInstallerPackageName(packageName);
-        return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
+        return isPackageInstaller(context, ANDROID_INSTALLER);
     }
     
     /**
