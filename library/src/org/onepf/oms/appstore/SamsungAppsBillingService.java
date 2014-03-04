@@ -58,7 +58,6 @@ import com.sec.android.iap.IAPConnector;
 public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private static final int ITEM_RESPONSE_COUNT = 100;
 
-    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = SamsungAppsBillingService.class.getSimpleName();
 
     private static final int HONEYCOMB_MR1 = 12;
@@ -186,7 +185,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             do {
                 itemInbox = null;
                 try {
-                    if (mDebugLog) Log.d(TAG, "getItemsInbox, startNum = " + startNum + ", endNum = " + endNum);
+                    if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "getItemsInbox, startNum = " + startNum + ", endNum = " + endNum);
                     itemInbox = mIapConnector.getItemsInbox(activity.getPackageName(), itemGroupId, startNum, endNum, "19700101", today);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Samsung getItemsInbox: " + e.getMessage());
@@ -240,7 +239,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         bundle.putString(KEY_NAME_THIRD_PARTY_NAME, activity.getPackageName());
         bundle.putString(KEY_NAME_ITEM_GROUP_ID, itemGroupId);
         bundle.putString(KEY_NAME_ITEM_ID, itemId);
-        if (mDebugLog) Log.d(TAG, "launchPurchase: itemGroupId = " + itemGroupId + ", itemId = " + itemId);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "launchPurchase: itemGroupId = " + itemGroupId + ", itemId = " + itemId);
         ComponentName cmpName = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, PAYMENT_ACTIVITY_NAME);
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -251,7 +250,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         purchasingItemType = itemType;
         mItemGroupId = itemGroupId;
         mExtraData = extraData;
-        if (mDebugLog) Log.d(TAG, "Request code: " + requestCode);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Request code: " + requestCode);
         activity.startActivityForResult(intent, requestCode);
     }
 
@@ -317,7 +316,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 purchase.setDeveloperPayload(mExtraData);
             }
         }
-        if (mDebugLog) Log.d(TAG, "Samsung result code: " + errorCode + ", msg: " + errorMsg);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Samsung result code: " + errorCode + ", msg: " + errorMsg);
         mPurchaseListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
         return true;
     }
@@ -378,7 +377,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             Bundle result = mIapConnector.init(CURRENT_MODE);
             if (result != null) {
                 int statusCode = result.getInt(KEY_NAME_STATUS_CODE);
-                if (mDebugLog) Log.d(TAG, "Init IAP connection status code: " + statusCode);
+                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Init IAP connection status code: " + statusCode);
                 errorMsg = result.getString(KEY_NAME_ERROR_STRING);
                 if (statusCode == IAP_ERROR_NONE) {
                     errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;

@@ -44,7 +44,6 @@ import com.android.vending.billing.IInAppBillingService;
  */
 
 public class GooglePlay extends DefaultAppstore {
-    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = GooglePlay.class.getSimpleName();
 
     public  static final String ANDROID_INSTALLER = "com.android.vending";
@@ -87,7 +86,7 @@ public class GooglePlay extends DefaultAppstore {
      */
     @Override    
     public boolean isBillingAvailable(final String packageName) {
-        if (mDebugLog) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
         if (billingAvailable != null) return billingAvailable; // return previosly checked result
         // 
         boolean packageExist = false;
@@ -95,7 +94,7 @@ public class GooglePlay extends DefaultAppstore {
         List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
         for (PackageInfo packageInfo : allPackages) {
             if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
-                if (mDebugLog) Log.d(TAG, "Google supports billing");
+                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Google supports billing");
                 packageExist = true;
                 break;
             }
@@ -116,7 +115,7 @@ public class GooglePlay extends DefaultAppstore {
                             if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
                                 billingAvailable = true;
                             } else {
-                                if (mDebugLog) Log.d(TAG, "isBillingAvailable() Google Play billing unavaiable");
+                                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "isBillingAvailable() Google Play billing unavaiable");
                             }
                         } catch (RemoteException e) {
                             Log.e(TAG, "isBillingAvailable() RemoteException while setting up in-app billing", e);

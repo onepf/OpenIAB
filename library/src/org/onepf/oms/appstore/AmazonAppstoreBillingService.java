@@ -55,7 +55,6 @@ import com.amazon.inapp.purchasing.SubscriptionPeriod;
  * @since 16.04.13
  */
 public class AmazonAppstoreBillingService extends BasePurchasingObserver implements AppstoreInAppBillingService {
-    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
     private static final String TAG = AmazonAppstoreBillingService.class.getSimpleName();
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
@@ -90,24 +89,24 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void onSdkAvailable(final boolean isSandboxMode) {
-        if (mDebugLog) Log.v(TAG, "onSdkAvailable() isSandBox: " + isSandboxMode);
+        if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "onSdkAvailable() isSandBox: " + isSandboxMode);
         PurchasingManager.initiateGetUserIdRequest();
     }
 
     @Override
     public void onGetUserIdResponse(final GetUserIdResponse userIdResponse) {
-        if (mDebugLog) Log.d(TAG, "onGetUserIdResponse() reqId: " + userIdResponse.getRequestId() + ", status: " + userIdResponse.getUserIdRequestStatus());
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "onGetUserIdResponse() reqId: " + userIdResponse.getRequestId() + ", status: " + userIdResponse.getUserIdRequestStatus());
 
         if (userIdResponse.getUserIdRequestStatus() == GetUserIdResponse.GetUserIdRequestStatus.SUCCESSFUL) {
             final String userId = userIdResponse.getUserId();
-            if (mDebugLog) Log.d(TAG, "Set current userId: " + userId);
+            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Set current userId: " + userId);
             this.currentUserId = userId;
             if (setupListener != null) {
                 setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
                 setupListener = null;
             }
         } else {
-            if (mDebugLog) Log.d(TAG, "onGetUserIdResponse() Unable to get user ID");
+            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "onGetUserIdResponse() Unable to get user ID");
             if (setupListener != null) {
                 setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Unable to get userId"));
                 setupListener = null;
@@ -117,7 +116,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
-        if (mDebugLog) Log.d(TAG, "queryInventory() querySkuDetails: " + querySkuDetails+ " moreItemSkus: " + moreItemSkus+ " moreSubsSkus: " + moreSubsSkus);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "queryInventory() querySkuDetails: " + querySkuDetails+ " moreItemSkus: " + moreItemSkus+ " moreSubsSkus: " + moreSubsSkus);
         inventory = new Inventory();
         inventoryLatch = new CountDownLatch(1);
         PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
@@ -144,26 +143,26 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 try {
                     inventoryLatch.await();
                 } catch (InterruptedException e) {
-                    if (mDebugLog) Log.w(TAG, "queryInventory() SkuDetails fetching interrupted");
+                    if (OpenIabHelper.isDebugEnabled()) Log.w(TAG, "queryInventory() SkuDetails fetching interrupted");
                 }
             }
         }
-        if (mDebugLog) Log.d(TAG, "queryInventory() finished. Inventory size: " + inventory.getAllOwnedSkus().size());
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "queryInventory() finished. Inventory size: " + inventory.getAllOwnedSkus().size());
         return inventory;
     }
 
     @Override
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
-        if (mDebugLog) Log.v(TAG, "onPurchaseUpdatesResponse() reqStatus: " + purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus() + "reqId: " + purchaseUpdatesResponse.getRequestId());
+        if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "onPurchaseUpdatesResponse() reqStatus: " + purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus() + "reqId: " + purchaseUpdatesResponse.getRequestId());
         
         if (!purchaseUpdatesResponse.getUserId().equals(currentUserId)) {
-            if (mDebugLog) Log.w(TAG, "onPurchaseUpdatesResponse() Current UserId: " + currentUserId + ", purchase UserId: " + purchaseUpdatesResponse.getUserId());
+            if (OpenIabHelper.isDebugEnabled()) Log.w(TAG, "onPurchaseUpdatesResponse() Current UserId: " + currentUserId + ", purchase UserId: " + purchaseUpdatesResponse.getUserId());
             inventoryLatch.countDown();
             return;
         }
         // TODO: do something with this
         for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
-            if (mDebugLog) Log.v(TAG, "Revoked Sku:" + sku);
+            if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "Revoked Sku:" + sku);
         }
 
         switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
@@ -180,7 +179,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                             purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
                             purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                             inventory.addPurchase(purchase);
-                            if (mDebugLog) Log.d(TAG, "Add to inventory SKU: " + storeSku);
+                            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Add to inventory SKU: " + storeSku);
                             break;
                         case SUBSCRIPTION:
                             final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
@@ -189,7 +188,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                                 purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
                                 purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                                 inventory.addPurchase(purchase);
-                                if (mDebugLog) Log.d(TAG, "Add subscription to inventory SKU: " + storeSku);
+                                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "Add subscription to inventory SKU: " + storeSku);
                             }
                             
 //                            final Date startDate = subscriptionPeriod.getStartDate();
@@ -223,7 +222,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
                 final Offset newOffset = purchaseUpdatesResponse.getOffset();
                 if (purchaseUpdatesResponse.isMore()) {
-                    if (mDebugLog) Log.v(TAG, "Initiating Another Purchase Updates with offset: " + newOffset.toString());
+                    if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "Initiating Another Purchase Updates with offset: " + newOffset.toString());
                     PurchasingManager.initiatePurchaseUpdatesRequest(newOffset);
                 } else {
                     inventoryLatch.countDown();
@@ -239,12 +238,12 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void onItemDataResponse(final ItemDataResponse itemDataResponse) {
-        if (mDebugLog) Log.v(TAG, "onItemDataResponse() reqStatus: " + itemDataResponse.getItemDataRequestStatus()+ ", reqId: " + itemDataResponse.getRequestId());
+        if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "onItemDataResponse() reqStatus: " + itemDataResponse.getItemDataRequestStatus()+ ", reqId: " + itemDataResponse.getRequestId());
         switch (itemDataResponse.getItemDataRequestStatus()) {
             case SUCCESSFUL_WITH_UNAVAILABLE_SKUS:
                 // Skus that you can not purchase will be here.
                 for (final String s : itemDataResponse.getUnavailableSkus()) {
-                    if (mDebugLog) Log.v(TAG, "Unavailable SKU:" + s);
+                    if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "Unavailable SKU:" + s);
                 }
             case SUCCESSFUL:
                 // Information you'll want to display about your IAP items is here
@@ -253,7 +252,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 for (final String key : items.keySet()) {
                     Item i = items.get(key);
                     final String storeSku = i.getSku();
-                    if (mDebugLog) Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
+                    if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
                     String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_SUBS : IabHelper.ITEM_TYPE_INAPP;
                     String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku);
                     SkuDetails skuDetails = new SkuDetails(itemType, sku, i.getTitle(), i.getPrice(), i.getDescription());
@@ -275,13 +274,13 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void onPurchaseResponse(final PurchaseResponse purchaseResponse) {
-        if (mDebugLog) Log.v(TAG, "onPurchaseResponse() PurchaseRequestStatus:" + purchaseResponse.getPurchaseRequestStatus());
+        if (OpenIabHelper.isDebugEnabled()) Log.v(TAG, "onPurchaseResponse() PurchaseRequestStatus:" + purchaseResponse.getPurchaseRequestStatus());
 
         IabResult result = null;
         Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
         
         if (!purchaseResponse.getUserId().equals(currentUserId)) {
-            if (mDebugLog) Log.w(TAG, "onPurchaseResponse() userId: " + currentUserId + ", purchase.userId: " + purchaseResponse.getUserId());
+            if (OpenIabHelper.isDebugEnabled()) Log.w(TAG, "onPurchaseResponse() userId: " + currentUserId + ", purchase.userId: " + purchaseResponse.getUserId());
             result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "userId doesn't match purchase.userId");
         } else {
             switch (purchaseResponse.getPurchaseRequestStatus()) {

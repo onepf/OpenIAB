@@ -64,8 +64,13 @@ import android.util.Log;
  */
 public class OpenIabHelper {
     private static final String TAG = OpenIabHelper.class.getSimpleName();
-    // Is debug logging enabled?
-    private static final boolean mDebugLog = OpenIabHelper.isDebugEnabled();
+
+    /**
+     * Is debug logging enabled?
+     * null means that {@link android.util.Log#isLoggable(String, int)}, where TAG = {@link org.onepf.oms.OpenIabHelper#TAG} and logLevel={@link android.util.Log#DEBUG}, is used.
+     * true/false value means that the user has specified flag and this value will be used.
+     */
+    public static Boolean loggingEnabled = null;
     
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
     
@@ -170,7 +175,7 @@ public class OpenIabHelper {
             if (skuMap.get(sku) != null) {
                 throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
             }
-            ;
+
             Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
             if (storeSkuMap == null) {
                 storeSkuMap = new HashMap<String, String>();
@@ -198,7 +203,7 @@ public class OpenIabHelper {
             Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
             if (skuMap != null && skuMap.get(sku) != null) {
                 currentStoreSku = skuMap.get(sku);
-                if (mDebugLog) Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
             }
             return currentStoreSku;
         }
@@ -214,7 +219,7 @@ public class OpenIabHelper {
             Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
             if (skuMap != null && skuMap.get(sku) != null) {
                 sku = skuMap.get(sku);
-                if (mDebugLog) Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
             }
             return sku;
         }
@@ -330,7 +335,7 @@ public class OpenIabHelper {
                     stores2check.addAll(options.availableStores);
                 } else { // if appstores are not specified by user - lookup for all available stores
                     final List<Appstore> openStores = discoverOpenStores(context, null, options);
-                    if (mDebugLog) Log.d(TAG, in() + " " + "startSetup() discovered openstores: " + openStores.toString());
+                    if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "startSetup() discovered openstores: " + openStores.toString());
                     stores2check.addAll(openStores);
                     if (options.verifyMode == Options.VERIFY_EVERYTHING && !options.storeKeys.containsKey(NAME_GOOGLE)) {
                         // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
@@ -360,14 +365,14 @@ public class OpenIabHelper {
                     
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
-                        if (mDebugLog) Log.d(TAG, in() + " " + "select equipped");
+                        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "select equipped");
                     } 
                     if (mAppstore != null) {
                         result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                     } else {
                         // found no equipped stores. Select store based on store parameters 
                         mAppstore = selectBillingService(stores2check);
-                        if (mDebugLog) Log.d(TAG, in() + " " + "select non-equipped");
+                        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "select non-equipped");
                     }
                     if (mAppstore != null) {
                         result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
@@ -390,7 +395,7 @@ public class OpenIabHelper {
                 for (Appstore store : stores2check) {
                     if (store != mAppstore && store.getInAppBillingService() != null) {
                         store.getInAppBillingService().dispose();
-                        if (mDebugLog) Log.d(TAG, in() + " " + "startSetup() disposing " + store.getAppstoreName());
+                        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "startSetup() disposing " + store.getAppstoreName());
                     }
                 }
             }
@@ -451,7 +456,7 @@ public class OpenIabHelper {
 
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
         if (setupState == SETUP_DISPOSED) return;
-        if (mDebugLog) Log.d(TAG, in() + " " + "fireSetupFinished() === SETUP DONE === result: " + result
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "fireSetupFinished() === SETUP DONE === result: " + result
             + (mAppstore != null ? ", appstore: " + mAppstore.getAppstoreName() : ""));
         
         samsungInSetup = null;
@@ -485,7 +490,7 @@ public class OpenIabHelper {
             context.bindService(intentAppstore, new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
-                    if (mDebugLog) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
+                    if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "discoverOpenStores() appstoresService connected for component: " + name.flattenToShortString());
                     IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
 
                     try {
@@ -494,7 +499,7 @@ public class OpenIabHelper {
                         if (appstoreName == null) { // no name - no service
                             Log.e(TAG, "discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: " + name);
                         } else if (billingIntent == null) { // don't handle stores without billing support
-                            if (mDebugLog) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
+                            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "discoverOpenStores(): billing is not supported by store: " + name);
                         } else if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.storeKeys.containsKey(appstoreName)) { 
                             // don't connect to OpenStore if no key provided and verification is strict
                             Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
@@ -518,7 +523,7 @@ public class OpenIabHelper {
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    if (mDebugLog) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
+                    if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "onServiceDisconnected() appstoresService disconnected for component: " + name.flattenToShortString());
                     //Nothing to do here
                 }
             }, Context.BIND_AUTO_CREATE);
@@ -548,7 +553,7 @@ public class OpenIabHelper {
                 candidates.put(appstore.getAppstoreName(), appstore);
             }
         }
-        if (mDebugLog) Log.d(TAG, in() + " " + candidates.size() + " inventory candidates");
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + candidates.size() + " inventory candidates");
         final List<Appstore> equippedStores = Collections.synchronizedList(new ArrayList<Appstore>());
         final CountDownLatch storeRemains = new CountDownLatch(candidates.size());
         // for every appstore: connect to billing service and check inventory 
@@ -557,7 +562,7 @@ public class OpenIabHelper {
             final AppstoreInAppBillingService billingService = entry.getValue().getInAppBillingService();
             billingService.startSetup(new OnIabSetupFinishedListener() {
                 public void onIabSetupFinished(IabResult result) {
-                    if (mDebugLog) Log.d(TAG, in() + " " + "billing set " + appstore.getAppstoreName());
+                    if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "billing set " + appstore.getAppstoreName());
                     if(result.isFailure()) {
                         storeRemains.countDown();
                         return;
@@ -569,7 +574,7 @@ public class OpenIabHelper {
                                 if (inventory.getAllPurchases().size() > 0) {
                                     equippedStores.add(appstore);
                                 }
-                                if (mDebugLog) Log.d(TAG, in() + " " + "inventoryCheck() in " + appstore.getAppstoreName() + " found: " + inventory.getAllPurchases().size() + " purchases");
+                                if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "inventoryCheck() in " + appstore.getAppstoreName() + " found: " + inventory.getAllPurchases().size() + " purchases");
                             } catch (IabException e) {
                                 Log.e(TAG, "inventoryCheck() failed for " + appstore.getAppstoreName());
                             }
@@ -581,7 +586,7 @@ public class OpenIabHelper {
         }
         try {
             storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
-            if (mDebugLog) Log.d(TAG, in() + " " + "inventory check done");
+            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "inventory check done");
         } catch (InterruptedException e) {
             Log.e(TAG, "selectBillingService()  inventory check is failed. candidates: " + candidates.size() 
                     + ", inventory remains: " + storeRemains.getCount() , e);
@@ -696,12 +701,12 @@ public class OpenIabHelper {
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
-        if (mDebugLog) Log.d(TAG, in() + " " + "handleActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, in() + " " + "handleActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
         if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
             return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
         }
         if (setupState != SETUP_RESULT_SUCCESSFUL) {
-            if (mDebugLog) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
+            if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, "handleActivityResult() setup is not done. requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
             return false;
         }
         return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
@@ -914,7 +919,7 @@ public class OpenIabHelper {
     }
 
     void logDebug(String msg) {
-        if (mDebugLog) Log.d(TAG, msg);
+        if (OpenIabHelper.isDebugEnabled()) Log.d(TAG, msg);
     }
 
     void logError(String msg) {
@@ -922,7 +927,7 @@ public class OpenIabHelper {
     }
 
     void logWarn(String msg) {
-        if (mDebugLog) Log.w(TAG, "In-app billing warning: " + msg);
+        if (OpenIabHelper.isDebugEnabled()) Log.w(TAG, "In-app billing warning: " + msg);
     }
 
     private static String setupStateToString(int setupState) {
@@ -954,7 +959,7 @@ public class OpenIabHelper {
     }
 
     public static boolean isDebugEnabled() {
-        return Options.loggingEnabled != null ? Options.loggingEnabled : Log.isLoggable(TAG, Log.DEBUG);
+        return loggingEnabled != null ? loggingEnabled : Log.isLoggable(TAG, Log.DEBUG);
     }
     /**
      * All options of OpenIAB can be found here
@@ -1045,13 +1050,6 @@ public class OpenIabHelper {
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
-
-        /**
-         * Is debug logging enabled?
-         * null means that {@link android.util.Log#isLoggable(String, int)}, where TAG = {@link org.onepf.oms.OpenIabHelper#TAG} and logLevel={@link android.util.Log#DEBUG}, is used.
-         * true/false value means that the user has specified flag and this value will be used.
-         */
-        public static Boolean loggingEnabled = null;
     }
 
 }
