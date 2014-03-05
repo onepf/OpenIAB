@@ -2,6 +2,7 @@ package org.onepf.oms.appstore.fortumo;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.util.Log;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -16,6 +17,8 @@ import org.onepf.oms.OpenIabHelper;
  * This class was made to provide in-app purchasing compatibility with other, "real", stores.
  */
 public class FortumoStore extends DefaultAppstore {
+    private static final String TAG = FortumoStore.class.getSimpleName();
+
     /**
      * Contains information about all in-app products
      */
@@ -25,6 +28,10 @@ public class FortumoStore extends DefaultAppstore {
      * Contains additional information about Fortumo services
      */
     public static final String FORTUMO_DETATILS_FILE_NAME = "fortumo_inapps_details.xml";
+
+    private static boolean isDebugLog() {
+        return OpenIabHelper.isDebugLog();
+    }
 
     private Context context;
     private FortumoBillingService billingService;
@@ -43,7 +50,11 @@ public class FortumoStore extends DefaultAppstore {
     @Override
     public boolean isBillingAvailable(String packageName) {
         //SMS are required to make payments
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+        final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+        if (isDebugLog()) {
+            Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
+        }
+        return hasTelephonyFeature;
     }
 
     @Override
