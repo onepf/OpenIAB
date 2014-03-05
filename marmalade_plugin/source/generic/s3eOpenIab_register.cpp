@@ -75,7 +75,7 @@ s3eResult s3eOpenIabUnRegister(s3eOpenIabCallback cbid, s3eCallback fn)
 void s3eOpenIabRegisterExt()
 {
     /* fill in the function pointer struct for this extension */
-    void* funcPtrs[11];
+    void* funcPtrs[14];
     funcPtrs[0] = (void*)s3eOpenIabRegister;
     funcPtrs[1] = (void*)s3eOpenIabUnRegister;
     funcPtrs[2] = (void*)s3eOpenIabStart;
@@ -87,11 +87,14 @@ void s3eOpenIabRegisterExt()
     funcPtrs[8] = (void*)s3eOpenIabConsumeItem;
     funcPtrs[9] = (void*)s3eOpenIabGetStoreNames;
     funcPtrs[10] = (void*)s3eOpenIabMapSku;
+    funcPtrs[11] = (void*)s3eOpenIabIsDebugLog;
+    funcPtrs[12] = (void*)s3eOpenIabEnableDebugLogging;
+    funcPtrs[13] = (void*)s3eOpenIabEnableDebugTagLogging;
 
     /*
      * Flags that specify the extension's use of locking and stackswitching
      */
-    int flags[11] = { 0 };
+    int flags[14] = { 0 };
 
     /*
      * Register the extension

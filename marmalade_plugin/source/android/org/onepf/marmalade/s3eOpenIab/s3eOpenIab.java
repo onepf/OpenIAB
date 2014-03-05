@@ -138,7 +138,19 @@ class s3eOpenIab {
 
     public void s3eOpenIabMapSku(String sku, String storeName, String storeSku) {
         Log.d(TAG, "s3eOpenIabMapSku called");        
-    }    
+    }
+
+    public boolean s3eOpenIabIsDebugLog()  {
+        return mHelper.isDebugLog();
+    }
+
+    public void s3eOpenIabEnableDebugLogging(boolean enabled) {
+        mHelper.enableDebugLogging(enabled);
+    }
+
+    public void s3eOpenIabEnableDebugTagLogging(boolean enabled, String tag) {
+        mHelper.enableDebugLogging(enabled, tag);
+    }
 
     // Listener that's called when we finish querying the items and subscriptions we own
     IabHelper.QueryInventoryFinishedListener mGotSkusListener = new IabHelper.QueryInventoryFinishedListener() {
@@ -323,5 +335,7 @@ class s3eOpenIab {
             Log.v(TAG, "No native handlers installed for native_LIST_PRODUCTS_CALLBACK, we received " + res.getResponse() + " " + res.getMessage());
         }
     }
+
+
 
 }
