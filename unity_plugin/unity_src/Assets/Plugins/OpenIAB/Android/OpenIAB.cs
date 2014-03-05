@@ -160,6 +160,18 @@ namespace OnePF {
 
         public void restoreTransactions() {
         }
+
+        public bool isDebugLog() {
+            return _plugin.Call<bool>("isDebugLog");
+        }
+
+        public void enableDebugLogging(bool enabled) {
+            _plugin.Call("enableDebugLogging", enabled);
+        }
+
+        public void enableDebugLogging(bool enabled, string tag) {
+            _plugin.Call("enableDebugLogging", enabled, tag);
+        }
 #else
 		static OpenIAB_Android() {
             STORE_GOOGLE = "STORE_GOOGLE";

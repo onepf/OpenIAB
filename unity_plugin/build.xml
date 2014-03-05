@@ -164,7 +164,7 @@
         <exec executable="${unity.path}" failonerror="true" logerror="true">
             <arg line="-batchmode"/>
             <arg line="-projectPath ${unity.root.absolute.path}"/>
-            <arg line="-exportPackage Assets ${unity.package.absolute.path}/OpenIAB-plugin.unitypackage"/>
+            <arg line="-exportPackage Assets/OpenIAB-demo Assets/Plugins ${unity.package.absolute.path}/OpenIAB-plugin.unitypackage"/>
             <arg value="-quit"/>
         </exec>
     </target>
