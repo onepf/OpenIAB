@@ -12,7 +12,6 @@ import java.util.Locale;
 public class InappBaseProduct {
     public static final String PUBLISHED = "published";
     public static final String UNPUBLISHED = "unpublished";
-
     //publish state
     boolean published;
     //product id
@@ -141,8 +140,33 @@ public class InappBaseProduct {
     }
 
     public void validateItem() {
-        if (TextUtils.isEmpty(productId) || TextUtils.isEmpty(baseTitle) || TextUtils.isEmpty(baseDescription) || basePrice == 0) {
-            throw new IllegalStateException("in-app product is not valid");
+        //todo add own string builder with dividers
+
+        StringBuilder builder = new StringBuilder();
+        if (TextUtils.isEmpty(productId)) {
+            builder.append("product id is empty");
+        }
+        if (TextUtils.isEmpty(baseTitle)) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("base title is empty");
+        }
+        if (TextUtils.isEmpty(baseDescription)) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("base description is empty");
+        }
+        if (basePrice == 0) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("base price is not defined");
+        }
+
+        if (builder.length() > 0) {
+            throw new IllegalStateException("in-app product is not valid: " + builder.toString());
         }
     }
 
