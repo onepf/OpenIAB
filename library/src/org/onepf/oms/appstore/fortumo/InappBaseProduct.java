@@ -147,7 +147,7 @@ public class InappBaseProduct {
         }
     }
 
-    StringBuilder getValidateInfo() {
+    protected StringBuilder getValidateInfo() {
         StringBuilder builder = new StringBuilder();
         if (TextUtils.isEmpty(productId)) {
             builder.append("product id is empty");
