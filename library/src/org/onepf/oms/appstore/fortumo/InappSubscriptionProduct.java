@@ -31,9 +31,15 @@ public class InappSubscriptionProduct extends InappBaseProduct {
 
     @Override
     public void validateItem() {
-        super.validateItem();
-        if (TextUtils.isEmpty(period)) {
-            throw new IllegalStateException("subscription is not valid");
+        final StringBuilder validateInfo = getValidateInfo();
+        if (TextUtils.isEmpty(period) || !(period.equals(ONE_MONTH) || period.equals(ONE_YEAR))) {
+            if (validateInfo.length() > 0) {
+                validateInfo.append(", ");
+            }
+            validateInfo.append("period is not valid");
+        }
+        if (validateInfo.length() > 0) {
+            throw new IllegalStateException("subscription product is not valid: " + validateInfo);
         }
     }
 

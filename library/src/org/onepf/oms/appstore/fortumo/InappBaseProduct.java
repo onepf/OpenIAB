@@ -141,7 +141,13 @@ public class InappBaseProduct {
 
     public void validateItem() {
         //todo add own string builder with dividers
+        StringBuilder builder = getValidateInfo();
+        if (builder.length() > 0) {
+            throw new IllegalStateException("in-app product is not valid: " + builder.toString());
+        }
+    }
 
+    StringBuilder getValidateInfo() {
         StringBuilder builder = new StringBuilder();
         if (TextUtils.isEmpty(productId)) {
             builder.append("product id is empty");
@@ -164,10 +170,7 @@ public class InappBaseProduct {
             }
             builder.append("base price is not defined");
         }
-
-        if (builder.length() > 0) {
-            throw new IllegalStateException("in-app product is not valid: " + builder.toString());
-        }
+        return builder;
     }
 
     @Override
