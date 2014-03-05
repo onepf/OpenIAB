@@ -171,7 +171,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         final Collection<FortumoProduct> inappProducts = inappsMap.values();
         for (FortumoProduct fortumoProduct : inappProducts) {
             if (!fortumoProduct.isConsumable()) {
-                final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 10);
+                final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 10000); //todo reduce?
                 if (purchaseHistory != null && purchaseHistory.size() > 0) {
                     for (Object response : purchaseHistory) {
                         PaymentResponse paymentResponse = (PaymentResponse) response;
@@ -220,7 +220,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         if (date != null) {
             purchase.setPurchaseTime(date.getTime());
         }
-        purchase.setItemType(OpenIabHelper.ITEM_TYPE_INAPP); //todo probably in the future subs will be supported
+        purchase.setItemType(OpenIabHelper.ITEM_TYPE_INAPP);
         return purchase;
     }
 
