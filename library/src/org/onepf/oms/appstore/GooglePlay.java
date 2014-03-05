@@ -16,7 +16,6 @@
 
 package org.onepf.oms.appstore;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +29,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -44,8 +42,11 @@ import com.android.vending.billing.IInAppBillingService;
  */
 
 public class GooglePlay extends DefaultAppstore {
-    private static final boolean mDebugLog = false;
     private static final String TAG = GooglePlay.class.getSimpleName();
+
+    private static boolean isDebugLog() {
+        return OpenIabHelper.isDebugLog();
+    }
 
     public  static final String ANDROID_INSTALLER = "com.android.vending";
     private static final String GOOGLE_INSTALLER = "com.google.vending";
@@ -71,9 +72,7 @@ public class GooglePlay extends DefaultAppstore {
         if (isDebugMode) {
             return true;
         }
-        PackageManager packageManager = context.getPackageManager();
-        String installerPackageName = packageManager.getInstallerPackageName(packageName);
-        return (installerPackageName != null && installerPackageName.equals(ANDROID_INSTALLER));
+        return OpenIabHelper.isPackageInstaller(context, ANDROID_INSTALLER);
     }
     
     /**
@@ -87,22 +86,10 @@ public class GooglePlay extends DefaultAppstore {
      */
     @Override    
     public boolean isBillingAvailable(final String packageName) {
-        if (mDebugLog) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
+        if (isDebugLog()) Log.d(TAG, "isBillingAvailable() packageName: " + packageName);
         if (billingAvailable != null) return billingAvailable; // return previosly checked result
-        // 
-        boolean packageExist = false;
-        PackageManager packageManager = context.getPackageManager();
-        List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
-        for (PackageInfo packageInfo : allPackages) {
-            if (packageInfo.packageName.equals(GOOGLE_INSTALLER) || packageInfo.packageName.equals(ANDROID_INSTALLER)) {
-                if (mDebugLog) Log.d(TAG, "Google supports billing");
-                packageExist = true;
-                break;
-            }
-        }
-        //
         billingAvailable = false;
-        if (packageExist) {
+        if (packageExists(context, ANDROID_INSTALLER) || packageExists(context, GOOGLE_INSTALLER)) {
             final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
             intent.setPackage(GooglePlay.ANDROID_INSTALLER);
             if (!context.getPackageManager().queryIntentServices(intent, 0).isEmpty()) {
@@ -116,7 +103,7 @@ public class GooglePlay extends DefaultAppstore {
                             if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
                                 billingAvailable = true;
                             } else {
-                                if (mDebugLog) Log.d(TAG, "isBillingAvailable() Google Play billing unavaiable");
+                                if (isDebugLog()) Log.d(TAG, "isBillingAvailable() Google Play billing unavaiable");
                             }
                         } catch (RemoteException e) {
                             Log.e(TAG, "isBillingAvailable() RemoteException while setting up in-app billing", e);
@@ -153,6 +140,16 @@ public class GooglePlay extends DefaultAppstore {
     @Override
     public String getAppstoreName() {
         return OpenIabHelper.NAME_GOOGLE;
+    }
+
+    private boolean packageExists(Context context, String packageName) {
+        try {
+            context.getPackageManager().getPackageInfo(packageName, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException ignored) {
+            if (isDebugLog()) {Log.d(TAG, String.format("%s package was not found.", packageName));}
+            return false;
+        }
     }
 
 }

@@ -11,9 +11,7 @@ namespace OnePF {
  {
         public static readonly string STORE_GOOGLE;
         public static readonly string STORE_AMAZON;
-        public static readonly string STORE_TSTORE;
         public static readonly string STORE_SAMSUNG;
-        public static readonly string STORE_YANDEX;
 
 #if UNITY_ANDROID
         private static AndroidJavaObject _plugin;
@@ -22,9 +20,7 @@ namespace OnePF {
             if (Application.platform != RuntimePlatform.Android) {
                 STORE_GOOGLE = "STORE_GOOGLE";
                 STORE_AMAZON = "STORE_AMAZON";
-                STORE_TSTORE = "STORE_TSTORE";
                 STORE_SAMSUNG = "STORE_SAMSUNG";
-                STORE_YANDEX = "STORE_YANDEX";
                 return;
             }
 
@@ -35,9 +31,7 @@ namespace OnePF {
                 _plugin = pluginClass.CallStatic<AndroidJavaObject>("instance");
                 STORE_GOOGLE = pluginClass.GetStatic<string>("STORE_GOOGLE");
                 STORE_AMAZON = pluginClass.GetStatic<string>("STORE_AMAZON");
-                STORE_TSTORE = pluginClass.GetStatic<string>("STORE_TSTORE");
                 STORE_SAMSUNG = pluginClass.GetStatic<string>("STORE_SAMSUNG");
-                STORE_YANDEX = pluginClass.GetStatic<string>("STORE_YANDEX");
             }
         }
 
@@ -170,9 +164,7 @@ namespace OnePF {
 		static OpenIAB_Android() {
             STORE_GOOGLE = "STORE_GOOGLE";
             STORE_AMAZON = "STORE_AMAZON";
-            STORE_TSTORE = "STORE_TSTORE";
             STORE_SAMSUNG = "STORE_SAMSUNG";
-            STORE_YANDEX = "STORE_YANDEX";
 		}
 #endif
     }

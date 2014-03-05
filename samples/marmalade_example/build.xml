@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="marmalade_plugin" default="build">
+
+    <!-- Fat jar output folder -->
+    <property name="out.dir" value="bin"/>
+	<property environment="env"/>
+	<property name="mkb" value="${env.S3E_DIR}/bin/mkb.bat"/>
+
+    <target name="build" if="env.S3E_DIR">
+		<mkdir dir="${out.dir}"/>
+		
+		<!-- Build Demo Application .apk -->
+        <exec executable="${mkb}" failonerror="false" logerror="false">
+			<arg line="s3eOpenIabDemo.mkb"/>
+            <arg line="--default-buildenv=VC10"/>
+            <arg line="--make --arm --compiler=gcc"/>
+            <arg line="--deploy=android"/>
+        </exec>
+		
+		<copy file="build_s3eopeniabdemo_vc10\deployments\default\android\release\arm\openiab-marmalade-demo.apk" tofile="${out.dir}/openiab-marmalade-demo.apk"/>
+	</target>
+
+</project>

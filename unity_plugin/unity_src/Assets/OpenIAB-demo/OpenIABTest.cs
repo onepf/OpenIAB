@@ -50,8 +50,7 @@ public class OpenIABTest : MonoBehaviour {
             var options = new Options();
             options.verifyMode = OptionsVerifyMode.VERIFY_SKIP;
             options.storeKeys = new Dictionary<string, string> {
-                {OpenIAB_Android.STORE_GOOGLE, public_key},
-                {OpenIAB_Android.STORE_YANDEX, public_key}
+                {OpenIAB_Android.STORE_GOOGLE, public_key}
             };
 
             // Transmit options and start the service

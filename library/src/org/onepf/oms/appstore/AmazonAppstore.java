@@ -33,27 +33,31 @@ import android.util.Log;
  * @since 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final boolean mDebugLog = false;
     private static final String TAG = AmazonAppstore.class.getSimpleName();
+    private static final String AMAZON_INSTALLER = "com.amazon.venezia";
+
+    private static boolean isDebugLog() {
+        return OpenIabHelper.isDebugLog();
+    }
     
     private volatile Boolean sandboxMode;// = false;
     
-    private final Context mContext;
+    private final Context context;
     
     private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
-        mContext = context;
+        this.context = context;
     }
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        if (mDebugLog) Log.d(TAG, "isPackageInstaller() packageName: " + packageName);
         if (sandboxMode != null) {
             return !sandboxMode;
         }
-        sandboxMode = !hasAmazonClasses();
-        if (mDebugLog) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
+        sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
+        if (isDebugLog()) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
         return !sandboxMode;
     }
 
@@ -71,7 +75,7 @@ public class AmazonAppstore extends DefaultAppstore {
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
                 result = true;
             } catch (Throwable localThrowable) {
-                if (mDebugLog) Log.d(TAG, "hasAmazonClasses() cannot load class com.amazon.android.Kiwi ");
+                if (isDebugLog()) Log.d(TAG, "hasAmazonClasses() cannot load class com.amazon.android.Kiwi ");
                 result = false;
             }
         }
@@ -94,7 +98,7 @@ public class AmazonAppstore extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new AmazonAppstoreBillingService(mContext);
+            mBillingService = new AmazonAppstoreBillingService(context);
         }
         return mBillingService;
     }
