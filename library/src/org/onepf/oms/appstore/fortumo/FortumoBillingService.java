@@ -193,7 +193,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 if (fortumoProduct != null) {
                     inventory.addSkuDetails(fortumoProduct.toSkuDetails(fortumoProduct.getFortumoPrice()));
                 } else {
-                    //todo throw an exception?
+                    throw new IabException(IabHelper.BILLING_RESPONSE_RESULT_DEVELOPER_ERROR, String.format("Data %s not found", name));
                 }
             }
         }
