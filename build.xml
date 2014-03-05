@@ -46,15 +46,15 @@
         <copy file="unity_plugin/bin/OpenIAB-plugin.unitypackage" todir="${out.dir}"/>
 		
         <!-- Marmalade plugin zip -->
-        <zip destfile="${out.dir}/marmalade.zip">
+        <zip destfile="${out.dir}/OpenIAB-marmalade.zip">
             <zipfileset dir="${out.dir}" includes="openiab-amazon.jar" fullpath="${out.dir}/openiab-amazon.jar" />
             <zipfileset dir="marmalade_plugin" />
         </zip>
 
-		<!-- Marmalade demo -->
-		<ant antfile="samples/marmalade_example/build.xml" target="build" useNativeBasedir="yes"/>
-		<copy file="samples/marmalade_example/bin/openiab-marmalade-demo.apk" todir="${out.dir}"/>
-		
+	    <!-- Marmalade demo -->
+	    <ant antfile="samples/marmalade_example/build.xml" target="build" useNativeBasedir="yes"/>
+	    <copy file="samples/marmalade_example/bin/openiab-marmalade-demo.apk" todir="${out.dir}"/>
+	
     </target>
 
     <!-- ******************************************************* -->
@@ -76,8 +76,8 @@
         <echo>              For further instructions please check android documentation.</echo>
         <echo/>
         <echo>              If you want to build unity plugin package and Unity is installed at custom path, 'unity.path' property should be defined.</echo>
-		<echo/>
-		<echo>				In order to build Marmalade plugin demo, 'S3E_DIR' system variable should be defined. Currently tested only for Windows.</echo>
+        <echo/>
+        <echo>              In order to build Marmalade plugin demo, 'S3E_DIR' system variable should be defined. Currently tested only for Windows.</echo>
     </target>
 
 </project>
