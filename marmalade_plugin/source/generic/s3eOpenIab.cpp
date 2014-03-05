@@ -66,3 +66,18 @@ void s3eOpenIabMapSku(const char* sku, const char* storeName, const char* storeS
 {
 	s3eOpenIabMapSku_platform(sku, storeName, storeSku);
 }
+
+bool s3eOpenIabIsDebugLog()
+{
+	return s3eOpenIabIsDebugLog_platform();
+}
+
+void s3eOpenIabEnableDebugLogging(bool enable)
+{
+	s3eOpenIabEnableDebugLogging_platform(enable);
+}
+
+void s3eOpenIabEnableDebugTagLogging(bool enable, const char* tag)
+{
+	s3eOpenIabEnableDebugTagLogging_platform(enable, tag);
+}

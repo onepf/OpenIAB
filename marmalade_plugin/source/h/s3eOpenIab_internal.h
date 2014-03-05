@@ -61,4 +61,10 @@ s3eOpenIabStoreNames* s3eOpenIabGetStoreNames_platform();
 
 void s3eOpenIabMapSku_platform(const char* sku, const char* storeName, const char* storeSku);
 
+bool s3eOpenIabIsDebugLog_platform();
+
+void s3eOpenIabEnableDebugLogging_platform(bool enable);
+
+void s3eOpenIabEnableDebugTagLogging_platform(bool enable, const char* tag);
+
 #endif /* !S3EOPENIAB_INTERNAL_H */

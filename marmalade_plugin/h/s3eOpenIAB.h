@@ -469,6 +469,12 @@ s3eOpenIabStoreNames* s3eOpenIabGetStoreNames();
 
 void s3eOpenIabMapSku(const char* sku, const char* storeName, const char* storeSku);
 
+bool s3eOpenIabIsDebugLog();
+
+void s3eOpenIabEnableDebugLogging(bool enabled);
+
+void s3eOpenIabEnableDebugTagLogging(bool enabled, const char* tag);
+
 S3E_END_C_DECL
 
 /** @} */

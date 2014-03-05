@@ -291,6 +291,14 @@ int main()
 	// Start up the Store interface
 	s3eOpenIabStart(options);
 
+	IwTrace(ANDROIDGOOGLEPLAYBILLING_VERBOSE, ("LOG ENABLED: %d", (int) s3eOpenIabIsDebugLog()));
+	s3eOpenIabEnableDebugLogging(false);
+	s3eOpenIabEnableDebugLogging(true);
+
+	s3eOpenIabEnableDebugTagLogging(false, "MY_TAG");
+	s3eOpenIabEnableDebugTagLogging(true, "MY_TAG");
+	IwTrace(ANDROIDGOOGLEPLAYBILLING_VERBOSE, ("LOG ENABLED: %d", (int) s3eOpenIabIsDebugLog()));
+
 	// register callbacks and pass in our UI pointer which the callback
 	s3eOpenIabRegister(S3E_OPENIAB_LIST_PRODUCTS_CALLBACK,ListCallback,ui); 
 	s3eOpenIabRegister(S3E_OPENIAB_RESTORE_CALLBACK,RestoreCallback,ui); 

@@ -33,6 +33,9 @@ typedef       void(*s3eOpenIabRestoreTransactions_t)();
 typedef       void(*s3eOpenIabConsumeItem_t)(const char* purchaseToken);
 typedef s3eOpenIabStoreNames*(*s3eOpenIabGetStoreNames_t)();
 typedef       void(*s3eOpenIabMapSku_t)(const char* sku, const char* storeName, const char* storeSku);
+typedef       bool(*s3eOpenIabIsDebugLog_t)();
+typedef       void(*s3eOpenIabEnableDebugLogging_t)(bool enabled);
+typedef       void(*s3eOpenIabEnableDebugTagLogging_t)(bool enabled, const char* tag);
 
 /**
  * struct that gets filled in by s3eOpenIabRegister
@@ -50,6 +53,9 @@ typedef struct s3eOpenIabFuncs
     s3eOpenIabConsumeItem_t m_s3eOpenIabConsumeItem;
     s3eOpenIabGetStoreNames_t m_s3eOpenIabGetStoreNames;
     s3eOpenIabMapSku_t m_s3eOpenIabMapSku;
+    s3eOpenIabIsDebugLog_t m_s3eOpenIabIsDebugLog;
+    s3eOpenIabEnableDebugLogging_t m_s3eOpenIabEnableDebugLogging;
+    s3eOpenIabEnableDebugTagLogging_t m_s3eOpenIabEnableDebugTagLogging;
 } s3eOpenIabFuncs;
 
 static s3eOpenIabFuncs g_Ext;
@@ -307,6 +313,66 @@ void s3eOpenIabMapSku(const char* sku, const char* storeName, const char* storeS
 #endif
 
     g_Ext.m_s3eOpenIabMapSku(sku, storeName, storeSku);
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallDone(S3E_TRUE, NULL);
+#endif
+
+    return;
+}
+
+bool s3eOpenIabIsDebugLog()
+{
+    IwTrace(OPENIAB_VERBOSE, ("calling s3eOpenIab[11] func: s3eOpenIabIsDebugLog"));
+
+    if (!_extLoad())
+        return true;
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallStart(S3E_TRUE, NULL);
+#endif
+
+    bool ret = g_Ext.m_s3eOpenIabIsDebugLog();
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallDone(S3E_TRUE, NULL);
+#endif
+
+    return ret;
+}
+
+void s3eOpenIabEnableDebugLogging(bool enabled)
+{
+    IwTrace(OPENIAB_VERBOSE, ("calling s3eOpenIab[12] func: s3eOpenIabEnableDebugLogging"));
+
+    if (!_extLoad())
+        return;
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallStart(S3E_TRUE, NULL);
+#endif
+
+    g_Ext.m_s3eOpenIabEnableDebugLogging(enabled);
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallDone(S3E_TRUE, NULL);
+#endif
+
+    return;
+}
+
+void s3eOpenIabEnableDebugTagLogging(bool enabled, const char* tag)
+{
+    IwTrace(OPENIAB_VERBOSE, ("calling s3eOpenIab[13] func: s3eOpenIabEnableDebugTagLogging"));
+
+    if (!_extLoad())
+        return;
+
+#ifdef LOADER_CALL_LOCK
+    s3eDeviceLoaderCallStart(S3E_TRUE, NULL);
+#endif
+
+    g_Ext.m_s3eOpenIabEnableDebugTagLogging(enabled, tag);
 
 #ifdef LOADER_CALL_LOCK
     s3eDeviceLoaderCallDone(S3E_TRUE, NULL);
