@@ -17,7 +17,7 @@ How To add OpenIAB into your app
     git clone https://github.com/onepf/OpenIAB.git
     ```
 
-2. Link /library to project as Android Library
+2. Link /library as Android Library or include jar to project.
 
 3. Instantiate ``` new OpenIabHelper ```  and call ``` mHelper.startSetup() ```. 
 When setup is done call  ``` mHelper.queryInventory() ```
