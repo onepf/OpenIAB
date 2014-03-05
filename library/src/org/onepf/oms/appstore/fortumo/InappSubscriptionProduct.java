@@ -36,4 +36,21 @@ public class InappSubscriptionProduct extends InappBaseProduct {
             throw new IllegalStateException("subscription is not valid");
         }
     }
+
+    @Override
+    public String toString() {
+        return "InappSubscriptionProduct{" +
+                "published=" + published +
+                ", productId='" + productId + '\'' +
+                ", baseTitle='" + baseTitle + '\'' +
+                ", localeToTitleMap=" + localeToTitleMap +
+                ", baseDescription='" + baseDescription + '\'' +
+                ", localeToDescriptionMap=" + localeToDescriptionMap +
+                ", autoFill=" + autoFill +
+                ", basePrice=" + basePrice +
+                ", localeToPrice=" + localeToPrice +
+                ", period='" + period + '\'' +
+                '}';
+
+    }
 }

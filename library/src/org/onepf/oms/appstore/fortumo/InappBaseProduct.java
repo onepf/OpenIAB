@@ -14,19 +14,19 @@ public class InappBaseProduct {
     public static final String UNPUBLISHED = "unpublished";
 
     //publish state
-    private boolean published;
+    boolean published;
     //product id
-    private String productId;
+    String productId;
     //title
-    private String baseTitle;
-    private final HashMap<String, String> localeToTitleMap = new HashMap<String, String>();
+    String baseTitle;
+    final HashMap<String, String> localeToTitleMap = new HashMap<String, String>();
     //description
-    private String baseDescription;
-    private final HashMap<String, String> localeToDescriptionMap = new HashMap<String, String>();
+    String baseDescription;
+    final HashMap<String, String> localeToDescriptionMap = new HashMap<String, String>();
     //price
-    private boolean autoFill;
-    private float basePrice;
-    private final HashMap<String, Float> localeToPrice = new HashMap<String, Float>();
+    boolean autoFill;
+    float basePrice;
+    final HashMap<String, Float> localeToPrice = new HashMap<String, Float>();
 
     public InappBaseProduct() {
     }
@@ -144,5 +144,20 @@ public class InappBaseProduct {
         if (TextUtils.isEmpty(productId) || TextUtils.isEmpty(baseTitle) || TextUtils.isEmpty(baseDescription) || basePrice == 0) {
             throw new IllegalStateException("in-app product is not valid");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "InappBaseProduct{" +
+                "published=" + published +
+                ", productId='" + productId + '\'' +
+                ", baseTitle='" + baseTitle + '\'' +
+                ", localeToTitleMap=" + localeToTitleMap +
+                ", baseDescription='" + baseDescription + '\'' +
+                ", localeToDescriptionMap=" + localeToDescriptionMap +
+                ", autoFill=" + autoFill +
+                ", basePrice=" + basePrice +
+                ", localeToPrice=" + localeToPrice +
+                '}';
     }
 }

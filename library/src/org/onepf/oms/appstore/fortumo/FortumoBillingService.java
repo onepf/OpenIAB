@@ -305,6 +305,16 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         public void setFortumoPrice(String fortumoPrice) {
             this.fortumoPrice = fortumoPrice;
         }
+
+        @Override
+        public String toString() {
+            return "FortumoProduct{" +
+                    "consumable=" + consumable +
+                    ", serviceId='" + serviceId + '\'' +
+                    ", inAppSecret='" + inAppSecret + '\'' +
+                    ", fortumoPrice='" + fortumoPrice + '\'' +
+                    '}';
+        }
     }
 
 
@@ -441,6 +451,17 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 //                    throw new IllegalStateException("Fortumo details object must have non-empty attribute values");
 //                }
 //            }
+
+
+            @Override
+            public String toString() {
+                return "FortumoDetails{" +
+                        "id='" + id + '\'' +
+                        ", serviceId='" + serviceId + '\'' +
+                        ", serviceInAppSecret='" + serviceInAppSecret + '\'' +
+                        ", consumable=" + consumable +
+                        '}';
+            }
         }
     }
 }
