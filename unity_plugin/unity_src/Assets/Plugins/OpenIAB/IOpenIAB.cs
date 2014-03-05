@@ -17,5 +17,9 @@ namespace OnePF {
 		void consumeProduct(Purchase purchase);
 		void restoreTransactions();
 
-	}
+        bool isDebugLog();
+        void enableDebugLogging(bool enabled);
+        void enableDebugLogging(bool enabled, string tag);
+	
+    }
 }

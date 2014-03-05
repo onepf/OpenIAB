@@ -150,6 +150,16 @@ namespace OnePF {
 			restoreProducts();
 		}
 
+        public bool isDebugLog() {
+            return false;
+        }
+
+        public void enableDebugLogging(bool enabled) {
+        }
+
+        public void enableDebugLogging(bool enabled, string tag) {
+        }
+
 		public static string StoreSku2Sku(string storeSku) {
 			return _storeSku2skuMappings[storeSku];
 		}
