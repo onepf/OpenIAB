@@ -171,7 +171,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         final Collection<FortumoProduct> inappProducts = inappsMap.values();
         for (FortumoProduct fortumoProduct : inappProducts) {
             if (!fortumoProduct.isConsumable()) {
-                final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 10000); //todo reduce?
+                final List purchaseHistory = MpUtils.getPurchaseHistory(context, fortumoProduct.getServiceId(), fortumoProduct.getInAppSecret(), 5000);
                 if (purchaseHistory != null && purchaseHistory.size() > 0) {
                     for (Object response : purchaseHistory) {
                         PaymentResponse paymentResponse = (PaymentResponse) response;
