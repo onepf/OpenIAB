@@ -53,17 +53,9 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     ```xml
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
     ```
-And register reciever for Amazon
-    ```xml
-    <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
-        <intent-filter>
-            <action
-                android:name="com.amazon.inapp.purchasing.NOTIFY"
-                android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
-            />
-        </intent-filter>
-    </receiver>
-    ```
+Common:
+- internet permission
+
 9. Add the following strings to your proguard config
 
     ```
@@ -94,6 +86,97 @@ And register reciever for Amazon
     # SAMSUNG
     -keep class com.sec.android.iap.**
     ```
+
+
+
+Google Play support
+-------------
+1. Add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="com.android.vending.BILLING" />
+    ```
+2. Provide a public key
+3. Sign the app.
+
+Amazon support
+-------------
+1. Add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    ```
+
+2. Register the receiver
+
+    ```xml
+    <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
+        <intent-filter>
+            <action
+                android:name="com.amazon.inapp.purchasing.NOTIFY"
+                android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
+            />
+        </intent-filter>
+    </receiver>
+    ```
+
+3. Map SKUs if required.
+
+Fortumo support
+-------------
+1. Add the following permissions to the manifest
+
+    ```xml
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    ```
+
+2. Declare the following elements
+
+     ```xml
+      <receiver android:name="mp.MpSMSReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name="mp.MpService"/>
+
+        <service android:name="mp.StatusUpdateService"/>
+
+        <activity android:name="mp.MpActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
+     ```
+3. Add "bla.xml" file with info about all non-subscription SKUs.
+
+4. Add "bla2.xml" file with fortumo details.
+
+5. ...
+
+6. options.supportFortumo = true or add new FortumoStore to available stores
+
+
+Samsung Apps support
+-------------
+1. Activity context
+2. Permission
+3. Sku mapping and verification.
+4. meta information
+
+
+Open Store support
+-------------
+1. Permission
+2. Key
+3. Sku mapping if required.
+
+
+TStore support
+-------------
+1. Permission
+
 
 Unity Plugin
 =====
