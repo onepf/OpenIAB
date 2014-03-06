@@ -13,12 +13,13 @@
  * limitations under the License.
  */
 
-package org.onepf.oms.data;
+package org.onepf.store.data;
 
 import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.onepf.oms.BillingApplication;
+import org.onepf.store.StoreApplication;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -52,7 +53,7 @@ public class SkuDetails {
             o.put("title", _title);
             o.put("description", _description);
         } catch (JSONException e) {
-            Log.e(BillingApplication.TAG, "Couldn't serialize " + getClass().getSimpleName());
+            Log.e(StoreApplication.TAG, "Couldn't serialize " + getClass().getSimpleName());
             return "";
         }
         return o.toString();

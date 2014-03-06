@@ -1,13 +1,13 @@
-package org.onepf.oms;
+package org.onepf.store;
+
+import org.onepf.store.R;
+import org.onepf.store.data.Database;
+import org.onepf.store.data.Purchase;
 
 import android.app.Activity;
-import android.content.*;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
-import org.onepf.oms.data.Database;
-import org.onepf.oms.data.Purchase;
 
 public class PurchaseActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class PurchaseActivity extends Activity {
 
     public void onOkClick(View view) {
         Intent intent = getIntent();
-        Database db = ((IBillingApplication) getApplication()).getDatabase();
+        Database db = ((StoreApplication) getApplication()).getDatabase();
 
         final String packageName = intent.getStringExtra("packageName");
         final String sku = intent.getStringExtra("sku");

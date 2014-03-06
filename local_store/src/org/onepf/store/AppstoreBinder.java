@@ -1,9 +1,11 @@
-package org.onepf.oms;
+package org.onepf.store;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
-import org.onepf.oms.data.Database;
+
+import org.onepf.oms.IOpenAppstore;
+import org.onepf.store.data.Database;
 
 public class AppstoreBinder extends IOpenAppstore.Stub {
 

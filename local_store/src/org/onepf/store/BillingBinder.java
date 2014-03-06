@@ -1,19 +1,18 @@
-package org.onepf.oms;
+package org.onepf.store;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.onepf.oms.IOpenInAppBillingService;
+import org.onepf.store.data.Database;
+import org.onepf.store.data.Purchase;
+import org.onepf.store.data.SkuDetails;
 
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.util.Log;
-import org.onepf.oms.data.Database;
-import org.onepf.oms.data.Purchase;
-import org.onepf.oms.data.SkuDetails;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class BillingBinder extends IOpenInAppBillingService.Stub {
 

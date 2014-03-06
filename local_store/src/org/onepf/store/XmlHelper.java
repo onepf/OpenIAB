@@ -1,15 +1,14 @@
-package org.onepf.oms;
+package org.onepf.store;
 
-import android.content.res.AssetManager;
-import android.util.Log;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import java.io.ByteArrayInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import android.util.Log;
 
 public class XmlHelper {
     public static Document loadXMLFromString(String xml) throws Exception {

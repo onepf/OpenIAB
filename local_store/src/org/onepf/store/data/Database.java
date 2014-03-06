@@ -1,22 +1,23 @@
-package org.onepf.oms.data;
+package org.onepf.store.data;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.UUID;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.onepf.store.BillingBinder;
+import org.onepf.store.StoreApplication;
+import org.onepf.store.XmlHelper;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.onepf.oms.BillingApplication;
-import org.onepf.oms.BillingBinder;
-import org.onepf.oms.XmlHelper;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.UUID;
 
 public class Database {
 
@@ -56,7 +57,7 @@ public class Database {
             try {
                 _purchaseHistory.add(new Purchase(json));
             } catch (JSONException e) {
-                Log.e(BillingApplication.TAG, "Failed to deserialize purchase.", e);
+                Log.e(StoreApplication.TAG, "Failed to deserialize purchase.", e);
             }
         }
     }
@@ -93,18 +94,20 @@ public class Database {
             }
         }
     }
+    
+    public static final int PRIMARY_COLUMNS_NUMBER = 7;
 
-    public void deserializeFromGoogleCSV(String csv) throws CSVException {
+    public void deserializeFromGoogleCSV(String csv) throws IOException {
         if (csv == null || csv.equals("")) return;
 
         String[] lines = csv.split("[\\r\\n]+");
-        final int PRIMARY_COLUMNS_NUMBER = 7;
+        
         final String JUNK = "Product ID,Published State,Purchase Type,Auto Translate,Locale; Title; Description,Auto Fill Prices,Price";
         for (int i = lines[0].equals(JUNK) ? 1 : 0; i < lines.length; ++i) {
             String line = lines[i];
             String[] primaryColumns = line.split("\\s*,\\s*");
             if (primaryColumns.length < PRIMARY_COLUMNS_NUMBER) {
-                throw new CSVException("Invalid primary columns number: " + primaryColumns.length);
+                throw new IOException(csv + ":" + line + ": Invalid primary columns number: " + primaryColumns.length);
             }
             String sku;
             String type;
@@ -116,7 +119,7 @@ public class Database {
 
             String[] localeColumns = primaryColumns[4].split("\\s*;\\s*");
             if (localeColumns.length % 3 != 0) {
-                throw new CSVException("Invalid locale columns number: " + localeColumns.length + ". Should be multiple of 3");
+                throw new IOException(csv + ":" + line + ": Invalid locale columns number: " + localeColumns.length + ". Should be multiple of 3");
             }
             title = localeColumns[1];
             description = localeColumns[2];
@@ -127,7 +130,7 @@ public class Database {
             } else {
                 String[] priceColumns = primaryColumns[6].split("\\s*;\\s*");
                 if (priceColumns.length % 2 != 0) {
-                    throw new CSVException("Invalid price columns number: " + priceColumns.length + ". Should be even");
+                    throw new IOException(csv + ":" + line + ": Invalid price columns number: " + priceColumns.length + ". Should be even");
                 }
                 price = priceColumns[1];
             }
@@ -136,7 +139,7 @@ public class Database {
             if (primaryColumns.length > PRIMARY_COLUMNS_NUMBER) {
                 type = primaryColumns[PRIMARY_COLUMNS_NUMBER];
                 if (!type.equals(BillingBinder.ITEM_TYPE_INAPP) && !type.equals(BillingBinder.ITEM_TYPE_SUBS)) {
-                    throw new CSVException("Invalid product type: " + type);
+                    throw new IOException(csv + ":" + line + ": Invalid product type: " + type);
                 }
             } else {
                 type = BillingBinder.ITEM_TYPE_INAPP;

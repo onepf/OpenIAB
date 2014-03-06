@@ -1,14 +1,21 @@
-package org.onepf.oms;
+package org.onepf.store;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.onepf.store.data.Database;
 
 import android.app.Application;
 import android.os.Environment;
 import android.os.FileObserver;
 import android.util.Log;
-import org.onepf.oms.data.Database;
 
-import java.io.*;
-
-public class BillingApplication extends Application implements IBillingApplication {
+public class StoreApplication extends Application {
 
     public static final String TAG = "OnePF-store";
     static final String GOOGLE_CONFIG_FILE = "google-play.csv";
@@ -18,7 +25,6 @@ public class BillingApplication extends Application implements IBillingApplicati
     Database _database;
     FileObserver _configObserver;
 
-    @Override
     public Database getDatabase() {
         return _database;
     }
