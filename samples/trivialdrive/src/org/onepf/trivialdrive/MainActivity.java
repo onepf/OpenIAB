@@ -140,7 +140,7 @@ public class MainActivity extends Activity {
     OpenIabHelper mHelper;
 
     /** is bililng setup is completed */
-    private boolean setupDone = false;
+    private Boolean setupResult;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -172,7 +172,7 @@ public class MainActivity extends Activity {
         if (getPackageName().startsWith("com.example")) {
             throw new RuntimeException("Please change the sample's package name! See README.");
         }
-        
+
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
         Map<String, String> storeKeys = new HashMap<String, String>();
@@ -182,7 +182,7 @@ public class MainActivity extends Activity {
         storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
 
         mHelper = new OpenIabHelper(this, storeKeys);
-        
+
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);
 
@@ -196,12 +196,13 @@ public class MainActivity extends Activity {
                 if (!result.isSuccess()) {
                     // Oh noes, there was a problem.
                     complain("Problem setting up in-app billing: " + result);
+                    setupResult = false;
                     return;
                 }
 
                 // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
-                setupDone = true;
+                setupResult = true;
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
@@ -265,8 +266,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!setupCompleted()) {
             return;
         }
         // launch the gas purchase UI flow.
@@ -287,8 +287,7 @@ public class MainActivity extends Activity {
     public void onUpgradeAppButtonClicked(View arg0) {
         Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
         
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!setupCompleted()) {
             return;
         }
 
@@ -306,8 +305,7 @@ public class MainActivity extends Activity {
     // "Subscribe to infinite gas" button clicked. Explain to user, then start purchase
     // flow for subscription.
     public void onInfiniteGasButtonClicked(View arg0) {
-        if (!setupDone) {
-            complain("Billing Setup is not completed yet");
+        if (!setupCompleted()) {
             return;
         }
 
@@ -534,6 +532,18 @@ public class MainActivity extends Activity {
         SharedPreferences sp = getPreferences(MODE_PRIVATE);
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
+    }
+
+    private boolean setupCompleted() {
+        if (setupResult == null) {
+            complain("Billing Setup is not completed.");
+            return false;
+        } else if (!setupResult) {
+            complain("Billing Setup was failed.");
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }
