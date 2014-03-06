@@ -371,7 +371,7 @@ public class OpenIabHelper {
                     }
                 }
 
-                final IabResult[] result = {new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported")};
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
 
                 if (options.checkInventory) {
 
@@ -382,12 +382,12 @@ public class OpenIabHelper {
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     }
                     if (mAppstore != null) {
-                        result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
                         if (mAppstore != null) {
-                            result[0] = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                           result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                         }
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
                     }
@@ -395,10 +395,14 @@ public class OpenIabHelper {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
                     } else {
                         if (!hasFortumoInSetup && options.supportFortumo) {
-                            tryFortumoStore(result);
+                            mAppstore = tryFortumoStore(true);
+                            if (null != mAppstore) {
+                                mAppstoreBillingService = mAppstore.getInAppBillingService();
+                                result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                            }
                         }
                     }
-                    fireSetupFinished(listener, result[0]);
+                    fireSetupFinished(listener, result);
                 } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
                     if (mAppstore != null) {
@@ -410,9 +414,13 @@ public class OpenIabHelper {
                         });
                     } else {
                         if (!hasFortumoInSetup && options.supportFortumo) {
-                            tryFortumoStore(result);
+                            mAppstore = tryFortumoStore(true);
+                            if (null != mAppstore) {
+                                mAppstoreBillingService = mAppstore.getInAppBillingService();
+                                result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                            }
                         }
-                        fireSetupFinished(listener, result[0]);
+                        fireSetupFinished(listener, result);
                     }
                 }
                 for (Appstore store : stores2check) {
@@ -425,27 +433,38 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
-    private void tryFortumoStore(final IabResult[] result) {
-            final FortumoStore fortumoStore = new FortumoStore(context);
-            if (fortumoStore.isBillingAvailable(context.getPackageName())) {
-                final CountDownLatch latch = new CountDownLatch(1);
-                fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
-                    @Override
-                    public void onIabSetupFinished(IabResult setupResult) {
-                        if (setupResult.isSuccess()) {
-                            mAppstore = fortumoStore;
-                            mAppstoreBillingService = mAppstore.getInAppBillingService();
+    private FortumoStore tryFortumoStore(final boolean checkInventory) {
+        final FortumoStore[] storeToReturn = {null};
+        final FortumoStore fortumoStore = new FortumoStore(context);
+        if (fortumoStore.isBillingAvailable(context.getPackageName())) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            fortumoStore.getInAppBillingService().startSetup(new OnIabSetupFinishedListener() {
+                @Override
+                public void onIabSetupFinished(IabResult setupResult) {
+                    if (setupResult.isSuccess()) {
+                        if (checkInventory) {
+                            try {
+                                final Inventory inventory = fortumoStore.getInAppBillingService().queryInventory(false, null, null);
+                                if (!inventory.getAllPurchases().isEmpty()) {
+                                    storeToReturn[0] = fortumoStore;
+                                }
+                            } catch (IabException e) {
+                                Log.e(TAG, "Fortumo purchases not found", e);
+                            }
+                        } else {
+                            storeToReturn[0] = fortumoStore;
                         }
-                        result[0] = setupResult;
-                        latch.countDown();
                     }
-                });
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    Log.e(TAG, "Fortumo setup was interrupted", e);
+                    latch.countDown();
                 }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Fortumo setup was interrupted", e);
             }
+        }
+        return storeToReturn[0];
     }
 
     /** Check options are valid */
@@ -626,9 +645,9 @@ public class OpenIabHelper {
         samsungInSetup = null;
         setupState = result.isSuccess() ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         notifyHandler.post(new Runnable() {
-           public void run() { 
-               listener.onIabSetupFinished(result);
-           }
+            public void run() {
+                listener.onIabSetupFinished(result);
+            }
         });
     }
 
