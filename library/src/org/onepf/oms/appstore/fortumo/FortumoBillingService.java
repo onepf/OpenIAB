@@ -22,7 +22,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Created by akarimova on 23.12.13.
+ * @author akarimova@onepf.org
+ * @since 23.12.13
  */
 public class FortumoBillingService implements AppstoreInAppBillingService {
     private static final String TAG = FortumoStore.class.getSimpleName();
@@ -44,6 +45,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         this.context = context;
     }
 
+    /**
+     * Make sure that required files {@link org.onepf.oms.appstore.fortumo.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} and {@link org.onepf.oms.appstore.fortumo.FortumoStore#FORTUMO_DETATILS_FILE_NAME}
+     * are present in the assets folder.
+     * @param listener - called in UI-thread when initialization is completed
+     */
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         IabResult result = null;

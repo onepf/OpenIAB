@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * Created by akarimova on 14.02.14.
+ * @author akarimova@onepf.org
+ * @since 14.02.14
  */
-
 public class InappBaseProduct {
     public static final String PUBLISHED = "published";
     public static final String UNPUBLISHED = "unpublished";

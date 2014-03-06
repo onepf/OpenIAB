@@ -13,7 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by akarimova on 17.02.14.
+ * @author akarimova@onepf.org
+ * @since 17.02.14
  */
 public class InappsXMLParser {
     private static final String TAG = InappsXMLParser.class.getSimpleName();
@@ -46,6 +47,13 @@ public class InappsXMLParser {
     private static final String ATTR_AUTOFILL = "autofill";
 
 
+    /**
+     * Make sure that {@link org.onepf.oms.appstore.fortumo.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} is present in the assets folder.
+     * @param context to get access to assets
+     * @return a set of items and subscriptions
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
     public Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse(Context context) throws XmlPullParserException, IOException {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);

@@ -4,7 +4,8 @@ package org.onepf.oms.appstore.fortumo;
 import android.text.TextUtils;
 
 /**
- * Created by akarimova on 17.02.14.
+ * @author akarimova@onepf.org
+ * @since 17.02.14
  */
 public class InappSubscriptionProduct extends InappBaseProduct {
     public static final String ONE_MONTH = "oneMonth";

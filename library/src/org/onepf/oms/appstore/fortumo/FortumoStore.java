@@ -9,12 +9,11 @@ import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 
 /**
- * Created by akarimova on 23.12.13.
- */
-
-/**
  * Fortumo, an international mobile payment provider, is not actually an app store.
  * This class was made to provide in-app purchasing compatibility with other, "real", stores.
+ *
+ * @author akarimova@onepf.org
+ * @since 23.12.13
  */
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
