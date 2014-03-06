@@ -212,6 +212,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
+    public boolean subscriptionsSupported() {
+        return false;
+    }
+
+    @Override
     public void dispose() {
         purchaseFinishedListener = null;
     }

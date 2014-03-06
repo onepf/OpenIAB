@@ -331,6 +331,11 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
+    public boolean subscriptionsSupported() {
+        return true;
+    }
+
+    @Override
     public void dispose() {
         if (serviceConnection != null && isBound) {
             activity.getApplicationContext().unbindService(serviceConnection);

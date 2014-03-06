@@ -841,12 +841,8 @@ public class OpenIabHelper {
     }
 
     public boolean subscriptionsSupported() {
-        if (mAppstore != null) {
-            if (mAppstore instanceof FortumoStore) return false;
-        }
-        // TODO: implement this
-        return true;
-
+        checkSetupDone("subscriptionsSupported");
+        return mAppstoreBillingService.subscriptionsSupported();
     }
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {

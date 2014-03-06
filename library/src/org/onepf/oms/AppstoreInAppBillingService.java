@@ -47,5 +47,7 @@ public interface AppstoreInAppBillingService {
 
     void consume(Purchase itemInfo) throws IabException;
 
+    boolean subscriptionsSupported();
+
     void dispose();
 }
