@@ -567,6 +567,7 @@ public class OpenIabHelper {
 
     }
 
+    //todo move to Utils
     private static void checkPermission(Context context, String paramString, StringBuilder builder) {
         if (context.checkCallingOrSelfPermission(paramString) != PackageManager.PERMISSION_GRANTED) {
             if (builder.length() > 0) {
@@ -576,6 +577,7 @@ public class OpenIabHelper {
         }
     }
 
+    //todo move to Utils
     private static void formatComponentStatus(String message, StringBuilder messageBuilder){
         if (messageBuilder.length() > 0) {
             messageBuilder.append('\n');
