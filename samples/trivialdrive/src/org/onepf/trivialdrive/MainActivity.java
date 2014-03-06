@@ -15,6 +15,9 @@
 
 package org.onepf.trivialdrive;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -32,54 +35,51 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Example game using in-app billing version 3.
- * <p/>
+ * 
  * Before attempting to run this sample, please read the README file. It
  * contains important information on how to set up this project.
- * <p/>
- * All the game-specific logic is implemented here in MainActivity, while the
- * general-purpose boilerplate that can be reused in any app is provided in the
+ * 
+ * All the game-specific logic is implemented here in MainActivity, while the 
+ * general-purpose boilerplate that can be reused in any app is provided in the 
  * classes in the util/ subdirectory. When implementing your own application,
- * you can copy over util/*.java to make use of those utility classes.
- * <p/>
+ * you can copy over util/*.java to make use of those utility classes.  
+ * 
  * This game is a simple "driving" game where the player can buy gas
  * and drive. The car has a tank which stores gas. When the player purchases
  * gas, the tank fills up (1/4 tank at a time). When the player drives, the gas
  * in the tank diminishes (also 1/4 tank at a time).
- * <p/>
+ *
  * The user can also purchase a "premium upgrade" that gives them a red car
  * instead of the standard blue one (exciting!).
- * <p/>
+ * 
  * The user can also purchase a subscription ("infinite gas") that allows them
  * to drive without using up any gas while that subscription is active.
- * <p/>
+ *
  * It's important to note the consumption mechanics for each item.
- * <p/>
+ *
  * PREMIUM: the item is purchased and NEVER consumed. So, after the original
  * purchase, the player will always own that item. The application knows to
  * display the red car instead of the blue one because it queries whether
  * the premium "item" is owned or not.
- * <p/>
+ * 
  * INFINITE GAS: this is a subscription, and subscriptions can't be consumed.
- * <p/>
+ *
  * GAS: when gas is purchased, the "gas" item is then owned. We consume it
  * when we apply that item's effects to our app's world, which to us means
  * filling up 1/4 of the tank. This happens immediately after purchase!
  * It's at this point (and not when the user drives) that the "gas"
  * item is CONSUMED. Consumption should always happen when your game
  * world was safely updated to apply the effect of the purchase. So,
- * in an fortumo_products_description scenario:
- * <p/>
+ * in an example scenario:
+ *
  * BEFORE:      tank at 1/2
  * ON PURCHASE: tank at 1/2, "gas" item is owned
  * IMMEDIATELY: "gas" is consumed, tank goes to 3/4
  * AFTER:       tank at 3/4, "gas" item NOT owned any more
- * <p/>
+ *
  * Another important point to notice is that it may so happen that
  * the application crashed (or anything else happened) after the user
  * purchased the "gas" item, but before it was consumed. That's why,
@@ -95,17 +95,17 @@ public class MainActivity extends Activity {
 
     // Does the user have the premium upgrade?
     boolean mIsPremium = false;
-
+    
     // Does the user have an active subscription to the infinite gas plan?
     boolean mSubscribedToInfiniteGas = false;
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
     static final String SKU_PREMIUM = "sku_premium";
     static final String SKU_GAS = "sku_gas";
-
+    
     // SKU for our subscription (infinite gas)
     static final String SKU_INFINITE_GAS = "sku_infinite_gas";
-
+    
     static {
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
         OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
@@ -115,19 +115,20 @@ public class MainActivity extends Activity {
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
         OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
+        OpenIabHelper.mapSku(SKU_GAS, "com.yandex.store", "org.onepf.trivialdrive.gas");
 
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
         OpenIabHelper.mapSku(SKU_INFINITE_GAS, "com.yandex.store", "org.onepf.trivialdrive.infinite_gas");
     }
-
+    
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
 
     // Graphics for the gas gauge
-    static int[] TANK_RES_IDS = {R.drawable.gas0, R.drawable.gas1, R.drawable.gas2,
-            R.drawable.gas3, R.drawable.gas4};
+    static int[] TANK_RES_IDS = { R.drawable.gas0, R.drawable.gas1, R.drawable.gas2,
+                                   R.drawable.gas3, R.drawable.gas4 };
 
     // How many units (1/4 tank is our unit) fill in the tank.
     static final int TANK_MAX = 4;
@@ -138,10 +139,8 @@ public class MainActivity extends Activity {
     // The helper object
     OpenIabHelper mHelper;
 
-    /**
-     * is bililng setup is completed
-     */
-    private Boolean setupDone;
+    /** is bililng setup is completed */
+    private boolean setupDone = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -151,60 +150,39 @@ public class MainActivity extends Activity {
         // load game data
         loadData();
 
-        //The best way to set up OpenIab is to use Options.
-        //Options allows your to specify
-        //- "available stores" list (in this case OpenIab doesn't check for any other stores)
-        //- "check inventory" (if a store has purchases it will be more attractive as a working store)
-        //- "verify mode" (there is a lot of stuff, read the javadocs please)
-        //- store keys (map your public keys to store names)
-        //- preffered store names
-        //and so on
-        boolean howToWorkWithGooglePlay = false;
-        boolean howToWorkWithFortumo = true;
-        boolean howToTestAmazon = false;
-
-        if (howToWorkWithGooglePlay) {
-         /* base64EncodedPublicKey should be YOUR APPLICATION'S PUBLIC KEY
+        /* base64EncodedPublicKey should be YOUR APPLICATION'S PUBLIC KEY
          * (that you got from the Google Play developer console). This is not your
          * developer public key, it's the *app-specific* public key.
          *
          * Instead of just storing the entire literal string here embedded in the
          * program,  construct the key at runtime from pieces or
-         * use bit manipulation (for fortumo_products_description, XOR with some other string) to hide
+         * use bit manipulation (for example, XOR with some other string) to hide
          * the actual key.  The key itself is not secret information, but we don't
          * want to make it easy for an attacker to replace the public key with one
          * of their own and then fake messages from the server.
          */
-            String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
-            String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
+        String base64EncodedPublicKey = "CONSTRUCT_YOUR_KEY_AND_PLACE_IT_HERE";
+        String YANDEX_PUBLIC_KEY = "PLACE_HERE_YANDEX_KEY";
 
-            // Some sanity checks to see if the developer (that's you!) really followed the
-            // instructions to run this sample (don't put these checks on your app!)
-            if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
-                throw new RuntimeException("Please put your app's public key in MainActivity.java. See README.");
-            }
-            if (getPackageName().startsWith("com.fortumo_products_description")) {
-                throw new RuntimeException("Please change the sample's package name! See README.");
-            }
-            // Create the helper, passing it our context and the public key to verify signatures with
-            Log.d(TAG, "Creating IAB helper.");
-            Map<String, String> storeKeys = new HashMap<String, String>();
-            storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
-            storeKeys.put(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY);
-
-            OpenIabHelper.Options options = new OpenIabHelper.Options();
-            options.storeKeys = storeKeys;
-            mHelper = new OpenIabHelper(this, options);
-        } else if (howToWorkWithFortumo) {
-            OpenIabHelper.Options options = new OpenIabHelper.Options();
-            options.verifyMode = OpenIabHelper.Options.VERIFY_EVERYTHING;
-            options.supportFortumo = true;
-            mHelper = new OpenIabHelper(this, options);
-
-        } else if (howToTestAmazon) {
-            //todo about json and helper apk file
+        // Some sanity checks to see if the developer (that's you!) really followed the
+        // instructions to run this sample (don't put these checks on your app!)
+        if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
+            throw new RuntimeException("Please put your app's public key in MainActivity.java. See README.");
         }
+        if (getPackageName().startsWith("com.example")) {
+            throw new RuntimeException("Please change the sample's package name! See README.");
+        }
+        
+        // Create the helper, passing it our context and the public key to verify signatures with
+        Log.d(TAG, "Creating IAB helper.");
+        Map<String, String> storeKeys = new HashMap<String, String>();
+        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
+//      storeKeys.put(OpenIabHelper.NAME_AMAZON, "Unavailable. Amazon doesn't support RSA verification. So this mapping is not needed"); //
+//      storeKeys.put(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
+        storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
 
+        mHelper = new OpenIabHelper(this, storeKeys);
+        
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);
 
@@ -214,7 +192,7 @@ public class MainActivity extends Activity {
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
                 Log.d(TAG, "Setup finished.");
-                setupDone = result.isSuccess();
+
                 if (!result.isSuccess()) {
                     // Oh noes, there was a problem.
                     complain("Problem setting up in-app billing: " + result);
@@ -223,10 +201,7 @@ public class MainActivity extends Activity {
 
                 // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
                 Log.d(TAG, "Setup successful. Querying inventory.");
-//                final ArrayList<String> arrayList = new ArrayList<String>();
-//                arrayList.add(SKU_PREMIUM);
-//                arrayList.add(SKU_GAS);
-//                mHelper.queryInventoryAsync(true, arrayList, mGotInventoryListener);
+                setupDone = true;
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
         });
@@ -248,18 +223,18 @@ public class MainActivity extends Activity {
              * the developer payload to see if it's correct! See
              * verifyDeveloperPayload().
              */
-
+            
             // Do we have the premium upgrade?
             Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
             mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
             Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
-
+            
             // Do we have the infinite gas plan?
             Purchase infiniteGasPurchase = inventory.getPurchase(SKU_INFINITE_GAS);
-            mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
+            mSubscribedToInfiniteGas = (infiniteGasPurchase != null && 
                     verifyDeveloperPayload(infiniteGasPurchase));
-            Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
-                    + " infinite gas subscription.");
+            Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE") 
+                        + " infinite gas subscription.");
             if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
 
             // Check for gas delivery -- if we own gas, we should fill up the tank immediately
@@ -284,16 +259,16 @@ public class MainActivity extends Activity {
             complain("No need! You're subscribed to infinite gas. Isn't that awesome?");
             return;
         }
-
+        
         if (mTank >= TANK_MAX) {
             complain("Your tank is full. Drive around a bit!");
             return;
         }
 
-        if (!checkSetup()) {
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
             return;
         }
-
         // launch the gas purchase UI flow.
         // We will be notified of completion via mPurchaseFinishedListener
         setWaitScreen(true);
@@ -302,17 +277,18 @@ public class MainActivity extends Activity {
         /* TODO: for security, generate your payload here for verification. See the comments on 
          *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use 
          *        an empty string, but on a production app you should carefully generate this. */
-        String payload = "";
-
-        mHelper.launchPurchaseFlow(this, SKU_GAS, RC_REQUEST,
+        String payload = ""; 
+        
+        mHelper.launchPurchaseFlow(this, SKU_GAS, RC_REQUEST, 
                 mPurchaseFinishedListener, payload);
     }
 
     // User clicked the "Upgrade to Premium" button.
     public void onUpgradeAppButtonClicked(View arg0) {
         Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
-
-        if (!checkSetup()) {
+        
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
             return;
         }
 
@@ -321,17 +297,17 @@ public class MainActivity extends Activity {
         /* TODO: for security, generate your payload here for verification. See the comments on 
          *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use 
          *        an empty string, but on a production app you should carefully generate this. */
-        String payload = "";
+        String payload = ""; 
 
-        mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
+        mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST, 
                 mPurchaseFinishedListener, payload);
     }
-
-
+    
     // "Subscribe to infinite gas" button clicked. Explain to user, then start purchase
     // flow for subscription.
     public void onInfiniteGasButtonClicked(View arg0) {
-        if (!checkSetup()) {
+        if (!setupDone) {
+            complain("Billing Setup is not completed yet");
             return;
         }
 
@@ -343,27 +319,15 @@ public class MainActivity extends Activity {
         /* TODO: for security, generate your payload here for verification. See the comments on 
          *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use 
          *        an empty string, but on a production app you should carefully generate this. */
-        String payload = "";
-
+        String payload = ""; 
+        
         setWaitScreen(true);
         Log.d(TAG, "Launching purchase flow for infinite gas subscription.");
         mHelper.launchPurchaseFlow(this,
-                SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
-                RC_REQUEST, mPurchaseFinishedListener, payload);
+                SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS, 
+                RC_REQUEST, mPurchaseFinishedListener, payload);        
     }
-
-    private boolean checkSetup() {
-        if (setupDone == null) {
-            complain("Billing Setup is not completed yet");
-            return false;
-        } else if (!setupDone) {
-            complain("Billing Setup was failed");
-            return false;
-        }else{
-            return true;
-        }
-    }
-
+    
     @Override
     public void startActivityForResult(Intent intent, int requestCode) {
         Log.d(TAG, "startActivityForResult() intent: " + intent + " requestCode: " + requestCode);
@@ -372,7 +336,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult() requestCode: " + requestCode + " resultCode: " + resultCode + " data: " + data);
+        Log.d(TAG, "onActivityResult() requestCode: " + requestCode+ " resultCode: " + resultCode+ " data: " + data);
 
         // Pass on the activity result to the helper for handling
         if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
@@ -380,14 +344,13 @@ public class MainActivity extends Activity {
             // perform any handling of activity results not related to in-app
             // billing...
             super.onActivityResult(requestCode, resultCode, data);
-        } else {
+        }
+        else {
             Log.d(TAG, "onActivityResult handled by IABUtil.");
         }
     }
-
-    /**
-     * Verifies the developer payload of a purchase.
-     */
+    
+    /** Verifies the developer payload of a purchase. */
     boolean verifyDeveloperPayload(Purchase p) {
         String payload = p.getDeveloperPayload();
         
@@ -413,7 +376,7 @@ public class MainActivity extends Activity {
          * Using your own server to store and verify developer payloads across app
          * installations is recommended.
          */
-
+        
         return true;
     }
 
@@ -438,14 +401,16 @@ public class MainActivity extends Activity {
                 // bought 1/4 tank of gas. So consume it.
                 Log.d(TAG, "Purchase is gas. Starting gas consumption.");
                 mHelper.consumeAsync(purchase, mConsumeFinishedListener);
-            } else if (purchase.getSku().equals(SKU_PREMIUM)) {
+            }
+            else if (purchase.getSku().equals(SKU_PREMIUM)) {
                 // bought the premium upgrade!
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
                 alert("Thank you for upgrading to premium!");
                 mIsPremium = true;
                 updateUi();
                 setWaitScreen(false);
-            } else if (purchase.getSku().equals(SKU_INFINITE_GAS)) {
+            }
+            else if (purchase.getSku().equals(SKU_INFINITE_GAS)) {
                 // bought the infinite gas subscription
                 Log.d(TAG, "Infinite gas subscription purchased.");
                 alert("Thank you for subscribing to infinite gas!");
@@ -472,7 +437,8 @@ public class MainActivity extends Activity {
                 mTank = mTank == TANK_MAX ? TANK_MAX : mTank + 1;
                 saveData();
                 alert("You filled 1/4 tank. Your tank is now " + String.valueOf(mTank) + "/4 full!");
-            } else {
+            }
+            else {
                 complain("Error while consuming: " + result);
             }
             updateUi();
@@ -493,12 +459,12 @@ public class MainActivity extends Activity {
             Log.d(TAG, "Vrooom. Tank is now " + mTank);
         }
     }
-
+    
     // We're being destroyed. It's important to dispose of the helper here!
     @Override
     public void onDestroy() {
         super.onDestroy();
-
+        
         // very important:
         Log.d(TAG, "Destroying helper.");
         if (mHelper != null) mHelper.dispose();
@@ -508,22 +474,23 @@ public class MainActivity extends Activity {
     // updates UI to reflect model
     public void updateUi() {
         // update the car color to reflect premium status or lack thereof
-        ((ImageView) findViewById(R.id.free_or_premium)).setImageResource(mIsPremium ? R.drawable.premium : R.drawable.free);
+        ((ImageView)findViewById(R.id.free_or_premium)).setImageResource(mIsPremium ? R.drawable.premium : R.drawable.free);
 
         // "Upgrade" button is only visible if the user is not premium
         findViewById(R.id.upgrade_button).setVisibility(mIsPremium ? View.GONE : View.VISIBLE);
 
         // "Get infinite gas" button is only visible if the user is not subscribed yet
-        findViewById(R.id.infinite_gas_button).setVisibility(mSubscribedToInfiniteGas ?
+        findViewById(R.id.infinite_gas_button).setVisibility(mSubscribedToInfiniteGas ? 
                 View.GONE : View.VISIBLE);
 
         // update gas gauge to reflect tank status
         if (mSubscribedToInfiniteGas) {
-            ((ImageView) findViewById(R.id.gas_gauge)).setImageResource(R.drawable.gas_inf);
-        } else {
-            int index = mTank >= TANK_RES_IDS.length ? TANK_RES_IDS.length - 1 : mTank;
-            ((ImageView) findViewById(R.id.gas_gauge)).setImageResource(TANK_RES_IDS[index]);
+            ((ImageView)findViewById(R.id.gas_gauge)).setImageResource(R.drawable.gas_inf);
         }
+        else {
+            int index = mTank >= TANK_RES_IDS.length ? TANK_RES_IDS.length - 1 : mTank;
+            ((ImageView)findViewById(R.id.gas_gauge)).setImageResource(TANK_RES_IDS[index]);
+        }        
     }
 
     // Enables or disables the "please wait" screen.
@@ -556,7 +523,7 @@ public class MainActivity extends Activity {
          * prevent tampering. For simplicity in this sample, we simply store the data using a
          * SharedPreferences.
          */
-
+        
         SharedPreferences.Editor spe = getPreferences(MODE_PRIVATE).edit();
         spe.putInt("tank", mTank);
         spe.commit();
