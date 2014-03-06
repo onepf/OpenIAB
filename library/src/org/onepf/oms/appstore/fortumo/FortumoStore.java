@@ -7,6 +7,12 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.googleUtils.IabException;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Fortumo, an international mobile payment provider, is not actually an app store.
@@ -72,5 +78,40 @@ public class FortumoStore extends DefaultAppstore {
             billingService = new FortumoBillingService(context);
         }
         return billingService;
+    }
+
+    //todo rename the method
+    public static FortumoStore initFortumoStore(Context context, final boolean checkInventory) {
+        final FortumoStore[] storeToReturn = {null};
+        final FortumoStore fortumoStore = new FortumoStore(context);
+        if (fortumoStore.isBillingAvailable(context.getPackageName())) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            fortumoStore.getInAppBillingService().startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                @Override
+                public void onIabSetupFinished(IabResult setupResult) {
+                    if (setupResult.isSuccess()) {
+                        if (checkInventory) {
+                            try {
+                                final Inventory inventory = fortumoStore.getInAppBillingService().queryInventory(false, null, null);
+                                if (!inventory.getAllPurchases().isEmpty()) {
+                                    storeToReturn[0] = fortumoStore;
+                                }
+                            } catch (IabException e) {
+                                Log.e(TAG, "Purchases not found", e);
+                            }
+                        } else {
+                            storeToReturn[0] = fortumoStore;
+                        }
+                    }
+                    latch.countDown();
+                }
+            });
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Setup was interrupted", e);
+            }
+        }
+        return storeToReturn[0];
     }
 }
