@@ -1,0 +1,20 @@
+<!-- Additional file required to work with Fotrumo services using OpenIAB API -->
+<fortumo-products>
+    <!-- 
+    <product                    // mapping for particular fortumo service
+        id="sku_gas"            // SKU with rules same to Appstore SKU
+        service-id="61730610ade8f2f754bb3bd4b0c1fd0e"           // Fortumo serviceId need to be copy-pasted from Dashboard
+        service-inapp-secret="cbc0da3763e59eee2d5a523fe5761346" // Fortumo inapp-secred need to be copy-pasted from Dashboard
+        consumable="true"/>     // consumable or not - currently is necessary parameter as wellas for Amazon
+    -->
+    <product 
+        id="sku_gas" 
+        service-id="61730610ade8f2f754bb3bd4b0c1fd0e" 
+        service-inapp-secret="cbc0da3763e59eee2d5a523fe5761346" 
+        consumable="true"/>
+    <product 
+        id="sku_premium" 
+        service-id="61730610ade8f2f754bb3bd4b0c1fd0e" 
+        service-inapp-secret="cbc0da3763e59eee2d5a523fe5761346" 
+        consumable="false"/>
+</fortumo-products>

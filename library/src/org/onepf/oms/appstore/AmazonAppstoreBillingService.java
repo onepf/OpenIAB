@@ -334,6 +334,11 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     }
 
     @Override
+    public boolean subscriptionsSupported() {
+        return true;
+    }
+
+    @Override
     public void dispose() {
         
     }

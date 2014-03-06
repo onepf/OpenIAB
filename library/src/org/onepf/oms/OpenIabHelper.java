@@ -16,6 +16,7 @@
 
 package org.onepf.oms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
+import org.onepf.oms.appstore.fortumo.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -72,8 +74,8 @@ public class OpenIabHelper {
     
     /** */
     private static final int DISCOVER_TIMEOUT_MS = 5000;
-    
-    /** 
+
+    /**
      * for generic stores it takes 1.5 - 3sec
      * <p>
      * SamsungApps initialization is very time consuming (from 4 to 12 seconds). 
@@ -137,6 +139,8 @@ public class OpenIabHelper {
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
+    public static final String NAME_FORTUMO = "com.fortumo.billing";
+    public static final String NAME_YANDEX = "com.yandex.store";
 
     /** 
      * NOTE: used as sync object in related methods<br>
@@ -174,7 +178,6 @@ public class OpenIabHelper {
             if (skuMap.get(sku) != null) {
                 throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
             }
-            ;
             Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
             if (storeSkuMap == null) {
                 storeSkuMap = new HashMap<String, String>();
@@ -357,44 +360,62 @@ public class OpenIabHelper {
                         stores2check.add(new SamsungApps(activity, options));
                     }
                 }
-                
+
+                //todo redo
+                boolean hasFortumoInSetup = false;
                 for (Appstore store : stores2check) {
-                    if (store instanceof SamsungApps) samsungInSetup = (SamsungApps) store;
+                    if (store instanceof SamsungApps) {
+                        samsungInSetup = (SamsungApps) store;
+                    } else if (store instanceof FortumoStore) {
+                        hasFortumoInSetup = true;
+                    }
                 }
-                
+
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-                
+
                 if (options.checkInventory) {
-                    
+
                     final List<Appstore> equippedStores = checkInventory(stores2check);
-                    
+
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
-                    } 
+                    }
                     if (mAppstore != null) {
                         result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                     } else {
-                        // found no equipped stores. Select store based on store parameters 
+                        // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
+                        if (mAppstore != null) {
+                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
+                        } else {
+                            if (!hasFortumoInSetup && options.supportFortumo) {
+                                mAppstore = FortumoStore.initFortumoStore(context, true);
+                                if (null != mAppstore) {
+                                    result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                                }
+                            }
+                        }
                     }
                     if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
                     }
                     fireSetupFinished(listener, result);
-                } else {                // no inventory check. Select store based on store parameters   
+                } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
+                    if (null == mAppstore) {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            mAppstore = FortumoStore.initFortumoStore(context, false);
+                        }
+                    }
                     if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService(); 
+                        mAppstoreBillingService = mAppstore.getInAppBillingService();
                         mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
                             public void onIabSetupFinished(IabResult result) {
                                 fireSetupFinished(listener, result);
                             }
                         });
-                    } else {
-                        fireSetupFinished(listener, result);
                     }
                 }
                 for (Appstore store : stores2check) {
@@ -426,7 +447,125 @@ public class OpenIabHelper {
     private static void checkSettings(Options options, Context context){
         checkOptions(options);
         checkSamsung(context);
+        checkFortumo(options, context);
     }
+
+    private static void checkFortumo(Options options, Context context) {
+        boolean checkFortumo = options.supportFortumo;
+        if (!checkFortumo && options.availableStores != null) {
+            for (Appstore store : options.availableStores) {
+                if (store instanceof FortumoStore) {
+                    checkFortumo = true;
+                    break;
+                }
+            }
+        }
+        if (checkFortumo) {
+            StringBuilder resultBuilder = new StringBuilder();
+            //is Fortumo lib available?
+            StringBuilder jarResultBuilder = new StringBuilder();
+            try {
+                FortumoStore.class.getClassLoader().loadClass("mp.MpUtils");
+            } catch (ClassNotFoundException e) {
+                jarResultBuilder.append(" \n - Fortumo classes CAN'T be loaded.");
+            }
+
+            //manifest
+            StringBuilder manifestResultBuilder = new StringBuilder();
+            checkPermission(context, "android.permission.INTERNET", manifestResultBuilder);
+            checkPermission(context, "android.permission.ACCESS_NETWORK_STATE", manifestResultBuilder);
+            checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
+            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
+            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
+
+            Intent paymentActivityIntent = new Intent();
+            paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
+            if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
+                formatComponentStatus(" - Required mp.MpActivity is NOT declared.", manifestResultBuilder);
+            }
+
+            Intent mpServerIntent = new Intent();
+            mpServerIntent.setClassName(context.getPackageName(), "mp.MpService");
+            if (context.getPackageManager().resolveService(mpServerIntent, 0) == null) {
+                formatComponentStatus(" - Required mp.MpService is NOT declared.", manifestResultBuilder);
+            }
+
+            Intent statusUpdateServiceIntent = new Intent();
+            statusUpdateServiceIntent.setClassName(context.getPackageName(), "mp.StatusUpdateService");
+            if (context.getPackageManager().resolveService(statusUpdateServiceIntent, 0) == null) {
+                formatComponentStatus(" - Required mp.StatusUpdateService is NOT declared.", manifestResultBuilder);
+            }
+
+            //xml
+            StringBuilder xmlStringBuilder = new StringBuilder();
+            try {
+                final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
+                final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
+                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
+                if (!hasProductFile) {
+                    xmlStringBuilder.append(" - Required file " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + " NOT found in /assets.");
+                }
+                if (!hasFortumoDetailsFile) {
+                    if (!hasProductFile) {
+                        xmlStringBuilder.append('\n');
+                    }
+                    xmlStringBuilder.append(" - Required file " + FortumoStore.FORTUMO_DETATILS_FILE_NAME + " NOT found in /assets.");
+                }
+            } catch (IOException e) {
+                if (xmlStringBuilder.length() > 0) {
+                    xmlStringBuilder.append('\n');
+                }
+                xmlStringBuilder.append("- Xml files CANNOT be parsed.");
+            }
+
+            final boolean noJar = jarResultBuilder.length() > 0;
+            final boolean smthWrongWithManifest = manifestResultBuilder.length() > 0;
+            final boolean smthWrongWithgXmlFiles = xmlStringBuilder.length() > 0;
+            if (noJar || smthWrongWithManifest || smthWrongWithgXmlFiles) {
+                resultBuilder.append("\nFortumo setup failed for the following reasons:");
+                if (noJar) {
+                    resultBuilder.append('\n');
+                    resultBuilder.append(jarResultBuilder);
+                }
+                if (smthWrongWithgXmlFiles) {
+                    resultBuilder.append('\n');
+                    resultBuilder.append(xmlStringBuilder);
+                }
+                if(smthWrongWithManifest){
+                    resultBuilder.append('\n');
+                    resultBuilder.append(manifestResultBuilder);
+                }
+            }
+            if (resultBuilder.length() > 0) {
+                resultBuilder.append('\n')
+                        .append("********************************************************************************************************\n")
+                        .append("* To support Fortumo follow the instructions of https://github.com/onepf/OpenIAB/blob/master/README.md *\n")
+                        .append("********************************************************************************************************");
+                throw new IllegalStateException(resultBuilder.toString(), null);
+            }
+        }
+
+    }
+
+    //todo move to Utils
+    private static void checkPermission(Context context, String paramString, StringBuilder builder) {
+        if (context.checkCallingOrSelfPermission(paramString) != PackageManager.PERMISSION_GRANTED) {
+            if (builder.length() > 0) {
+                builder.append('\n');
+            }
+            builder.append(String.format(" - Required permission \"%s\" is NOT granted.", paramString));
+        }
+    }
+
+    //todo move to Utils
+    private static void formatComponentStatus(String message, StringBuilder messageBuilder){
+        if (messageBuilder.length() > 0) {
+            messageBuilder.append('\n');
+        }
+        messageBuilder.append(message);
+    }
+
+
 
     private static void checkSamsung(Context context) {
         List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
@@ -467,9 +606,9 @@ public class OpenIabHelper {
         samsungInSetup = null;
         setupState = result.isSuccess() ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         notifyHandler.post(new Runnable() {
-           public void run() { 
-               listener.onIabSetupFinished(result);
-           }
+            public void run() {
+                listener.onIabSetupFinished(result);
+            }
         });
     }
 
@@ -594,7 +733,7 @@ public class OpenIabHelper {
                             }
                             storeRemains.countDown();
                         }
-                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();;
+                    }, "inv-check[" + appstore.getAppstoreName()+ "]").start();
                 }
             });
         }
@@ -684,8 +823,8 @@ public class OpenIabHelper {
     }
 
     public boolean subscriptionsSupported() {
-        // TODO: implement this
-        return true;
+        checkSetupDone("subscriptionsSupported");
+        return mAppstoreBillingService.subscriptionsSupported();
     }
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
@@ -1079,6 +1218,12 @@ public class OpenIabHelper {
         /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+
+        /**
+         * Is Fortumo supported?
+         */
+        public boolean supportFortumo = false;
+
     }
 
 }

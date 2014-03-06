@@ -32,7 +32,9 @@
     <uses-permission android:name="com.tmoney.vending.INBILLING"/>
     <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-    
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+
     <permission android:name="com.tmoney.vending.INBILLING"/>
 
     <meta-data
@@ -40,15 +42,15 @@
             android:value="13"/>
 
     <application
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme">
         <activity
-            android:name="org.onepf.trivialdrive.MainActivity"
-            android:label="@string/title_activity_main"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize"
-            >
+                android:name="org.onepf.trivialdrive.MainActivity"
+                android:label="@string/title_activity_main"
+                android:screenOrientation="portrait"
+                android:configChanges="orientation|screenSize"
+                >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -57,9 +59,21 @@
         <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
             <intent-filter>
                 <action
-                    android:name="com.amazon.inapp.purchasing.NOTIFY"
-                    android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
+                        android:name="com.amazon.inapp.purchasing.NOTIFY"
+                        android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"/>
             </intent-filter>
         </receiver>
+        <!--Fortumo start-->
+        <receiver android:name="mp.MpSMSReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="mp.MpService"/>
+        <service android:name="mp.StatusUpdateService"/>
+        <activity android:name="mp.MpActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
+        <!--Fortumo end-->
     </application>
 </manifest>

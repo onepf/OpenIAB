@@ -80,6 +80,12 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
+    public boolean subscriptionsSupported() {
+        //todo check
+        return false;
+    }
+
+    @Override
     public void dispose() {
     }
 }
