@@ -12,6 +12,9 @@ could implement to support all the built APK files using this library.
 
 How To add OpenIAB into your Android app
 =====
+Before using any store in the live mode you must create an account for it, add an apk file, provide required information about the application and inapp products and only after
+   you can interact with it.
+
 1. Clone the library ``` git clone https://github.com/onepf/OpenIAB.git``` and add /library as a Library Project. Or download the latest released jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
 
 2. Instantiate ``` new OpenIabHelper ```  and call ``` helper.startSetup() ```.
@@ -40,11 +43,15 @@ and handle the results with the listener
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L384
 
 5. If the user has purchased a consumable item, call  ``` helper.consume() ```
-to exclude it from the inventory. If the item was not consumed, the store supposes it as non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` helper.queryInventory() ``` next time
+to exclude it from the inventory. If the item is not consumed, the store supposes it as non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` helper.queryInventory() ``` next time
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L403
 
 6. Map Google Play SKU ids to Yandex/Amazon SKUs like this:
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L109
+
+Why do you need it?
+Application stores has different requirements to their inapp products.
+
 
 7. Specify keys for different stores like this:
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L164
@@ -124,38 +131,59 @@ Amazon support
 
 Fortumo support
 -------------
-1. Add the following permissions to the manifest
+1. Make sure that FortumoInApp-android-9.1.2-o.jar is attached to the project.
+
+2. In the AndroidManifest.xml add the following permissions
 
     ```xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     ```
 
-2. Declare the following elements
+   and declare the Fortumo SDK objects
 
      ```xml
+     <!-- Declare these objects, this is part of Fortumo SDK,
+         and should not be called directly -->
       <receiver android:name="mp.MpSMSReceiver">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
             </intent-filter>
         </receiver>
-
         <service android:name="mp.MpService"/>
-
         <service android:name="mp.StatusUpdateService"/>
-
         <activity android:name="mp.MpActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:configChanges="orientation|keyboardHidden|screenSize"/>
      ```
-3. Add "bla.xml" file with info about all non-subscription SKUs.
 
-4. Add "bla2.xml" file with fortumo details.
+3. In the code setup an Options object
 
-5. ...
+    ```xml
+    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    //set supportFortumo flag to true
+    options.supportFortumo = true;
+    //or
+    List<Appstore> storeList = new ArrayList<Appstore>();
+    storeList.add(new FortumoStore(this));
+    //by the way, you can add other stores object to the list
+    options.availableStores = storeList;
+    mHelper = new OpenIabHelper(this, options);
+    ```
 
-6. options.supportFortumo = true or add new FortumoStore to available stores
+4. Add <i>inapps_products.xml</i>  and <i>fortumo_inapps_details.xml</i> files to the assets folder.
+
+    XSD for <i>inapps_products.xml</i>
+    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd
+
+    XSD for <i>fortumo_inapps_details.xml</i>
+    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd
+
+    You can find the sample here https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive/assets
+
 
 
 Samsung Apps support
