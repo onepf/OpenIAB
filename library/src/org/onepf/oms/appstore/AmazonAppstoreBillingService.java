@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -47,7 +49,6 @@ import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
 import com.amazon.inapp.purchasing.PurchasingManager;
 import com.amazon.inapp.purchasing.Receipt;
 import com.amazon.inapp.purchasing.SubscriptionPeriod;
-import com.google.gson.Gson;
 
 /**
  * Amazon billing service impl
@@ -58,6 +59,17 @@ import com.google.gson.Gson;
 public class AmazonAppstoreBillingService extends BasePurchasingObserver implements AppstoreInAppBillingService {
     private static final boolean mDebugLog = false;
     private static final String TAG = AmazonAppstoreBillingService.class.getSimpleName();
+    
+    // ========================================================================
+    // PURCHASE RESPONSE JSON KEYS
+    // ========================================================================
+    public static final String JSON_KEY_PURCHASE_STATUS = "purchaseStatus";
+    public static final String JSON_KEY_REQUEST_ID = "requestId";
+    public static final String JSON_KEY_USER_ID = "userId";
+    
+    public static final String JSON_KEY_RECEIPT_ITEM_TYPE = "itemType";
+    public static final String JSON_KEY_RECEIPT_PURCHASE_TOKEN = "purchaseToken";
+    public static final String JSON_KEY_RECEIPT_SKU = "sku";
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     
@@ -329,7 +341,20 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
      * @return
      */
     private String generateOriginalJson(PurchaseResponse purchaseResponse) {
-    	return new Gson().toJson(purchaseResponse);
+    	JSONObject json = new JSONObject();
+    	try {
+			json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+			json.put(JSON_KEY_REQUEST_ID, purchaseResponse.getRequestId());
+			json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
+			//adding receipt
+			Receipt receipt = purchaseResponse.getReceipt();
+			if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+			json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
+			json.put(JSON_KEY_RECEIPT_SKU, receipt.getSku());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	return json.toString();
 	}
 
 	@Override
