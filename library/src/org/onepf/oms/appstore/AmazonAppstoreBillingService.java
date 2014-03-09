@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -60,6 +62,17 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     private static boolean isDebugLog(){
         return OpenIabHelper.isDebugLog();
     }
+    
+    // ========================================================================
+    // PURCHASE RESPONSE JSON KEYS
+    // ========================================================================
+    public static final String JSON_KEY_PURCHASE_STATUS = "purchaseStatus";
+    public static final String JSON_KEY_REQUEST_ID = "requestId";
+    public static final String JSON_KEY_USER_ID = "userId";
+    
+    public static final String JSON_KEY_RECEIPT_ITEM_TYPE = "itemType";
+    public static final String JSON_KEY_RECEIPT_PURCHASE_TOKEN = "purchaseToken";
+    public static final String JSON_KEY_RECEIPT_SKU = "sku";
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     
@@ -296,6 +309,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 case SUCCESSFUL :
                     final Receipt receipt = purchaseResponse.getReceipt();
                     final String storeSku = receipt.getSku();
+                    
+                    purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
                     purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE :
@@ -328,7 +343,29 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         }
     }
     
-    @Override
+    /**
+     * Converts purchase response to json for transfer with purchase object  
+     * @param purchaseResponse
+     * @return
+     */
+    private String generateOriginalJson(PurchaseResponse purchaseResponse) {
+    	JSONObject json = new JSONObject();
+    	try {
+			json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+			json.put(JSON_KEY_REQUEST_ID, purchaseResponse.getRequestId());
+			json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
+			//adding receipt
+			Receipt receipt = purchaseResponse.getReceipt();
+			if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+			json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
+			json.put(JSON_KEY_RECEIPT_SKU, receipt.getSku());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	return json.toString();
+	}
+
+	@Override
     public void consume(Purchase itemInfo) {
         // Nothing to do here
     }
