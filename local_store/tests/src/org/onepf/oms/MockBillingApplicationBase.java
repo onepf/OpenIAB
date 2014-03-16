@@ -5,6 +5,7 @@ import android.test.mock.MockApplication;
 import org.onepf.oms.data.Database;
 
 import java.util.Map;
+import java.util.Set;
 
 public class MockBillingApplicationBase extends MockApplication implements IBillingApplication {
 
@@ -25,6 +26,11 @@ public class MockBillingApplicationBase extends MockApplication implements IBill
 
             @Override
             public String getString(String s, String s2) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getStringSet(String key, Set<String> defValues) {
                 return null;
             }
 
@@ -62,6 +68,11 @@ public class MockBillingApplicationBase extends MockApplication implements IBill
                     }
 
                     @Override
+                    public Editor putStringSet(String key, Set<String> values) {
+                        return null;
+                    }
+
+                    @Override
                     public Editor putInt(String s, int i) {
                         return null;
                     }
@@ -94,6 +105,11 @@ public class MockBillingApplicationBase extends MockApplication implements IBill
                     @Override
                     public boolean commit() {
                         return false;
+                    }
+
+                    @Override
+                    public void apply() {
+
                     }
                 };
             }
