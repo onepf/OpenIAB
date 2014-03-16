@@ -613,7 +613,10 @@ public class OpenIabHelper {
     }
 
     /**
-     * Discover all OpenStore services, checks them and build {@link #availableStores} list<br>.  
+     * Discover all OpenStore services, checks them and build {@link #availableStores} list<br> 
+     * <p>
+     * Lock current thread for {@link Options#discoveryTimeoutMs} <br> 
+     * Must not be called from <code>main</code> thread to avoid service connection blocking
      * 
      * @param dest    - discovered OpenStores will be added here. If <b>null</b> new List() will be created
      * @param options - settings for Appstore discovery like verifyMode and timeouts
