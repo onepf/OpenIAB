@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -60,6 +62,16 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     private static boolean isDebugLog(){
         return OpenIabHelper.isDebugLog();
     }
+    
+    // ========================================================================
+    // PURCHASE RESPONSE JSON KEYS
+    // ========================================================================
+    public static final String JSON_KEY_ORDER_ID            = "orderId";
+    public static final String JSON_KEY_PRODUCT_ID          = "productId";
+    public static final String JSON_KEY_RECEIPT_ITEM_TYPE   = "itemType";
+    public static final String JSON_KEY_PURCHASE_STATUS     = "purchaseStatus";
+    public static final String JSON_KEY_USER_ID             = "userId";
+    public static final String JSON_KEY_RECEIPT_PURCHASE_TOKEN = "purchaseToken";
     
     private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
     
@@ -296,6 +308,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 case SUCCESSFUL :
                     final Receipt receipt = purchaseResponse.getReceipt();
                     final String storeSku = receipt.getSku();
+                    
+                    purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
                     purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE :
@@ -327,8 +341,41 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             Log.e(TAG, "Something went wrong: PurchaseFinishedListener is null");
         }
     }
-    
-    @Override
+
+    /**
+     * Converts purchase response to json for transfer with purchase object
+     *   
+     * <pre>
+     {
+        "orderId"           : "purchaseResponse.getRequestId"
+        "productId"         : "receipt.getSku"
+        "purchaseStatus"    : "purchaseRequestStatus.name"
+        "userId"            : "purchaseResponse.getUserId()" // can be null
+        "itemType"          : "receipt.getItemType().name()" // if non-null
+        "purchaseToken"     : "receipt.purchaseToken"
+     } </pre>
+     * 
+     * @param purchaseResponse
+     * @return
+     */
+    private String generateOriginalJson(PurchaseResponse purchaseResponse) {
+    	JSONObject json = new JSONObject();
+    	try {
+    	    Receipt receipt = purchaseResponse.getReceipt();
+    	    json.put(JSON_KEY_ORDER_ID, purchaseResponse.getRequestId());
+    	    json.put(JSON_KEY_PRODUCT_ID, receipt.getSku());
+    	    if (purchaseResponse.getPurchaseRequestStatus() != null) json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+    	    json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
+    	    if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+    	    json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());			
+			if (isDebugLog()) Log.d(TAG, "generateOriginalJson(): JSON\n" + json.toString());
+		} catch (JSONException e) {
+			Log.e(TAG, "generateOriginalJson() failed to generate JSON", e);
+		}
+    	return json.toString();
+	}
+
+	@Override
     public void consume(Purchase itemInfo) {
         // Nothing to do here
     }
