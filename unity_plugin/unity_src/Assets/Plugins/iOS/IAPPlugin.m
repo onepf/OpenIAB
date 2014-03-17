@@ -153,10 +153,13 @@ static char* sGameObjectCString;
 
 - (void) restoreProcessFailed:(NSError *)error
 {
+    NSLog(@"restoreProcessFailed %@", error.localizedDescription);
     UnitySendMessage(sGameObjectCString, "OnRestoreTransactionFailed",[StringUtils CStringCopy: error.localizedDescription]);
 }
 
-- (void) restoreProcessCompleted {
+- (void) restoreProcessCompleted
+{
+    NSLog(@"restoreProcessCompleted");
     UnitySendMessage(sGameObjectCString, "OnRestoreTransactionSucceeded","");
 }
 @end

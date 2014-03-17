@@ -175,4 +175,14 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+- (void) paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error
+{
+    [_delegate restoreProcessFailed:error];
+}
+
+- (void) paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue
+{
+    [_delegate restoreProcessCompleted];
+}
+
 @end
