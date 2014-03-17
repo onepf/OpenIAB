@@ -12,6 +12,7 @@ namespace OnePF {
         public static readonly string STORE_GOOGLE;
         public static readonly string STORE_AMAZON;
         public static readonly string STORE_SAMSUNG;
+        public static readonly string STORE_NOKIA;
 
 #if UNITY_ANDROID
         private static AndroidJavaObject _plugin;
@@ -21,6 +22,7 @@ namespace OnePF {
                 STORE_GOOGLE = "STORE_GOOGLE";
                 STORE_AMAZON = "STORE_AMAZON";
                 STORE_SAMSUNG = "STORE_SAMSUNG";
+                STORE_NOKIA = "STORE_NOKIA";
                 return;
             }
 
@@ -32,6 +34,7 @@ namespace OnePF {
                 STORE_GOOGLE = pluginClass.GetStatic<string>("STORE_GOOGLE");
                 STORE_AMAZON = pluginClass.GetStatic<string>("STORE_AMAZON");
                 STORE_SAMSUNG = pluginClass.GetStatic<string>("STORE_SAMSUNG");
+                STORE_NOKIA = pluginClass.GetStatic<string>("STORE_NOKIA");
             }
         }
 
@@ -177,6 +180,7 @@ namespace OnePF {
             STORE_GOOGLE = "STORE_GOOGLE";
             STORE_AMAZON = "STORE_AMAZON";
             STORE_SAMSUNG = "STORE_SAMSUNG";
+            STORE_NOKIA = "STORE_NOKIA";
 		}
 #endif
     }

@@ -61,6 +61,7 @@
     <uses-permission android:name="com.yandex.store.permission.BILLING"/>
     <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
     <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
+    <uses-permission android:name="com.nokia.payment.BILLING"/>
 
     <permission android:name="com.tmoney.vending.INBILLING"/>
 </manifest>
