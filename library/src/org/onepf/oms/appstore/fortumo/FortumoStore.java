@@ -23,6 +23,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
+    private Boolean isBillingAvailable;
 
     /**
      * Contains information about all in-app products
@@ -54,12 +55,25 @@ public class FortumoStore extends DefaultAppstore {
 
     @Override
     public boolean isBillingAvailable(String packageName) {
+        if (isBillingAvailable != null) {
+            return isBillingAvailable;
+        }
+        //todo this check must be move to OpenIabHelper#checkFortumo after adding Nook support
+        //must be if isNook then we don't need telephony
         //SMS are required to make payments
         final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
         if (isDebugLog()) {
             Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
         }
-        return hasTelephonyFeature;
+        if (!hasTelephonyFeature) {
+            return isBillingAvailable = false;
+        }
+        billingService = (FortumoBillingService) getInAppBillingService();
+        isBillingAvailable = billingService.setupBilling();
+        if (isDebugLog()) {
+            Log.d(TAG, "isBillingAvailable: " + isBillingAvailable);
+        }
+        return isBillingAvailable;
     }
 
     @Override

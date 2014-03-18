@@ -48,6 +48,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     /**
      * Make sure that required files {@link org.onepf.oms.appstore.fortumo.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} and {@link org.onepf.oms.appstore.fortumo.FortumoStore#FORTUMO_DETATILS_FILE_NAME}
      * are present in the assets folder.
+     *
      * @param listener - called in UI-thread when initialization is completed
      */
     @Override
@@ -246,7 +247,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             final String productId = item.getProductId();
             final FortumoProductCreator.FortumoDetails fortumoDetails = fortumoSkuDetailsMap.get(productId);
             if (fortumoDetails == null) {
-                throw new IllegalStateException("Fortumo inapp product details were not found");
+                throw new IabException(IabHelper.IABHELPER_ERROR_BASE, "Fortumo inapp product details were not found");
             }
             List fetchedPriceData = MpUtils.getFetchedPriceData(context, fortumoDetails.getServiceId(), fortumoDetails.getServiceInAppSecret());
             if (fetchedPriceData == null || fetchedPriceData.size() == 0) {
@@ -474,5 +475,17 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                         '}';
             }
         }
+    }
+
+    boolean setupBilling() {
+        try {
+            inappsMap = FortumoBillingService.getFortumoInapps(context);
+        } catch (Exception e) {
+            if (isDebugLog()) {
+                Log.d(TAG, "billing is not supported due to" + e.getMessage());
+                return false;
+            }
+        }
+        return true;
     }
 }
