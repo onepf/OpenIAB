@@ -2,6 +2,7 @@ package org.onepf.oms.appstore.fortumo;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -24,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
     private Boolean isBillingAvailable;
+    private static Boolean isNookDevice;
 
     /**
      * Contains information about all in-app products
@@ -58,15 +60,14 @@ public class FortumoStore extends DefaultAppstore {
         if (isBillingAvailable != null) {
             return isBillingAvailable;
         }
-        //todo this check must be move to OpenIabHelper#checkFortumo after adding Nook support
-        //must be if isNook then we don't need telephony
-        //SMS are required to make payments
-        final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
-        if (isDebugLog()) {
-            Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
-        }
-        if (!hasTelephonyFeature) {
-            return isBillingAvailable = false;
+        if (!isNookDevice()) {
+            final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+            if (isDebugLog()) {
+                Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
+            }
+            if (!hasTelephonyFeature) {
+                return isBillingAvailable = false;
+            }
         }
         billingService = (FortumoBillingService) getInAppBillingService();
         isBillingAvailable = billingService.setupBilling();
@@ -127,5 +128,15 @@ public class FortumoStore extends DefaultAppstore {
             }
         }
         return storeToReturn[0];
+    }
+
+    protected static boolean isNookDevice() {
+        if (isNookDevice != null) {
+            return isNookDevice;
+        }
+        String brand = Build.BRAND;
+        String manufacturer = System.getProperty("ro.nook.manufacturer");
+        return isNookDevice = ((brand != null && brand.equalsIgnoreCase("nook")) ||
+                manufacturer != null && manufacturer.equalsIgnoreCase("nook"));
     }
 }

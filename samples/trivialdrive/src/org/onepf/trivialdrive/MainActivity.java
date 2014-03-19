@@ -15,11 +15,14 @@
 
 package org.onepf.trivialdrive;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.fortumo.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -184,8 +187,12 @@ public class MainActivity extends Activity {
 //      storeKeys.put(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
         storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
         storeKeys.put("Appland", APPLAND_PUBLIC_KEY);
-        
-        mHelper = new OpenIabHelper(this, storeKeys);
+
+        OpenIabHelper.Options options = new OpenIabHelper.Options();
+        ArrayList<Appstore> availableStores = new ArrayList<Appstore>();
+        availableStores.add(new FortumoStore(this));
+        options.availableStores = availableStores;
+        mHelper = new OpenIabHelper(this, options);
         
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);
