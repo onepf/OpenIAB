@@ -483,8 +483,8 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         } catch (Exception e) {
             if (isDebugLog()) {
                 Log.d(TAG, "billing is not supported due to" + e.getMessage());
-                return false;
             }
+            return false;
         }
         return true;
     }
