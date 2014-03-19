@@ -1,106 +1,352 @@
 OpenIAB - Open In-App Billing
 =====
 
-Uploading Android apps to all the existing Android appstores is a painful process and [AppDF](/onepf/AppDF) 
-project was designed to make it easier. But what is even more difficult for the developers is 
-supporting different in-purchase APIs of different appstores. There are five different In-App Purchase APIs 
-already and this number is increasing. We are going to create an open source library that will wrap 
-appstore in-app purchase APIs of all the stores and provide an easy way for the developers to develop 
-their apps/games in a way that one APK will work in all the stores and automatically use right in-app 
-purchase API under each store. Plus we are going to develop an open in-app billing API that stores 
+Uploading Android apps to all the existing Android appstores is a painful process and [AppDF](/onepf/AppDF)
+project was designed to make it easier. But what is even more difficult for the developers is
+supporting different in-purchase APIs of different appstores. There are five different In-App Purchase APIs
+already and this number is increasing. We are going to create an open source library that will wrap
+appstore in-app purchase APIs of all the stores and provide an easy way for the developers to develop
+their apps/games in a way that one APK will work in all the stores and automatically use right in-app
+purchase API under each store. Plus we are going to develop an open in-app billing API that stores
 could implement to support all the built APK files using this library.
 
-How To add OpenIAB into your app
+How To add OpenIAB into your Android app
 =====
-1. Download library from GitHub
-``` 
-git clone https://github.com/onepf/OpenIAB.git
-```
+1. Clone the library ``` git clone https://github.com/onepf/OpenIAB.git``` and add /library as a Library Project.
+Or download the latest released jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
 
-2. Link /library to project as Android Library
+2. Map Google Play SKU ids to Yandex/Amazon/etc SKUs like this:
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L109
 
-3. Instantiate ``` new OpenIabHelper ```  and call ``` mHelper.startSetup() ```. 
-When setup is done call  ``` mHelper.queryInventory() ```
-```java
-  mHelper = new OpenIabHelper(this, storeKeys);
-  mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-      public void onIabSetupFinished(IabResult result) {
-          if (!result.isSuccess()) {
-              complain("Problem setting up in-app billing: " + result);
-              return;
-          }
-          Log.d(TAG, "Setup successful. Querying inventory.");
-              mHelper.queryInventoryAsync(mGotInventoryListener);
-          }
-  });
-```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L186
+3. Instantiate ``` new OpenIabHelper ```  and call ``` helper.startSetup() ```.
+When setup is done call  ``` helper.queryInventory() ```
+    ```java
+      helper = new OpenIabHelper(this, storeKeys);
+      helper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+          public void onIabSetupFinished(IabResult result) {
+              if (!result.isSuccess()) {
+                  complain("Problem setting up in-app billing: " + result);
+                  return;
+              }
+              Log.d(TAG, "Setup successful. Querying inventory.");
+                  helper.queryInventoryAsync(mGotInventoryListener);
+              }
+      });
+    ```
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L184
 
-4. Handle results of ``` mHelper.queryInventory() ``` in listener and update UI to show what is purchased
+4. Handle the results of ``` helper.queryInventory() ``` in an inventory listener and update UI to show what was purchased
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L210
 
-5. When in user requested purchase of item call  ``` mHelper.launchPurchaseFlow() ```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L271
-and handle results with listener
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L357
+5. When the user requests purchase of an item, call  ``` helper.launchPurchaseFlow() ```
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#282
+and handle the results with the listener
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L384
 
-6. If user purchased consumable item call  ``` mHelper.consume() ```
-to exclude it from inventory. If item not consumed Store suppose it non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` mHelper.queryInventory() ``` next time
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L237
-and handle results with listener
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L399
+6. If the user has purchased a consumable item, call  ``` helper.consume() ```
+to exclude it from the inventory. If the item is not consumed, a store supposes it as non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` helper.queryInventory() ``` next time
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L403
 
-7. Map Google Play SKU ids to Yandex/Amazon SKUs like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L108
+7. Specify keys for different stores like this:
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L164
 
-8. Specify keys for different stores like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L173
+8. Add the required permissions to the AndroidManifest.xml
 
-9. Add permissions required for OpenIAB in your AndroidManifest.xml
-```xml
-<uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-```
-And register reciever for Amazon
-```xml
-<receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
-    <intent-filter>
-        <action
-            android:name="com.amazon.inapp.purchasing.NOTIFY"
-            android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
-        />
-    </intent-filter>
-</receiver>
-```
-10. Add the following strings to your proguard config
+    ```xml
+    <!--all stores-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!--Google Play-->
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <!--Amazon-->
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    <!--Samsung Apps-->
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    <!--Open Store-->
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
+    <!--T-Store and Fortumo-->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--T-Store-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.tmoney.vending.INBILLING" />
+    <permission android:name="com.tmoney.vending.INBILLING" />
+    <!--Fortumo-->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    ```
 
-```
-# TStore
--keep class com.skplanet.dodo.**{*;}
--keep class com.skplanet.internal.dodo.**{*;}
--keep class com.skplanet.internal.dodo.dev.**{*;}
--keep class com.skplanet.internal.dodo.util.**{*;}
--keep class com.skplanet.pmss.secure.**{*;}
--keep public class android.net.http.SslError
--keep public class android.webkit.WebViewClient
--keep class com.tmoney.aidl.**{*;}
--dontwarn android.webkit.WebView
--dontwarn android.net.http.SslError
--dontwarn android.webkit.WebViewClient
--keepattributes Signature
--dontshrink
+9. Edit your proguard config file
 
-# AMAZON
--dontwarn com.amazon.**
--keep class com.amazon.** {*;}
--keepattributes *Annotation*
--dontoptimize
+    ```
+    # T-Store
+    -keep class com.skplanet.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.dev.**{*;}
+    -keep class com.skplanet.internal.dodo.util.**{*;}
+    -keep class com.skplanet.pmss.secure.**{*;}
+    -keep public class android.net.http.SslError
+    -keep public class android.webkit.WebViewClient
+    -keep class com.tmoney.aidl.**{*;}
+    -dontwarn android.webkit.WebView
+    -dontwarn android.net.http.SslError
+    -dontwarn android.webkit.WebViewClient
+    -keepattributes Signature
+    -dontshrink
 
-# GOOGLE
--keep class com.android.vending.billing.**
+    # AMAZON
+    -dontwarn com.amazon.**
+    -keep class com.amazon.** {*;}
+    -keepattributes *Annotation*
+    -dontoptimize
 
-# SAMSUNG
--keep class com.sec.android.iap.**
-```
+    # GOOGLE
+    -keep class com.android.vending.billing.**
+
+    # SAMSUNG
+    -keep class com.sec.android.iap.**
+    ```
+
+
+Support instructions for the stores
+=====
+
+Google Play support
+-------------
+1. Add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="com.android.vending.BILLING" />>
+    ```
+
+2. Provide a public key
+
+    ```java
+    Map<String, String> storeKeys = new HashMap<String, String>();
+    storeKeys.put(OpenIabHelper.NAME_GOOGLE, googleBase64EncodedPublicKey);
+    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    options.storeKeys = storeKeys;
+    mHelper = new OpenIabHelper(this, options);
+    //or
+    mHelper = new OpenIabHelper(this, storeKeys);
+    ```
+    otherwise verify purchases on your server side.
+
+
+3. In the proguard configuration file
+
+    ```proguard
+     # GOOGLE
+     -keep class com.android.vending.billing.**
+     ```
+
+
+Amazon support
+-------------
+1. In the AndroidManifest.xml add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    ```
+
+    and declare the receiver
+
+    ```xml
+    <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
+        <intent-filter>
+            <action
+                android:name="com.amazon.inapp.purchasing.NOTIFY"
+                android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY"
+            />
+        </intent-filter>
+    </receiver>
+    ```
+
+2. Map the SKUs if required.
+Remember, the SKUs must be unique across your Amazon developer account.
+
+    ```java
+    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
+    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
+    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
+    ```
+
+3. In the proguard configuration file add
+
+    ```proguard
+     # AMAZON
+    -dontwarn com.amazon.**
+    -keep class com.amazon.** {*;}
+    -keepattributes *Annotation*
+    -dontoptimize
+    ```
+
+Fortumo support
+-------------
+1. Make sure that FortumoInApp-android-9.1.2-o.jar is attached to the project.
+
+2. In the AndroidManifest.xml add the following permissions
+
+    ```xml
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    ```
+
+   and declare the Fortumo SDK objects
+
+     ```xml
+     <!-- Declare these objects, this is part of Fortumo SDK,
+         and should not be called directly -->
+      <receiver android:name="mp.MpSMSReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="mp.MpService"/>
+        <service android:name="mp.StatusUpdateService"/>
+        <activity android:name="mp.MpActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
+     ```
+
+3. In the code setup an Options object
+
+    ```java
+    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    //set supportFortumo flag to true
+    options.supportFortumo = true;
+    //or
+    List<Appstore> storeList = new ArrayList<Appstore>();
+    storeList.add(new FortumoStore(this));
+    //by the way, you can add other stores object to the list
+    options.availableStores = storeList;
+    mHelper = new OpenIabHelper(this, options);
+    ```
+
+4. Add <i>inapps_products.xml</i> (contains data about all in-app products in terms similar to Google Play) and <i>fortumo_inapps_details.xml</i> (contains data about your Fortumo services) files to the assets folder.
+
+    XSD for <i>inapps_products.xml</i>
+    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd
+
+    XSD for <i>fortumo_inapps_details.xml</i>
+    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd
+
+    You can find the sample here https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive/assets.
+
+
+
+Samsung Apps support
+-------------
+1. In the AndroidManifest.xml add the corresponding billing permission
+
+    ```xml
+     <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    ```
+
+2. Map the SKUs if required.
+   Remember, Samsung Apps describes an item it terms of Item Group ID and Item ID.
+
+   ```java
+   //format "group_id/item_id"
+   OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003746");
+   OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
+   OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
+   ```
+
+3. Instantiate ``` new OpenIabHelper ``` using an Activity instance.
+   Activity context is required to call  ``` startActivityForResult() ``` for SamsungAccount Activity.
+
+4. In the proguard configuration add
+
+    ```proguard
+    # SAMSUNG
+    -keep class com.sec.android.iap.**
+    ```
+
+
+Open Store support
+-------------
+1. Add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
+    ```
+
+2. Provide a public key
+
+    ```java
+    Map<String, String> storeKeys = new HashMap<String, String>();
+    storeKeys.put(OpenIabHelper.OPEN_STORE_NAME, openStorePublicKey);
+    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    options.storeKeys = storeKeys;
+    mHelper = new OpenIabHelper(this, options);
+    //or
+    mHelper = new OpenIabHelper(this, storeKeys);
+    ```
+otherwise verify purchases on your server side.
+
+3. Map the SKUs if required
+
+    ```java
+    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.premium");
+    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.gas");
+    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.infinite_gas");
+    ```
+
+
+T-Store support
+-------------
+1. In the AndroidManifest.xml add the following permissions
+
+    ```xml
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.tmoney.vending.INBILLING" />
+    <permission android:name="com.tmoney.vending.INBILLING" />
+    ```
+
+    and specify the API version
+
+    ```xml
+     <application
+                android:icon="@drawable/ic_launcher"
+                android:label="@string/app_name"
+                android:theme="@style/AppTheme">
+            <meta-data
+                    android:name="iap:api_version"
+                    android:value="13"/>
+    ```
+
+2. Map the SKUs, if required
+
+    ```java
+    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
+    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
+    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
+    ```
+
+3. In the proguard config add
+
+    ```proguard
+    # TStore
+    -keep class com.skplanet.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.**{*;}
+    -keep class com.skplanet.internal.dodo.dev.**{*;}
+    -keep class com.skplanet.internal.dodo.util.**{*;}
+    -keep class com.skplanet.pmss.secure.**{*;}
+    -keep public class android.net.http.SslError
+    -keep public class android.webkit.WebViewClient
+    -keep class com.tmoney.aidl.**{*;}
+    -dontwarn android.webkit.WebView
+    -dontwarn android.net.http.SslError
+    -dontwarn android.webkit.WebViewClient
+    -keepattributes Signature
+    -dontshrink
+    ```
+
 
 Unity Plugin
 =====
@@ -108,11 +354,11 @@ There is also Unity engine [plugin](unity_plugin) that will simplify integration
 
 How OpenIAB Works
 =====
-1. An Android app developer integrates OpenIAB library in his/her Android code 
-2. An Android app developer implements in-app purchases using OpenIAB API (which is very close to Google Play IAB API, just few changes in source code will be needed) 
-3. OpenIAB Lib detects which appstore installed the app 
-4. OpenIAB Lib redirects in-app purchase calls to the corresponding appstore IAB API (OpenIAB Lib wrapps IAB APIs of severall apstores) 
-5. All In-App Billing logic is handled by the corresponding appstore, OpenIAB has no code to process in-app purchases and has no UI, it just wrapps In-App Billing APIs of different stores in one library 
+1. An Android app developer integrates OpenIAB library in his/her Android code
+2. An Android app developer implements in-app purchases using OpenIAB API (which is very close to Google Play IAB API, just few changes in source code will be needed)
+3. OpenIAB Lib detects which appstore installed the app
+4. OpenIAB Lib redirects in-app purchase calls to the corresponding appstore IAB API (OpenIAB Lib wrapps IAB APIs of severall apstores)
+5. All In-App Billing logic is handled by the corresponding appstore, OpenIAB has no code to process in-app purchases and has no UI, it just wrapps In-App Billing APIs of different stores in one library
 
 <img src="http://www.onepf.org/img/openiabdiagram1.png">
 
@@ -120,7 +366,7 @@ How OpenIAB Works
 
 Current Status
 =====
-We have just started. We are creating a [sample game](/onepf/OpenIAB/tree/master/samples/trivialdrive) that supports in-app billing of all existing appstores that support in-app purchasing. In the same time, we are designing 
+We have just started. We are creating a [sample game](/onepf/OpenIAB/tree/master/samples/trivialdrive) that supports in-app billing of all existing appstores that support in-app purchasing. In the same time, we are designing
 [Open In-App Billing API](http://www.github.com/onepf/OpenIAB/blob/master/specification/openms_spec_1_0.md) that appstores can use to easily integrate in-app billing functionality.
 
 Basic Principles
@@ -133,11 +379,11 @@ Basic Principles
 
 No Middle Man
 =====
-OpenIAB is an open source library that wraps the already existing IAB APIs as well as an open API that 
-appstores could implement. It is important to understand that all payments are processes directly by 
-each store and there is no a middle man staying between the app developers and the appstores. 
-OpenIAB will not do payments for the appstores. It is just an API how the apps communicate with 
-appstores to request in-app billing. There is a common open API all the stores can use instead of 
+OpenIAB is an open source library that wraps the already existing IAB APIs as well as an open API that
+appstores could implement. It is important to understand that all payments are processes directly by
+each store and there is no a middle man staying between the app developers and the appstores.
+OpenIAB will not do payments for the appstores. It is just an API how the apps communicate with
+appstores to request in-app billing. There is a common open API all the stores can use instead of
 each new store implement their own API and developers have to integrate all these different APIs in their apps.
 
 AppStores
@@ -148,8 +394,8 @@ The following Android application stores support in-app billing today:
  * [Samsung Apps](http://seller.samsungapps.com/)
  * [SK-Telecom T-Store](http://dev.tstore.co.kr/devpoc/main/main.omp)
  * [NOOK](https://nookdeveloper.barnesandnoble.com/) (via [Fortumo](http://smsfortumo.ru/))
- 
-If you know about other Android appstores that support in-app purchasing 
+
+If you know about other Android appstores that support in-app purchasing
 please [let us know](http://groups.google.com/group/opf_openiab).
 
 We are working on integrating their IAB APIs in one OpenIAB library. Here is information about
@@ -201,15 +447,15 @@ Appstore IAB feature support:
 
 How Can I Help?
 =====
-* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?labels=open+tasks&state=open">the list of open tasks</a>, check if any of these tasks is interesting for you, send a message to <a href="http://groups.google.com/group/opf_openiab">OpenIAB mailing list</a> how you want to help. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub. 
-* If you are an appstore and already support In-App Billing then most probably we are already working on supporting your API in OpenIAB library, and your help is very welcome since you know your API better than anyone else! Just contact us by <a href="http://groups.google.com/group/opf_openiab">joining OpenIAB mailing list</a>. 
-* If you are an appstore and do not support In-App Billing yet but plan to support it then we will be glad working with your on creating a common OpenIAB API and API. <a href="http://groups.google.com/group/opf_openiab">Join OpenIAB mailing list</a> to be involved in OpenIAB API development. 
+* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?labels=open+tasks&state=open">the list of open tasks</a>, check if any of these tasks is interesting for you, send a message to <a href="http://groups.google.com/group/opf_openiab">OpenIAB mailing list</a> how you want to help. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub.
+* If you are an appstore and already support In-App Billing then most probably we are already working on supporting your API in OpenIAB library, and your help is very welcome since you know your API better than anyone else! Just contact us by <a href="http://groups.google.com/group/opf_openiab">joining OpenIAB mailing list</a>.
+* If you are an appstore and do not support In-App Billing yet but plan to support it then we will be glad working with your on creating a common OpenIAB API and API. <a href="http://groups.google.com/group/opf_openiab">Join OpenIAB mailing list</a> to be involved in OpenIAB API development.
 
 License
 =====
-Source code of the OpenIAB library and the samples is available under the terms of the Apache License, Version 2.0:  
+Source code of the OpenIAB library and the samples is available under the terms of the Apache License, Version 2.0:
 http://www.apache.org/licenses/LICENSE-2.0
 
-The OpenIAB API specification and the related texts are available under the terms of the Creative Commons Attribution 2.5 license:  
+The OpenIAB API specification and the related texts are available under the terms of the Creative Commons Attribution 2.5 license:
 http://creativecommons.org/licenses/by/2.5/
 
