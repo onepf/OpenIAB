@@ -1,4 +1,4 @@
-package org.onepf.oms.appstore.fortumo;
+package org.onepf.oms.appstore;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,6 +12,9 @@ import mp.PaymentRequest;
 import mp.PaymentResponse;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.fortumoUtils.InappBaseProduct;
+import org.onepf.oms.appstore.fortumoUtils.InappSubscriptionProduct;
+import org.onepf.oms.appstore.fortumoUtils.InappsXMLParser;
 import org.onepf.oms.appstore.googleUtils.*;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -29,6 +32,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     private static final String TAG = FortumoStore.class.getSimpleName();
 
     private static final String SHARED_PREFS_FORTUMO = "onepf_shared_prefs_fortumo";
+    private boolean isNook;
 
 
     private static boolean isDebugLog() {
@@ -41,16 +45,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     private IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener;
     private String developerPayload;
 
-    public FortumoBillingService(Context context) {
+    public FortumoBillingService(Context context, boolean isNook) {
         this.context = context;
+        this.isNook = isNook;
     }
 
-    /**
-     * Make sure that required files {@link org.onepf.oms.appstore.fortumo.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} and {@link org.onepf.oms.appstore.fortumo.FortumoStore#FORTUMO_DETATILS_FILE_NAME}
-     * are present in the assets folder.
-     *
-     * @param listener - called in UI-thread when initialization is completed
-     */
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         final IabResult setupResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Fortumo: successful setup.");
@@ -90,7 +89,6 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 }
                 purchaseFinishedListener.onIabPurchaseFinished(result, purchase);
             } else {
-                final boolean isNook = FortumoStore.isNookDevice();
                 PaymentRequest paymentRequest = new PaymentRequest.PaymentRequestBuilder().setService(isNook ? fortumoProduct.getNookServiceId() : fortumoProduct.getServiceId(),
                         isNook ? fortumoProduct.getNookInAppSecret() : fortumoProduct.getInAppSecret()).
                         setConsumable(fortumoProduct.isConsumable()).
@@ -229,20 +227,20 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return purchase;
     }
 
-    public static Map<String, FortumoProduct> getFortumoInapps(Context context) throws IOException, XmlPullParserException, IabException {
+    public static Map<String, FortumoProduct> getFortumoInapps(Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {
         final Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
         final InappsXMLParser inappsXMLParser = new InappsXMLParser();
         final Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse = inappsXMLParser.parse(context);
         final List<InappBaseProduct> allItems = parse.first;
-        final Map<String, FortumoProductParser.FortumoDetails> fortumoSkuDetailsMap = FortumoProductParser.parse(context);
+        final Map<String, FortumoProductParser.FortumoDetails> fortumoSkuDetailsMap = FortumoProductParser.parse(context, isNook);
         for (InappBaseProduct item : allItems) {
             final String productId = item.getProductId();
             final FortumoProductParser.FortumoDetails fortumoDetails = fortumoSkuDetailsMap.get(productId);
             if (fortumoDetails == null) {
                 throw new IabException(IabHelper.IABHELPER_ERROR_BASE, "Fortumo inapp product details were not found");
             }
-            final String serviceId = FortumoStore.isNookDevice() ? fortumoDetails.getNookServiceId() : fortumoDetails.getServiceId();
-            final String serviceInAppSecret = FortumoStore.isNookDevice() ? fortumoDetails.getNookInAppSecret() : fortumoDetails.getServiceInAppSecret();
+            final String serviceId = isNook ? fortumoDetails.getNookServiceId() : fortumoDetails.getServiceId();
+            final String serviceInAppSecret = isNook ? fortumoDetails.getNookInAppSecret() : fortumoDetails.getServiceInAppSecret();
             List fetchedPriceData = MpUtils.getFetchedPriceData(context, serviceId, serviceInAppSecret);
             if (fetchedPriceData == null || fetchedPriceData.size() == 0) {
                 final boolean supportedOperator = MpUtils.isSupportedOperator(context, serviceId, serviceInAppSecret);
@@ -360,11 +358,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
         }
 
-        public static Map<String, FortumoDetails> parse(Context context) throws XmlPullParserException, IOException {
+        public static Map<String, FortumoDetails> parse(Context context, boolean isNook) throws XmlPullParserException, IOException {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser parser = factory.newPullParser();
-            parser.setInput(context.getAssets().open(FortumoStore.FORTUMO_DETATILS_FILE_NAME), null);
+            parser.setInput(context.getAssets().open(FortumoStore.FORTUMO_DETAILS_FILE_NAME), null);
 
             HashMap<String, FortumoDetails> map = new HashMap<String, FortumoDetails>();
             FortumoDetails sku = null;
@@ -398,7 +396,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                                 throw new IllegalStateException(String.format("%s: service data is NOT complete", skuValue));
                             }
 
-                            if (FortumoStore.isNookDevice()) {
+                            if (isNook) {
                                 if (TextUtils.isEmpty(nookServiceIdAttr) || TextUtils.isEmpty(nookServiceInAppSecretAttr)) {
                                     throw new IllegalStateException("fortumo nook-service-id attribute and nook-service-inapp-secret values must be non-empty!");
                                 }
@@ -490,9 +488,9 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         }
     }
 
-    boolean setupBilling() {
+    boolean setupBilling(boolean isNook) {
         try {
-            inappsMap = FortumoBillingService.getFortumoInapps(context);
+            inappsMap = FortumoBillingService.getFortumoInapps(context, isNook);
         } catch (Exception e) {
             if (isDebugLog()) {
                 Log.d(TAG, "billing is not supported due to " + e.getMessage());

@@ -1,4 +1,4 @@
-package org.onepf.oms.appstore.fortumo;
+package org.onepf.oms.appstore.fortumoUtils;
 
 
 import android.text.TextUtils;

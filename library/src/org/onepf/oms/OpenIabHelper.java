@@ -34,7 +34,7 @@ import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
-import org.onepf.oms.appstore.fortumo.FortumoStore;
+import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -501,7 +501,7 @@ public class OpenIabHelper {
             try {
                 final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
                 final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
-                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
+                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETAILS_FILE_NAME);
                 if (!hasProductFile) {
                     xmlStringBuilder.append(" - Required file " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + " NOT found in /assets.");
                 }
@@ -509,7 +509,7 @@ public class OpenIabHelper {
                     if (!hasProductFile) {
                         xmlStringBuilder.append('\n');
                     }
-                    xmlStringBuilder.append(" - Required file " + FortumoStore.FORTUMO_DETATILS_FILE_NAME + " NOT found in /assets.");
+                    xmlStringBuilder.append(" - Required file " + FortumoStore.FORTUMO_DETAILS_FILE_NAME + " NOT found in /assets.");
                 }
             } catch (IOException e) {
                 if (xmlStringBuilder.length() > 0) {
