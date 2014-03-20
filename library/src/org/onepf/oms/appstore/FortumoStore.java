@@ -25,6 +25,8 @@ import java.util.concurrent.CountDownLatch;
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
     private Boolean isNookDevice;
+    private boolean supportMobilePayments;
+    private boolean supportCardPayments;
     private Boolean isBillingAvailable;
 
     /**
@@ -44,9 +46,11 @@ public class FortumoStore extends DefaultAppstore {
     private Context context;
     private FortumoBillingService billingService;
 
-    public FortumoStore(Context context) {
+    public FortumoStore(Context context, int supportFortumoOptions) {
         this.context = context.getApplicationContext();
-        this.isNookDevice = isNookDevice();
+        isNookDevice = isNookDevice();
+        supportMobilePayments = ((supportFortumoOptions & OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS) == OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS);
+        this.supportCardPayments = (supportFortumoOptions & OpenIabHelper.Options.FORTUMO_NOOK_CARD_PAYMENTS) == OpenIabHelper.Options.FORTUMO_NOOK_CARD_PAYMENTS;
     }
 
     /**
@@ -65,6 +69,9 @@ public class FortumoStore extends DefaultAppstore {
             return isBillingAvailable;
         }
         if (!isNookDevice) {
+            if (!supportMobilePayments) {
+                return isBillingAvailable = false;
+            }
             final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
             if (isDebugLog()) {
                 Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
@@ -72,6 +79,11 @@ public class FortumoStore extends DefaultAppstore {
             if (!hasTelephonyFeature) {
                 return isBillingAvailable = false;
             }
+        } else if (!supportCardPayments) {
+            if (isDebugLog()) {
+                Log.d(TAG, "Nook device detected, but the application doesn't support CARD PAYMENTS");
+            }
+            return isBillingAvailable = false;
         }
         billingService = (FortumoBillingService) getInAppBillingService();
         isBillingAvailable = billingService.setupBilling(isNookDevice);
@@ -100,16 +112,20 @@ public class FortumoStore extends DefaultAppstore {
     }
 
     //todo rename the method
-    public static FortumoStore initFortumoStore(Context context, final boolean checkInventory) {
+    public static FortumoStore initFortumoStore(Context context, final OpenIabHelper.Options options) {
         final FortumoStore[] storeToReturn = {null};
-        final FortumoStore fortumoStore = new FortumoStore(context);
+        int supportFortumoOptions = options.supportFortumoOptions;
+        if(options.supportFortumo){
+            supportFortumoOptions|= OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS;
+        }
+        final FortumoStore fortumoStore = new FortumoStore(context, supportFortumoOptions);
         if (fortumoStore.isBillingAvailable(context.getPackageName())) {
             final CountDownLatch latch = new CountDownLatch(1);
             fortumoStore.getInAppBillingService().startSetup(new IabHelper.OnIabSetupFinishedListener() {
                 @Override
                 public void onIabSetupFinished(IabResult setupResult) {
                     if (setupResult.isSuccess()) {
-                        if (checkInventory) {
+                        if (options.checkInventory) {
                             try {
                                 final Inventory inventory = fortumoStore.getInAppBillingService().queryInventory(false, null, null);
                                 if (!inventory.getAllPurchases().isEmpty()) {

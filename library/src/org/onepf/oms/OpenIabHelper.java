@@ -390,8 +390,8 @@ public class OpenIabHelper {
                         if (mAppstore != null) {
                             result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
                         } else {
-                            if (!hasFortumoInSetup && options.supportFortumo) {
-                                mAppstore = FortumoStore.initFortumoStore(context, true);
+                            if (!hasFortumoInSetup && fortumoRequired(options)) {
+                                mAppstore = FortumoStore.initFortumoStore(context, options);
                                 if (null != mAppstore) {
                                     result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
                                 }
@@ -405,8 +405,8 @@ public class OpenIabHelper {
                 } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
                     if (null == mAppstore) {
-                        if (!hasFortumoInSetup && options.supportFortumo) {
-                            mAppstore = FortumoStore.initFortumoStore(context, false);
+                        if (!hasFortumoInSetup && fortumoRequired(options)) {
+                            mAppstore = FortumoStore.initFortumoStore(context, options);
                         }
                     }
                     if (mAppstore != null) {
@@ -451,7 +451,9 @@ public class OpenIabHelper {
     }
 
     private static void checkFortumo(Options options, Context context) {
-        boolean checkFortumo = options.supportFortumo;
+        final boolean supportFortumoMobile = (options.supportFortumoOptions & Options.FORTUMO_MOBILE_PAYMENTS) == Options.FORTUMO_MOBILE_PAYMENTS;
+        final boolean supportFortumoCards = (options.supportFortumoOptions & Options.FORTUMO_NOOK_CARD_PAYMENTS) == Options.FORTUMO_NOOK_CARD_PAYMENTS;
+        boolean checkFortumo = options.supportFortumo || supportFortumoMobile || supportFortumoCards;
         if (!checkFortumo && options.availableStores != null) {
             for (Appstore store : options.availableStores) {
                 if (store instanceof FortumoStore) {
@@ -474,10 +476,11 @@ public class OpenIabHelper {
             StringBuilder manifestResultBuilder = new StringBuilder();
             checkPermission(context, "android.permission.INTERNET", manifestResultBuilder);
             checkPermission(context, "android.permission.ACCESS_NETWORK_STATE", manifestResultBuilder);
-            checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
-            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
-            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
-
+            if (options.supportFortumo || supportFortumoMobile) {
+                checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
+                checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
+                checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
+            }
             Intent paymentActivityIntent = new Intent();
             paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
             if (context.getPackageManager().resolveActivity(paymentActivityIntent, 0) == null) {
@@ -1132,6 +1135,12 @@ public class OpenIabHelper {
         return installerPackageName != null && installerPackageName.equals(installer);
     }
 
+    private static boolean fortumoRequired(Options options) {
+        return options.supportFortumo ||
+                (options.supportFortumoOptions & Options.FORTUMO_MOBILE_PAYMENTS) == Options.FORTUMO_MOBILE_PAYMENTS ||
+                (options.supportFortumoOptions & Options.FORTUMO_NOOK_CARD_PAYMENTS) == Options.FORTUMO_NOOK_CARD_PAYMENTS;
+    }
+
     /**
      * All options of OpenIAB can be found here
      * 
@@ -1223,10 +1232,35 @@ public class OpenIabHelper {
         public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
 
         /**
-         * Is Fortumo supported?
+         * Is Fortumo carrier billing supported?
+         *
+         * @deprecated use {@link org.onepf.oms.OpenIabHelper.Options#supportFortumoOptions} instead.
          */
+        @Deprecated
         public boolean supportFortumo = false;
 
+        /**
+         * Use the following flags to specify Fortumo billing behaviour
+         * <p>
+         * {@link org.onepf.oms.OpenIabHelper.Options#FORTUMO_NOT_SUPPORTED},
+         * {@link org.onepf.oms.OpenIabHelper.Options#FORTUMO_MOBILE_PAYMENTS},
+         * {@link org.onepf.oms.OpenIabHelper.Options#FORTUMO_NOOK_CARD_PAYMENTS}
+         * </p>
+         */
+        public int supportFortumoOptions = FORTUMO_NOT_SUPPORTED;
+
+        /**
+         * Fortumo billing is not supported
+         */
+        public static final int FORTUMO_NOT_SUPPORTED = 0;
+        /**
+         * Fortumo carrier billing is supported
+         */
+        public static final int FORTUMO_MOBILE_PAYMENTS = 1;
+        /**
+         * Fortumo NOOK card billing is suppored
+         */
+        public static final int FORTUMO_NOOK_CARD_PAYMENTS = 2;
     }
 
 }

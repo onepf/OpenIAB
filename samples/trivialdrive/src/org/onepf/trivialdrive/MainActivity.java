@@ -190,8 +190,8 @@ public class MainActivity extends Activity {
 
         OpenIabHelper.Options options = new OpenIabHelper.Options();
         ArrayList<Appstore> availableStores = new ArrayList<Appstore>();
-        availableStores.add(new FortumoStore(this));
         options.availableStores = availableStores;
+        availableStores.add(new FortumoStore(this, OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS| OpenIabHelper.Options.FORTUMO_NOOK_CARD_PAYMENTS));
         mHelper = new OpenIabHelper(this, options);
         
         // enable debug logging (for a production application, you should set this to false).
