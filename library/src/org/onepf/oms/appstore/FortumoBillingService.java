@@ -213,6 +213,17 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         purchaseFinishedListener = null;
     }
 
+    boolean setupBilling(boolean isNook) {
+        try {
+            inappsMap = FortumoBillingService.getFortumoInapps(context, isNook);
+        } catch (Exception e) {
+            if (isDebugLog()) {
+                Log.d(TAG, "billing is not supported due to " + e.getMessage());
+            }
+            return false;
+        }
+        return true;
+    }
 
     private static Purchase purchaseFromPaymentResponse(Context context, PaymentResponse paymentResponse) {
         Purchase purchase = new Purchase(OpenIabHelper.NAME_FORTUMO);
@@ -227,7 +238,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return purchase;
     }
 
-    public static Map<String, FortumoProduct> getFortumoInapps(Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {
+    static Map<String, FortumoProduct> getFortumoInapps(Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {
         final Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
         final InappsXMLParser inappsXMLParser = new InappsXMLParser();
         final Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse = inappsXMLParser.parse(context);
@@ -358,7 +369,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
         }
 
-        public static Map<String, FortumoDetails> parse(Context context, boolean isNook) throws XmlPullParserException, IOException {
+        static Map<String, FortumoDetails> parse(Context context, boolean isNook) throws XmlPullParserException, IOException {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser parser = factory.newPullParser();
@@ -488,15 +499,4 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         }
     }
 
-    boolean setupBilling(boolean isNook) {
-        try {
-            inappsMap = FortumoBillingService.getFortumoInapps(context, isNook);
-        } catch (Exception e) {
-            if (isDebugLog()) {
-                Log.d(TAG, "billing is not supported due to " + e.getMessage());
-            }
-            return false;
-        }
-        return true;
-    }
 }

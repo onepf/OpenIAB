@@ -111,12 +111,20 @@ public class FortumoStore extends DefaultAppstore {
         return billingService;
     }
 
+    //todo check for different devices
+    private static boolean isNookDevice() {
+        String brand = Build.BRAND;
+        String manufacturer = System.getProperty("ro.nook.manufacturer");
+        return ((brand != null && brand.equalsIgnoreCase("nook")) ||
+                manufacturer != null && manufacturer.equalsIgnoreCase("nook"));
+    }
+
     //todo rename the method
     public static FortumoStore initFortumoStore(Context context, final OpenIabHelper.Options options) {
         final FortumoStore[] storeToReturn = {null};
         int supportFortumoOptions = options.supportFortumoOptions;
-        if(options.supportFortumo){
-            supportFortumoOptions|= OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS;
+        if (options.supportFortumo) {
+            supportFortumoOptions |= OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS;
         }
         final FortumoStore fortumoStore = new FortumoStore(context, supportFortumoOptions);
         if (fortumoStore.isBillingAvailable(context.getPackageName())) {
@@ -150,11 +158,4 @@ public class FortumoStore extends DefaultAppstore {
         return storeToReturn[0];
     }
 
-    //todo check for different devices
-    private boolean isNookDevice() {
-        String brand = Build.BRAND;
-        String manufacturer = System.getProperty("ro.nook.manufacturer");
-        return ((brand != null && brand.equalsIgnoreCase("nook")) ||
-                manufacturer != null && manufacturer.equalsIgnoreCase("nook"));
-    }
 }
