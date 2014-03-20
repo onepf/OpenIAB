@@ -1,7 +1,8 @@
-package org.onepf.oms.appstore.fortumo;
+package org.onepf.oms.appstore.fortumoUtils;
 
 import android.content.Context;
 import android.util.Pair;
+import org.onepf.oms.appstore.FortumoStore;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -48,7 +49,7 @@ public class InappsXMLParser {
 
 
     /**
-     * Make sure that {@link FortumoStore#IN_APP_PRODUCTS_FILE_NAME} is present in the assets folder.
+     * Make sure that {@link org.onepf.oms.appstore.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} is present in the assets folder.
      * @param context to get access to assets
      * @return a set of items and subscriptions
      * @throws XmlPullParserException
