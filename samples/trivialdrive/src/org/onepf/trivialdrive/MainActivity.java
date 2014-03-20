@@ -15,14 +15,11 @@
 
 package org.onepf.trivialdrive;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -188,11 +185,7 @@ public class MainActivity extends Activity {
         storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
         storeKeys.put("Appland", APPLAND_PUBLIC_KEY);
 
-        OpenIabHelper.Options options = new OpenIabHelper.Options();
-        ArrayList<Appstore> availableStores = new ArrayList<Appstore>();
-        options.availableStores = availableStores;
-        availableStores.add(new FortumoStore(this, OpenIabHelper.Options.FORTUMO_MOBILE_PAYMENTS| OpenIabHelper.Options.FORTUMO_NOOK_CARD_PAYMENTS));
-        mHelper = new OpenIabHelper(this, options);
+        mHelper = new OpenIabHelper(this, storeKeys);
         
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);

@@ -1,4 +1,4 @@
-package org.onepf.oms.appstore;
+package org.onepf.oms.appstore.fortumo;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,9 +12,6 @@ import mp.PaymentRequest;
 import mp.PaymentResponse;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.fortumoUtils.InappBaseProduct;
-import org.onepf.oms.appstore.fortumoUtils.InappSubscriptionProduct;
-import org.onepf.oms.appstore.fortumoUtils.InappsXMLParser;
 import org.onepf.oms.appstore.googleUtils.*;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;

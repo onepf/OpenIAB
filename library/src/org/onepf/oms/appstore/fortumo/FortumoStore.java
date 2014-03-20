@@ -1,4 +1,4 @@
-package org.onepf.oms.appstore;
+package org.onepf.oms.appstore.fortumo;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

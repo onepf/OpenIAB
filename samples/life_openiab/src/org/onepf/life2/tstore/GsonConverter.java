@@ -18,6 +18,8 @@ package org.onepf.life2.tstore;
 
 import com.google.gson.Gson;
 
+import java.lang.Override;
+
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 05.04.13
