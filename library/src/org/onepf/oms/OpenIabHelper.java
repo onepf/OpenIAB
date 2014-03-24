@@ -416,6 +416,8 @@ public class OpenIabHelper {
                                 fireSetupFinished(listener, result);
                             }
                         });
+                    } else {
+                        fireSetupFinished(listener, result);
                     }
                 }
                 for (Appstore store : stores2check) {
