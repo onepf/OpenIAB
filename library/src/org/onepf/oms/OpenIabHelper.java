@@ -375,33 +375,37 @@ public class OpenIabHelper {
 
                 if (options.checkInventory) {
 
-                    final List<Appstore> equippedStores = checkInventory(stores2check);
+                    try {
+                        final List<Appstore> equippedStores = checkInventory(stores2check);
 
-                    if (equippedStores.size() > 0) {
-                        mAppstore = selectBillingService(equippedStores);
-                        if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
-                    }
-                    if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
-                    } else {
-                        // found no equipped stores. Select store based on store parameters
-                        mAppstore = selectBillingService(stores2check);
-                        if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
+                        if (equippedStores.size() > 0) {
+                            mAppstore = selectBillingService(equippedStores);
+                            if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
+                        }
                         if (mAppstore != null) {
-                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
+                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
                         } else {
-                            if (!hasFortumoInSetup && options.supportFortumo) {
-                                mAppstore = FortumoStore.initFortumoStore(context, true);
-                                if (null != mAppstore) {
-                                    result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                            // found no equipped stores. Select store based on store parameters
+                            mAppstore = selectBillingService(stores2check);
+                            if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
+                            if (mAppstore != null) {
+                                result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
+                            } else {
+                                if (!hasFortumoInSetup && options.supportFortumo) {
+                                    mAppstore = FortumoStore.initFortumoStore(context, true);
+                                    if (null != mAppstore) {
+                                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
+                                    }
                                 }
                             }
                         }
+                        if (mAppstore != null) {
+                            mAppstoreBillingService = mAppstore.getInAppBillingService();
+                        }
+                        fireSetupFinished(listener, result);
+                    } catch (IabException e) {
+                        fireSetupFinished(listener, e.getResult());
                     }
-                    if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
-                    }
-                    fireSetupFinished(listener, result);
                 } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
                     if (null == mAppstore) {
@@ -701,8 +705,9 @@ public class OpenIabHelper {
      * 
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
+     * @throws IabException if timeout occurred
      */
-    protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
+    protected List<Appstore> checkInventory(final List<Appstore> availableStores) throws IabException {
         String packageName = context.getPackageName();
         // candidates:
         Map<String, Appstore> candidates = new HashMap<String, Appstore>();
@@ -743,8 +748,13 @@ public class OpenIabHelper {
             });
         }
         try {
-            storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
+            boolean done = storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
             if (isDebugLog()) Log.d(TAG, in() + " " + "inventory check done");
+            if (!done) {
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
+                        "Starting billing timeout");
+                throw new IabException(result);
+            }
         } catch (InterruptedException e) {
             Log.e(TAG, "selectBillingService()  inventory check is failed. candidates: " + candidates.size() 
                     + ", inventory remains: " + storeRemains.getCount() , e);
