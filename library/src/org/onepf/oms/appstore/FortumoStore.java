@@ -122,9 +122,13 @@ public class FortumoStore extends DefaultAppstore {
                                 final Inventory inventory = fortumoStore.getInAppBillingService().queryInventory(false, null, null);
                                 if (!inventory.getAllPurchases().isEmpty()) {
                                     storeToReturn[0] = fortumoStore;
+                                } else {
+                                    if (isDebugLog()) {
+                                        Log.d(TAG, "Purchases not found");
+                                    }
                                 }
                             } catch (IabException e) {
-                                Log.e(TAG, "Purchases not found", e);
+                                Log.e(TAG, "Error while requesting purchases", e);
                             }
                         } else {
                             storeToReturn[0] = fortumoStore;

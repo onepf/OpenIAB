@@ -321,10 +321,12 @@ public class OpenIabHelper {
     }
 
     /**
-     *  Discover available stores and select the best billing service. 
-     *  Calls listener when service is found.
-     *  
+     *  Discover all available stores and select the best billing service.
+     *  If the flag {@link org.onepf.oms.OpenIabHelper.Options#checkInventory} is set to true, stores with existing inventory are checked first. If Fortumo is added as an
+     *  available store or the flag {@link org.onepf.oms.OpenIabHelper.Options#supportFortumo} is set to true, it also will be checked for an inventory.
+     *
      *  Should be called from UI thread
+     *  @param listener - called when setup is completed
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         if (listener == null){
@@ -381,20 +383,26 @@ public class OpenIabHelper {
                         mAppstore = selectBillingService(equippedStores);
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     }
+                    if (mAppstore == null) {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            mAppstore = FortumoStore.initFortumoStore(context, true);
+                        }
+                    }
                     if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                        final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+                        if (isDebugLog()) {
+                            Log.d(TAG, message);
+                        }
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
                         if (mAppstore != null) {
-                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
-                        } else {
-                            if (!hasFortumoInSetup && options.supportFortumo) {
-                                mAppstore = FortumoStore.initFortumoStore(context, true);
-                                if (null != mAppstore) {
-                                    result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
-                                }
+                            final String message = "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName();
+                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+                            if (isDebugLog()) {
+                                Log.d(TAG, message);
                             }
                         }
                     }
