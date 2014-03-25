@@ -381,13 +381,13 @@ public class OpenIabHelper {
 
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
-                        if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     }
                     if (mAppstore == null) {
                         if (!hasFortumoInSetup && options.supportFortumo) {
                             mAppstore = FortumoStore.initFortumoStore(context, true);
                         }
                     }
+                    if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     if (mAppstore != null) {
                         final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
                         result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
@@ -397,6 +397,11 @@ public class OpenIabHelper {
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
+                        if (mAppstore == null) {
+                            if (!hasFortumoInSetup && options.supportFortumo) {
+                                mAppstore = FortumoStore.initFortumoStore(context, false);
+                            }
+                        }
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
                         if (mAppstore != null) {
                             final String message = "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName();
