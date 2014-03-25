@@ -1,25 +1,13 @@
-OpenIAB - Open In-App Billing
-=====
-
-Uploading Android apps to all the existing Android appstores is a painful process and [AppDF](/onepf/AppDF)
-project was designed to make it easier. But what is even more difficult for the developers is
-supporting different in-purchase APIs of different appstores. There are five different In-App Purchase APIs
-already and this number is increasing. We are going to create an open source library that will wrap
-appstore in-app purchase APIs of all the stores and provide an easy way for the developers to develop
-their apps/games in a way that one APK will work in all the stores and automatically use right in-app
-purchase API under each store. Plus we are going to develop an open in-app billing API that stores
-could implement to support all the built APK files using this library.
-
 How To add OpenIAB into your Android app
 =====
-1. Clone the library ``` git clone https://github.com/onepf/OpenIAB.git``` and add /library as a Library Project.
+1. Clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
 Or download the latest released jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
 
 2. Map Google Play SKU ids to Yandex/Amazon/etc SKUs like this:
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L109
 
-3. Instantiate ``` new OpenIabHelper ```  and call ``` helper.startSetup() ```.
-When setup is done call  ``` helper.queryInventory() ```
+3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
+When setup is done call  `helper.queryInventory()`
     ```java
       helper = new OpenIabHelper(this, storeKeys);
       helper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
@@ -33,22 +21,30 @@ When setup is done call  ``` helper.queryInventory() ```
               }
       });
     ```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L184
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L196
 
-4. Handle the results of ``` helper.queryInventory() ``` in an inventory listener and update UI to show what was purchased
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L210
+4. Handle the results of `helper.queryInventory()` in an inventory listener and update UI to show what was purchased
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L215
 
-5. When the user requests purchase of an item, call  ``` helper.launchPurchaseFlow() ```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#282
+5. To process purchases you need to override `onActivityResult()` of your Activity
+    ```java
+       @Override
+       protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+       // Pass on the activity result to the helper for handling
+       mHelper.handleActivityResult(requestCode, resultCode, data));
+       }
+    ```
+When the user requests purchase of an item, call  `helper.launchPurchaseFlow()`
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L286
 and handle the results with the listener
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L384
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L388
 
 6. If the user has purchased a consumable item, call  ``` helper.consume() ```
 to exclude it from the inventory. If the item is not consumed, a store supposes it as non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` helper.queryInventory() ``` next time
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L403
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L407
 
 7. Specify keys for different stores like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L164
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L166
 
 8. Add the required permissions to the AndroidManifest.xml
 
@@ -104,25 +100,30 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
 
     # SAMSUNG
     -keep class com.sec.android.iap.**
+
+    #FORTUMO
+    -keep class mp.** { *; }
     ```
 
 
 Support instructions for the stores
 =====
 
-Google Play support
+Google Play and Open Stores
 -------------
-1. Add the corresponding billing permission
+1. Add the corresponding billing permissions
 
     ```xml
-    <uses-permission android:name="com.android.vending.BILLING" />>
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
     ```
 
-2. Provide a public key
+2. Provide your public keys
 
     ```java
     Map<String, String> storeKeys = new HashMap<String, String>();
     storeKeys.put(OpenIabHelper.NAME_GOOGLE, googleBase64EncodedPublicKey);
+    storeKeys.put(OPEN_STORE_NAME, openStoreBase64EncodedPublicKey);
     OpenIabHelper.Options options = new OpenIabHelper.Options();
     options.storeKeys = storeKeys;
     mHelper = new OpenIabHelper(this, options);
@@ -131,8 +132,15 @@ Google Play support
     ```
     otherwise verify purchases on your server side.
 
+3. Map the SKUs if they are different fot the required stores
 
-3. In the proguard configuration file
+    ```java
+    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.STORE_NAME, "org.onepf.trivialdrive.storename.premium");
+    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.STORE_NAME, "org.onepf.trivialdrive.storename.gas");
+    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.STORE_NAME, "org.onepf.trivialdrive.storename.infinite_gas");
+    ```
+
+4. In the proguard configuration file
 
     ```proguard
      # GOOGLE
@@ -140,7 +148,7 @@ Google Play support
      ```
 
 
-Amazon support
+Amazon
 -------------
 1. In the AndroidManifest.xml add the corresponding billing permission
 
@@ -170,7 +178,7 @@ Remember, the SKUs must be unique across your Amazon developer account.
     OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
     ```
 
-3. In the proguard configuration file add
+3. In the proguard config file add
 
     ```proguard
      # AMAZON
@@ -180,63 +188,7 @@ Remember, the SKUs must be unique across your Amazon developer account.
     -dontoptimize
     ```
 
-Fortumo support
--------------
-1. Make sure that FortumoInApp-android-9.1.2-o.jar is attached to the project.
-
-2. In the AndroidManifest.xml add the following permissions
-
-    ```xml
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    ```
-
-   and declare the Fortumo SDK objects
-
-     ```xml
-     <!-- Declare these objects, this is part of Fortumo SDK,
-         and should not be called directly -->
-      <receiver android:name="mp.MpSMSReceiver">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
-            </intent-filter>
-        </receiver>
-        <service android:name="mp.MpService"/>
-        <service android:name="mp.StatusUpdateService"/>
-        <activity android:name="mp.MpActivity"
-                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
-                  android:configChanges="orientation|keyboardHidden|screenSize"/>
-     ```
-
-3. In the code setup an Options object
-
-    ```java
-    OpenIabHelper.Options options = new OpenIabHelper.Options();
-    //set supportFortumo flag to true
-    options.supportFortumo = true;
-    //or
-    List<Appstore> storeList = new ArrayList<Appstore>();
-    storeList.add(new FortumoStore(this));
-    //by the way, you can add other stores object to the list
-    options.availableStores = storeList;
-    mHelper = new OpenIabHelper(this, options);
-    ```
-
-4. Add <i>inapps_products.xml</i> (contains data about all in-app products in terms similar to Google Play) and <i>fortumo_inapps_details.xml</i> (contains data about your Fortumo services) files to the assets folder.
-
-    XSD for <i>inapps_products.xml</i>
-    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd
-
-    XSD for <i>fortumo_inapps_details.xml</i>
-    https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd
-
-    You can find the sample here https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive/assets.
-
-
-
-Samsung Apps support
+Samsung Apps
 -------------
 1. In the AndroidManifest.xml add the corresponding billing permission
 
@@ -257,45 +209,14 @@ Samsung Apps support
 3. Instantiate ``` new OpenIabHelper ``` using an Activity instance.
    Activity context is required to call  ``` startActivityForResult() ``` for SamsungAccount Activity.
 
-4. In the proguard configuration add
+4. In the proguard config file add
 
     ```proguard
     # SAMSUNG
     -keep class com.sec.android.iap.**
     ```
 
-
-Open Store support
--------------
-1. Add the corresponding billing permission
-
-    ```xml
-    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-    ```
-
-2. Provide a public key
-
-    ```java
-    Map<String, String> storeKeys = new HashMap<String, String>();
-    storeKeys.put(OpenIabHelper.OPEN_STORE_NAME, openStorePublicKey);
-    OpenIabHelper.Options options = new OpenIabHelper.Options();
-    options.storeKeys = storeKeys;
-    mHelper = new OpenIabHelper(this, options);
-    //or
-    mHelper = new OpenIabHelper(this, storeKeys);
-    ```
-otherwise verify purchases on your server side.
-
-3. Map the SKUs if required
-
-    ```java
-    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.premium");
-    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.gas");
-    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.OPEN_STORE_NAME, "org.onepf.trivialdrive.openstorename.infinite_gas");
-    ```
-
-
-T-Store support
+T-Store
 -------------
 1. In the AndroidManifest.xml add the following permissions
 
@@ -347,6 +268,66 @@ T-Store support
     -dontshrink
     ```
 
+Support instructions for Fortumo billing
+=============================================================
+
+Before start to work with OpenIab library
+-----------------------------------------
+Create a Fortumo account and add a required number of <a href="http://developers.fortumo.com/in-app-purchasing-on-nook/">NOOK</a> and <a href="http://developers.fortumo.com/in-app-purchasing-on-android/">Android</a> services.
+One service corresponds to one price, e.g. for 3 in-apps with different prices you should create 3 different services.
+
+OpenIab setup
+-------------
+1. Make sure that <a href="https://github.com/onepf/OpenIAB/blob/master/library/libs/FortumoInApp-android-9.1.2-o.jar">FortumoInApp-android-9.1.2-o.jar</a> is attached to the project.
+
+2. In the AndroidManifest.xml add the following permissions
+
+    ```xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    ```
+   and declare the Fortumo SDK objects
+
+     ```xml
+     <!-- Declare these objects, this is part of Fortumo SDK,
+         and should not be called directly -->
+      <receiver android:name="mp.MpSMSReceiver">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="mp.MpService"/>
+        <service android:name="mp.StatusUpdateService"/>
+        <activity android:name="mp.MpActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
+     ```
+3. In the code setup an Options object
+
+    ```java
+    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    //set supportFortumo flag to true
+    options.supportFortumo = true;
+    //or
+    List<Appstore> storeList = new ArrayList<Appstore>();
+    storeList.add(new FortumoStore(this));
+    //by the way, you can add other stores object to the list
+    options.availableStores = storeList;
+    mHelper = new OpenIabHelper(this, options);
+    ```
+4. Add <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd">inapps_products.xml</a> (in-app products description in terms similar to Google Play) and
+<a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd">fortumo_inapps_details.xml</a> (data about your Fortumo services) files to the assets folder.
+You can find a sample <a href="https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive/assets">here.</a>
+
+5. In the proguard config file add
+
+    ```proguard
+     # FORTUMO
+     -keep class mp.** { *; }
+     ```
 
 Unity Plugin
 =====
