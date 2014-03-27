@@ -112,7 +112,7 @@ Google Play and Open Stores
     ```
     otherwise verify purchases on your server side.
 
-3. Map the SKUs if they are different fot the required stores
+3. Map the SKUs if they are different for the required stores
 
     ```java
     OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.STORE_NAME, "org.onepf.trivialdrive.storename.premium");
@@ -127,6 +127,31 @@ Google Play and Open Stores
      -keep class com.android.vending.billing.**
      ```
 
+Receipt Verification on Server
+---------------------
+
+1. Create OpenIabHelper with "Skip signature verification" option and no publicKeys. If you specify no publicKeys and forget VERIFY_SKIP options IabHelper will throw
+
+    ```java
+    Options opts = new OpenIabHelper.Options();
+    opts.verifyMode = Options.VERIFY_SKIP;
+    mHelper = new OpenIabHelper(context, opts);
+    ```
+
+2. Get receipt's data and signature from Purchase object and send it to your server
+
+    ```java
+    new IabHelper.OnIabPurchaseFinishedListener() {
+        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+            // … different result checks ...
+            String receiptData = purchase.getOriginalJson();
+            String receiptSignature = purchase.getSignature();
+            String storeName = purchase.getAppstoreName();
+            String urlToContent  = requestReceiptVerificationOnServer(receiptData, receiptSignature, storeName);
+            // … further code ...
+        }
+    }
+    ```
 
 Amazon
 -------------
