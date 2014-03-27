@@ -98,11 +98,7 @@ namespace OnePF {
 		}
 
         public void queryInventory() {
-            queryInventory(null);
-        }
-
-		public void queryInventory(string[] skus) {
-			if (!IsDevice()) {
+            if (!IsDevice()) {
 				return;
 			}
 			if (_inventory == null) {
@@ -110,7 +106,15 @@ namespace OnePF {
 			} else {
 				OpenIABEventManager.OnQueryInventorySucceeded(_inventory);
 			}
+        }
+
+		public void queryInventory(string[] skus) {
+            queryInventory();
 		}
+
+        public void queryInventory(string[] inAppSkus, string[] subsSkus) {
+            queryInventory();
+        }
 		
 		public void purchaseProduct(string sku, string developerPayload="") {
             string storeSku = _sku2storeSkuMappings[sku];

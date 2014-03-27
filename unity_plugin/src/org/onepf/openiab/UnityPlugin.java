@@ -121,12 +121,20 @@ public class UnityPlugin {
         });
     }
 
-    public void queryInventoryAndSkuDetails(final String[] skus) {
-        Log.i(TAG, "***** queryInventory - SKU list length: " + skus.length);
+    public void queryInventory(final String[] itemSkus) {
         UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                _helper.queryInventoryAsync(true, Arrays.asList(skus), _queryInventoryListener);
+                _helper.queryInventoryAsync(true, Arrays.asList(itemSkus), _queryInventoryListener);
+            }
+        });
+    }
+
+    public void queryInventory(final String[] itemSkus, final String[] subsSkus) {
+        UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                _helper.queryInventoryAsync(true, Arrays.asList(itemSkus), Arrays.asList(subsSkus), _queryInventoryListener);
             }
         });
     }
@@ -163,10 +171,6 @@ public class UnityPlugin {
                 }
             }
         });
-    }
-
-    // TODO: implement
-    public void consumeProducts(String[] sku) {
     }
 
     private void startProxyPurchaseActivity(String sku, boolean inapp, String developerPayload) {
