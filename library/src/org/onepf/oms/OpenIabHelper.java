@@ -642,8 +642,10 @@ public class OpenIabHelper {
         PackageManager packageManager = context.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
-        final List<Appstore> result = dest != null ? dest : new ArrayList<Appstore>(infoList.size());
-
+        final List<Appstore> result = dest != null ? dest : new ArrayList<Appstore>(infoList != null ? infoList.size() : 0);
+        if (result.isEmpty()) {
+            return result;
+        }
         final CountDownLatch storesToCheck = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
             String packageName = info.serviceInfo.packageName;
