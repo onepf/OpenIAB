@@ -1,7 +1,7 @@
 How To add OpenIAB into an app
 =====
-1. Clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
-Or download the latest released jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
+1. Download the latest version of OpenIAB.jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
+Or clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
 
 2. Map Google Play SKU ids to Yandex/Amazon/etc SKUs like this:
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L109
@@ -30,8 +30,8 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     ```java
        @Override
        protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-       // Pass on the activity result to the helper for handling
-       mHelper.handleActivityResult(requestCode, resultCode, data));
+           // Pass on the activity result to the helper for handling
+           mHelper.handleActivityResult(requestCode, resultCode, data));
        }
     ```
 When the user requests purchase of an item, call  `helper.launchPurchaseFlow()`
@@ -56,7 +56,7 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     <!--Open Store-->
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
     <!--Amazon-->
-    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    <!--Amazon requires no permissions -->
     <!--Samsung Apps-->
     <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
     <!--Fortumo-->
@@ -127,6 +127,12 @@ Google Play and Open Stores
      -keep class com.android.vending.billing.**
      ```
 
+5. To test .apk with Google Play please ensure 
+    - your .apk submitted to Google Play Developer Console
+    - your .apk is signed by production key
+    - versionCode in AndroidManifest.xml of your .apk equal to versionCode of .apk submitted to Developer Console
+   
+
 Receipt Verification on Server
 ---------------------
 
@@ -155,13 +161,7 @@ Receipt Verification on Server
 
 Amazon
 -------------
-1. In the AndroidManifest.xml add the corresponding billing permission
-
-    ```xml
-    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
-    ```
-
-    and declare the receiver
+1. In the AndroidManifest.xml declare the receiver
 
     ```xml
     <receiver android:name="com.amazon.inapp.purchasing.ResponseReceiver">
@@ -192,6 +192,8 @@ Remember, the SKUs must be unique across your Amazon developer account.
     -keepattributes *Annotation*
     -dontoptimize
     ```
+
+4. If OpenIAB added as library project, Amazon SDK in-app-purchasing-1.0.3.jar should exist in build-path (/libs)
 
 Samsung Apps
 -------------
@@ -224,12 +226,12 @@ Samsung Apps
 Fortumo: carrier billing and NOOK
 =================================
 
-Before start to work with OpenIab library
+Before start to work with OpenIAB library
 -----------------------------------------
 Create a <a href="http://fortumo.com/?utm_source=openiab&utm_medium=openiab&utm_campaign=openiab">Fortumo account</a> and add a required number of <a href="http://developers.fortumo.com/in-app-purchasing-on-nook/">NOOK</a> and <a href="http://developers.fortumo.com/in-app-purchasing-on-android/">Android</a> services.
 One service corresponds to one price, e.g. for 3 in-apps with different prices you should create 3 different services.
 
-OpenIab setup
+OpenIAB setup
 -------------
 1. Make sure that <a href="https://github.com/onepf/OpenIAB/blob/master/library/libs/FortumoInApp-android-9.1.2-o.jar">FortumoInApp-android-9.1.2-o.jar</a> is attached to the project.
 
