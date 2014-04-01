@@ -195,6 +195,17 @@ Remember, the SKUs must be unique across your Amazon developer account.
 
 4. If OpenIAB added as library project, Amazon SDK in-app-purchasing-1.0.3.jar should exist in build-path (/libs)
 
+5. To test .apk with Amazon SDK Tester some steps are needed:
+    
+    - Download and install Amazon SDK Tester from Amazon website
+    - Download JSON with in-app products from Amazon Developer Console and put JSON with in-app products to /mnt/sdcard
+    - Install your .apk with special option to help OpenIAB choose Amazon protocol
+    ```bash
+    # install for Amazon SDK Tester:
+    adb install -i com.amazon.venezia /path/to/YourApp.apk
+    ```
+    
+
 Samsung Apps
 -------------
 1. In the AndroidManifest.xml add the corresponding billing permission
@@ -221,6 +232,14 @@ Samsung Apps
     ```proguard
     # SAMSUNG
     -keep class com.sec.android.iap.**
+    ```
+5. To test your .apk with SamsungApps following steps are needed:
+    - Ensure SamsungApps is installed on your device
+    - Ensure Samsung IAP Service is installed on your device
+    - Install your .apk with special option to help OpenIAB choose Amazon protocol
+    ```bash
+    # install for Amazon SDK Tester:
+    adb install -i com.amazon.venezia /path/to/YourApp.apk
     ```
 
 Fortumo: carrier billing and NOOK
