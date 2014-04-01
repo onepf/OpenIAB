@@ -144,18 +144,12 @@ namespace OnePF
             AndroidJNI.CallVoidMethod(_plugin.GetRawObject(), methodId, new jvalue[] { });
         }
 
-        public void queryInventory(string[] inAppSkus)
+        public void queryInventory(string[] skus)
         {
-            if (!IsDevice())
-            {
-                return;
-            }
-            jvalue[] args = AndroidJNIHelper.CreateJNIArgArray(new object[] { inAppSkus });
-            IntPtr methodId = AndroidJNI.GetMethodID(_plugin.GetRawClass(), "queryInventory", "([Ljava/lang/String;)V");
-            AndroidJNI.CallVoidMethod(_plugin.GetRawObject(), methodId, args);
+            queryInventory(skus, skus);
         }
 
-        public void queryInventory(string[] inAppSkus, string[] subsSkus)
+        private void queryInventory(string[] inAppSkus, string[] subsSkus)
         {
             if (!IsDevice())
             {

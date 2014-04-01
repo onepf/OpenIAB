@@ -112,10 +112,6 @@ namespace OnePF {
             queryInventory();
 		}
 
-        public void queryInventory(string[] inAppSkus, string[] subsSkus) {
-            queryInventory();
-        }
-		
 		public void purchaseProduct(string sku, string developerPayload="") {
             string storeSku = _sku2storeSkuMappings[sku];
 			if (!IsDevice()) {
