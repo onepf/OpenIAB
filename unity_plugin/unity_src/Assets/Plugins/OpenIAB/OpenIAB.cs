@@ -51,9 +51,14 @@ namespace OnePF {
             _billing.queryInventory();
         }
 
-        // Sends a request to get all completed purchases and specified skus information
+        // Sends a request to get all completed purchases and specified inapp skus information
         public static void queryInventory(string[] skus) {
             _billing.queryInventory(skus);
+        }
+
+        // Sends a request to get all completed purchases and specified inapp and subscription skus information
+        public static void queryInventory(string[] inAppSkus, string[] subsSkus) {
+            _billing.queryInventory(inAppSkus, subsSkus);
         }
 
         // Purchases the product with the given sku and developerPayload

@@ -16,9 +16,11 @@
 
 package org.onepf.oms.appstore;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import android.content.pm.ResolveInfo;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -92,7 +94,8 @@ public class GooglePlay extends DefaultAppstore {
         if (packageExists(context, ANDROID_INSTALLER) || packageExists(context, GOOGLE_INSTALLER)) {
             final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
             intent.setPackage(GooglePlay.ANDROID_INSTALLER);
-            if (!context.getPackageManager().queryIntentServices(intent, 0).isEmpty()) {
+            final List<ResolveInfo> infoList = context.getPackageManager().queryIntentServices(intent, 0);
+            if (infoList != null && !infoList.isEmpty()) {
                 final CountDownLatch latch = new CountDownLatch(1);
                 context.bindService(intent, new ServiceConnection() {
                     public void onServiceConnected(ComponentName name, IBinder service) {
@@ -112,6 +115,7 @@ public class GooglePlay extends DefaultAppstore {
                             context.unbindService(this);
                         }
                     }
+
                     public void onServiceDisconnected(ComponentName name) {/*do nothing*/}
                 }, Context.BIND_AUTO_CREATE);
                 try {

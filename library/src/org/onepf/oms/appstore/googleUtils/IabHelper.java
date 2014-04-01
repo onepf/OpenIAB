@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import android.content.pm.ResolveInfo;
 import org.json.JSONException;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -262,14 +263,15 @@ public class IabHelper implements AppstoreInAppBillingService {
         };
 
         Intent serviceIntent = getServiceIntent();
-        if (!mContext.getPackageManager().queryIntentServices(serviceIntent, 0).isEmpty()) {
+        final List<ResolveInfo> infoList = mContext.getPackageManager().queryIntentServices(serviceIntent, 0);
+        if (infoList != null && !infoList.isEmpty()) {
             // service available to handle that Intent
             mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
         } else {
             // no service available to handle that Intent
             if (listener != null) {
                 listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
-                        "Billing service unavailable on device.")); 
+                        "Billing service unavailable on device."));
             }
         }
     }

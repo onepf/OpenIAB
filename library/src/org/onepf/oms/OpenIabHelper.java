@@ -35,7 +35,7 @@ import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.NokiaStore;
-import org.onepf.oms.appstore.fortumo.FortumoStore;
+import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -323,10 +323,12 @@ public class OpenIabHelper {
     }
 
     /**
-     *  Discover available stores and select the best billing service. 
-     *  Calls listener when service is found.
-     *  
+     *  Discover all available stores and select the best billing service.
+     *  If the flag {@link org.onepf.oms.OpenIabHelper.Options#checkInventory} is set to true, stores with existing inventory are checked first. If Fortumo is added as an
+     *  available store or the flag {@link org.onepf.oms.OpenIabHelper.Options#supportFortumo} is set to true, it also will be checked for an inventory.
+     *
      *  Should be called from UI thread
+     *  @param listener - called when setup is completed
      */
     public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
         if (listener == null){
@@ -382,22 +384,33 @@ public class OpenIabHelper {
 
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
-                        if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     }
+                    if (mAppstore == null) {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            mAppstore = FortumoStore.initFortumoStore(context, true);
+                        }
+                    }
+                    if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     if (mAppstore != null) {
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName());
+                        final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
+                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+                        if (isDebugLog()) {
+                            Log.d(TAG, message);
+                        }
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
+                        if (mAppstore == null) {
+                            if (!hasFortumoInSetup && options.supportFortumo) {
+                                mAppstore = FortumoStore.initFortumoStore(context, false);
+                            }
+                        }
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
                         if (mAppstore != null) {
-                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName());
-                        } else {
-                            if (!hasFortumoInSetup && options.supportFortumo) {
-                                mAppstore = FortumoStore.initFortumoStore(context, true);
-                                if (null != mAppstore) {
-                                    result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Successfully initialized: " + mAppstore.getAppstoreName());
-                                }
+                            final String message = "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName();
+                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+                            if (isDebugLog()) {
+                                Log.d(TAG, message);
                             }
                         }
                     }
@@ -419,6 +432,8 @@ public class OpenIabHelper {
                                 fireSetupFinished(listener, result);
                             }
                         });
+                    } else {
+                        fireSetupFinished(listener, result);
                     }
                 }
                 for (Appstore store : stores2check) {
@@ -504,7 +519,7 @@ public class OpenIabHelper {
             try {
                 final List<String> strings = Arrays.asList(context.getResources().getAssets().list(""));
                 final boolean hasProductFile = strings.contains(FortumoStore.IN_APP_PRODUCTS_FILE_NAME);
-                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETATILS_FILE_NAME);
+                final boolean hasFortumoDetailsFile = strings.contains(FortumoStore.FORTUMO_DETAILS_FILE_NAME);
                 if (!hasProductFile) {
                     xmlStringBuilder.append(" - Required file " + FortumoStore.IN_APP_PRODUCTS_FILE_NAME + " NOT found in /assets.");
                 }
@@ -512,7 +527,7 @@ public class OpenIabHelper {
                     if (!hasProductFile) {
                         xmlStringBuilder.append('\n');
                     }
-                    xmlStringBuilder.append(" - Required file " + FortumoStore.FORTUMO_DETATILS_FILE_NAME + " NOT found in /assets.");
+                    xmlStringBuilder.append(" - Required file " + FortumoStore.FORTUMO_DETAILS_FILE_NAME + " NOT found in /assets.");
                 }
             } catch (IOException e) {
                 if (xmlStringBuilder.length() > 0) {
@@ -630,8 +645,10 @@ public class OpenIabHelper {
         PackageManager packageManager = context.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
-        final List<Appstore> result = dest != null ? dest : new ArrayList<Appstore>(infoList.size());
-
+        final List<Appstore> result = dest != null ? dest : new ArrayList<Appstore>(infoList != null ? infoList.size() : 0);
+        if (result.isEmpty()) {
+            return result;
+        }
         final CountDownLatch storesToCheck = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
             String packageName = info.serviceInfo.packageName;
@@ -1227,6 +1244,7 @@ public class OpenIabHelper {
 
         /**
          * Is Fortumo supported?
+         *
          */
         public boolean supportFortumo = false;
 

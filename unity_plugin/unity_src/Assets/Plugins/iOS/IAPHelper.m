@@ -147,6 +147,11 @@
 {
     NSLog(@"restoreTransaction...");
     
+    if (transaction.originalTransaction.payment.productIdentifier == (id)[NSNull null] || transaction.originalTransaction.payment.productIdentifier.length == 0)
+    {
+        NSLog(@"productIdentifier is nil. SKU was possibly absent during initialisation");
+        return;
+    }
     [self provideContentForProductIdentifier:transaction.originalTransaction.payment.productIdentifier];
     [_delegate transactionRestored:transaction];
     [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
@@ -173,6 +178,16 @@
     [_purchasedProductIdentifiers addObject:productIdentifier];
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:productIdentifier];
     [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (void) paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error
+{
+    [_delegate restoreProcessFailed:error];
+}
+
+- (void) paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue
+{
+    [_delegate restoreProcessCompleted];
 }
 
 @end

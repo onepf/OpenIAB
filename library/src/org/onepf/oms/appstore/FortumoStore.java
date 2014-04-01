@@ -1,7 +1,8 @@
-package org.onepf.oms.appstore.fortumo;
+package org.onepf.oms.appstore;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.Log;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -23,6 +24,8 @@ import java.util.concurrent.CountDownLatch;
  */
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
+    private Boolean isNookDevice;
+    private Boolean isBillingAvailable;
 
     /**
      * Contains information about all in-app products
@@ -32,7 +35,7 @@ public class FortumoStore extends DefaultAppstore {
     /**
      * Contains additional information about Fortumo services
      */
-    public static final String FORTUMO_DETATILS_FILE_NAME = "fortumo_inapps_details.xml";
+    public static final String FORTUMO_DETAILS_FILE_NAME = "fortumo_inapps_details.xml";
 
     private static boolean isDebugLog() {
         return OpenIabHelper.isDebugLog();
@@ -43,23 +46,39 @@ public class FortumoStore extends DefaultAppstore {
 
     public FortumoStore(Context context) {
         this.context = context.getApplicationContext();
+        isNookDevice = isNookDevice();
     }
 
-
+    /**
+     * Fortumo doesn't have an app store. It can't be an installer.
+     *
+     * @return false
+     */
     @Override
     public boolean isPackageInstaller(String packageName) {
-        //Fortumo is not an app. It can't be an installer.
         return false;
     }
 
     @Override
     public boolean isBillingAvailable(String packageName) {
-        //SMS are required to make payments
-        final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
-        if (isDebugLog()) {
-            Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
+        if (isBillingAvailable != null) {
+            return isBillingAvailable;
         }
-        return hasTelephonyFeature;
+        if (!isNookDevice) {
+            final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+            if (isDebugLog()) {
+                Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
+            }
+            if (!hasTelephonyFeature) {
+                return isBillingAvailable = false;
+            }
+        }
+        billingService = (FortumoBillingService) getInAppBillingService();
+        isBillingAvailable = billingService.setupBilling(isNookDevice);
+        if (isDebugLog()) {
+            Log.d(TAG, "isBillingAvailable: " + isBillingAvailable);
+        }
+        return isBillingAvailable;
     }
 
     @Override
@@ -75,9 +94,17 @@ public class FortumoStore extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (billingService == null) {
-            billingService = new FortumoBillingService(context);
+            billingService = new FortumoBillingService(context, isNookDevice);
         }
         return billingService;
+    }
+
+    //todo check for different devices
+    private static boolean isNookDevice() {
+        String brand = Build.BRAND;
+        String manufacturer = System.getProperty("ro.nook.manufacturer");
+        return ((brand != null && brand.equalsIgnoreCase("nook")) ||
+                manufacturer != null && manufacturer.equalsIgnoreCase("nook"));
     }
 
     //todo rename the method
@@ -95,9 +122,13 @@ public class FortumoStore extends DefaultAppstore {
                                 final Inventory inventory = fortumoStore.getInAppBillingService().queryInventory(false, null, null);
                                 if (!inventory.getAllPurchases().isEmpty()) {
                                     storeToReturn[0] = fortumoStore;
+                                } else {
+                                    if (isDebugLog()) {
+                                        Log.d(TAG, "Purchases not found");
+                                    }
                                 }
                             } catch (IabException e) {
-                                Log.e(TAG, "Purchases not found", e);
+                                Log.e(TAG, "Error while requesting purchases", e);
                             }
                         } else {
                             storeToReturn[0] = fortumoStore;
@@ -114,4 +145,5 @@ public class FortumoStore extends DefaultAppstore {
         }
         return storeToReturn[0];
     }
+
 }

@@ -16,6 +16,8 @@ If you need to set custom Unity location, you can do so in the ```OpenIAB/unity_
 Integration
 =====
 Build or download Unity [package](https://github.com/onepf/OpenIAB/releases/download/TAG-OpenIAB-0.9/openiab-unity-plugin-0.2.unitypackage) and import it in your project. There is OpenIAB.jar file in the package, which contains compile output of the plugin and of the [OpenIAB](/) library.
+If you want to use source code instead of jar, you need to put ``` UnityPlugin.java ``` and ``` UnityProxyActivity.java ``` in the /Assets/Plugins/Android/src/org/onepf/openiab folder.
+
 There is also ``` AndroidManifest.xml ``` in the /Assets/Plugins/Android. Developer can add project specific settings to it.
 
 Now you can run demo scene with some test buttons.
