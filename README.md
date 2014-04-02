@@ -405,90 +405,34 @@ How OpenIAB Works
 
 Current Status
 =====
-We have just started. We are creating a [sample game](/onepf/OpenIAB/tree/master/samples/trivialdrive) that supports in-app billing of all existing appstores that support in-app purchasing. In the same time, we are designing
-[Open In-App Billing API](http://www.github.com/onepf/OpenIAB/blob/master/specification/openms_spec_1_0.md) that appstores can use to easily integrate in-app billing functionality.
+OpenIAB SDK is used in production by wide variety of application and games. OpenIAB packages are available for Android apps and games based on Unity3d or Marmalade SDK. OpenIAB protocol is implemented by several Appstores.
+
+We have some samples that works in any Appstore in our [samples folder](https://github.com/onepf/OpenIAB/tree/master/samples). To find differences between TrivialDrive provided by Google and TrivialDrive with OpenIAB, please check our [sample](https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive). It demonstrates what changes need to be done to work with all Appstores and Carrier Billing. 
+
+If you an Appstore developer and want to know how to integrate OpenIAB protocol in your Appstore, please start with our [Step-By-Step How-To](https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md)
 
 Basic Principles
 =====
 * **As close to Google Play In-app Billing API as possible** - we optimize the OpenIAB library by the following parameter "lines on code you need to change in an app that already works in Google Play to make it working in all the appstores"
+* **One APK works in all appstores** - OpenIAB chooses proper billing method automatically or follows your requirements  
+* **Open In-App Billing protocol** - OpenIAB is designed provide lightweight solution that supports hundreds of appstores. When appstore implement OpenIAB protocol on appstore side all applications with OpenIAB become fully compatible with new appstore without recompile.
 * **No middle man**
-* **Modular architecture** - adding new appstore should be just adding one more class imeplementing a fixed interface
-* **One APK file to work in all appstores** - but OpenIAB should have an option to build separate APK files for appstores for developers who want to create APK without any overhead
-* **No additional functionality** - OpenIAB does not make in-app billing easier to use, we just make it working in all the appstores with single code
 
 No Middle Man
 =====
-OpenIAB is an open source library that wraps the already existing IAB APIs as well as an open API that
-appstores could implement. It is important to understand that all payments are processes directly by
-each store and there is no a middle man staying between the app developers and the appstores.
-OpenIAB will not do payments for the appstores. It is just an API how the apps communicate with
-appstores to request in-app billing. There is a common open API all the stores can use instead of
-each new store implement their own API and developers have to integrate all these different APIs in their apps.
+OpenIAB is an open source library that handles OpenIAB protocol and wraps some already existing IAB SDKs as well. 
+It is important to understand that all payments are processed directly by appstore and there is no a middle man 
+staying between the app developers and the appstores.
+OpenIAB is not a payment service. It is just an API how the apps communicate with appstores to request in-app billing. 
+There is a common open API all the stores can use instead of each new store implement their own API 
+and developers have to integrate all these different APIs in their apps.
 
-AppStores
-=====
-The following Android application stores support in-app billing today:
- * [Google Play](https://play.google.com/apps/publish/)
- * [Amazon AppStore](https://developer.amazon.com/welcome.html)
- * [Samsung Apps](http://seller.samsungapps.com/)
- * [SK-Telecom T-Store](http://dev.tstore.co.kr/devpoc/main/main.omp)
- * [NOOK](https://nookdeveloper.barnesandnoble.com/) (via [Fortumo](http://smsfortumo.ru/))
-
-If you know about other Android appstores that support in-app purchasing
-please [let us know](http://groups.google.com/group/opf_openiab).
-
-We are working on integrating their IAB APIs in one OpenIAB library. Here is information about
-Appstore IAB feature support:
-<table>
-  <tr>
-    <th></th>
-    <th><a href="https://play.google.com/apps/publish/">Google Play</a></th>
-    <th><a href="https://developer.amazon.com/welcome.html">Amazon AppStore</a></th>
-    <th><a href="http://seller.samsungapps.com/">Samsung Apps</a></th>
-    <th><a href="http://dev.tstore.co.kr/devpoc/main/main.omp">SK-Telecom T-Store</a></th>
-  </tr>
-  <tr>
-    <td>Link to IAB API description</td>
-    <td><a href="http://developer.android.com/google/play/billing/index.html">Google IAB API</a></td>
-    <td><a href="https://developer.amazon.com/sdk/in-app-purchasing.html">Amazon IAB API</a></td>
-    <td><a href="http://developer.samsung.com/android/tools-sdks/In-App-Purchase-Library">Samsung IAB API</a></td>
-    <td><a href="http://dev.tstore.co.kr/devpoc/guide/guideProd.omp#a1_5">T-Store IAB API</a></td>
-  </tr>
-  <tr>
-    <td>Processing code</td>
-    <td>Appstore</td>
-    <td>Appstore</td>
-    <td>Lib</td>
-    <td>Lib</td>
-  </tr>
-  <tr>
-    <td>Subscription</td>
-    <td>Yes</td>
-    <td>Yes</td>
-    <td>No</td>
-    <td>Yes</td>
-  </tr>
-  <tr>
-    <td>Consumable goods</td>
-    <td>Yes</td>
-    <td>Yes</td>
-    <td>Yes</td>
-    <td>Yes</td>
-  </tr>
-  <tr>
-    <td>Non-consumable goods</td>
-    <td>Yes</td>
-    <td>Yes</td>
-    <td>No</td>
-    <td>Yes</td>
-  </tr>
-</table>
 
 How Can I Help?
 =====
-* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?labels=open+tasks&state=open">the list of open tasks</a>, check if any of these tasks is interesting for you, send a message to <a href="http://groups.google.com/group/opf_openiab">OpenIAB mailing list</a> how you want to help. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub.
-* If you are an appstore and already support In-App Billing then most probably we are already working on supporting your API in OpenIAB library, and your help is very welcome since you know your API better than anyone else! Just contact us by <a href="http://groups.google.com/group/opf_openiab">joining OpenIAB mailing list</a>.
-* If you are an appstore and do not support In-App Billing yet but plan to support it then we will be glad working with your on creating a common OpenIAB API and API. <a href="http://groups.google.com/group/opf_openiab">Join OpenIAB mailing list</a> to be involved in OpenIAB API development.
+* If you are an Android app developer check [the list of open tasks]("https://github.com/onepf/OpenIAB/issues?direction=desc&page=1&sort=updated&state=open"), check if any of these issues is interesting for you and comment that you want to help.
+* If you are an appstore and already support In-App Billing then we will be happy to understand how it works and what changes are needed to make it OpenIAB compatible. Please contact us or raise an [new issue in GitHub](https://github.com/onepf/OpenIAB/issues/new)
+* If you are an appstore and do not support In-App Billing yet but plan to support it then we will be glad working with your implement OpenIAB API. Please contact us or raise an [new issue in GitHub](https://github.com/onepf/OpenIAB/issues/new)
 
 License
 =====
