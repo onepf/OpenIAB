@@ -37,6 +37,12 @@ namespace OnePF {
 		}
 #endif
 
+#if UNITY_WP8
+        public Inventory()
+        {
+        }
+#endif
+
         public override string ToString() {
             StringBuilder str = new StringBuilder();
             str.Append("{purchaseMap:{");
