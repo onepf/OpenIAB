@@ -84,6 +84,12 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     #FORTUMO
     -keep class mp.** { *; }
     ```
+    
+10. Troubleshooting: additional logging is very helpful if you trying to understand what's wrong with configuration or raise issue:
+    ```java
+    helper.enableDebugLogging(true);
+    ```
+
 
 
 Support instructions for the stores
@@ -236,10 +242,10 @@ Samsung Apps
 5. To test your .apk with SamsungApps following steps are needed:
     - Ensure SamsungApps is installed on your device
     - Ensure Samsung IAP Service is installed on your device
-    - Install your .apk with special option to help OpenIAB choose Amazon protocol
+    - Install your .apk with special option to help OpenIAB choose SamsunApps
     ```bash
-    # install for Amazon SDK Tester:
-    adb install -i com.amazon.venezia /path/to/YourApp.apk
+    # install for SamsungApps:
+    adb install -i com.sec.android.app.samsungapps /path/to/YourApp.apk
     ```
 
 Fortumo: carrier billing and NOOK
