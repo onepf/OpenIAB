@@ -270,6 +270,12 @@ Nokia IAP
     # NOKIA
     -keep class com.nokia.payment.iap.aidl.**
     ```
+4. To test your .apk with Nokia Store Install your .apk with special option to help OpenIAB choose Nokia protocol
+    
+    ```bash
+    # install for Nokia Store:
+    adb install -i com.nokia.payment.iapenabler /path/to/YourApp.apk
+    ```
 
 Fortumo: carrier billing and NOOK
 =================================
