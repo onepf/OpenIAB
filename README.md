@@ -223,8 +223,8 @@ Samsung Apps
     -keep class com.sec.android.iap.**
     ```
 
-Nokia X
--------
+Nokia IAP
+---------
 1. In the AndroidManifest.xml add the corresponding billing permission
 
     ```xml
