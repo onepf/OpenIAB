@@ -223,6 +223,29 @@ Samsung Apps
     -keep class com.sec.android.iap.**
     ```
 
+Nokia X
+-------
+1. In the AndroidManifest.xml add the corresponding billing permission
+
+    ```xml
+    <uses-permission android:name="com.nokia.payment.BILLING"/>
+    ```
+
+2. Map the SKUs if required.
+
+    ```java
+    OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, "1023608");
+    OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, "1023609");
+    OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, "1023610");
+    ```
+
+3. In the proguard configuration file
+
+    ```proguard
+    # NOKIA
+    -keep class com.nokia.payment.iap.aidl.**
+    ```
+
 Fortumo: carrier billing and NOOK
 =================================
 
