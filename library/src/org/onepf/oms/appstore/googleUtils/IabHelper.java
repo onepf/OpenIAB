@@ -775,7 +775,7 @@ public class IabHelper implements AppstoreInAppBillingService {
         String[] iab_msgs = ("0:OK/1:User Canceled/2:Unknown/" +
                 "3:Billing Unavailable/4:Item unavailable/" +
                 "5:Developer Error/6:Error/7:Item Already Owned/" +
-                "8:Item not owned").split("/");
+                "8:Item not owned/9:No SIM").split("/");
         String[] iabhelper_msgs = ("0:OK/-1001:Remote exception during initialization/" +
                 "-1002:Bad response received/" +
                 "-1003:Purchase signature verification failed/" +
