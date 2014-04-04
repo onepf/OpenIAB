@@ -186,14 +186,21 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 			logDebug("buyIntentBundle = " + buyIntentBundle);
 
+ 			final int responseCode = buyIntentBundle.getInt("RESPONSE_CODE", 0);
 			final PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 
-			mRequestCode = requestCode;
-			mPurchaseListener = listener;
+ 			if (responseCode == RESULT_OK) {
+ 				mRequestCode = requestCode;
+ 				mPurchaseListener = listener;
 
-			act.startIntentSenderForResult(
-				pendingIntent.getIntentSender(), requestCode, new Intent(), 0, 0, 0
-			);
+ 	            final IntentSender intentSender = pendingIntent.getIntentSender();
+ 	            act.startIntentSenderForResult(
+ 	                    intentSender, requestCode, new Intent(), 0, 0, 0
+ 				);
+ 			} else if(listener != null) {
+ 				final IabResult result = new IabResult(responseCode, "Failed to get buy intent.");
+ 				listener.onIabPurchaseFinished(result, null);
+ 			}
 
 		} catch (RemoteException e) {
 			logError("RemoteException: " + e, e);
