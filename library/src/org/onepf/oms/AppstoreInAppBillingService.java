@@ -39,6 +39,8 @@ public interface AppstoreInAppBillingService {
      */
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
+    boolean isSetupDone();
+
     void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData);
 
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);

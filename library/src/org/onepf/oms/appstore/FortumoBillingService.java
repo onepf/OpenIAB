@@ -44,6 +44,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     private Map<String, FortumoProduct> inappsMap;
     private IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener;
     private String developerPayload;
+    private boolean mSetupDone = false;
 
     public FortumoBillingService(Context context, boolean isNook) {
         this.context = context;
@@ -56,7 +57,13 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         if (isDebugLog()) {
             Log.d(TAG, "Setup result: " + setupResult);
         }
+        mSetupDone = true;
         listener.onIabSetupFinished(setupResult);
+    }
+
+    @Override
+    public boolean isSetupDone() {
+        return mSetupDone;
     }
 
     @Override

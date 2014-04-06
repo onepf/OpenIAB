@@ -274,6 +274,11 @@ public class IabHelper implements AppstoreInAppBillingService {
         }
     }
 
+    @Override
+    public boolean isSetupDone() {
+        return mSetupDone;
+    }
+
     /**
      * IabHelper code is shared between OpenStore and Google Play, but services has different names  
      */

@@ -149,6 +149,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private int mRequestCode;
     private String mItemGroupId;
     private String mExtraData;
+    private boolean mSetupDone = false;
 
     public SamsungAppsBillingService(Activity context, Options options) {
         this.activity = context;
@@ -346,6 +347,11 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         mIapConnector = null;
     }
 
+    @Override
+    public boolean isSetupDone() {
+        return mSetupDone;
+    }
+
     private String getItemGroupId(String sku) {
         SamsungApps.checkSku(sku);
         String[] skuParts = sku.split("/");
@@ -390,6 +396,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 errorMsg = result.getString(KEY_NAME_ERROR_STRING);
                 if (statusCode == IAP_ERROR_NONE) {
                     errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
+                    mSetupDone = true;
                 }
             }
         } catch (RemoteException e) {

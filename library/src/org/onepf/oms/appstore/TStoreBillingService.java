@@ -37,6 +37,7 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
     private final Context mContext;
     private final String mAppId;
     private IapPlugin mPlugin;
+    private boolean mIsSetupDone = false;
 
     public TStoreBillingService(Context context, String appId) {
         mContext = context;
@@ -46,7 +47,13 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
         mPlugin = IapPlugin.getPlugin(mContext);
+        mIsSetupDone = true;
         listener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
+    }
+
+    @Override
+    public boolean isSetupDone() {
+        return mIsSetupDone;
     }
 
     @Override

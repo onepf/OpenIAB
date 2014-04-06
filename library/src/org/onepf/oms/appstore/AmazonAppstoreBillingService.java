@@ -95,6 +95,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     /** TODO: consider removal inventoryLatch or using carefully */
     private CountDownLatch inventoryLatch;
 
+    private boolean mSetupDone = false;
+
     public AmazonAppstoreBillingService(Context context) {
         super(context);
     }
@@ -123,6 +125,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             if (isDebugLog()) Log.d(TAG, "Set current userId: " + userId);
             this.currentUserId = userId;
             if (setupListener != null) {
+                mSetupDone = true;
                 setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
                 setupListener = null;
             }
@@ -134,7 +137,12 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             }
         }
     }
-    
+
+    @Override
+    public boolean isSetupDone() {
+        return mSetupDone;
+    }
+
     @Override
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
         if (isDebugLog()) Log.d(TAG, "queryInventory() querySkuDetails: " + querySkuDetails+ " moreItemSkus: " + moreItemSkus+ " moreSubsSkus: " + moreSubsSkus);
