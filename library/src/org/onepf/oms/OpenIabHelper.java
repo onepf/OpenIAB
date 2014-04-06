@@ -699,7 +699,6 @@ public class OpenIabHelper {
      * 
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
-     * @throws IabException if timeout occurred
      */
     protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
