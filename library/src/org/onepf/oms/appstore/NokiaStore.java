@@ -1,6 +1,6 @@
 /** This file is part of OpenIAB **
  *
- * Copyright (C) 2013 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. *
+ * Copyright (C) 2013-2014 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. *
  *
  * This software, including documentation, is protected by copyright controlled
  * by Nokia Corporation. All rights are reserved. Copying, including reproducing,

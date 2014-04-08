@@ -1,6 +1,6 @@
 /** This file is part of OpenIAB **
  *
- * Copyright (C) 2013 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. *
+ * Copyright (C) 2013-2014 Nokia Corporation and/or its subsidiary(-ies). All rights reserved. *
  *
  * This software, including documentation, is protected by copyright controlled
  * by Nokia Corporation. All rights are reserved. Copying, including reproducing,
@@ -82,7 +82,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 					if (response != IabHelper.BILLING_RESPONSE_RESULT_OK) {
 
 						if (listener != null) {
-							listener.onIabSetupFinished(new IabResult(response,
+							listener.onIabSetupFinished(new NokiaResult(response,
 								"Error checking for billing support."));
 						}
 
@@ -93,7 +93,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 					if (listener != null) {
 						listener.onIabSetupFinished(
-							new IabResult(IabHelper.IABHELPER_REMOTE_EXCEPTION, "RemoteException while setting up in-app billing.")
+							new NokiaResult(IabHelper.IABHELPER_REMOTE_EXCEPTION, "RemoteException while setting up in-app billing.")
 						);
 					}
 
@@ -103,7 +103,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 				}
 
 				if (listener != null) {
-					listener.onIabSetupFinished(new IabResult(RESULT_OK, "Setup successful."));
+					listener.onIabSetupFinished(new NokiaResult(RESULT_OK, "Setup successful."));
 				}
 
 			}
@@ -124,7 +124,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		if (servicesList == null || servicesList.isEmpty()) {
 
 			if (listener != null) {
-				listener.onIabSetupFinished(new IabResult(RESULT_BILLING_UNAVAILABLE,
+				listener.onIabSetupFinished(new NokiaResult(RESULT_BILLING_UNAVAILABLE,
 					"Billing service unavailable on device."));
 			}
 
@@ -186,19 +186,26 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 			logDebug("buyIntentBundle = " + buyIntentBundle);
 
+ 			final int responseCode = buyIntentBundle.getInt("RESPONSE_CODE", 0);
 			final PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 
-			mRequestCode = requestCode;
-			mPurchaseListener = listener;
+ 			if (responseCode == RESULT_OK) {
+ 				mRequestCode = requestCode;
+ 				mPurchaseListener = listener;
 
-			act.startIntentSenderForResult(
-				pendingIntent.getIntentSender(), requestCode, new Intent(), 0, 0, 0
-			);
+ 	            final IntentSender intentSender = pendingIntent.getIntentSender();
+ 	            act.startIntentSenderForResult(
+ 	                    intentSender, requestCode, new Intent(), 0, 0, 0
+ 				);
+ 			} else if(listener != null) {
+ 				final IabResult result = new NokiaResult(responseCode, "Failed to get buy intent.");
+ 				listener.onIabPurchaseFinished(result, null);
+ 			}
 
 		} catch (RemoteException e) {
 			logError("RemoteException: " + e, e);
 
-			final IabResult result = new IabResult(IabHelper.IABHELPER_SEND_INTENT_FAILED, "Failed to send intent.");
+			final IabResult result = new NokiaResult(IabHelper.IABHELPER_SEND_INTENT_FAILED, "Failed to send intent.");
 			if (listener != null) {
 				listener.onIabPurchaseFinished(result, null);
 			}
@@ -206,7 +213,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		} catch (IntentSender.SendIntentException e) {
 			logError("SendIntentException: " + e, e);
 
-			final IabResult result = new IabResult(IabHelper.IABHELPER_REMOTE_EXCEPTION,
+			final IabResult result = new NokiaResult(IabHelper.IABHELPER_REMOTE_EXCEPTION,
 				"Remote exception while starting purchase flow");
 
 			if (listener != null) {
@@ -243,7 +250,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 		if (data == null) {
 			logError("Null data in IAB activity result.");
-    	  	result = new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in IAB result");
+    	  	result = new NokiaResult(IabHelper.IABHELPER_BAD_RESPONSE, "Null data in IAB result");
 
       		if (mPurchaseListener != null) {
 				mPurchaseListener.onIabPurchaseFinished(result, null);
@@ -270,7 +277,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 			logDebug("Purchase canceled - Response: " + responseCode);
 
-			result = new IabResult(IabHelper.IABHELPER_USER_CANCELLED, "User canceled.");
+			result = new NokiaResult(IabHelper.IABHELPER_USER_CANCELLED, "User canceled.");
 
 			if (mPurchaseListener != null) {
 				mPurchaseListener.onIabPurchaseFinished(result, null);
@@ -280,7 +287,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 			logError("Purchase failed. Result code: " + resultCode);
 
-			result = new IabResult(IabHelper.IABHELPER_UNKNOWN_PURCHASE_RESPONSE, "Unknown purchase response.");
+			result = new NokiaResult(IabHelper.IABHELPER_UNKNOWN_PURCHASE_RESPONSE, "Unknown purchase response.");
 
 			if (mPurchaseListener != null) {
 				mPurchaseListener.onIabPurchaseFinished(result, null);
@@ -300,7 +307,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		logDebug("Result code was OK but in-app billing response was not OK: " + responseCode);
 
 		if (mPurchaseListener != null) {
-			final IabResult result = new IabResult(responseCode, "Problem purchashing item.");
+			final IabResult result = new NokiaResult(responseCode, "Problem purchashing item.");
 			mPurchaseListener.onIabPurchaseFinished(result, null);
 		}
 	}
@@ -339,7 +346,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		} catch (JSONException e) {
 			logError("JSONException: " + e, e);
 
-			final IabResult result = new IabResult(IabHelper.IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
+			final IabResult result = new NokiaResult(IabHelper.IABHELPER_BAD_RESPONSE, "Failed to parse purchase data.");
 			if (mPurchaseListener != null) {
 				mPurchaseListener.onIabPurchaseFinished(result, null);
 			}
@@ -348,7 +355,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 
 		if (mPurchaseListener != null) {
-			mPurchaseListener.onIabPurchaseFinished(new IabResult(RESULT_OK, "Success"), purchase);
+			mPurchaseListener.onIabPurchaseFinished(new NokiaResult(RESULT_OK, "Success"), purchase);
 		}
 
 	}
@@ -387,7 +394,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 			logDebug("Successfully consumed productId: " + productId);
 		} else {
 			logDebug("Error consuming consuming productId " + productId + ". Code: " + response);
-			throw new IabException(response, "Error consuming productId " + productId);
+			throw new IabException(new NokiaResult(response, "Error consuming productId " + productId));
 		}
 
 		logDebug("consume: done");
@@ -466,7 +473,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 			logDebug("purchasedDataList = " + purchasedDataList);
 
 			if (responseCode != RESULT_OK) {
-				throw new IabException(responseCode, "Error refreshing inventory (querying owned items).");
+				throw new IabException(new NokiaResult(responseCode, "Error refreshing inventory (querying owned items)."));
 			}
 
 			processPurchasedList(purchasedDataList, inventory);
@@ -540,7 +547,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 			logDebug("detailsList = " + detailsList);
 
 			if (responseCode != RESULT_OK) {
-				throw new IabException(responseCode, "Error refreshing inventory (querying prices of items).");
+				throw new IabException(new NokiaResult(responseCode, "Error refreshing inventory (querying prices of items)."));
 			}
 
 			processDetailsList(detailsList, inventory);
