@@ -157,6 +157,34 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
 
     @Override
     public void startSetup(final OnIabSetupFinishedListener listener) {
+        // Make sure that Samsung IAP service is installed.
+        try {
+            PackageManager pm = activity.getPackageManager();
+            try {
+                pm.getApplicationInfo(SamsungApps.IAP_PACKAGE_NAME, PackageManager.GET_META_DATA);
+            } catch (NameNotFoundException e) {
+                Intent intent = new Intent();
+                intent.setData(Uri.parse("samsungapps://ProductDetail/"
+                        + SamsungApps.IAP_PACKAGE_NAME));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            | 32);
+                } else {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
+                activity.startActivity(intent);
+                Log.e(TAG, "Confirming Samsung IAP service exists: " + e.getMessage());
+            }
+        } catch (Exception e1) {
+            Log.e(TAG, "Confirming Samsung IAP service exists: " + e1.getMessage());
+            listener.onIabSetupFinished(new IabResult(
+                    IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
+                    "Couldn't find Samsung IAP service on device"));
+            return;
+        }
+
+        // If it got this far then IAP service is installed. Continue with
+        // setup.
         this.setupListener = listener;
 
         ComponentName com = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, ACCOUNT_ACTIVITY_NAME);
