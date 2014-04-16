@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace OnePF {
+namespace OnePF
+{
     public class OpenIAB_iOS
 #if UNITY_IOS
 	: IOpenIAB 
 #endif
- {
+    {
         public static readonly string STORE = "appstore";
 
 #if UNITY_IOS
@@ -63,25 +64,24 @@ namespace OnePF {
 
         public void init(Options options) {
             if (!IsDevice()) return;
-            init(options.storeKeys);
+
+            // Pass identifiers to the StoreKit
+            string[] identifiers = new string[_sku2storeSkuMappings.Count];
+            for (int i = 0; i < _sku2storeSkuMappings.Count; ++i)
+            {
+                identifiers[i] = _sku2storeSkuMappings.ElementAt(i).Value;
+            }
+            assignIdentifiersAndCallbackGameObject(identifiers, identifiers.Length, typeof(OpenIABEventManager).ToString());
+
+            if (canMakePayments())
+            {
+                loadProducts();
+            }
+            else
+            {
+                OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "User cannot make payments.");
+            }
         }
-
-		public void init(Dictionary<string, string> storeKeys=null) {
-			if (!IsDevice()) return;
-
-			// Pass identifiers to the StoreKit
-			string[] identifiers = new string[_sku2storeSkuMappings.Count];
-			for (int i = 0; i < _sku2storeSkuMappings.Count; ++i) {
-				identifiers[i] = _sku2storeSkuMappings.ElementAt(i).Value;
-			}
-			assignIdentifiersAndCallbackGameObject(identifiers, identifiers.Length, typeof(OpenIABEventManager).ToString());
-
-			if (canMakePayments()) {
-				loadProducts();
-			} else {
-				OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "User cannot make payments.");	
-			}
-		}
 		
 		public void mapSku(string sku, string storeName, string storeSku) {
 			if (storeName == STORE) {

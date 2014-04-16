@@ -2,8 +2,10 @@
  * Represents an in-app billing purchase.
  * 
  */
-namespace OnePF {
-    public class Purchase {
+namespace OnePF
+{
+    public class Purchase
+    {
         public string ItemType { get; private set; }  // ITEM_TYPE_INAPP or ITEM_TYPE_SUBS
         public string OrderId { get; private set; }
         public string PackageName { get; private set; }
@@ -16,10 +18,12 @@ namespace OnePF {
         public string Signature { get; private set; }
         public string AppstoreName { get; private set; }
 
-        private Purchase() {
+        private Purchase()
+        {
         }
 
-        public Purchase(string json) {
+        public Purchase(string json)
+        {
             var j = new JSON(json);
             ItemType = j.ToString("itemType");
             OrderId = j.ToString("orderId");
@@ -35,21 +39,26 @@ namespace OnePF {
         }
 
         // For debug purposes and editor mode
-        internal static Purchase CreateFromSku(string sku) {
+        public static Purchase CreateFromSku(string sku)
+        {
             return CreateFromSku(sku, "");
         }
-        internal static Purchase CreateFromSku(string sku, string developerPayload) {
+
+        public static Purchase CreateFromSku(string sku, string developerPayload)
+        {
             var p = new Purchase();
             p.Sku = sku;
             p.DeveloperPayload = developerPayload;
             return p;
         }
 
-        public override string ToString() {
-            return "PurchaseInfo(type:" + ItemType + "):" + OriginalJson;
+        public override string ToString()
+        {
+            return "SKU:" + Sku + ";" + OriginalJson;
         }
 
-        public string Serialize() {
+        public string Serialize()
+        {
             var j = new JSON();
             j["itemType"] = ItemType;
             j["orderId"] = OrderId;
