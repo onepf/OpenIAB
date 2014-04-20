@@ -1,0 +1,7 @@
+include 'library'
+include 'local_store'
+//include 'marmalade_plugin'
+//include 'unity_plugin
+include 'samples:life_openiab'
+//include 'samples:marmalade_plugin'
+include 'samples:trivialdrive'
