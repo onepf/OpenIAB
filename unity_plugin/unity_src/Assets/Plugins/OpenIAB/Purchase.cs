@@ -19,20 +19,38 @@ namespace OnePF {
         private Purchase() {
         }
 
-        public Purchase(string json) {
-            var j = new JSON(json);
-            ItemType = j.ToString("itemType");
-            OrderId = j.ToString("orderId");
-            PackageName = j.ToString("packageName");
-            Sku = j.ToString("sku");
-            PurchaseTime = j.ToLong("purchaseTime");
-            PurchaseState = j.ToInt("purchaseState");
-            DeveloperPayload = j.ToString("developerPayload");
-            Token = j.ToString("token");
-            OriginalJson = j.ToString("originalJson");
-            Signature = j.ToString("signature");
-            AppstoreName = j.ToString("appstoreName");
+        public Purchase(string jsonString) {
+			var json = new JSON(jsonString);
+			ItemType = json.ToString("itemType");
+			OrderId = json.ToString("orderId");
+			PackageName = json.ToString("packageName");
+			Sku = json.ToString("sku");
+			PurchaseTime = json.ToLong("purchaseTime");
+			PurchaseState = json.ToInt("purchaseState");
+			DeveloperPayload = json.ToString("developerPayload");
+			Token = json.ToString("token");
+			OriginalJson = json.ToString("originalJson");
+			Signature = json.ToString("signature");
+			AppstoreName = json.ToString("appstoreName");
         }
+
+#if UNITY_IOS
+        public Purchase(JSON json) {
+            ItemType = json.ToString("itemType");
+            OrderId = json.ToString("orderId");
+            PackageName = json.ToString("packageName");
+            Sku = json.ToString("sku");
+            PurchaseTime = json.ToLong("purchaseTime");
+            PurchaseState = json.ToInt("purchaseState");
+            DeveloperPayload = json.ToString("developerPayload");
+            Token = json.ToString("token");
+            OriginalJson = json.ToString("originalJson");
+            Signature = json.ToString("signature");
+            AppstoreName = json.ToString("appstoreName");
+
+			Sku = OpenIAB_iOS.StoreSku2Sku(Sku);
+        }
+#endif
 
         // For debug purposes and editor mode
         internal static Purchase CreateFromSku(string sku) {
