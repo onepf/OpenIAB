@@ -1,0 +1,50 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/OpenIAB/OpenIABEventManager.cs">
+    <Files>
+      <File FileName="Assets/Plugins/OpenIAB/OpenIAB.cs" Line="61" Column="32" />
+      <File FileName="Assets/Plugins/OpenIAB/IOpenIAB.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/iOS/OpenIAB.cs" Line="1" Column="1" />
+      <File FileName="Assets/OpenIAB-demo/OpenIABTest.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/OpenIABEventManager.cs" Line="134" Column="21" />
+      <File FileName="Assets/Plugins/OpenIAB/Android/OpenIAB.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/Inventory.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/SkuDetails.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/JSON.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/Purchase.cs" Line="31" Column="37" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Assembly-CSharp" expanded="True">
+            <Node name="Plugins" expanded="True">
+              <Node name="Android" expanded="True" />
+            </Node>
+          </Node>
+          <Node name="Assembly-CSharp-firstpass" expanded="True">
+            <Node name="Plugins" expanded="True">
+              <Node name="OpenIAB" expanded="True">
+                <Node name="Android" expanded="True" />
+                <Node name="iOS" expanded="True" />
+                <Node name="OpenIABEventManager.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+      <Pad Id="ConnectionManagerPad">
+        <State selected="True" />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

@@ -113,5 +113,17 @@ public class OpenIABTest : MonoBehaviour {
     private void consumePurchaseFailedEvent(string error) {
         Debug.Log("consumePurchaseFailedEvent: " + error);
     }
-#endif
+#else
+    private void Start() {
+        OpenIAB.mapSku("sku", OpenIAB_iOS.STORE, "app_store_sku");
+        var options = new Options();
+        OpenIAB.init(options);
+    }
+
+    private void OnGUI() {
+        if (GUILayout.Button("BUY")) {
+            OpenIAB.purchaseProduct("sku");
+        }
+    }
+    #endif
 }

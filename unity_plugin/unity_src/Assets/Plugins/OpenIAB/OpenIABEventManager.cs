@@ -97,18 +97,8 @@ public class OpenIABEventManager : MonoBehaviour {
 #endif
 	
 #if UNITY_IOS 
-	private void OnBillingSupported(string productIdentifiers) {
-		string[] delimiters = new string[] { ";" };
-		string[] identifiers = productIdentifiers.Split(delimiters,System.StringSplitOptions.RemoveEmptyEntries);
-		
-		OnePF.StoreKitProduct[] productArray = new OnePF.StoreKitProduct[identifiers.Length];
-		int index = 0;
-		foreach ( string identifier in identifiers) {
-			productArray[index] = OpenIAB_iOS.detailsForProductWithIdentifier(identifier);
-			index++;
-		}
-
-		OpenIAB_iOS.CreateInventory(productArray);
+	private void OnBillingSupported(string inventory) {
+        OpenIAB_iOS.CreateInventory(inventory);
 
 		if (billingSupportedEvent != null) {
 			billingSupportedEvent();
@@ -144,17 +134,8 @@ public class OpenIABEventManager : MonoBehaviour {
 		}
 	}
 	
-	private void OnPurchaseFailed(string identifierAndError) {
-		string[] delimiters = new string[1];
-		delimiters[0] = ";";
-		string[] input = identifierAndError.Split(delimiters,System.StringSplitOptions.None);
-		//string identifier = input[0];
-		string error = "";
-		if(input.Length == 2) {
-			error = input[1];
-		}
-		
-		if(purchaseFailedEvent != null) {
+	private void OnPurchaseFailed(string error) {	
+		if (purchaseFailedEvent != null) {
 			purchaseFailedEvent(error);
 		}
 	}
@@ -169,19 +150,19 @@ public class OpenIABEventManager : MonoBehaviour {
 			consumePurchaseFailedEvent(error);
 	}
 	
-	public void OnTransactionRestored(string sku) {
+	public void OnPurchaseRestored(string sku) {
 		if (transactionRestoredEvent != null) {
 			transactionRestoredEvent(sku);
 		}
 	}
 	
-	public void OnRestoreTransactionFailed(string error) {
+	public void OnRestoreFailed(string error) {
 		if (restoreFailedEvent != null) {
 			restoreFailedEvent(error);
 		}
 	}
 	
-	public void OnRestoreTransactionSucceeded(string message) {
+	public void OnRestoreFinished(string message) {
 		if (restoreSucceededEvent != null) {
 			restoreSucceededEvent();
 		}
