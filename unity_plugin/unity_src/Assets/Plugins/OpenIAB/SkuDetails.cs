@@ -39,6 +39,16 @@ namespace OnePF {
         }
 #endif
 
+#if UNITY_WP8
+        public SkuDetails(OnePF.WP8.ProductListing listing)
+        {
+            Sku = OpenIAB_WP8.GetSku(listing.ProductId);
+            Title = listing.Name;
+            Description = listing.Description;
+            Price = listing.FormattedPrice;
+        }
+#endif
+
         public override string ToString() {
             return string.Format("SkuDetails: type = {0}, SKU = {1}, title = {2}, price = {3}, description = {4}", ItemType, Sku, Title, Price, Description);
         }

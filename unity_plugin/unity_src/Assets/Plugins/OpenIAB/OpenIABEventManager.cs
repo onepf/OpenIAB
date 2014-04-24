@@ -4,7 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using OnePF;
 
-public class OpenIABEventManager : MonoBehaviour {
+public class OpenIABEventManager : MonoBehaviour
+{
     // Fired after init is called when billing is supported on the device
     public static event Action billingSupportedEvent;
     // Fired after init is called when billing is not supported on the device
@@ -21,81 +22,100 @@ public class OpenIABEventManager : MonoBehaviour {
     public static event Action<Purchase> consumePurchaseSucceededEvent;
     // Fired when a call to consume a product fails
     public static event Action<string> consumePurchaseFailedEvent;
-	// Fired when transaction was restored
-	public static event Action<string> transactionRestoredEvent;
-	// Fired when transaction restoration process failed
-	public static event Action<string> restoreFailedEvent;
-	// Fired when transaction restoration process succeeded
-	public static event Action restoreSucceededEvent;
-	
-    private void Awake() {
+
+#pragma warning disable 0067
+    // Fired when transaction was restored
+    public static event Action<string> transactionRestoredEvent;
+    // Fired when transaction restoration process failed
+    public static event Action<string> restoreFailedEvent;
+    // Fired when transaction restoration process succeeded
+    public static event Action restoreSucceededEvent;
+#pragma warning restore 0067
+
+    private void Awake()
+    {
         // Set the GameObject name to the class name for easy access from native plugin
         gameObject.name = GetType().ToString();
         DontDestroyOnLoad(this);
     }
 
 #if UNITY_ANDROID
-    private void OnBillingSupported(string empty) {
+    private void OnBillingSupported(string empty)
+    {
         if (billingSupportedEvent != null)
             billingSupportedEvent();
     }
 
-    private void OnBillingNotSupported(string error) {
+    private void OnBillingNotSupported(string error)
+    {
         if (billingNotSupportedEvent != null)
             billingNotSupportedEvent(error);
     }
 
-    private void OnQueryInventorySucceeded(string json) {
-        if (queryInventorySucceededEvent != null) {
+    private void OnQueryInventorySucceeded(string json)
+    {
+        if (queryInventorySucceededEvent != null)
+        {
             Inventory inventory = new Inventory(json);
             queryInventorySucceededEvent(inventory);
         }
     }
 
-    private void OnQueryInventoryFailed(string error) {
+    private void OnQueryInventoryFailed(string error)
+    {
         if (queryInventoryFailedEvent != null)
             queryInventoryFailedEvent(error);
     }
 
-    private void OnPurchaseSucceeded(string json) {
+    private void OnPurchaseSucceeded(string json)
+    {
         if (purchaseSucceededEvent != null)
             purchaseSucceededEvent(new Purchase(json));
     }
 
-    private void OnPurchaseFailed(string error) {
+    private void OnPurchaseFailed(string error)
+    {
         if (purchaseFailedEvent != null)
             purchaseFailedEvent(error);
     }
 
-    private void OnConsumePurchaseSucceeded(string json) {
+    private void OnConsumePurchaseSucceeded(string json)
+    {
         if (consumePurchaseSucceededEvent != null)
             consumePurchaseSucceededEvent(new Purchase(json));
     }
 
-    private void OnConsumePurchaseFailed(string error) {
+    private void OnConsumePurchaseFailed(string error)
+    {
         if (consumePurchaseFailedEvent != null)
             consumePurchaseFailedEvent(error);
     }
 
-    public void OnTransactionRestored(string sku) {
-        if (transactionRestoredEvent != null) {
+    public void OnTransactionRestored(string sku)
+    {
+        if (transactionRestoredEvent != null)
+        {
             transactionRestoredEvent(sku);
         }
     }
 
-    public void OnRestoreTransactionFailed(string error) {
-        if (restoreFailedEvent != null) {
+    public void OnRestoreTransactionFailed(string error)
+    {
+        if (restoreFailedEvent != null)
+        {
             restoreFailedEvent(error);
         }
     }
 
-    public void OnRestoreTransactionSucceeded(string message) {
-        if (restoreSucceededEvent != null) {
+    public void OnRestoreTransactionSucceeded(string message)
+    {
+        if (restoreSucceededEvent != null)
+        {
             restoreSucceededEvent();
         }
     }
 #endif
-	
+
 #if UNITY_IOS 
 	private void OnBillingSupported(string inventory) {
         OpenIAB_iOS.CreateInventory(inventory);
@@ -167,5 +187,55 @@ public class OpenIABEventManager : MonoBehaviour {
 			restoreSucceededEvent();
 		}
 	}
+#endif
+
+#if UNITY_WP8
+    public void OnBillingSupported()
+    {
+        if (billingSupportedEvent != null)
+            billingSupportedEvent();
+    }
+
+    public void OnBillingNotSupported(string error)
+    {
+        if (billingNotSupportedEvent != null)
+            billingNotSupportedEvent(error);
+    }
+
+    private void OnQueryInventorySucceeded(Inventory inventory)
+    {
+        if (queryInventorySucceededEvent != null)
+            queryInventorySucceededEvent(inventory);
+    }
+
+    private void OnQueryInventoryFailed(string error)
+    {
+        if (queryInventoryFailedEvent != null)
+            queryInventoryFailedEvent(error);
+    }
+
+    private void OnPurchaseSucceeded(Purchase purchase)
+    {
+        if (purchaseSucceededEvent != null)
+            purchaseSucceededEvent(purchase);
+    }
+
+    private void OnPurchaseFailed(string error)
+    {
+        if (purchaseFailedEvent != null)
+            purchaseFailedEvent(error);
+    }
+
+    private void OnConsumePurchaseSucceeded(Purchase purchase)
+    {
+        if (consumePurchaseSucceededEvent != null)
+            consumePurchaseSucceededEvent(purchase);
+    }
+
+    private void OnConsumePurchaseFailed(string error)
+    {
+        if (consumePurchaseFailedEvent != null)
+            consumePurchaseFailedEvent(error);
+    }
 #endif
 }

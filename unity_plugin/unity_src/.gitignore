@@ -3,3 +3,4 @@
 /ProjectSettings/
 *.csproj
 *.sln
+/Export/
