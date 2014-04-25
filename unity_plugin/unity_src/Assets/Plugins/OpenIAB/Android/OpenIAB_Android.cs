@@ -94,8 +94,14 @@ namespace OnePF
                 j_storeKeys.Dispose();
 
                 j_options.Set("prefferedStoreNames", AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames));
+                var j_availableStores = AndroidJNIHelper.ConvertToJNIArray(options.availableStores);
 
-                _plugin.Call("initWithOptions", j_options);
+                jvalue[] args = new jvalue[2];
+                args[0].l = j_options.GetRawObject();
+                args[1].l = j_availableStores;
+
+                IntPtr methodId = AndroidJNI.GetMethodID(_plugin.GetRawClass(), "init", "(Lorg/onepf/oms/OpenIabHelper$Options;[Ljava/lang/String;)V");
+                AndroidJNI.CallVoidMethod(_plugin.GetRawObject(), methodId, args);
             }
         }
 

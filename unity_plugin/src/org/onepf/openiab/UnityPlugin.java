@@ -10,12 +10,12 @@ import com.unity3d.player.UnityPlayer;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.onepf.oms.Appstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.*;
 import org.onepf.oms.appstore.googleUtils.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class UnityPlugin {
 
@@ -68,10 +68,10 @@ public class UnityPlugin {
         options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
         options.storeKeys = storeKeys;
 
-        initWithOptions(options);
+        init(options);
     }
 
-    public void initWithOptions(final OpenIabHelper.Options options) {
+    public void init(final OpenIabHelper.Options options) {
         UnityPlayer.currentActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -99,6 +99,32 @@ public class UnityPlugin {
                 });
             }
         });
+    }
+
+    public void init(final OpenIabHelper.Options options, final String[] availableStores) {
+        if (availableStores != null && availableStores.length > 0) {
+            Activity context = UnityPlayer.currentActivity;
+            List<Appstore> stores = new ArrayList<Appstore>();
+            for (String storeName : availableStores) {
+                if (storeName.equals(STORE_GOOGLE)) {
+                    if (options.storeKeys.containsKey(STORE_GOOGLE)) {
+                        stores.add(new GooglePlay(context, options.storeKeys.get(STORE_GOOGLE)));
+                    }
+                } else if (storeName.equals(STORE_AMAZON)) {
+                    stores.add(new AmazonAppstore(context));
+                } else if (storeName.equals(STORE_TSTORE)) {
+                    if (options.storeKeys.containsKey(STORE_TSTORE)) {
+                        stores.add(new TStore(context, options.storeKeys.get(STORE_TSTORE)));
+                    }
+                } else if (storeName.equals(STORE_SAMSUNG)) {
+                    stores.add(new SamsungApps(context, options));
+                } else if (storeName.equals(STORE_NOKIA)) {
+                    stores.add(new NokiaStore(context));
+                }
+            }
+            options.availableStores = stores;
+        }
+        init(options);
     }
 
     public void unbindService() {
