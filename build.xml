@@ -53,7 +53,6 @@
 
 	    <!-- Marmalade demo -->
 	    <ant antfile="samples/marmalade_example/build.xml" target="build" useNativeBasedir="yes"/>
-	    <copy file="samples/marmalade_example/bin/openiab-marmalade-demo.apk" todir="${out.dir}"/>
 	
     </target>
 
