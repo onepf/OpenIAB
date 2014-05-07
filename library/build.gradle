@@ -1,32 +1,10 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.0'
-    }
-}
 apply plugin: 'android-library'
 
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.3"
-
-//    defaultPublishConfig "amazonJar1Release"
-//    publishNonDefault true
-//
-//    productFlavors {
-//        fatJar1 {
-//            dependencies {
-//                compile fileTree(dir: 'libs', include: '*.jar')
-//            }
-//        }
-//        amazonJar1 {
-//            dependencies {
-//                compile files('libs/in-app-purchasing-1.0.3.jar')
-//            }
-//        }
-//    }
+    defaultPublishConfig "amazonJarDebug"
+    publishNonDefault true
 
     sourceSets {
         main {
@@ -41,8 +19,27 @@ android {
 
     }
 
+    productFlavors {
+        amazonJar {}
+        fortumoJar {}
+    }
+
     dependencies {
         compile fileTree(dir: 'libs', include: '*.jar')
+    }
+
+
+    android.libraryVariants.all { variant ->
+        if (variant.flavorName == "amazonJar") {
+            variant.packageLibrary.exclude('libs/FortumoInApp-android-9.1.2-o.jar')
+        } else if (variant.flavorName == "fortumoJar") {
+        }
+    }
+
+    project.afterEvaluate {
+        if (android.libraryVariants.size() != 4) {
+            throw new GradleException("Wrong number of app variants!")
+        }
     }
 }
 

@@ -4,12 +4,10 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
-//    productFlavors {
-//        fatJar {
-//        }
-//        amazonJar {
-//        }
-//    }
+    productFlavors {
+        fortumoJar {}
+        amazonJar {}
+    }
 
     sourceSets {
         main {
@@ -25,7 +23,6 @@ android {
 }
 
 dependencies {
-//    fatJarCompile project(path: ':library', configuration: 'fatJar1Release')
-//    amazonJarCompile project(path: ':library', configuration: 'amazonJar1Release')
-    compile project(":library")
+    amazonJarCompile project(path: ':library', configuration: 'amazonJarRelease')
+    fortumoJarCompile project(path: ':library', configuration: 'fortumoJarRelease')
 }
