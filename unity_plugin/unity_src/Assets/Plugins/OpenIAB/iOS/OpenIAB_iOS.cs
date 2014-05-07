@@ -15,50 +15,37 @@ namespace OnePF {
 #if UNITY_IOS
         #region NativeMethods
 		[DllImport ("__Internal")]
-		private static extern bool canMakePayments();
+        private static extern bool AppStore_canMakePayments();
 		
 		[DllImport ("__Internal")]
-		private static extern void assignIdentifiersAndCallbackGameObject(string[] identifiers,int identifiersCount, string gameObjectName);
-		
-		[DllImport ("__Internal")]
-		private static extern void loadProducts();	
-		
-		[DllImport ("__Internal")]
-		private static extern bool buyProductWithIdentifier(string identifier);
-		
-		[DllImport ("__Internal")]
-		private static extern void restoreProducts();	
+        private static extern void AppStore_requestProducts(string[] skus, int skusNumber);
 	
 		[DllImport ("__Internal")]
-		public static extern StoreKitProduct detailsForProductWithIdentifier(string identifier);
-
+        private static extern void AppStore_startPurchase(string sku);
+		
 		[DllImport ("__Internal")]
-		private static extern bool isProductPurchased(string identifier);
+		private static extern void AppStore_restorePurchases();	
+
+        [DllImport ("__Internal")]
+        private static extern bool Inventory_hasPurchase(string sku);
+
+        [DllImport ("__Internal")]
+        private static extern void Inventory_removePurchase(string sku);
         #endregion
 
 		static Dictionary<string, string> _sku2storeSkuMappings = new Dictionary<string, string>();
 		static Dictionary<string, string> _storeSku2skuMappings = new Dictionary<string, string>();
 		static Inventory _inventory;
-		static HashSet<string> _purchaseSet = new HashSet<string>();
 
 		private bool IsDevice() {
 			if (Application.platform != RuntimePlatform.IPhonePlayer) {
-	            //OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "editor mode");
 	            return false;
 	        }
 			return true;
 		}
 
-		public static void CreateInventory(StoreKitProduct[] products) {
-			_inventory = new Inventory(products);
-		}
-
-		public static bool IsProductPurchased(string sku) {
-			return isProductPurchased(sku);
-		}
-
-		public static void AddProductToPurchaseHistory(string sku) {
-			_purchaseSet.Add(sku);
+		public static void CreateInventory(string json) {
+			_inventory = new Inventory(json);
 		}
 
         public void init(Options options) {
@@ -69,18 +56,18 @@ namespace OnePF {
 		public void init(Dictionary<string, string> storeKeys=null) {
 			if (!IsDevice()) return;
 
-			// Pass identifiers to the StoreKit
-			string[] identifiers = new string[_sku2storeSkuMappings.Count];
-			for (int i = 0; i < _sku2storeSkuMappings.Count; ++i) {
-				identifiers[i] = _sku2storeSkuMappings.ElementAt(i).Value;
-			}
-			assignIdentifiersAndCallbackGameObject(identifiers, identifiers.Length, typeof(OpenIABEventManager).ToString());
+            if (!AppStore_canMakePayments()) {
+                OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "User cannot make payments.");
+                return;
+            }
 
-			if (canMakePayments()) {
-				loadProducts();
-			} else {
-				OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "User cannot make payments.");	
-			}
+            // Pass identifiers to the StoreKit
+            string[] identifiers = new string[_sku2storeSkuMappings.Count];
+            for (int i = 0; i < _sku2storeSkuMappings.Count; ++i) {
+                identifiers[i] = _sku2storeSkuMappings.ElementAt(i).Value;
+            }
+
+			AppStore_requestProducts(identifiers, identifiers.Length);
 		}
 		
 		public void mapSku(string sku, string storeName, string storeSku) {
@@ -120,11 +107,7 @@ namespace OnePF {
                 return;
             }
 			
-			if (!buyProductWithIdentifier(storeSku)) {
-				OpenIAB.EventManager.SendMessage("OnPurchaseFailed", "'Failed to start purchase operation' failed");
-			} else {
-				_purchaseSet.Add(sku);
-			}
+            AppStore_startPurchase(storeSku);
 		}
 		
 		public void purchaseSubscription(string sku, string developerPayload="") {
@@ -139,15 +122,17 @@ namespace OnePF {
                 return;
             }
 
-			// TODO: ZALIPON =\
-			if (_purchaseSet.Contains(purchase.Sku)) {
-				OpenIAB.EventManager.SendMessage("OnConsumePurchaseSucceeded", purchase.Serialize());	
-				_purchaseSet.Remove(purchase.Sku);
+			var storeSku = OpenIAB_iOS.Sku2StoreSku(purchase.Sku);
+            if (Inventory_hasPurchase(storeSku)) {
+                OpenIAB.EventManager.SendMessage("OnConsumePurchaseSucceeded", purchase.Serialize());
+                Inventory_removePurchase(storeSku);
+            } else {
+				OpenIAB.EventManager.SendMessage("OnConsumePurchaseFailed", "Purchase not found");
 			}
 		}
 		
 		public void restoreTransactions() {
-			restoreProducts();
+            AppStore_restorePurchases();
 		}
 
         public bool isDebugLog() {
