@@ -66,6 +66,12 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     <uses-permission android:name="android.permission.SEND_SMS" />
     ```
 
+    Be careful using sms permissions. If you want to support devices without sms functionality, don't forget to add
+
+      ```xml
+      <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+      ```
+
 9. Edit your proguard config file
 
     ```
@@ -84,7 +90,7 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     #FORTUMO
     -keep class mp.** { *; }
     ```
-    
+
 10. Troubleshooting: additional logging is very helpful if you trying to understand what's wrong with configuration or raise issue:
     ```java
     helper.enableDebugLogging(true);
@@ -133,11 +139,11 @@ Google Play and Open Stores
      -keep class com.android.vending.billing.**
      ```
 
-5. To test .apk with Google Play please ensure 
+5. To test .apk with Google Play please ensure
     - your .apk submitted to Google Play Developer Console
     - your .apk is signed by production key
     - versionCode in AndroidManifest.xml of your .apk equal to versionCode of .apk submitted to Developer Console
-   
+
 
 Receipt Verification on Server
 ---------------------
@@ -202,7 +208,7 @@ Remember, the SKUs must be unique across your Amazon developer account.
 4. If OpenIAB added as library project, Amazon SDK in-app-purchasing-1.0.3.jar should exist in build-path (/libs)
 
 5. To test .apk with Amazon SDK Tester some steps are needed:
-    
+
     - Download and install Amazon SDK Tester from Amazon website
     - Download JSON with in-app products from Amazon Developer Console and put JSON with in-app products to /mnt/sdcard
     - Install your .apk with special option to help OpenIAB choose Amazon protocol
@@ -210,7 +216,7 @@ Remember, the SKUs must be unique across your Amazon developer account.
     # install for Amazon SDK Tester:
     adb install -i com.amazon.venezia /path/to/YourApp.apk
     ```
-    
+
 
 Samsung Apps
 -------------
@@ -271,7 +277,7 @@ Nokia IAP
     -keep class com.nokia.payment.iap.aidl.**
     ```
 4. To test your .apk with Nokia Store Install your .apk with special option to help OpenIAB choose Nokia protocol
-    
+
     ```bash
     # install for Nokia Store:
     adb install -i com.nokia.payment.iapenabler /path/to/YourApp.apk
@@ -313,7 +319,12 @@ OpenIAB setup
         <activity android:name="mp.MpActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:configChanges="orientation|keyboardHidden|screenSize"/>
-     ```
+       ```
+    if you want to support devices without sms functionality, add
+
+      ```xml
+      <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+      ```
 3. In the code setup an Options object
 
     ```java
@@ -436,24 +447,24 @@ Current Status
 =====
 OpenIAB SDK is used in production by wide variety of application and games. OpenIAB packages are available for Android apps and games based on Unity3d or Marmalade SDK. OpenIAB protocol is implemented by several Appstores.
 
-We have some samples that works in any Appstore in our [samples folder](https://github.com/onepf/OpenIAB/tree/master/samples). To find differences between TrivialDrive provided by Google and TrivialDrive with OpenIAB, please check our [sample](https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive). It demonstrates what changes need to be done to work with all Appstores and Carrier Billing. 
+We have some samples that works in any Appstore in our [samples folder](https://github.com/onepf/OpenIAB/tree/master/samples). To find differences between TrivialDrive provided by Google and TrivialDrive with OpenIAB, please check our [sample](https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive). It demonstrates what changes need to be done to work with all Appstores and Carrier Billing.
 
 If you an Appstore developer and want to know how to integrate OpenIAB protocol in your Appstore, please start with our [Step-By-Step How-To](https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md)
 
 Basic Principles
 =====
 * **As close to Google Play In-app Billing API as possible** - we optimize the OpenIAB library by the following parameter "lines on code you need to change in an app that already works in Google Play to make it working in all the appstores"
-* **One APK works in all appstores** - OpenIAB chooses proper billing method automatically or follows your requirements  
+* **One APK works in all appstores** - OpenIAB chooses proper billing method automatically or follows your requirements
 * **Open In-App Billing protocol** - OpenIAB is designed provide lightweight solution that supports hundreds of appstores. When appstore implement OpenIAB protocol on appstore side all applications with OpenIAB become fully compatible with new appstore without recompile.
 * **No middle man**
 
 No Middle Man
 =====
-OpenIAB is an open source library that handles OpenIAB protocol and wraps some already existing IAB SDKs as well. 
-It is important to understand that all payments are processed directly by appstore and there is no a middle man 
+OpenIAB is an open source library that handles OpenIAB protocol and wraps some already existing IAB SDKs as well.
+It is important to understand that all payments are processed directly by appstore and there is no a middle man
 staying between the app developers and the appstores.
-OpenIAB is not a payment service. It is just an API how the apps communicate with appstores to request in-app billing. 
-There is a common open API all the stores can use instead of each new store implement their own API 
+OpenIAB is not a payment service. It is just an API how the apps communicate with appstores to request in-app billing.
+There is a common open API all the stores can use instead of each new store implement their own API
 and developers have to integrate all these different APIs in their apps.
 
 

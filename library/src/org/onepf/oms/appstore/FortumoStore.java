@@ -24,7 +24,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class FortumoStore extends DefaultAppstore {
     private static final String TAG = FortumoStore.class.getSimpleName();
-    private Boolean isNookDevice;
+    private boolean isNookDevice;
     private Boolean isBillingAvailable;
 
     /**
@@ -63,15 +63,6 @@ public class FortumoStore extends DefaultAppstore {
     public boolean isBillingAvailable(String packageName) {
         if (isBillingAvailable != null) {
             return isBillingAvailable;
-        }
-        if (!isNookDevice) {
-            final boolean hasTelephonyFeature = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
-            if (isDebugLog()) {
-                Log.d(TAG, "isBillingAvailable: has FEATURE_TELEPHONY " + hasTelephonyFeature);
-            }
-            if (!hasTelephonyFeature) {
-                return isBillingAvailable = false;
-            }
         }
         billingService = (FortumoBillingService) getInAppBillingService();
         isBillingAvailable = billingService.setupBilling(isNookDevice);

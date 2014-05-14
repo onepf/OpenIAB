@@ -493,8 +493,8 @@ public class OpenIabHelper {
             checkPermission(context, "android.permission.INTERNET", manifestResultBuilder);
             checkPermission(context, "android.permission.ACCESS_NETWORK_STATE", manifestResultBuilder);
             checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
-            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
-            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
+//            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
+//            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
 
             Intent paymentActivityIntent = new Intent();
             paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
