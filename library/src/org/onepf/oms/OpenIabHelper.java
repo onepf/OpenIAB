@@ -56,6 +56,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -642,6 +643,10 @@ public class OpenIabHelper {
      * @return dest or new List with discovered Appstores   
      */
     public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
+        if (Thread.currentThread().equals(Looper.getMainLooper().getThread())) {
+            throw new IllegalStateException("Must not be called from main thread. "
+                    + "Service interaction will be blocked");
+        }
         PackageManager packageManager = context.getPackageManager();
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         List<ResolveInfo> infoList = packageManager.queryIntentServices(intentAppstoreServices, 0);
