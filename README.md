@@ -1,9 +1,9 @@
 How To add OpenIAB into an app
 =====
-1. Download the latest version of OpenIAB.jar from https://github.com/onepf/OpenIAB/releases and attach it to the project.
+1. Download the latest version of OpenIAB.jar from http://www.onepf.org/openiab and attach it to the project.
 Or clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
 
-2. Map Google Play SKU ids to Yandex/Amazon/etc SKUs like this:
+2. Map Google Play SKUs to Yandex/Amazon/etc SKUs like this:
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L109
 
 3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
@@ -470,9 +470,13 @@ and developers have to integrate all these different APIs in their apps.
 
 How Can I Help?
 =====
-* If you are an Android app developer check [the list of open tasks]("https://github.com/onepf/OpenIAB/issues?direction=desc&page=1&sort=updated&state=open"), check if any of these issues is interesting for you and comment that you want to help.
-* If you are an appstore and already support In-App Billing then we will be happy to understand how it works and what changes are needed to make it OpenIAB compatible. Please contact us or raise an [new issue in GitHub](https://github.com/onepf/OpenIAB/issues/new)
-* If you are an appstore and do not support In-App Billing yet but plan to support it then we will be glad working with your implement OpenIAB API. Please contact us or raise an [new issue in GitHub](https://github.com/onepf/OpenIAB/issues/new)
+
+* If you know about issues we missed - please, let us know in <a href="https://github.com/onepf/OpenIAB/issues">Issues on GitHub</a>
+* If you have contacts with Appstore you like, ask them to implement <a href="https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md">OpenIAB</a> on their side
+* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?state=open">the list of open tasks</a>, see if any of these tasks interests you and comment it. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub and submit your code</li>
+* If you are an Appstore and already support In-App Billing we will be happy to meet with your API and find best way to make it compatible with OpenIAB. Please, raise an <a href="https://github.com/onepf/OpenIAB/issues?state=open">Issue</a> to let us know</li>
+* If you are an appstore that does not yet support in-app billing, but plans to support it, then we will be glad to help you with OpenIAB API. Please check our <a href="https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md">How-To</a> and contact us to get deeper explanation of questions you have by raising an <a href="https://github.com/onepf/OpenIAB/issues?state=open">Issue</a></li>
+
 
 License
 =====
