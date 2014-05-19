@@ -216,7 +216,7 @@ public class UnityPlugin {
             Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
             if (result.isFailure()) {
                 Log.e(TAG, "Error purchasing: " + result);
-                UnityPlayer.UnitySendMessage(EVENT_MANAGER, PURCHASE_FAILED_CALLBACK, result.getMessage());
+                UnityPlayer.UnitySendMessage(EVENT_MANAGER, PURCHASE_FAILED_CALLBACK, result.getResponse()+"|"+result.getMessage());
                 return;
             }
             Log.d(TAG, "Purchase successful.");
@@ -224,7 +224,7 @@ public class UnityPlugin {
             try {
                 jsonPurchase = purchaseToJson(purchase);
             } catch (JSONException e) {
-                UnityPlayer.UnitySendMessage(EVENT_MANAGER, PURCHASE_FAILED_CALLBACK, "Couldn't serialize the purchase");
+                UnityPlayer.UnitySendMessage(EVENT_MANAGER, PURCHASE_FAILED_CALLBACK, "-1|Couldn't serialize the purchase");
                 return;
             }
             UnityPlayer.UnitySendMessage(EVENT_MANAGER, PURCHASE_SUCCEEDED_CALLBACK, jsonPurchase);
