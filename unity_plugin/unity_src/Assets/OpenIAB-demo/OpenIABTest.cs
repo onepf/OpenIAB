@@ -139,9 +139,9 @@ public class OpenIABTest : MonoBehaviour {
         Debug.Log("purchaseSucceededEvent: " + purchase);
         _label = "PURCHASED:" + purchase.ToString();
     }
-    private void purchaseFailedEvent(string error) {
-        Debug.Log("purchaseFailedEvent: " + error);
-        _label = "Purchase Failed: " + error;
+    private void purchaseFailedEvent(int errorCode, string errorMessage) {
+        Debug.Log("purchaseFailedEvent: " + errorMessage);
+        _label = "Purchase Failed: " + errorMessage;
     }
     private void consumePurchaseSucceededEvent(Purchase purchase) {
         Debug.Log("consumePurchaseSucceededEvent: " + purchase);

@@ -17,7 +17,7 @@ public class OpenIABEventManager : MonoBehaviour
     // Fired when a purchase of a product or a subscription succeeds
     public static event Action<Purchase> purchaseSucceededEvent;
     // Fired when a purchase fails
-    public static event Action<string> purchaseFailedEvent;
+    public static event Action<int, string> purchaseFailedEvent;
     // Fired when a call to consume a product succeeds
     public static event Action<Purchase> consumePurchaseSucceededEvent;
     // Fired when a call to consume a product fails
@@ -73,10 +73,17 @@ public class OpenIABEventManager : MonoBehaviour
             purchaseSucceededEvent(new Purchase(json));
     }
 
-    private void OnPurchaseFailed(string error)
+    private void OnPurchaseFailed(string message)
     {
+        var tokens = message.Split('|');
+        string errorMessage = tokens[1];
+
+        int errorCode;
+        if (!Int32.TryParse(tokens[0], out errorCode))
+            errorCode = -1;
+
         if (purchaseFailedEvent != null)
-            purchaseFailedEvent(error);
+            purchaseFailedEvent(errorCode, errorMessage);
     }
 
     private void OnConsumePurchaseSucceeded(string json)
@@ -156,7 +163,7 @@ public class OpenIABEventManager : MonoBehaviour
 	
 	private void OnPurchaseFailed(string error) {	
 		if (purchaseFailedEvent != null) {
-			purchaseFailedEvent(error);
+			purchaseFailedEvent(-1, error);
 		}
 	}
 
@@ -223,7 +230,7 @@ public class OpenIABEventManager : MonoBehaviour
     private void OnPurchaseFailed(string error)
     {
         if (purchaseFailedEvent != null)
-            purchaseFailedEvent(error);
+            purchaseFailedEvent(-1, error);
     }
 
     private void OnConsumePurchaseSucceeded(Purchase purchase)
