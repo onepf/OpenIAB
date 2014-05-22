@@ -799,12 +799,31 @@ public class IabHelper implements AppstoreInAppBillingService {
     }
 
 
-    // Checks that setup was done; if not, throws an exception.
+    /** Checks that setup was done; if not, throws an exception.
+     * 
+     * <p>OpenIAB specific: NOT USED</p> 
+     * 
+     * <code>setupDone</code> state is tracked by {@link OpenIabHelper}, so check here duplicates
+     * already existed logic. At the same time we discovered race condition problem based on end-user 
+     * crash reports 
+     * <p>Time to time when common onSetupSuccessfulListener calls queryInventory() IabHelper.setupDone is false
+     * We tried to solve it with volatile modifier and synchronized blocks. Both approaches failed. 
+     * Reasons are still unclear. The same flow in wrapper works perfect (OpenIabHelper) 
+     * <p><pre>
+     *  java.lang.IllegalStateException: IAB helper is not set up. Can't perform operation: queryInventory
+        at org.onepf.oms.appstore.googleUtils.IabHelper.checkSetupDone(IabHelper.java:806)
+        at org.onepf.oms.appstore.googleUtils.IabHelper.queryInventory(IabHelper.java:566)
+        at org.onepf.oms.OpenIabHelper.queryInventory(OpenIabHelper.java:930)
+        at org.onepf.oms.OpenIabHelper$5.run(OpenIabHelper.java:957)
+        at java.lang.Thread.run(Thread.java:864)
+        </pre></p>
+        @see https://github.com/onepf/OpenIAB/issues/199
+     */
     void checkSetupDone(String operation) {
-        if (!mSetupDone) {
-            logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
-            throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
-        }
+//        if (!mSetupDone) {
+//            logError("Illegal state for operation (" + operation + "): IAB helper is not set up.");
+//            throw new IllegalStateException("IAB helper is not set up. Can't perform operation: " + operation);
+//        }
     }
 
     // Workaround to bug where sometimes response codes come as Long instead of Integer
