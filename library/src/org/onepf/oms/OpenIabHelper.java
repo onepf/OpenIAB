@@ -447,6 +447,15 @@ public class OpenIabHelper {
         }, "openiab-setup").start();
     }
 
+    /**
+     * Must be called after setup is finished. See {@link #startSetup(OnIabSetupFinishedListener)}
+     * @return <code>null</code> if no appstore connected, otherwise name of Appstore OpenIAB has connected to.  
+     */
+    public synchronized String getConnectedAppstoreName() {
+        if (mAppstore == null) return null;
+        return mAppstore.getAppstoreName();
+    }
+    
     /** Check options are valid */
     public static void checkOptions(Options options) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
