@@ -40,11 +40,13 @@ public class Purchase implements Cloneable {
     String mToken;
     String mOriginalJson;
     String mSignature;
-    String appstoreName;
+    
+    String appstoreName; // developerAppstoreName
+    String distributorAppstoreName;
 
     public Purchase(String appstoreName) {
         if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
-        this.appstoreName = appstoreName;
+        this.distributorAppstoreName = this.appstoreName = appstoreName;
     }
     
     public void setOriginalJson(String originalJson) {
@@ -84,7 +86,6 @@ public class Purchase implements Cloneable {
     }
 
     public Purchase(String itemType, String jsonPurchaseInfo, String signature, String appstoreName) throws JSONException {
-        this.appstoreName = appstoreName;
         mItemType = itemType;
         mOriginalJson = jsonPurchaseInfo;
         JSONObject o = new JSONObject(mOriginalJson);
@@ -95,6 +96,9 @@ public class Purchase implements Cloneable {
         mPurchaseState = o.optInt("purchaseState");
         mDeveloperPayload = o.optString("developerPayload");
         mToken = o.optString("token", o.optString("purchaseToken"));
+        
+        appstoreName = o.optString("developerStoreId", appstoreName);
+        distributorAppstoreName = o.optString("distributorStoreId", appstoreName);
         mSignature = signature;
     }
 

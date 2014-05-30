@@ -196,14 +196,14 @@ public class Database {
     }
 
     // returns null if failed
-    public Purchase createPurchase(String packageName, String sku, String developerPayload) {
+    public Purchase createPurchase(String packageName, String sku, String developerPayload, String distributor, String developer) {
         SkuDetails skuDetails = getSkuDetails(sku);
         if (skuDetails == null) {
             return null;
         }
         return new Purchase(nextOrderId(), packageName, sku, System.currentTimeMillis(),
                 BillingBinder.PURCHASE_STATE_PURCHASED,
-                developerPayload, generateToken(packageName, sku));
+                developerPayload, generateToken(packageName, sku), distributor, developer);
     }
 
     public void storePurchase(Purchase purchase) {

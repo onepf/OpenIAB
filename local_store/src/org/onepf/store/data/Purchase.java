@@ -15,6 +15,7 @@
 
 package org.onepf.store.data;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -34,8 +35,11 @@ public class Purchase implements Cloneable {
     int _purchaseState;
     String _developerPayload;
     String _token;
+    
+    String _distributorAppstore;
+    String _developerAppstore;
 
-    public Purchase(String orderId, String packageName, String sku, long purchaseTime, int purchaseState, String developerPayload, String token) {
+    public Purchase(String orderId, String packageName, String sku, long purchaseTime, int purchaseState, String developerPayload, String token, String distrStore, String devStore) {
         _orderId = orderId;
         _packageName = packageName;
         _sku = sku;
@@ -43,6 +47,8 @@ public class Purchase implements Cloneable {
         _purchaseState = purchaseState;
         _developerPayload = developerPayload;
         _token = token;
+        _distributorAppstore = distrStore;
+        _developerAppstore = devStore;
     }
 
     public Purchase(String json) throws JSONException {
@@ -54,6 +60,8 @@ public class Purchase implements Cloneable {
         _purchaseState = o.getInt("purchaseState");
         _developerPayload = o.getString("developerPayload");
         _token = o.getString("purchaseToken");
+        _distributorAppstore = o.getString("distributorStoreId");
+        _developerAppstore = o.getString("developerStoreId");
     }
 
     public String toJson() {
@@ -66,6 +74,8 @@ public class Purchase implements Cloneable {
             o.put("purchaseState", _purchaseState);
             o.put("developerPayload", _developerPayload);
             o.put("purchaseToken", _token);
+            o.put("distributorStoreId", _distributorAppstore);
+            o.put("developerStoreId", _developerAppstore);
         } catch (Exception e) {
             Log.e(StoreApplication.TAG, "Couldn't serialize " + getClass().getSimpleName());
             return "";
@@ -109,6 +119,14 @@ public class Purchase implements Cloneable {
         return _token;
     }
 
+    public String getDeveloperStore() {
+        return _developerAppstore;
+    }
+    
+    public String getDistributorStore() {
+        return _distributorAppstore;
+    }
+    
     @Override
     public String toString() {
         return "PurchaseInfo: " + toJson();
