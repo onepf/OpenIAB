@@ -40,7 +40,7 @@ namespace OnePF {
             Description = json.ToString("description");
             Json = json.ToString("json");
 			CurrencyCode = json.ToString("currencyCode");
-			PriceValue = json.ToFloat("priceValue");
+			PriceValue = json.ToString("priceValue");
 
             Sku = OpenIAB_iOS.StoreSku2Sku(Sku);
         }
