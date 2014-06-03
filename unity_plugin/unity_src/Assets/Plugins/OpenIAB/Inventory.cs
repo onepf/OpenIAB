@@ -128,6 +128,11 @@ namespace OnePF {
             return _purchaseMap.Values.ToList<Purchase>();
         }
 
+		/** Returns a list of all available {@code SkuDetails} products. */
+		public List<SkuDetails> GetAllAvailableSkus() {
+			return _skuMap.Values.ToList();
+		}
+
         public void AddSkuDetails(SkuDetails d) {
             _skuMap.Add(d.Sku, d);
         }

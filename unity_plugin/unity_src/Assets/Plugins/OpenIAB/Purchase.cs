@@ -66,6 +66,9 @@ namespace OnePF
             var p = new Purchase();
             p.Sku = sku;
             p.DeveloperPayload = developerPayload;
+			#if UNITY_IOS
+			AddIOSHack(p);
+			#endif
             return p;
         }
 
@@ -73,6 +76,20 @@ namespace OnePF
         {
             return "SKU:" + Sku + ";" + OriginalJson;
         }
+
+		#if UNITY_IOS
+		private static void AddIOSHack(Purchase p) {
+			if(string.IsNullOrEmpty(p.AppstoreName)) {
+				p.AppstoreName = "com.apple.appstore";
+			}
+			if(string.IsNullOrEmpty(p.ItemType)) {
+				p.ItemType = "InApp";
+			}
+			if(string.IsNullOrEmpty(p.OrderId)) {
+				p.OrderId = System.Guid.NewGuid().ToString();
+			}
+		}
+		#endif
 
         public string Serialize()
         {
