@@ -37,6 +37,7 @@
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
 
     <permission android:name="com.tmoney.vending.INBILLING"/>
 
