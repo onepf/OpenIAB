@@ -140,6 +140,7 @@ public class IabHelper implements AppstoreInAppBillingService {
     public static final int IABHELPER_UNKNOWN_ERROR = -1008;
     public static final int IABHELPER_SUBSCRIPTIONS_NOT_AVAILABLE = -1009;
     public static final int IABHELPER_INVALID_CONSUMPTION = -1010;
+    public static final int IABHELPER_SERVICE_ERROR = -1011;
 
     // Keys for the responses from InAppBillingService
     public static final String RESPONSE_CODE = "RESPONSE_CODE";
@@ -209,10 +210,19 @@ public class IabHelper implements AppstoreInAppBillingService {
         // Connection to IAB service
         logDebug("Starting in-app billing setup.");
         mServiceConn = new ServiceConnection() {
+
+            private boolean mFirstConnection = true;
+
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 logDebug("Billing service disconnected.");
                 mService = null;
+                try {
+                    // Try to automatically reconnect to service
+                    mContext.bindService(getServiceIntent(), this, Context.BIND_AUTO_CREATE);
+                } catch (Exception e) {
+                    // Ignore errors
+                }
             }
 
             @Override
@@ -227,8 +237,9 @@ public class IabHelper implements AppstoreInAppBillingService {
                     // check for in-app billing v3 support
                     int response = mService.isBillingSupported(3, packageName, ITEM_TYPE_INAPP);
                     if (response != BILLING_RESPONSE_RESULT_OK) {
-                        if (listener != null) listener.onIabSetupFinished(new IabResult(response,
-                                "Error checking for billing v3 support."));
+                        if (listener != null && mFirstConnection) {
+                            listener.onIabSetupFinished(new IabResult(response, "Error checking for billing v3 support."));
+                        }
 
                         // if in-app purchases aren't supported, neither are subscriptions.
                         mSubscriptionsSupported = false;
@@ -248,7 +259,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
                     mSetupDone = true;
                 } catch (RemoteException e) {
-                    if (listener != null) {
+                    if (listener != null && mFirstConnection) {
                         listener.onIabSetupFinished(new IabResult(IABHELPER_REMOTE_EXCEPTION,
                                                     "RemoteException while setting up in-app billing."));
                     }
@@ -256,9 +267,10 @@ public class IabHelper implements AppstoreInAppBillingService {
                     return;
                 }
 
-                if (listener != null) {
+                if (listener != null && mFirstConnection) {
                     listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup successful."));
                 }
+                mFirstConnection = false;
             }
         };
 
@@ -398,7 +410,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             logDebug("Constructing buy intent for " + sku + ", item type: " + itemType);
             if (mService == null) {
                 logError("Unable to buy item, Error response: service is not connected.");
-                result = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Unable to buy item");
+                result = new IabResult(IABHELPER_SERVICE_ERROR, "Service error");
                 if (listener != null) listener.onIabPurchaseFinished(result, null);
                 flagEndAsync();
                 return;
