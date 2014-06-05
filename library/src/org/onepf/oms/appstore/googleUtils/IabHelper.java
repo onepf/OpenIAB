@@ -299,13 +299,16 @@ public class IabHelper implements AppstoreInAppBillingService {
     public void dispose() {
         logDebug("Disposing.");
         mSetupDone = false;
-        if (mServiceConn != null) {
+        if (mService != null) {
             logDebug("Unbinding from service.");
-            if (mContext != null) mContext.unbindService(mServiceConn);
-            mServiceConn = null;
+            if (mContext != null && mServiceConn != null) {
+                mContext.unbindService(mServiceConn);
+            }
             mService = null;
-            mPurchaseListener = null;
         }
+        mPurchaseListener = null;
+        mContext = null;
+        mServiceConn = null;
     }
 
     /**
@@ -434,6 +437,12 @@ public class IabHelper implements AppstoreInAppBillingService {
             e.printStackTrace();
 
             result = new IabResult(IABHELPER_REMOTE_EXCEPTION, "Remote exception while starting purchase flow");
+            if (listener != null) listener.onIabPurchaseFinished(result, null);
+        } catch (Exception e) {
+            logError("Exception while launching purchase flow for sku " + sku);
+            e.printStackTrace();
+
+            result = new IabResult(IABHELPER_UNKNOWN_ERROR, "Exception while starting purchase flow : " + e.getMessage());
             if (listener != null) listener.onIabPurchaseFinished(result, null);
         }
         flagEndAsync();
@@ -994,11 +1003,13 @@ public class IabHelper implements AppstoreInAppBillingService {
 
             ArrayList<String> responseList = skuDetails.getStringArrayList(RESPONSE_GET_SKU_DETAILS_LIST);
 
-            for (String thisResponse : responseList) {
-                SkuDetails d = new SkuDetails(itemType, thisResponse);
-                d.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), d.getSku()));
-                logDebug("querySkuDetails() Got sku details: " + d);
-                inv.addSkuDetails(d);
+            if (responseList != null) {
+                for (String thisResponse : responseList) {
+                    SkuDetails d = new SkuDetails(itemType, thisResponse);
+                    d.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), d.getSku()));
+                    logDebug("querySkuDetails() Got sku details: " + d);
+                    inv.addSkuDetails(d);
+                }
             }
         }
 
