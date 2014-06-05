@@ -64,6 +64,8 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <!--SlideME-->
+    <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
     ```
 
     Be careful using sms permissions. If you want to support devices without sms functionality, don't forget to add
@@ -281,6 +283,14 @@ Nokia IAP
     ```bash
     # install for Nokia Store:
     adb install -i com.nokia.payment.iapenabler /path/to/YourApp.apk
+    ```
+
+SlideME
+-------------
+1. In the AndroidManifest.xml add the corresponding billing permission
+
+    ```xml
+     <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
     ```
 
 Fortumo: carrier billing and NOOK
