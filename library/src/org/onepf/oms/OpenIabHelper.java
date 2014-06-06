@@ -29,13 +29,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.AmazonAppstoreBillingService;
+import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.GooglePlay;
+import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.TStore;
-import org.onepf.oms.appstore.NokiaStore;
-import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -357,8 +358,19 @@ public class OpenIabHelper {
                                 : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
                         stores2check.add(new GooglePlay(context, publicKey));
                     }
-                    stores2check.add(new AmazonAppstore(context));
-                    stores2check.add(new TStore(context, options.storeKeys.get(OpenIabHelper.NAME_TSTORE)));
+                    
+                    // try AmazonApps if in-app-purchasing.jar with Amazon SDK is compiled with app 
+                    try {
+                        OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
+                        stores2check.add(new AmazonAppstore(context));
+                    } catch (ClassNotFoundException e) {}
+
+                    // try T-Store if iap_plugin-dev.jar with T-Store SDK is compiled with app 
+                    try {
+                        TStore.class.getClassLoader().loadClass("com.skplanet.dodo.IapPlugin");
+                        stores2check.add(new TStore(context, options.storeKeys.get(OpenIabHelper.NAME_TSTORE)));
+                    } catch (ClassNotFoundException e) {}
+                    
                     if (getAllStoreSkus(NAME_SAMSUNG).size() > 0) {  
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
