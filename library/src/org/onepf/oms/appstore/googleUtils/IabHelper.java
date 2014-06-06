@@ -705,7 +705,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             logDebug("Consuming sku: " + sku + ", token: " + token);
             if (mService == null) {
                 logDebug("Error consuming consuming sku " + sku + ". Service is not connected.");
-                throw new IabException(BILLING_RESPONSE_RESULT_ERROR, "Error consuming sku " + sku);
+                throw new IabException(IABHELPER_SERVICE_ERROR, "Service error consuming sku " + sku);
             }
             int response = mService.consumePurchase(3, getPackageName(), token);
             if (response == BILLING_RESPONSE_RESULT_OK) {
@@ -894,7 +894,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             logDebug("Calling getPurchases with continuation token: " + continueToken);
             if(mService==null){
                 logDebug("getPurchases() failed: service is not connected.");
-                return BILLING_RESPONSE_RESULT_ERROR;
+                return IABHELPER_SERVICE_ERROR;
             }
             Bundle ownedItems = mService.getPurchases(3, getPackageName(), itemType, continueToken);
 
@@ -989,7 +989,7 @@ public class IabHelper implements AppstoreInAppBillingService {
             querySkus.putStringArrayList(GET_SKU_DETAILS_ITEM_LIST, batch);
             if (mService == null) {
                 logError("unable to get sku details: service is not connected.");
-                return IABHELPER_BAD_RESPONSE;
+                return IABHELPER_SERVICE_ERROR;
             }
             Bundle skuDetails = mService.getSkuDetails(3, mContext.getPackageName(), itemType, querySkus);
 
