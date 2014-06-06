@@ -83,17 +83,30 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
      */
     private String currentUserId;
     
-    /** Maintained internally by 
-     * <li>{@link #queryInventory(boolean, List, List)}
-     * <li>{@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)}
-     * <li>{@link #onItemDataResponse(ItemDataResponse)}*/
-    private Inventory inventory;
+    /** 
+     * To process {@link #queryInventory(boolean, List, List)} request following steps are done:
+     * <p>
+     * {@link #queryInventory(boolean, List, List)} - initialize inventory object, request purchase data by  
+     * <code>initiatePurchaseUpdatesRequest()</code> and locks thread on inventoryLatch.
+     * After whole purchase data is recieved request SKU details by <code>initiateItemDataRequest()</code> 
+     * <br>
+     * {@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)} - triggered by Amazon SDK.
+     * Handles purchases data chunk by chunk. Releases inventoryLatch lock after last chunk is handled 
+     * <p>
+     * {@link #onItemDataResponse(ItemDataResponse)} - triggered by Amazon SDK.
+     * Handles items data chunk by chunk. Releases inventoryLatch lock after last chunk is handled 
+     *
+     * <p>NOTES:</p>
+     * Amazon SDK may trigger on*Response() before queryInventory() is called. It happens
+     * when confirmation of processed purchase was not delivered to application (when applications
+     * crashes or relaunched). So inventory object must be not null as well as inventoryLatch 
+     */
+    private Inventory inventory = new Inventory();
+    private CountDownLatch inventoryLatch = new CountDownLatch(0);
     
     /** If not null will be notified from  */
     private IabHelper.OnIabSetupFinishedListener setupListener;
 
-    /** TODO: consider removal inventoryLatch or using carefully */
-    private CountDownLatch inventoryLatch;
 
     public AmazonAppstoreBillingService(Context context) {
         super(context);
