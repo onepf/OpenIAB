@@ -34,7 +34,7 @@ public class UnityPlugin {
     public static final String STORE_AMAZON = OpenIabHelper.NAME_AMAZON;
     public static final String STORE_TSTORE = OpenIabHelper.NAME_TSTORE;
     public static final String STORE_SAMSUNG = OpenIabHelper.NAME_SAMSUNG;
-    public static final String STORE_YANDEX = "YandexPublicKey";
+    public static final String STORE_YANDEX = OpenIabHelper.NAME_YANDEX;
 	public static final String STORE_NOKIA = OpenIabHelper.NAME_NOKIA;
 
     // (arbitrary) request code for the purchase flow
