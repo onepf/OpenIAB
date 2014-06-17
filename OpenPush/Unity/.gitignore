@@ -1,0 +1,8 @@
+/BUILD/
+/Library/
+/obj/
+/Temp/
+*.csproj
+*.sln
+*.DS_Store
+*.v12.suo

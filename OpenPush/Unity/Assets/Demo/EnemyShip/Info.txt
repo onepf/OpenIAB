@@ -1,0 +1,15 @@
+Space Shooter 3D.
+2380 Tris.
+
+
+1 X texture map.jpg 1024X1024 (spare)
+1 X Normal map.Jpg 1024X1024 (in use)
+1 X Specular map.jpg 1024X1024 (spare)
+1 X Texture map.jpg with Alpha spec 1024X1024 (in use)
+1 X Texture map.jpg with Alpha spec 512X512 (Spare)
+
+Thanks and enjoy
+
+mail: duane_mayberry@yahoo.co.uk
+
+web: www.duanesmind.co.uk
