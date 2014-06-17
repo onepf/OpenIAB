@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using OnePF.OpenPush;
 
 public class PushNotifications : MonoBehaviour
@@ -16,7 +15,7 @@ public class PushNotifications : MonoBehaviour
 
     void Start()
     {
-        InitParams initParams = new InitParams("http://192.168.2.139:8080", "363551033620");
+        InitParams initParams = new InitParams("http://custom-server-url", "ANDROID_SENDER_ID");
         OpenPush.Init(initParams);
     }
 
