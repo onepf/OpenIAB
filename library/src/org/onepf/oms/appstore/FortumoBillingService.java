@@ -261,6 +261,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         final Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse = inappsXMLParser.parse(context);
         final List<InappBaseProduct> allItems = parse.first;
         final Map<String, FortumoProductParser.FortumoDetails> fortumoSkuDetailsMap = FortumoProductParser.parse(context, isNook);
+        int itemsNotSupportedCount = 0;
         for (InappBaseProduct item : allItems) {
             final String productId = item.getProductId();
             final FortumoProductParser.FortumoDetails fortumoDetails = fortumoSkuDetailsMap.get(productId);
@@ -275,7 +276,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 if (supportedOperator) {
                     fetchedPriceData = MpUtils.getFetchedPriceData(context, serviceId, serviceInAppSecret);
                 } else {
-                    throw new IabException(IabHelper.IABHELPER_ERROR_BASE, "Carrier is not supported.");
+                    if (isDebugLog()) {
+                        Log.d(TAG, productId + " not available for this carrier");
+                    }
+                    itemsNotSupportedCount++;
+                    continue;
                 }
             }
             String price = null;
@@ -285,6 +290,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             FortumoProduct fortumoProduct = new FortumoProduct(item, fortumoDetails, price);
             map.put(productId, fortumoProduct);
         }
+
+        if (itemsNotSupportedCount == allItems.size()) {
+            throw new IabException(IabHelper.IABHELPER_ERROR_BASE, "No inventory available for this carrier/country.");
+        }
+
         return map;
     }
 
