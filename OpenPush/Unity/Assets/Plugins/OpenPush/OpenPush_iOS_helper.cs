@@ -13,7 +13,6 @@ namespace OnePF.OpenPush
 
 		public void Init(string serverUrl)
 		{
-			Debug.Log("OpenPush_iOS_helper.Init");
 			_serverUrl = serverUrl;
 			StartCoroutine(RequestToken(serverUrl));
 		}

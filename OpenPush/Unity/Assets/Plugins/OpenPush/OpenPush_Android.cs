@@ -9,8 +9,7 @@ namespace OnePF.OpenPush
 
         static OpenPush_Android()
         {
-            if (Application.platform != RuntimePlatform.Android)
-                return;
+            if (!IsDevice()) return;
 
             AndroidJNI.AttachCurrentThread();
 
@@ -23,7 +22,18 @@ namespace OnePF.OpenPush
 
         public void Init(InitParams p)
         {
+            if (!IsDevice())
+            {
+                GameObject.FindObjectOfType<EventReceiver>().SendMessage("OnInitSucceeded", "");
+                return;
+            }
+
             _push.Call("init", p.ServerUrl, p.SenderId);
+        }
+
+        private static bool IsDevice()
+        {
+            return Application.platform == RuntimePlatform.Android;
         }
     }
 }

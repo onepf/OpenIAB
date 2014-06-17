@@ -25,13 +25,18 @@ namespace OnePF.OpenPush
             push.InitFinished += delegate(bool success, string errorMessage) { if (InitFinished != null) InitFinished(success, errorMessage); };
             _push = push;            
 #else
-			Debug.LogError("OpenPush currently not supported on this platform. Sorry.");
             return;
 #endif
         }
 
         public static void Init(InitParams initParams)
         {
+            if (_push == null)
+            {
+                Debug.LogError("OpenPush currently not supported on this platform. Sorry.");
+                return;
+            }
+
             if (_eventReceiver == null)
             {
                 _eventReceiver = new GameObject("OpenPush").AddComponent<EventReceiver>();
