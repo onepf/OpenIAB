@@ -10,11 +10,8 @@ using PushSharp.Apple;
 using PushSharp.Core;
 using PushSharp.Windows;
 using PushSharp.WindowsPhone;
-
 using System.Threading;
 using System.Net.Sockets;
-//using PushSharp.WindowsPhone;
-//using PushSharp.Windows;
 
 namespace PushSharp.Sample
 {
@@ -56,20 +53,12 @@ namespace PushSharp.Sample
 			// IMPORTANT: Make sure you use the right Push certificate.  Apple allows you to generate one for connecting to Sandbox,
 			//   and one for connecting to Production.  You must use the right one, to match the provisioning profile you build your
 			//   app with!
-			var appleCert = File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../Resources/OpenPush.Sandbox.p12"));
+			var appleCert = File.ReadAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "path/to/certificate"));
             //IMPORTANT: If you are using a Development provisioning Profile, you must use the Sandbox push notification server 
             //  (so you would leave the first arg in the ctor of ApplePushChannelSettings as 'false')
             //  If you are using an AdHoc or AppStore provisioning profile, you must use the Production push notification server
             //  (so you would change the first arg in the ctor of ApplePushChannelSettings to 'true')
-            push.RegisterAppleService(new ApplePushChannelSettings(appleCert, "onepf")); //Extension method
-			//Fluent construction of an iOS notification
-			//IMPORTANT: For iOS you MUST MUST MUST use your own DeviceToken here that gets generated within your iOS app itself when the Application Delegate
-			//  for registered for remote notifications is called, and the device token is passed back to you
-            //push.QueueNotification(new AppleNotification()
-            //                           .ForDeviceToken("DEVICE TOKEN HERE")
-            //                           .WithAlert("Hello World!")
-            //                           .WithBadge(7)
-            //                           .WithSound("sound.caf"));
+            push.RegisterAppleService(new ApplePushChannelSettings(appleCert, "certificateFilePassword"));
 			
 			//---------------------------
 			// ANDROID GCM NOTIFICATIONS
@@ -78,57 +67,18 @@ namespace PushSharp.Sample
 			//IMPORTANT: The API KEY comes from your Google APIs Console App, under the API Access section, 
 			//  by choosing 'Create new Server key...'
 			//  You must ensure the 'Google Cloud Messaging for Android' service is enabled in your APIs Console
-            push.RegisterGcmService(new GcmPushChannelSettings("AIzaSyCOLdOixFmnEjtmQA2j7v_CVdLcD51BFjg"));
-			//Fluent construction of an Android GCM Notification
-			//IMPORTANT: For Android you MUST use your own RegistrationId here that gets generated within your Android app itself!
-            
-            // TODO: server is calling it on POST
-            //push.QueueNotification(new GcmNotification().ForDeviceRegistrationId("DEVICE REGISTRATION ID HERE")
-            //                      .WithJson("{\"alert\":\"Hello World!\",\"badge\":7,\"sound\":\"sound.caf\"}"));
+            push.RegisterGcmService(new GcmPushChannelSettings("senderAuthToken"));
 			
 			//-----------------------------
 			// WINDOWS PHONE NOTIFICATIONS
 			//-----------------------------
             //Configure and start Windows Phone Notifications
 			push.RegisterWindowsPhoneService();
-			//Fluent construction of a Windows Phone Toast notification		
-            //IMPORTANT: For Windows Phone you MUST use your own Endpoint Uri here that gets generated within your Windows Phone app itself!
-            // TODO: server is calling it on POST
-            //push.QueueNotification(new WindowsPhoneToastNotification()
-            //    .ForEndpointUri(new Uri("DEVICE REGISTRATION CHANNEL URI HERE"))
-            //    .ForOSVersion(WindowsPhoneDeviceOSVersion.MangoSevenPointFive)
-            //    .WithBatchingInterval(BatchingInterval.Immediate)
-            //    .WithNavigatePath("/MainPage.xaml")
-            //    .WithText1("PushSharp")
-            //    .WithText2("This is a Toast"));
-			
-
-            /*
-			//-------------------------
-			// WINDOWS NOTIFICATIONS
-			//-------------------------
-			//Configure and start Windows Notifications
-			push.RegisterWindowsService(new WindowsPushChannelSettings("WINDOWS APP PACKAGE NAME HERE",
-				"WINDOWS APP PACKAGE SECURITY IDENTIFIER HERE", "CLIENT SECRET HERE"));
-			//Fluent construction of a Windows Toast Notification
-            push.QueueNotification(new WindowsToastNotification()
-				.AsToastText01("This is a test")
-				.ForChannelUri("DEVICE CHANNEL URI HERE"));
-            */
-
 
             StartServer(push);
 
-			//Console.WriteLine("Waiting for Queue to Finish...");
-
-			//Stop and wait for the queues to drains
-			//push.StopAllServices();
-
-			//Console.WriteLine("Queue Finished, press return to exit...");
 			Console.ReadLine();			
 		}
-
-
 
         static void StartServer(PushBroker push)
         {

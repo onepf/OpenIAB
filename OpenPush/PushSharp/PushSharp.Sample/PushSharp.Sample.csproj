@@ -59,7 +59,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientHandler.cs" />
     <Compile Include="HttpProcessor.cs" />
     <Compile Include="HttpServer.cs" />
     <Compile Include="Server.cs" />
