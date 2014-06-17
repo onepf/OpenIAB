@@ -163,9 +163,8 @@ Renderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
 --- !u!33 &433046551
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -191,6 +190,7 @@ Transform:
   - {fileID: 2068513029}
   - {fileID: 828490841}
   m_Father: {fileID: 1925425721}
+  m_RootOrder: 0
 --- !u!65 &433046553
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -232,6 +232,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 1
 --- !u!199 &487942544
 ParticleSystemRenderer:
   m_ObjectHideFlags: 0
@@ -251,9 +252,8 @@ ParticleSystemRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_RenderMode: 1
   m_MaxParticleSize: .5
   m_CameraVelocityScale: 0
@@ -1353,6 +1353,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 2
 --- !u!1 &616838476
 GameObject:
   m_ObjectHideFlags: 0
@@ -1381,6 +1382,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 0
 --- !u!199 &616838478
 ParticleSystemRenderer:
   m_ObjectHideFlags: 0
@@ -1400,9 +1402,8 @@ ParticleSystemRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_RenderMode: 1
   m_MaxParticleSize: .5
   m_CameraVelocityScale: 0
@@ -2486,6 +2487,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 3
 --- !u!199 &632084004
 ParticleSystemRenderer:
   m_ObjectHideFlags: 0
@@ -2505,9 +2507,8 @@ ParticleSystemRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_RenderMode: 1
   m_MaxParticleSize: .5
   m_CameraVelocityScale: 0
@@ -3589,6 +3590,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 5
 --- !u!1 &1165681947
 GameObject:
   m_ObjectHideFlags: 0
@@ -3618,6 +3620,7 @@ Transform:
   - {fileID: 1223306539}
   - {fileID: 1909748833}
   m_Father: {fileID: 0}
+  m_RootOrder: 4
 --- !u!1 &1212511996
 GameObject:
   m_ObjectHideFlags: 0
@@ -3646,6 +3649,7 @@ Transform:
   - {fileID: 2005446416}
   - {fileID: 1967217461}
   m_Father: {fileID: 0}
+  m_RootOrder: 3
 --- !u!1 &1223306537
 GameObject:
   m_ObjectHideFlags: 0
@@ -3683,9 +3687,8 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: a0b22f5a4703c26499ab0343f798df58, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &1223306539
@@ -3699,6 +3702,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1165681948}
+  m_RootOrder: 1
 --- !u!114 &1223306540
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3765,6 +3769,7 @@ Transform:
   - {fileID: 1618028221}
   - {fileID: 1388628459}
   m_Father: {fileID: 1165681948}
+  m_RootOrder: 0
 --- !u!114 &1239529762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3806,6 +3811,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 1
 --- !u!114 &1275705505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3846,6 +3852,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 2
 --- !u!199 &1380575673
 ParticleSystemRenderer:
   m_ObjectHideFlags: 0
@@ -3865,9 +3872,8 @@ ParticleSystemRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_RenderMode: 1
   m_MaxParticleSize: .5
   m_CameraVelocityScale: 0
@@ -4952,6 +4958,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1239529761}
+  m_RootOrder: 1
 --- !u!212 &1388628460
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -4970,9 +4977,8 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ee335575cbd4f5c438d8a9944b08affb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1388628461
@@ -5034,9 +5040,8 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ee335575cbd4f5c438d8a9944b08affb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &1618028221
@@ -5050,6 +5055,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1239529761}
+  m_RootOrder: 0
 --- !u!114 &1618028222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5111,6 +5117,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 7
 --- !u!1 &1879108870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5162,8 +5169,11 @@ Camera:
     m_Bits: 256
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
   m_HDR: 0
   m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: .0219999999
 --- !u!4 &1879108873
 Transform:
   m_ObjectHideFlags: 0
@@ -5175,6 +5185,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 5
 --- !u!1 &1892245070
 GameObject:
   m_ObjectHideFlags: 0
@@ -5243,8 +5254,11 @@ Camera:
     m_Bits: 4294967039
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
   m_HDR: 0
   m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: .0219999999
 --- !u!4 &1892245075
 Transform:
   m_ObjectHideFlags: 0
@@ -5256,6 +5270,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 6
 --- !u!1 &1909748829
 GameObject:
   m_ObjectHideFlags: 0
@@ -5327,9 +5342,8 @@ Renderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
 --- !u!4 &1909748833
 Transform:
   m_ObjectHideFlags: 0
@@ -5341,6 +5355,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1165681948}
+  m_RootOrder: 2
 --- !u!1 &1925425720
 GameObject:
   m_ObjectHideFlags: 0
@@ -5370,6 +5385,7 @@ Transform:
   m_Children:
   - {fileID: 433046552}
   m_Father: {fileID: 0}
+  m_RootOrder: 8
 --- !u!114 &1925425722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5436,6 +5452,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1212511997}
+  m_RootOrder: 1
 --- !u!102 &1967217462
 TextMesh:
   serializedVersion: 3
@@ -5475,9 +5492,8 @@ Renderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
 --- !u!1 &1976573352
 GameObject:
   m_ObjectHideFlags: 0
@@ -5540,6 +5556,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 0
 --- !u!1 &2005446415
 GameObject:
   m_ObjectHideFlags: 0
@@ -5568,6 +5585,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1212511997}
+  m_RootOrder: 0
 --- !u!102 &2005446417
 TextMesh:
   serializedVersion: 3
@@ -5607,9 +5625,8 @@ Renderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: 0
-  m_SortingOrder: 0
   m_SortingLayerID: 0
+  m_SortingOrder: 0
 --- !u!1 &2068513028
 GameObject:
   m_ObjectHideFlags: 0
@@ -5637,6 +5654,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 433046552}
+  m_RootOrder: 4
 --- !u!65 &2068513030
 BoxCollider:
   m_ObjectHideFlags: 0
