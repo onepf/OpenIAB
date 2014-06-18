@@ -31,6 +31,11 @@ extern "C"
         [[AppStoreDelegate instance] restorePurchases];
     }
     
+    void Inventory_query()
+    {
+        [[AppStoreDelegate instance] queryInventory];
+    }
+    
     bool Inventory_hasPurchase(const char* sku)
     {
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];

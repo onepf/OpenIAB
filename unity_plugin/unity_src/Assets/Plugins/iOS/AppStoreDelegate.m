@@ -11,6 +11,7 @@ const char* EventHandler = "OpenIABEventManager";
 #pragma mark Internal
 
 NSSet* m_skus;
+NSMutableArray* m_skuMap;
 
 - (void)storePurchase:(NSString *)sku
 {
@@ -44,10 +45,12 @@ NSSet* m_skus;
 	return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
+    [m_skuMap release];
     [m_skus release];
     m_skus = nil;
+    m_skuMap = nil;
     [super dealloc];
 }
 
@@ -72,45 +75,10 @@ NSSet* m_skus;
     [[SKPaymentQueue defaultQueue] addPayment:payment];
 }
 
-- (void)restorePurchases
+- (void)queryInventory
 {
-    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
-}
-
-
-#pragma mark SKProductsRequestDelegate Protocol
-
-- (void)productsRequest:(SKProductsRequest*)request didReceiveResponse:(SKProductsResponse*)response
-{
-    NSMutableDictionary *inventory = [[NSMutableDictionary alloc] init];
-    NSMutableArray *skuMap = [[NSMutableArray alloc] init];
+    NSMutableDictionary* inventory = [[NSMutableDictionary alloc] init];
     NSMutableArray *purchaseMap = [[NSMutableArray alloc] init];
-    
-    NSArray * skProducts = response.products;
-    for (SKProduct * skProduct in skProducts)
-    {
-        // Format the price
-        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-        [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
-        [numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-        [numberFormatter setLocale:skProduct.priceLocale];
-        NSString *formattedPrice = [numberFormatter stringFromNumber:skProduct.price];
-        
-        // Setup sku details
-        NSDictionary* skuDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    @"product", @"itemType",
-                                    skProduct.productIdentifier, @"sku",
-                                    @"product", @"type",
-                                    formattedPrice, @"price",
-                                    ([skProduct.localizedTitle length] == 0) ? @"" : skProduct.localizedTitle, @"title",
-                                    ([skProduct.localizedDescription length] == 0) ? @"" : skProduct.localizedDescription, @"description",
-                                    @"", @"json",
-                                    nil];
-        
-        NSArray* entry = [NSArray arrayWithObjects:skProduct.productIdentifier, skuDetails, nil];
-        [skuMap addObject:entry];
-    }
-    
     NSUserDefaults* standardUserDefaults = [NSUserDefaults standardUserDefaults];
     if (!standardUserDefaults)
         NSLog(@"Couldn't access purchase storage. Purchase map won't be available.");
@@ -140,12 +108,51 @@ NSSet* m_skus;
             }
     
     [inventory setObject:purchaseMap forKey:@"purchaseMap"];
-    [inventory setObject:skuMap forKey:@"skuMap"];
+    [inventory setObject:m_skuMap forKey:@"skuMap"];
     
     NSError* error = nil;
     NSData* jsonData = [NSJSONSerialization dataWithJSONObject:inventory options:kNilOptions error:&error];
     NSString* message = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-	UnitySendMessage(EventHandler, "OnBillingSupported", strdup([message UTF8String]));
+	UnitySendMessage(EventHandler, "OnQueryInventorySucceeded", strdup([message UTF8String]));
+}
+
+- (void)restorePurchases
+{
+    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+}
+
+#pragma mark SKProductsRequestDelegate Protocol
+
+- (void)productsRequest:(SKProductsRequest*)request didReceiveResponse:(SKProductsResponse*)response
+{
+    m_skuMap = [[NSMutableArray alloc] init];
+    
+    NSArray* skProducts = response.products;
+    for (SKProduct * skProduct in skProducts)
+    {
+        // Format the price
+        NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+        [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+        [numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+        [numberFormatter setLocale:skProduct.priceLocale];
+        NSString *formattedPrice = [numberFormatter stringFromNumber:skProduct.price];
+        
+        // Setup sku details
+        NSDictionary* skuDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    @"product", @"itemType",
+                                    skProduct.productIdentifier, @"sku",
+                                    @"product", @"type",
+                                    formattedPrice, @"price",
+                                    ([skProduct.localizedTitle length] == 0) ? @"" : skProduct.localizedTitle, @"title",
+                                    ([skProduct.localizedDescription length] == 0) ? @"" : skProduct.localizedDescription, @"description",
+                                    @"", @"json",
+                                    nil];
+        
+        NSArray* entry = [NSArray arrayWithObjects:skProduct.productIdentifier, skuDetails, nil];
+        [m_skuMap addObject:entry];
+    }
+    
+    UnitySendMessage(EventHandler, "OnBillingSupported", strdup(""));
 }
 
 - (void)request:(SKRequest*)request didFailWithError:(NSError*)error
