@@ -124,9 +124,7 @@ public class OpenIABEventManager : MonoBehaviour
 #endif
 
 #if UNITY_IOS 
-	private void OnBillingSupported(string inventory) {
-        OpenIAB_iOS.CreateInventory(inventory);
-
+	private void OnBillingSupported(string empty) {
 		if (billingSupportedEvent != null) {
 			billingSupportedEvent();
 		}
@@ -140,12 +138,6 @@ public class OpenIABEventManager : MonoBehaviour
 	private void OnQueryInventorySucceeded(string json) {
 		if (queryInventorySucceededEvent != null) {
 			Inventory inventory = new Inventory(json);
-			queryInventorySucceededEvent(inventory);
-		}
-	}
-
-	public static void OnQueryInventorySucceeded(Inventory inventory) {
-		if (queryInventorySucceededEvent != null) {
 			queryInventorySucceededEvent(inventory);
 		}
 	}

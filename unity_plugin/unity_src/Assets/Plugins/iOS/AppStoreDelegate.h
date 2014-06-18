@@ -11,6 +11,8 @@
 
 - (void)startPurchase:(NSString*)sku;
 
+- (void)queryInventory;
+
 - (void)restorePurchases;
 
 @end

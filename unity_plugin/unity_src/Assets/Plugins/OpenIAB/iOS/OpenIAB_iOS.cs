@@ -30,22 +30,20 @@ namespace OnePF {
         private static extern bool Inventory_hasPurchase(string sku);
 
         [DllImport ("__Internal")]
+        private static extern void Inventory_query();
+
+        [DllImport ("__Internal")]
         private static extern void Inventory_removePurchase(string sku);
         #endregion
 
 		static Dictionary<string, string> _sku2storeSkuMappings = new Dictionary<string, string>();
 		static Dictionary<string, string> _storeSku2skuMappings = new Dictionary<string, string>();
-		static Inventory _inventory;
 
 		private bool IsDevice() {
 			if (Application.platform != RuntimePlatform.IPhonePlayer) {
 	            return false;
 	        }
 			return true;
-		}
-
-		public static void CreateInventory(string json) {
-			_inventory = new Inventory(json);
 		}
 
         public void init(Options options) {
@@ -88,11 +86,7 @@ namespace OnePF {
             if (!IsDevice()) {
 				return;
 			}
-			if (_inventory == null) {
-				OpenIAB.EventManager.SendMessage("OnQueryInventoryFailed", "Inventory is null");
-			} else {
-				OpenIABEventManager.OnQueryInventorySucceeded(_inventory);
-			}
+            Inventory_query();
         }
 
 		public void queryInventory(string[] skus) {
