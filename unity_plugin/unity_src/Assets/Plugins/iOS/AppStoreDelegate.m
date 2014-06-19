@@ -137,12 +137,18 @@ NSMutableArray* m_skuMap;
         [numberFormatter setLocale:skProduct.priceLocale];
         NSString *formattedPrice = [numberFormatter stringFromNumber:skProduct.price];
         
+        NSLocale *priceLocale = skProduct.priceLocale;
+        NSString *currencyCode = [priceLocale objectForKey:NSLocaleCurrencyCode];
+        NSNumber *productPrice = skProduct.price;
+        
         // Setup sku details
         NSDictionary* skuDetails = [NSDictionary dictionaryWithObjectsAndKeys:
                                     @"product", @"itemType",
                                     skProduct.productIdentifier, @"sku",
                                     @"product", @"type",
                                     formattedPrice, @"price",
+                                    currencyCode, @"currencyCode",
+                                    productPrice, @"priceValue",
                                     ([skProduct.localizedTitle length] == 0) ? @"" : skProduct.localizedTitle, @"title",
                                     ([skProduct.localizedDescription length] == 0) ? @"" : skProduct.localizedDescription, @"description",
                                     @"", @"json",

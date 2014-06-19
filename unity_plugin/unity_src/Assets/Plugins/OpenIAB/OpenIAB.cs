@@ -85,17 +85,17 @@ namespace OnePF
             _billing.restoreTransactions();
         }
 
-        public bool isDebugLog()
+		public static bool isDebugLog()
         {
             return _billing.isDebugLog();
         }
 
-        public void enableDebugLogging(bool enabled)
+        public static void enableDebugLogging(bool enabled)
         {
             _billing.enableDebugLogging(enabled);
         }
 
-        public void enableDebugLogging(bool enabled, string tag)
+		public static void enableDebugLogging(bool enabled, string tag)
         {
             _billing.enableDebugLogging(enabled, tag);
         }
