@@ -244,3 +244,5 @@ static OpenIAB() {
 	_billing = new OpenIAB_custom();
 #endif
 }
+
+Test keystore and key password: openiab

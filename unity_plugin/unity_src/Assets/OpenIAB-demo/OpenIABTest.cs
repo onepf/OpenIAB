@@ -3,7 +3,6 @@ using OnePF;
 using System.Collections.Generic;
 
 public class OpenIABTest : MonoBehaviour {
-    const string STORE_CUSTOM = "store";
     const string SKU = "sku";
 
     const string SKU_AMMO = "sku_ammo_general";
@@ -13,6 +12,8 @@ public class OpenIABTest : MonoBehaviour {
 #pragma warning disable 0414
     string _label = "";
 #pragma warning restore 0414
+
+    bool _isInitialized = false;
 
     private void OnEnable() {
         // Listen to all events for illustration purposes
@@ -39,7 +40,7 @@ public class OpenIABTest : MonoBehaviour {
 
     private void Start() {
         // Map skus for different stores
-        OpenIAB.mapSku(SKU, OpenIAB_Android.STORE_GOOGLE, "google-play.sku");
+        OpenIAB.mapSku(SKU, OpenIAB_Android.STORE_GOOGLE, "sku");
         
         OpenIAB.mapSku(SKU_AMMO, OpenIAB_WP8.STORE, "sku_ammo");
         OpenIAB.mapSku(SKU_MEDKIT, OpenIAB_WP8.STORE, "sku_medkit");
@@ -56,7 +57,7 @@ public class OpenIABTest : MonoBehaviour {
 
         if (GUI.Button(new Rect(xPos, yPos, width, height), "Initialize OpenIAB")) {
             // Application public key
-            var public_key = "key";
+            var public_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqibEPHCtfPm3Rn26gbE6vhCc1d6A072im+oWNlkUAJYV//pt1vCkYLqkkw/P2esPSWaw1nt66650vfVYc3sYY6L782n/C+IvZWQt0EaLrqsSoNfN5VqPhPeGf3wqsOvbKw9YqZWyKL4ddZUzRUPex5xIzjHHm3qIJI5v7iFJHOxOj0bLuEG8lH0Ljt/w2bNe4o0XXoshYDqpzIKmKy6OYNQOs8iBTJlfSmPrlGudmldW6CsuAKeVGm+Z+2xx3Xxsx3eSwEgEaUc1ZsMWSGsV6dXgc3JrUvK23JRJUu8X5Ec1OQLyxL3VelD5f0iKVTJ1kw59tMAVZ7DDpzPggWpUkwIDAQAB";
 
             var options = new Options();
             options.verifyMode = OptionsVerifyMode.VERIFY_SKIP;
@@ -67,6 +68,9 @@ public class OpenIABTest : MonoBehaviour {
             // Transmit options and start the service
             OpenIAB.init(options);
         }
+
+        if (!_isInitialized)
+            return;
 
         if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Test Purchase")) {
             OpenIAB.purchaseProduct("android.test.purchased");
@@ -88,15 +92,15 @@ public class OpenIABTest : MonoBehaviour {
         }
 
         if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Query Inventory")) {
-            OpenIAB.queryInventory();
+            OpenIAB.queryInventory(new string[] { SKU });
         }
 
         if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Purchase Real Product")) {
             OpenIAB.purchaseProduct(SKU);
         }
 
-        if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Stop Billing Service")) {
-            OpenIAB.unbindService();
+        if (GUI.Button(new Rect(xPos, yPos += heightPlus, width, height), "Consume Real Product")) {
+            OpenIAB.consumeProduct(Purchase.CreateFromSku(SKU));
         }
     }
 #endif
@@ -121,6 +125,7 @@ public class OpenIABTest : MonoBehaviour {
 #endif
 
     private void billingSupportedEvent() {
+        _isInitialized = true;
         Debug.Log("billingSupportedEvent");
     }
     private void billingNotSupportedEvent(string error) {

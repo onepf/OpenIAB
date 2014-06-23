@@ -83,7 +83,12 @@ namespace OnePF
 
         public void init(Options options)
         {
-            if (!IsDevice()) return;
+            if (!IsDevice())
+            {
+                // Fake init process in the editor. For test purposes
+                OpenIAB.EventManager.SendMessage("OnBillingSupported", "");
+                return;
+            }
 
             using (var j_options = new AndroidJavaObject("org.onepf.oms.OpenIabHelper$Options"))
             {
