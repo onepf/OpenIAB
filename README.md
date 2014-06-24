@@ -153,7 +153,7 @@ Google Play and Open Stores
 Receipt Verification on Server
 ---------------------
 
-1. Create OpenIabHelper with "Skip signature verification" option and no publicKeys. If you specify no publicKeys and forget VERIFY_SKIP options IabHelper will throw
+1. Create OpenIabHelper with "Skip signature verification" option and no publicKeys. If you specify no publicKeys and forget VERIFY_SKIP option, an IllegalArgumentException will be thrown
 
     ```java
     Options opts = new OpenIabHelper.Options();
@@ -170,7 +170,7 @@ Receipt Verification on Server
             String receiptData = purchase.getOriginalJson();
             String receiptSignature = purchase.getSignature();
             String storeName = purchase.getAppstoreName();
-            String urlToContent  = requestReceiptVerificationOnServer(receiptData, receiptSignature, storeName);
+            String urlToContent  = yourRequestReceiptVerificationOnServer(receiptData, receiptSignature, storeName);
             // … further code ...
         }
     }
