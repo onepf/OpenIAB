@@ -88,6 +88,9 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
 
     # SAMSUNG
     -keep class com.sec.android.iap.**
+    
+    # NOKIA
+    -keep class com.nokia.payment.iap.aidl.**
 
     #FORTUMO
     -keep class mp.** { *; }
