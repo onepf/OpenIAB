@@ -201,8 +201,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
         switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
             case SUCCESSFUL:
-                SubscriptionPeriod latestSubscriptionPeriod = null;
-                final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<SubscriptionPeriod>();
+                // SubscriptionPeriod latestSubscriptionPeriod = null;
+                // final LinkedList<SubscriptionPeriod> currentSubscriptionPeriods = new LinkedList<SubscriptionPeriod>();
                 for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
 
                     final String storeSku = receipt.getSku();
@@ -210,6 +210,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                     switch (receipt.getItemType()) {
                         case ENTITLED:
                             purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+                            purchase.setOriginalJson(generateOriginalJson(receipt, purchaseUpdatesResponse.getUserId()));
                             purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
                             purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                             inventory.addPurchase(purchase);
@@ -219,6 +220,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                             final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
                             if (subscriptionPeriod.getEndDate() == null) {
                                 purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+                                purchase.setOriginalJson(generateOriginalJson(receipt, purchaseUpdatesResponse.getUserId()));
                                 purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
                                 purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                                 inventory.addPurchase(purchase);
@@ -267,7 +269,6 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 return;
         }
         inventoryLatch.countDown();
-        return;
     }
 
     @Override
@@ -369,7 +370,9 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
      } </pre>
      * 
      * @param purchaseResponse
+     *          The purchase response
      * @return
+     *          The generated JSON as String
      */
     private String generateOriginalJson(PurchaseResponse purchaseResponse) {
     	JSONObject json = new JSONObject();
@@ -387,6 +390,40 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 		}
     	return json.toString();
 	}
+
+    /**
+     * Converts receipt to json for transfer with purchase object
+     *
+     * <pre>
+     {
+     "productId"         : "receipt.getSku"
+     "purchaseStatus"    : "SUCCESSFUL"
+     "userId"            : "userId" // can be null
+     "itemType"          : "receipt.getItemType().name()" // if non-null
+     "purchaseToken"     : "receipt.purchaseToken"
+     } </pre>
+     *
+     * @param receipt
+     *          The receipt
+     * @param userId
+     *          The userId
+     * @return
+     *          The generated JSON as String
+     */
+    private String generateOriginalJson(Receipt receipt, String userId) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put(JSON_KEY_PRODUCT_ID, receipt.getSku());
+            json.put(JSON_KEY_PURCHASE_STATUS, PurchaseResponse.PurchaseRequestStatus.SUCCESSFUL.name());
+            json.put(JSON_KEY_USER_ID, userId);
+            if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
+            if (isDebugLog()) Log.d(TAG, "generateOriginalJson(): JSON\n" + json.toString());
+        } catch (JSONException e) {
+            Log.e(TAG, "generateOriginalJson() failed to generate JSON", e);
+        }
+        return json.toString();
+    }
 
 	@Override
     public void consume(Purchase itemInfo) {
