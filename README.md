@@ -295,6 +295,13 @@ SlideME
     ```xml
      <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
     ```
+    
+2. To test your application with SlideME store install your .apk with special option
+
+    ```bash
+    # install for SlideME:
+    adb install -i com.slideme.sam.manager /path/to/YourApp.apk
+    ```
 
 Fortumo: carrier billing and NOOK
 =================================
