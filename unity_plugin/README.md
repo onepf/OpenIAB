@@ -22,6 +22,8 @@ There is also ``` AndroidManifest.xml ``` in the /Assets/Plugins/Android. Develo
 
 Now you can run demo scene with some test buttons.
 
+*__Fortumo__ is unavailable in the Asset Store package, but it can be found in the latest version from 'master' branch.*
+
 5 Simple Steps
 =====
 1. Place **OpenIABEventManager** prefab on the current scene.
