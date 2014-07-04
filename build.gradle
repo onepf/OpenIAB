@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.9.+'
+    }
+
+    ext.compileSdkVersion = 19
+    ext.buildToolsVersion = "19.0.3"
+    ext.minSdkVersion = 8
+    ext.targetSdkVersion = 19
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}

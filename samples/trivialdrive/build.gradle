@@ -1,0 +1,28 @@
+apply plugin: 'android'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    productFlavors {
+        fortumoJar {}
+        amazonJar {}
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+}
+
+dependencies {
+    amazonJarCompile project(path: ':library', configuration: 'amazonJarRelease')
+    fortumoJarCompile project(path: ':library', configuration: 'fortumoJarRelease')
+}

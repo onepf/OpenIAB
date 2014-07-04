@@ -1,0 +1,47 @@
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.3"
+    defaultPublishConfig "amazonJarDebug"
+    publishNonDefault true
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+
+    }
+
+    productFlavors {
+        amazonJar {}
+        fortumoJar {}
+    }
+
+    dependencies {
+        compile fileTree(dir: 'libs', include: '*.jar')
+    }
+
+
+    android.libraryVariants.all { variant ->
+        if (variant.flavorName == "amazonJar") {
+            variant.packageLibrary.exclude('libs/FortumoInApp-android-9.1.2-o.jar')
+        } else if (variant.flavorName == "fortumoJar") {
+        }
+    }
+
+    project.afterEvaluate {
+        if (android.libraryVariants.size() != 4) {
+            throw new GradleException("Wrong number of app variants!")
+        }
+    }
+}
+
+
+
