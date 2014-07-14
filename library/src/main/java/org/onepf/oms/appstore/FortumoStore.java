@@ -1,7 +1,6 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 import org.onepf.oms.Appstore;
