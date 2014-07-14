@@ -1,8 +1,8 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
     defaultPublishConfig "amazonJarDebug"
     publishNonDefault true
 
@@ -15,6 +15,7 @@ android {
             renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
             assets.srcDirs = ['assets']
+            jni.srcDirs = ['libs']
         }
 
     }
@@ -24,10 +25,9 @@ android {
         fortumoJar {}
     }
 
-    dependencies {
-        compile fileTree(dir: 'libs', include: '*.jar')
+    lintOptions {
+        abortOnError false
     }
-
 
     android.libraryVariants.all { variant ->
         if (variant.flavorName == "amazonJar") {
@@ -35,12 +35,10 @@ android {
         } else if (variant.flavorName == "fortumoJar") {
         }
     }
+}
 
-    project.afterEvaluate {
-        if (android.libraryVariants.size() != 4) {
-            throw new GradleException("Wrong number of app variants!")
-        }
-    }
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
 }
 
 
