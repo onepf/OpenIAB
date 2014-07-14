@@ -169,8 +169,8 @@ gen/
 /out/
 
 # Unity package build files
-*.jar
-*.jar.meta
-*.so
-*.so.meta
+unity_plugin/*.jar
+unity_plugin/*.jar.meta
+unity_plugin/*.so
+unity_plugin/*.so.meta
 
