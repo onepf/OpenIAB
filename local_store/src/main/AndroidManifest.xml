@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    package="org.onepf.store"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:allowBackup="false"
+        android:name=".StoreApplication"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name">
+
+        <activity
+            android:name=".StoreActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".PurchaseActivity"
+            android:label="@string/app_name"
+            android:process=":remote">
+        </activity>
+
+        <service
+            android:name=".AppstoreService"
+            android:exported="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="org.onepf.oms.openappstore.BIND"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".BillingService"
+            android:exported="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="org.onepf.oms.billing.BIND"/>
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>

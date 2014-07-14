@@ -1,0 +1,3 @@
+include ':library', ':local_store', 'trivialdrive'
+
+project(':trivialdrive').projectDir = new File('samples/trivialdrive')
