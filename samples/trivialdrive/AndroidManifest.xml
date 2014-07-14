@@ -15,13 +15,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.onepf.trivialdrive"
-          android:versionCode="11"
-          android:versionName="0.9.4">
-
-    <uses-sdk
-            android:minSdkVersion="8"
-            android:targetSdkVersion="15"/>
+          package="org.onepf.trivialdrive">
 
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
 
@@ -35,7 +29,6 @@
     <uses-permission android:name="com.tmoney.vending.INBILLING"/>
     <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
 

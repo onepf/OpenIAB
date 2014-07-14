@@ -165,8 +165,12 @@ pip-log.txt
 gen/
 *.java.d
 *.iml
-/.gradle/
 /out/
+
+# Gradle
+/.gradle/
+build/
+local.properties
 
 # Unity package build files
 *.jar
