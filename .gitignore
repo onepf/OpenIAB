@@ -172,8 +172,10 @@ gen/
 build/
 local.properties
 
+
 # Unity package build files
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.jar.meta
 *.so
 *.so.meta
