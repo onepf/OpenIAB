@@ -180,7 +180,10 @@ NSMutableArray* m_skuMap;
 				return;
                 
 			case SKPaymentTransactionStateFailed:
-				UnitySendMessage(EventHandler, "OnPurchaseFailed", strdup([[transaction.error localizedDescription] UTF8String]));
+                if (transaction.error.code == SKErrorPaymentCancelled)
+                    UnitySendMessage(EventHandler, "OnPurchaseFailed", strdup("Transaction cancelled"));
+                else
+                    UnitySendMessage(EventHandler, "OnPurchaseFailed", strdup([[transaction.error localizedDescription] UTF8String]));
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				break;
                 
