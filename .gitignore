@@ -165,11 +165,17 @@ pip-log.txt
 gen/
 *.java.d
 *.iml
-/.gradle/
 /out/
+
+# Gradle
+/.gradle/
+build/
+local.properties
+
 
 # Unity package build files
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.jar.meta
 *.so
 *.so.meta
