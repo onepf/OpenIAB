@@ -34,5 +34,6 @@ android {
 }
 
 dependencies {
-    compile project(':library')
+    debugCompile project(path: ':library', configuration: "completeDebug")
+    releaseCompile project(path: ':library', configuration: "completeRelease")
 }

@@ -381,11 +381,13 @@ public class OpenIabHelper {
 
                 //todo redo
                 boolean hasFortumoInSetup = false;
-                for (Appstore store : stores2check) {
-                    if (store instanceof SamsungApps) {
-                        samsungInSetup = (SamsungApps) store;
-                    } else if (store instanceof FortumoStore) {
-                        hasFortumoInSetup = true;
+                if (BuildConfig.FORTUMO_ENABLE) {
+                    for (Appstore store : stores2check) {
+                        if (store instanceof SamsungApps) {
+                            samsungInSetup = (SamsungApps) store;
+                        } else if (store instanceof FortumoStore) {
+                            hasFortumoInSetup = true;
+                        }
                     }
                 }
 
@@ -398,7 +400,7 @@ public class OpenIabHelper {
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
                     }
-                    if (mAppstore == null) {
+                    if (BuildConfig.FORTUMO_ENABLE && mAppstore == null) {
                         if (!hasFortumoInSetup && options.supportFortumo) {
                             mAppstore = FortumoStore.initFortumoStore(context, true);
                         }
@@ -413,7 +415,7 @@ public class OpenIabHelper {
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
-                        if (mAppstore == null) {
+                        if (BuildConfig.FORTUMO_ENABLE && mAppstore == null) {
                             if (!hasFortumoInSetup && options.supportFortumo) {
                                 mAppstore = FortumoStore.initFortumoStore(context, false);
                             }
@@ -433,7 +435,7 @@ public class OpenIabHelper {
                     fireSetupFinished(listener, result);
                 } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
-                    if (null == mAppstore) {
+                    if (BuildConfig.FORTUMO_ENABLE && null == mAppstore) {
                         if (!hasFortumoInSetup && options.supportFortumo) {
                             mAppstore = FortumoStore.initFortumoStore(context, false);
                         }
@@ -487,7 +489,9 @@ public class OpenIabHelper {
     private static void checkSettings(Options options, Context context){
         checkOptions(options);
         checkSamsung(context);
-        checkFortumo(options, context);
+        if (BuildConfig.FORTUMO_ENABLE) {
+            checkFortumo(options, context);
+        }
     }
 
     private static void checkFortumo(Options options, Context context) {

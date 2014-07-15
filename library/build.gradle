@@ -4,6 +4,9 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    defaultPublishConfig 'completeRelease'
+    publishNonDefault true
+
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 19
@@ -32,6 +35,15 @@ android {
             proguardFiles 'proguard-project.txt'
         }
     }
+
+    productFlavors {
+        noFortumo {
+            buildConfigField "boolean", "FORTUMO_ENABLE", "false"
+        }
+        complete {
+            buildConfigField "boolean", "FORTUMO_ENABLE", "true"
+        }
+    }
 }
 
 repositories {
@@ -39,5 +51,6 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    completeCompile fileTree(dir: 'libs', include: '*.jar')
+    noFortumoCompile fileTree(dir: 'libs', include: '*.jar', exclude: 'FortumoInApp-android-*-o')
 }
