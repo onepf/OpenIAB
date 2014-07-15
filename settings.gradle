@@ -1,3 +1,4 @@
-include ':library', ':trivialdrive', ':local_store'
-
-project(':trivialdrive').projectDir = new File('samples/trivialdrive')
+include 'library'
+include 'local_store'
+include 'samples:life_openiab'
+include 'samples:trivialdrive'

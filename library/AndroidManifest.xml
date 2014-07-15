@@ -15,13 +15,7 @@
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.onepf.oms"
-          android:versionCode="9"
-          android:versionName="2.7">
-
-    <uses-sdk
-            android:minSdkVersion="8"
-            android:targetSdkVersion="17"/>
+    package="org.onepf.oms">
 
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
