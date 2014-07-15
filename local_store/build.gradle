@@ -32,7 +32,3 @@ android {
         }
     }
 }
-
-dependencies {
-    compile project(':library')
-}
