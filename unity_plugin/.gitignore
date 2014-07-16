@@ -1,3 +1,6 @@
+*.jar
+*.jar.meta
+*.so
+*.so.meta
 /Temp/
 /Library/
-/.gradle/
