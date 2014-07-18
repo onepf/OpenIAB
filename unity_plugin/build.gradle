@@ -4,7 +4,8 @@ def sep = File.separator
 def projectDir = rootProject.projectDir.absolutePath;
 def unityRootAbsolutePath = "${projectDir}${sep}unity_plugin${sep}unity_src"
 def unitySrcPath = "${unityRootAbsolutePath}${sep}Assets${sep}Plugins${sep}Android"
-def outFatJarAbsoluteDir = "${project.buildDir.absolutePath}${sep}fat-jar"
+def outAbsoluteDir = "${project.buildDir.absolutePath}${sep}intermediates${sep}unityPlugin${sep}classes"
+def outJarAbsoluteDir = "${project.buildDir.absolutePath}${sep}intermediates${sep}unityPlugin"
 def unityPackageAbsolutePath = "${project.buildDir.absolutePath}${sep}outputs"
 
 android {
@@ -45,47 +46,47 @@ dependencies {
 
 task buildPlugin(dependsOn: 'assembleRelease') << {
     final def unityPath = getUnityExecutablePath()
-    mkdir outFatJarAbsoluteDir
+    mkdir outAbsoluteDir
     mkdir unityPackageAbsolutePath
 
-    ant.unzip(src: "..${sep}library${sep}libs${sep}in-app-purchasing-1.0.3.jar", dest: outFatJarAbsoluteDir)
+    ant.unzip(src: "..${sep}library${sep}libs${sep}in-app-purchasing-1.0.3.jar", dest: outAbsoluteDir)
     ant.unzip(src: "build${sep}intermediates${sep}exploded-aar${sep}OpenIAB" +
-            "${sep}library${sep}unspecified${sep}noFortumoUnity${sep}classes.jar", dest: outFatJarAbsoluteDir)
+            "${sep}library${sep}unspecified${sep}noFortumoUnity${sep}classes.jar", dest: outAbsoluteDir)
 
 //    Copy compiled unity-plugin java source
     copy {
         from "${projectDir}${sep}unity_plugin${sep}build${sep}intermediates${sep}classes${sep}release"
-        into outFatJarAbsoluteDir
+        into outAbsoluteDir
         include '**/*.class'
     }
 //    Copy all aidl from library
     copy {
         from "${projectDir}${sep}library${sep}src"
-        into outFatJarAbsoluteDir
+        into outAbsoluteDir
         include '**/*.aidl'
     }
 
-    delete "${outFatJarAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore${sep}fortumoUtils"
-    delete fileTree(dir: "${outFatJarAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore", include: "Fortumo*.class")
-    delete "${outFatJarAbsoluteDir}${sep}fortumo_res"
-    delete "${outFatJarAbsoluteDir}${sep}mp"
-    delete "${outFatJarAbsoluteDir}${sep}android"
-    delete "${outFatJarAbsoluteDir}${sep}com${sep}braintree"
-    delete "${outFatJarAbsoluteDir}${sep}com${sep}braintreegateway"
-    delete "${outFatJarAbsoluteDir}${sep}com${sep}skplanet"
-    delete "${outFatJarAbsoluteDir}${sep}com${sep}tmoney"
+    delete "${outAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore${sep}fortumoUtils"
+    delete fileTree(dir: "${outAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore", include: "Fortumo*.class")
+    delete "${outAbsoluteDir}${sep}fortumo_res"
+    delete "${outAbsoluteDir}${sep}mp"
+    delete "${outAbsoluteDir}${sep}android"
+    delete "${outAbsoluteDir}${sep}com${sep}braintree"
+    delete "${outAbsoluteDir}${sep}com${sep}braintreegateway"
+    delete "${outAbsoluteDir}${sep}com${sep}skplanet"
+    delete "${outAbsoluteDir}${sep}com${sep}tmoney"
 
     project.exec {
         commandLine 'jar'
         args 'cf'
-        args "${project.buildDir.absolutePath}${sep}OpenIAB-plugin.jar"
+        args "${outJarAbsoluteDir}${sep}OpenIAB-plugin.jar"
         args '-C'
-        args outFatJarAbsoluteDir
+        args outAbsoluteDir
         args '.'
     }
 
     copy {
-        from project.buildDir.absolutePath
+        from outJarAbsoluteDir
         include 'OpenIAB-plugin.jar'
         into unitySrcPath
     }
