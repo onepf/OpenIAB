@@ -16,13 +16,13 @@ android {
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
                 resources.srcDirs = ['src']
                 aidl.srcDirs = ['src']
                 jniLibs.srcDirs = ['libs']
                 renderscript.srcDirs = ['src']
                 res.srcDirs = ['res']
                 assets.srcDirs = ['assets']
+                java.srcDirs = ['src']
             }
 
             androidTest.setRoot('tests')
@@ -30,9 +30,11 @@ android {
     }
 
     buildTypes {
-        release {
-            runProguard false
-            proguardFiles 'proguard-project.txt'
+        debug
+        release
+        unity {
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
         }
     }
 
@@ -46,11 +48,6 @@ android {
     }
 }
 
-repositories {
-    jcenter()
-}
-
 dependencies {
-    completeCompile fileTree(dir: 'libs', include: '*.jar')
-    noFortumoCompile fileTree(dir: 'libs', include: '*.jar', exclude: 'FortumoInApp-android-*-o')
+    compile fileTree(dir: 'libs', include: '*.jar')
 }
