@@ -33,10 +33,6 @@ android {
             androidTest.setRoot('tests')
         }
     }
-
-    packagingOptions {
-        pickFirst 'META-INF${sep}MANIFEST.MF'
-    }
 }
 
 dependencies {
