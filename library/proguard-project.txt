@@ -1,19 +1,20 @@
+-optimizations !class/merging/*
+-optimizationpasses 7
 -dontpreverify
 -dontnote
 -dontobfuscate
--dontoptimize
 -dontwarn **
 
--keepclasseswithmembernames class org.onepf.oms.*, org.onepf.oms.**.*, !org.onepf.oms.appstore.fortumoUtils.*, !org.onepf.oms.appstore.FortumoStore, !org.onepf.oms.appstore.FortumoBillingService
--keepclasseswithmembers class org.onepf.oms.*, org.onepf.oms.**.*, !org.onepf.oms.appstore.fortumoUtils.*, !org.onepf.oms.appstore.FortumoStore, !org.onepf.oms.appstore.FortumoBillingService
+-keepclasseswithmembernames class org.onepf.oms.**
+-keepclasseswithmembers class org.onepf.oms.**
 -keepclasseswithmembernames class org.onepf.oms.* {*;}
 
--keep public class org.onepf.oms.appstore.googleUtils.* {
+-keep class org.onepf.oms.appstore.googleUtils.* {
     public <init>(...);
     *** get*(...);
 }
 
--keep public class org.onepf.oms.OpenIabHelper {
+-keep class org.onepf.oms.OpenIabHelper {
     public <init>(...);
     public *** mapSku(...);
     public *** startSetup(...);
@@ -27,6 +28,14 @@
     public *** launchSubscriptionPurchaseFlow(...);
 }
 
--keepclassmembers class * {
-    public static final *** *;
+-keep class ** {
+    public static final *** !NAME_FORTUMO;
+}
+
+-assumenosideeffects class org.onepf.oms.OpenIabHelper$Options {
+   public boolean supportFortumo;
+}
+
+-keep class org.onepf.oms.OpenIabHelper$Options {
+   public *** !supportFortumo;
 }

@@ -42,6 +42,7 @@ dependencies {
 
 task buildPlugin(dependsOn: 'assembleRelease') << {
     final def unityPath = getUnityExecutablePath()
+    delete fileTree(dir: outAbsoluteDir, include: "*")
     mkdir outAbsoluteDir
     mkdir unityPackageAbsolutePath
 
@@ -91,7 +92,7 @@ task buildPlugin(dependsOn: 'assembleRelease') << {
     println "Unity package source root: $unityRootAbsolutePath"
     println "Unity package build: $unityPackageAbsolutePath"
 
-    println project.exec {
+    project.exec {
         commandLine unityPath
         args '-batchMode'
         args '-projectPath'
@@ -101,7 +102,7 @@ task buildPlugin(dependsOn: 'assembleRelease') << {
         args "Assets${sep}Plugins"
         args "${unityPackageAbsolutePath}${sep}OpenIAB-plugin.unitypackage"
         args '-quit'
-    }.toString()
+    }
 }
 
 def getUnityExecutablePath() {
