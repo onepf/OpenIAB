@@ -4,8 +4,8 @@ def sep = File.separator
 def projectDir = rootProject.projectDir.absolutePath;
 def unityRootAbsolutePath = "${projectDir}${sep}unity_plugin${sep}unity_src"
 def unitySrcPath = "${unityRootAbsolutePath}${sep}Assets${sep}Plugins${sep}Android"
-def outFatJarAbsoluteDir = project.buildDir.absolutePath + "${sep}fat-jar"
-def unityPackageAbsolutePath = project.buildDir.absolutePath
+def outFatJarAbsoluteDir = "${project.buildDir.absolutePath}${sep}fat-jar"
+def unityPackageAbsolutePath = "${project.buildDir.absolutePath}${sep}outputs"
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -46,6 +46,7 @@ dependencies {
 task buildPlugin(dependsOn: 'assembleRelease') << {
     final def unityPath = getUnityExecutablePath()
     mkdir outFatJarAbsoluteDir
+    mkdir unityPackageAbsolutePath
 
     ant.unzip(src: "..${sep}library${sep}libs${sep}in-app-purchasing-1.0.3.jar", dest: outFatJarAbsoluteDir)
     ant.unzip(src: "build${sep}intermediates${sep}exploded-aar${sep}OpenIAB" +
@@ -55,13 +56,13 @@ task buildPlugin(dependsOn: 'assembleRelease') << {
     copy {
         from "${projectDir}${sep}unity_plugin${sep}build${sep}intermediates${sep}classes${sep}release"
         into outFatJarAbsoluteDir
-        include '**${sep}*.class'
+        include '**/*.class'
     }
 //    Copy all aidl from library
     copy {
         from "${projectDir}${sep}library${sep}src"
         into outFatJarAbsoluteDir
-        include '**${sep}*.aidl'
+        include '**/*.aidl'
     }
 
     delete "${outFatJarAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore${sep}fortumoUtils"
