@@ -1,23 +1,26 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
 
     defaultPublishConfig 'completeRelease'
     publishNonDefault true
 
     defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 19
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
         versionCode 9
         versionName "2.7"
+
+        applicationId = 'org.onepf.oms'
 
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
                 resources.srcDirs = ['src']
                 aidl.srcDirs = ['src']
+                jni.srcDirs = ['jni']
                 jniLibs.srcDirs = ['libs']
                 renderscript.srcDirs = ['src']
                 res.srcDirs = ['res']
@@ -36,6 +39,10 @@ android {
             runProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
         }
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
     productFlavors {

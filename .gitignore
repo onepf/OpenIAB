@@ -157,26 +157,20 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-# Mac crap
+#OSx
 .DS_Store
 
-# IDEA
+# Android Studio (InteliJ)
 .idea/
-gen/
-*.java.d
+/.idea/workspace.xml
 *.iml
-/out/
+*.iws
+*.ipr
+/*/out
+/*/build
+/*/*/production
 
-# Gradle
-/.gradle/
+#Gradle
+.gradletasknamecache
+.gradle/
 build/
-local.properties
-
-
-# Unity package build files
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-*.jar.meta
-*.so
-*.so.meta
-

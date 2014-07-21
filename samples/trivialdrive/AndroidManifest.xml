@@ -20,8 +20,8 @@
           android:versionName="0.9.4">
 
     <uses-sdk
-            android:minSdkVersion="8"
-            android:targetSdkVersion="15"/>
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19"/>
 
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
 
@@ -48,7 +48,7 @@
                 android:name="iap:api_version"
                 android:value="13"/>
         <activity
-                android:name="org.onepf.trivialdrive.MainActivity"
+                android:name=".MainActivity"
                 android:label="@string/title_activity_main"
                 android:screenOrientation="portrait"
                 android:configChanges="orientation|screenSize"

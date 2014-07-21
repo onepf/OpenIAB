@@ -20,8 +20,8 @@
           android:versionName="2.7">
 
     <uses-sdk
-            android:minSdkVersion="8"
-            android:targetSdkVersion="15"/>
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19"/>
 
     <uses-permission android:name="com.android.vending.BILLING"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
@@ -43,7 +43,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="org.onepf.life2.GameActivity"
+            android:name=".GameActivity"
             android:label="@string/title_activity_game"
             android:configChanges="orientation|screenSize|keyboardHidden|locale"
             android:theme="@style/AppTheme">
