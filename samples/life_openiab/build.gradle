@@ -7,10 +7,10 @@ android {
     defaultConfig {
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 9
-        versionName '2.7'
+        versionCode 11
+        versionName '0.9.4'
 
-        applicationId = "org.onepf.life2"
+        applicationId = "org.onepf.life"
 
         sourceSets {
             main {
@@ -21,8 +21,16 @@ android {
                 renderscript.srcDirs = ['src']
                 res.srcDirs = ['res']
                 assets.srcDirs = ['assets']
-                jni.srcDirs = ['libs']
             }
+
+            androidTest.setRoot('tests')
+        }
+    }
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles 'proguard-project.txt'
         }
     }
     lintOptions {
@@ -36,4 +44,5 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
+    compile project(':library')
 }

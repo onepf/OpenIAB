@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013 One Platform Foundation
+ * Copyright 2013-2014 One Platform Foundation
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -14,14 +14,10 @@
  *     limitations under the License.
  ******************************************************************************/
 
-package org.onepf.life2;
+package org.onepf.life;
 
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -29,45 +25,35 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
-public class LifeView extends SurfaceView implements Runnable {
+import java.util.Arrays;
 
-    // SurfaceView login related members
-    SurfaceHolder holder;
-    Thread thread = null;
-    volatile boolean running = false;
-    GameActivity baseActivity;
+public class LifeView extends SurfaceView {
+    private static final int FIELD_PADDING = 3;
 
-    // Size members
-    int viewWidth;
-    int viewHeight;
-    int cellWidth = 0;
-    int cellHeight = 0;
+    private int cellWidth;
+    private int cellHeight;
 
     // Field
-    int fieldWidth;
-    int fieldHeight;
-    int[][] field = null;
+    private int fieldWidth;
+    private int fieldHeight;
+    private int[][] field;
 
     // Edits
-    boolean editMode = true;
-    int changeCount;
+    private boolean editMode = true;
+    private int changeCount;
 
-    // Cell images & background
-    Bitmap activeCellBitmap = null;
-    Bitmap emptyCellBitmap = null;
-    int backgroundColor;
+    // Cell images
+    private Bitmap activeCellBitmap;
+    private Bitmap emptyCellBitmap;
+
+    private LifeViewListener listener;
+
 
     public LifeView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.baseActivity = (GameActivity) context;
-        final SharedPreferences settings = baseActivity.getSharedPreferencesForCurrentUser();
-        changeCount = settings.getInt(GameActivity.CHANGES, 50);
-        backgroundColor = baseActivity.getResources().getColor(R.color.background);
-        holder = getHolder();
+        changeCount = LifeViewListener.DEFAULT_CHANGES_COUNT;
         activeCellBitmap = BitmapFactory.decodeResource(getResources(),
                 R.drawable.cell_active_green);
         emptyCellBitmap = BitmapFactory.decodeResource(getResources(),
@@ -75,13 +61,6 @@ public class LifeView extends SurfaceView implements Runnable {
         cellWidth = activeCellBitmap.getWidth();
         cellHeight = activeCellBitmap.getHeight();
     }
-
-
-//    public void onBuyUpgradeEvent() {
-//        String requestId = PurchasingManager.initiatePurchaseRequest(getResources().getString(R.string.consumable_sku));
-//        Log.d(GameActivity.TAG, "Buy requestId = " + requestId);
-//        baseActivity.storeRequestId(requestId, GameActivity.CHANGES);
-//    }
 
     public void setActiveCellBitmap(Bitmap bitmap) {
         activeCellBitmap = bitmap;
@@ -97,35 +76,11 @@ public class LifeView extends SurfaceView implements Runnable {
 
     public void setChangeCount(int changeCount) {
         this.changeCount = changeCount;
+        invalidate();
     }
 
     public int getChangeCount() {
         return changeCount;
-    }
-
-    public void resume() {
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public void pause() {
-        running = false;
-        try {
-            thread.join();
-        } catch (InterruptedException ignore) {
-        }
-    }
-
-    void alert(String message) {
-        AlertDialog.Builder bld = new AlertDialog.Builder(baseActivity);
-        bld.setMessage(message);
-        bld.setNeutralButton("OK", null);
-        bld.create().show();
-    }
-
-    void complain(String message) {
-        alert("Error: " + message);
     }
 
     @Override
@@ -138,12 +93,14 @@ public class LifeView extends SurfaceView implements Runnable {
                     && cellX < fieldWidth && cellY < fieldHeight) {
                 if (getChangeCount() > 0) {
                     changeCount--;
-                    final SharedPreferences.Editor editor = baseActivity.getSharedPreferencesForCurrentUser().edit();
-                    editor.putInt(GameActivity.CHANGES, changeCount);
-                    editor.commit();
+                    if (listener != null) {
+                        listener.setChangeCount(changeCount);
+                    }
                     field[cellX][cellY] = 1 - field[cellX][cellY];
                 } else {
-                    showBuyChangesDialog();
+                    if (listener != null) {
+                        listener.onNoChangesFound();
+                    }
                 }
             }
         }
@@ -151,48 +108,13 @@ public class LifeView extends SurfaceView implements Runnable {
         return true;
     }
 
-    public void showBuyChangesDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(
-                baseActivity);
-        builder.setTitle(R.string.changes_ended)
-                .setMessage(R.string.changes_ended_message)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(
-                                    DialogInterface dialog,
-                                    int which) {
-                                baseActivity.getBillingHelper().onBuyChanges();
-                            }
-                        }).setNegativeButton(android.R.string.no, null).show();
-    }
-
-    @SuppressLint("WrongCall")
-    @Override
-    public void run() {
-        while (running) {
-            if (holder.getSurface().isValid()) {
-                Canvas canvas = holder.lockCanvas();
-                if (!editMode) {
-                    updateField();
-                }
-                onDraw(canvas);
-                holder.unlockCanvasAndPost(canvas);
-                try {
-                    Thread.sleep(16);
-                } catch (InterruptedException ignore) {
-                }
-            }
-        }
-    }
-
-    int getNeighbour(int x, int y, int dx, int dy) {
+    private int getNeighbour(int x, int y, int dx, int dy) {
         int x2 = (x + dx + fieldWidth) % fieldWidth;
         int y2 = (y + dy + fieldHeight) % fieldHeight;
         return field[x2][y2];
     }
 
-    int getNeighboursCount(int x, int y) {
+    private int getNeighboursCount(int x, int y) {
         int count = 0;
 
         // Check all the cell's neighbours
@@ -207,32 +129,32 @@ public class LifeView extends SurfaceView implements Runnable {
         return count;
     }
 
-    void updateField() {
-        int[][] field2 = new int[fieldWidth][fieldHeight];
-        for (int x = 0; x < fieldWidth; x++) {
-            for (int y = 0; y < fieldHeight; y++) {
+    public void updateField() {
+        if (!editMode) {
+            int[][] field2 = new int[fieldWidth][fieldHeight];
+            for (int x = 0; x < fieldWidth; x++) {
+                for (int y = 0; y < fieldHeight; y++) {
 
-                field2[x][y] = field[x][y];
-                int neighbours = getNeighboursCount(x, y);
-
-                if (neighbours < 2) {
-                    field2[x][y] = 0;
-                } else if (neighbours == 2) {
                     field2[x][y] = field[x][y];
-                } else if (neighbours == 3) {
-                    field2[x][y] = 1;
-                } else {
-                    field2[x][y] = 0;
+                    int neighbours = getNeighboursCount(x, y);
+
+                    if (neighbours < 2) {
+                        field2[x][y] = 0;
+                    } else if (neighbours == 2) {
+                        field2[x][y] = field[x][y];
+                    } else if (neighbours == 3) {
+                        field2[x][y] = 1;
+                    } else {
+                        field2[x][y] = 0;
+                    }
                 }
             }
+            field = field2;
         }
-        field = field2;
     }
 
-    @SuppressLint("ResourceAsColor")
     @Override
-    public synchronized void onDraw(Canvas canvas) {
-        canvas.drawColor(backgroundColor);
+    public void onDraw(Canvas canvas) {
         for (int x = 0; x < fieldWidth; x++) {
             for (int y = 0; y < fieldHeight; y++) {
                 if (field[x][y] == 1) {
@@ -245,20 +167,18 @@ public class LifeView extends SurfaceView implements Runnable {
             }
         }
         Paint paint = new Paint();
-        paint.setColor(android.R.color.primary_text_dark);
+        paint.setColor(getResources().getColor(android.R.color.primary_text_dark));
         paint.setAlpha(160);
         paint.setTextSize((float) 0.7 * cellHeight);
         canvas.drawText("Changes: " + changeCount, cellWidth / 2, cellHeight, paint);
     }
 
     @Override
-    public synchronized void onSizeChanged(int w, int h, int oldW, int oldH) {
+    public void onSizeChanged(int w, int h, int oldW, int oldH) {
         Log.d(GameActivity.TAG, "Old size: w = " + fieldWidth + ", h = " + fieldHeight);
         if (field == null) {
-            viewHeight = w;
-            viewWidth = h;
-            fieldHeight = viewWidth / cellWidth;
-            fieldWidth = viewHeight / cellHeight;
+            fieldHeight = h / cellWidth;
+            fieldWidth = w / cellHeight;
             initField();
         } else {
             int newFieldWidth = w / cellWidth;
@@ -274,8 +194,6 @@ public class LifeView extends SurfaceView implements Runnable {
                 System.arraycopy(field[x], 0, newField[x], 0, Math.min(fieldHeight, newFieldHeight));
             }
 
-            viewHeight = w;
-            viewWidth = h;
             field = newField;
             fieldHeight = newFieldHeight;
             fieldWidth = newFieldWidth;
@@ -284,9 +202,8 @@ public class LifeView extends SurfaceView implements Runnable {
 
     public void clearField() {
         for (int x = 0; x < fieldWidth; x++) {
-            for (int y = 0; y < fieldHeight; y++) {
-                field[x][y] = 0;
-            }
+            int[] row = field[x];
+            Arrays.fill(row, 0);
         }
     }
 
@@ -297,18 +214,24 @@ public class LifeView extends SurfaceView implements Runnable {
     }
 
     public void drawFigure(int[][] figure) {
-        final int delta = 3;
-        if (figure != null && (figure.length + delta > fieldHeight || figure[0].length + delta > fieldWidth)) {
-            Toast.makeText(baseActivity.getApplicationContext(), R.string.not_enough_space, Toast.LENGTH_SHORT).show();
+        if (figure != null && (figure.length + FIELD_PADDING > fieldHeight || figure[0].length + FIELD_PADDING > fieldWidth)) { //todo fix width check
+            if (listener != null) {
+                listener.notEnoughSpaceForFigure();
+            }
         } else {
             clearField();
             if (figure != null) {
                 for (int y = 0; y < figure.length; y++) {
                     for (int x = 0; x < figure[0].length; x++) {
-                        field[x + delta][y + delta] = figure[y][x];
+                        field[x + FIELD_PADDING][y + FIELD_PADDING] = figure[y][x];
                     }
                 }
             }
         }
+    }
+
+    public void setUp(LifeViewListener controller, int changeCount) {
+        this.listener = controller;
+        setChangeCount(changeCount);
     }
 }

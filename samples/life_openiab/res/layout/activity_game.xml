@@ -27,7 +27,7 @@
             android:layout_alignParentRight="true"
             android:text="@string/start_button"/>
 
-    <org.onepf.life2.LifeView
+    <org.onepf.life.LifeView
             android:id="@+id/life_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
