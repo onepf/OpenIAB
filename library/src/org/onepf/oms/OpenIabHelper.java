@@ -396,8 +396,9 @@ public class OpenIabHelper {
                 }
 
                 //todo redo
-                boolean hasFortumoInSetup = false;
+                boolean hasFortumoInSetup;
                 if (BuildConfig.FORTUMO_ENABLE) {
+                    hasFortumoInSetup = false;
                     for (Appstore store : stores2check) {
                         if (store instanceof SamsungApps) {
                             samsungInSetup = (SamsungApps) store;
@@ -416,9 +417,10 @@ public class OpenIabHelper {
                     if (equippedStores.size() > 0) {
                         mAppstore = selectBillingService(equippedStores);
                     }
-                    if (BuildConfig.FORTUMO_ENABLE && mAppstore == null
-                            && !hasFortumoInSetup && options.supportFortumo) {
-                        mAppstore = FortumoStore.initFortumoStore(context, true);
+                    if (BuildConfig.FORTUMO_ENABLE && mAppstore == null) {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            mAppstore = FortumoStore.initFortumoStore(context, true);
+                        }
                     }
                     if (isDebugLog()) Log.d(TAG, in() + " " + "select equipped");
                     if (mAppstore != null) {
@@ -430,9 +432,10 @@ public class OpenIabHelper {
                     } else {
                         // found no equipped stores. Select store based on store parameters
                         mAppstore = selectBillingService(stores2check);
-                        if (BuildConfig.FORTUMO_ENABLE && mAppstore == null
-                                && !hasFortumoInSetup && options.supportFortumo) {
-                            mAppstore = FortumoStore.initFortumoStore(context, false);
+                        if (BuildConfig.FORTUMO_ENABLE && mAppstore == null) {
+                            if (!hasFortumoInSetup && options.supportFortumo) {
+                                mAppstore = FortumoStore.initFortumoStore(context, false);
+                            }
                         }
                         if (isDebugLog()) Log.d(TAG, in() + " " + "select non-equipped");
                         if (mAppstore != null) {
@@ -449,9 +452,10 @@ public class OpenIabHelper {
                     fireSetupFinished(listener, result);
                 } else {   // no inventory check. Select store based on store parameters
                     mAppstore = selectBillingService(stores2check);
-                    if (BuildConfig.FORTUMO_ENABLE && mAppstore == null
-                            && !hasFortumoInSetup && options.supportFortumo) {
-                        mAppstore = FortumoStore.initFortumoStore(context, false);
+                    if (BuildConfig.FORTUMO_ENABLE && mAppstore == null) {
+                        if (!hasFortumoInSetup && options.supportFortumo) {
+                            mAppstore = FortumoStore.initFortumoStore(context, false);
+                        }
                     }
                     if (mAppstore != null) {
                         mAppstoreBillingService = mAppstore.getInAppBillingService();
@@ -464,6 +468,7 @@ public class OpenIabHelper {
                         fireSetupFinished(listener, result);
                     }
                 }
+
                 for (Appstore store : stores2check) {
                     if (store != mAppstore && store.getInAppBillingService() != null) {
                         store.getInAppBillingService().dispose();
@@ -1300,7 +1305,7 @@ public class OpenIabHelper {
         /**
          * Is Fortumo supported?
          */
-        public boolean supportFortumo = false;
+        private boolean supportFortumo;
     }
 
 }

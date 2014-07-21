@@ -34,7 +34,7 @@ android {
         release
         unity {
             runProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
         }
     }
 

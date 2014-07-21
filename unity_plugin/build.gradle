@@ -33,6 +33,12 @@ android {
             androidTest.setRoot('tests')
         }
     }
+
+    buildTypes {
+        release {
+            runProguard false
+        }
+    }
 }
 
 dependencies {
@@ -63,6 +69,7 @@ task buildPlugin(dependsOn: 'assembleRelease') << {
         include '**/*.aidl'
     }
 
+//    Remove unnecessary classes
     delete "${outAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore${sep}fortumoUtils"
     delete fileTree(dir: "${outAbsoluteDir}${sep}org${sep}onepf${sep}oms${sep}appstore", include: "Fortumo*.class")
     delete "${outAbsoluteDir}${sep}fortumo_res"
