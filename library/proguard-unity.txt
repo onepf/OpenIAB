@@ -1,0 +1,39 @@
+-optimizations !class/merging/*
+-optimizationpasses 5
+-dontpreverify
+-dontnote
+-dontobfuscate
+
+-dontwarn **
+
+
+-keepclassmembers class org.onepf.oms.appstore.googleUtils.* {
+    public <init>(...);
+    *** get*(...);
+}
+
+-keepclassmembers class org.onepf.oms.OpenIabHelper {
+    public <init>(...);
+    public *** mapSku(...);
+    public *** startSetup(...);
+    public *** dispose();
+    public *** subscriptionsSupported();
+    public *** queryInventoryAsync(...);
+    public *** consumeAsync(...);
+    public static *** enableDebugLogging(...);
+    public *** handleActivityResult(...);
+    public *** launchPurchaseFlow(...);
+    public *** launchSubscriptionPurchaseFlow(...);
+}
+
+-keep class org.onepf.oms.OpenIabHelper {
+    public static final *** !NAME_FORTUMO;
+}
+
+-keep class org.onepf.oms.appstore.googleUtils.IabHelper {
+    public static final int BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE;
+}
+
+-keep class org.onepf.oms.OpenIabHelper$Options {
+   public static int VERIFY_ONLY_KNOWN;
+}

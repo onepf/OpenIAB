@@ -4,6 +4,9 @@ android {
     compileSdkVersion project.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
 
+    defaultPublishConfig 'completeRelease'
+    publishNonDefault true
+
     defaultConfig {
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
@@ -15,7 +18,6 @@ android {
         sourceSets {
             main {
                 manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
                 resources.srcDirs = ['src']
                 aidl.srcDirs = ['src']
                 jni.srcDirs = ['jni']
@@ -23,6 +25,7 @@ android {
                 renderscript.srcDirs = ['src']
                 res.srcDirs = ['res']
                 assets.srcDirs = ['assets']
+                java.srcDirs = ['src']
             }
 
             androidTest.setRoot('tests')
@@ -30,19 +33,26 @@ android {
     }
 
     buildTypes {
-        release {
-            runProguard false
-            proguardFiles 'proguard-project.txt'
+        debug
+        release
+        unity {
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
         }
     }
 
     lintOptions {
         abortOnError false
     }
-}
 
-repositories {
-    jcenter()
+    productFlavors {
+        noFortumo {
+            buildConfigField "boolean", "FORTUMO_ENABLE", "false"
+        }
+        complete {
+            buildConfigField "boolean", "FORTUMO_ENABLE", "true"
+        }
+    }
 }
 
 dependencies {
