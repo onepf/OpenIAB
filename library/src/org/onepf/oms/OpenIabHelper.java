@@ -51,6 +51,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -375,7 +376,13 @@ public class OpenIabHelper {
                         // try it only if samsung SKUs are specified
                         stores2check.add(new SamsungApps(activity, options));
                     }
+                    //Nokia TODO change logic
                     stores2check.add(new NokiaStore(context));
+                    if (!hasRequestedPermission(context, "com.nokia.payment.BILLING")) {
+                        if (isDebugLog()) {
+                            Log.w(TAG, "Required permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
+                        }
+                    }
                 }
 
                 //todo redo
@@ -492,6 +499,7 @@ public class OpenIabHelper {
         if (BuildConfig.FORTUMO_ENABLE) {
             checkFortumo(options, context);
         }
+        checkNokia(options, context);
     }
 
     private static void checkFortumo(Options options, Context context) {
@@ -591,6 +599,43 @@ public class OpenIabHelper {
             }
         }
 
+    }
+
+    private static void checkNokia(Options options, Context context) {
+        List<Appstore> availableStores = options.availableStores;
+        boolean hasNokia = false;
+        if (availableStores != null && availableStores.size() > 0) {
+            for (Appstore appstore : availableStores) {
+                if (appstore.getAppstoreName().equals(NAME_NOKIA)) {
+                    hasNokia = true;
+                    break;
+                }
+            }
+        }
+        if (hasNokia) {
+            if (!hasRequestedPermission(context, "com.nokia.payment.BILLING")) {
+                throw new IllegalStateException("Nokia permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
+            }
+        }
+    }
+
+    //todo move to Utils
+    private static boolean hasRequestedPermission(Context context, String permission) {
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
+            if (info.requestedPermissions != null) {
+                for (String p : info.requestedPermissions) {
+                    if (p.equals(permission)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (NameNotFoundException e) {
+            if (isDebugLog()) {
+                Log.e(TAG, "error during checking permissions", e);
+            }
+        }
+        return false;
     }
 
     //todo move to Utils
