@@ -447,7 +447,7 @@ Uploading Android apps to all the existing Android app stores is a painful proce
 project was designed to make it easier. But what is even more difficult for the developers is
 supporting different in-purchase APIs of different app stores. There are already a lot of different In-App Purchase APIs (e.g. Google Play, Amazon Appstore, Nokia Store, Samsung Apps) and the number is still increasing. 
 OpenIAB is an open source library which provides an easy way for the developers to develop their apps/games in a way that one APK will work in all the stores and automatically use right in-app purchase API under each store. OpenIAB also provides an open in-app billing API that stores could implement to support all the built APK files using this library. 
-Currently there are alreay 5 stores that support the Open API: Yandex.Store, SlideMe, Appland, Aptoide and AppMall. The open stores don't need extra libraries to be included to your project, only OpenIAB is required to support all of them.
+Currently there are alreay 5 stores that support the Open API: <a href="http://store.yandex.com/">Yandex.Store</a>,  <a href="http://slideme.org/">SlideME</a>, <a href="http://www.appland.se/">Appland</a>, <a href="http://www.aptoide.com/">Aptoide</a> and <a href="http://www.openmobileww.com/#!appmall/cunq">AppMall</a>. The open stores don't need extra libraries to be included to your project, only OpenIAB is required to support all of them.
 For developers it means that in most cases they even don't need to recompile their apps for a new open store. The only thing that can be reqired is to add an RSA key if purchase verification is on the library side.
 
 How OpenIAB Works
