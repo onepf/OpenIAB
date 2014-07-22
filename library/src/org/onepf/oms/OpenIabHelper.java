@@ -604,7 +604,7 @@ public class OpenIabHelper {
     private static void checkNokia(Options options, Context context) {
         List<Appstore> availableStores = options.availableStores;
         boolean hasNokia = false;
-        if (availableStores != null && availableStores.size() > 0) {
+        if (availableStores != null && !availableStores.isEmpty()) {
             for (Appstore appstore : availableStores) {
                 if (appstore.getAppstoreName().equals(NAME_NOKIA)) {
                     hasNokia = true;
