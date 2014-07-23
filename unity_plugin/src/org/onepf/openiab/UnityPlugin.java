@@ -64,10 +64,10 @@ public class UnityPlugin {
     }
 
     public void init(final HashMap<String, String> storeKeys) {
-        OpenIabHelper.Options options = new OpenIabHelper.Options();
-        options.verifyMode = OpenIabHelper.Options.VERIFY_ONLY_KNOWN;
-        options.storeKeys = storeKeys;
-
+        OpenIabHelper.Options options = new OpenIabHelper.Options.Builder()
+                .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
+                .addStoreKeys(storeKeys)
+                .build();
         initWithOptions(options);
     }
 

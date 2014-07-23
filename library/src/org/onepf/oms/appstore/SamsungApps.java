@@ -22,7 +22,6 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.OpenIabHelper.Options;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -69,7 +68,7 @@ public class SamsungApps extends DefaultAppstore {
 
     private AppstoreInAppBillingService billingService;
     private Activity activity;
-    private Options options;
+    private OpenIabHelper.Options options;
     
     // isSamsungTestMode = true -> always returns Samsung Apps is installer and billing is available
     public static boolean isSamsungTestMode;
@@ -77,7 +76,7 @@ public class SamsungApps extends DefaultAppstore {
     
     private Boolean isBillingAvailable;
 
-    public SamsungApps(Activity activity, Options options) {
+    public SamsungApps(Activity activity, OpenIabHelper.Options options) {
         this.activity = activity;
         this.options = options;
     }
