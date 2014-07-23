@@ -18,7 +18,7 @@
 
     <string name="app_name">Life</string>
     <string name="menu_buy_changes">Buy 50 more changes</string>
-    <string name="menu_buy_orange_cells">Subscribe to orange cells for a week</string>
+    <string name="menu_buy_orange_cells">Subscribe to orange cells for a month</string>
     <string name="menu_buy_figures">Buy ready figures</string>
     <string name="menu_empty_field">Empty field</string>
     <string name="menu_glider">Glider</string>
@@ -31,13 +31,6 @@
     <string name="edit_button">Edit</string>
     <string name="start_button">Start</string>
     <string name="not_enough_space">Not enough space for this figure</string>
-
-    <string name="subscription_sku">org.onepf.life.orange_cells.monthly</string>
-    <string name="consumable_sku">org.onepf.life.fifty_changes</string>
-    <string name="figures_sku">org.onepf.life.figures</string>
-
-    <string name="tstore_appid">OA00325110</string>
-    <string name="tstore_changes_pid">0901214308</string>
-    <string name="tstore_orange_cells_pid">0901214320</string>
-    <string name="tstore_figures_pid">0901214321</string>
+    <string name="waiting_dialog_message">Please wait…</string>
+    <string name="subscribe_thank">Thank you for subscribing to orange cells!</string>
 </resources>

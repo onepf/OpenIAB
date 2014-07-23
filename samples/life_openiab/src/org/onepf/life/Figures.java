@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2013 One Platform Foundation
+ * Copyright 2013-2014 One Platform Foundation
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  *     limitations under the License.
  ******************************************************************************/
 
-package org.onepf.life2;
+package org.onepf.life;
 
 /**
- * Package org.onepf.life2.
+ * Package org.onepf.life
  * Author: Ruslan Sayfutdinov
  * Date: 13/03/13
  */
