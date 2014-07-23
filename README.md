@@ -40,7 +40,7 @@ and handle the results with the listener
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L413
 
 6. If the user has purchased a consumable item, call  ``` helper.consume() ```
-to exclude it from the inventory. If the item is not consumed, a store supposes it as non-consumable item and doesn't allow to purchase it one more time. Also it will be returned by ``` helper.queryInventory() ``` next time
+to remove it from the inventory. If it is not removed from the invetnory, the store assumes it as non-consumable item and still will not allow it to be purchased more than once. Also it will be returned by ``` helper.queryInventory() ``` next time
 https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L432
 
 7. Specify keys for different stores like this:
@@ -97,7 +97,7 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
     -keep class mp.** { *; }
     ```
 
-10. Troubleshooting: additional logging is very helpful if you trying to understand what's wrong with configuration or raise issue:
+10. Troubleshooting: additional logging is very helpful if you are trying to understand what's wrong with configuration or raise an issue:
     ```java
     helper.enableDebugLogging(true);
     ```
@@ -146,9 +146,9 @@ Google Play and Open Stores
      ```
 
 5. To test .apk with Google Play please ensure
-    - your .apk submitted to Google Play Developer Console
-    - your .apk is signed by production key
-    - versionCode in AndroidManifest.xml of your .apk equal to versionCode of .apk submitted to Developer Console
+    - your .apk is submitted to Google Play Developer Console
+    - your .apk is signed by the production key
+    - versionCode in AndroidManifest.xml of your .apk is equal to versionCode of .apk submitted to Developer Console
 
 
 Receipt Verification on Server
@@ -162,7 +162,7 @@ Receipt Verification on Server
     mHelper = new OpenIabHelper(context, opts);
     ```
 
-2. Get receipt's data and signature from Purchase object and send it to your server
+2. Get receipt data and signature from Purchase object and send it to your server
 
     ```java
     new IabHelper.OnIabPurchaseFinishedListener() {
@@ -211,7 +211,7 @@ Remember, the SKUs must be unique across your Amazon developer account.
     -dontoptimize
     ```
 
-4. If OpenIAB added as library project, Amazon SDK in-app-purchasing-1.0.3.jar should exist in build-path (/libs)
+4. If OpenIAB is added as library project, the build path should contain Amazon SDK in-app-purchasing-1.0.3.jar.
 
 5. To test .apk with Amazon SDK Tester some steps are needed:
 
@@ -233,7 +233,7 @@ Samsung Apps
     ```
 
 2. Map the SKUs if required.
-   Remember, Samsung Apps describes an item it terms of Item Group ID and Item ID.
+   Remember, Samsung Apps describes an item in terms of Item Group ID and Item ID.
 
    ```java
    //format "group_id/item_id"
@@ -307,7 +307,7 @@ SlideME
 Fortumo: carrier billing and NOOK
 =================================
 
-Before start to work with OpenIAB library
+Before starting to work with OpenIAB library
 -----------------------------------------
 Create a <a href="http://fortumo.com/?utm_source=openiab&utm_medium=openiab&utm_campaign=openiab">Fortumo account</a> and add a required number of <a href="http://developers.fortumo.com/in-app-purchasing-on-nook/">NOOK</a> and <a href="http://developers.fortumo.com/in-app-purchasing-on-android/">Android</a> services.
 One service corresponds to one price, e.g. for 3 in-apps with different prices you should create 3 different services.
@@ -359,7 +359,7 @@ OpenIAB setup
     options.availableStores = storeList;
     mHelper = new OpenIabHelper(this, options);
     ```
-4. Add <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd">inapps_products.xml</a> (in-app products description in terms similar to Google Play) and
+4. Add <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd">inapps_products.xml</a> (in-app products descriptions in terms similar to Google Play) and
 <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd">fortumo_inapps_details.xml</a> (data about your Fortumo services,
 need to be copy-pasted from <a href="http://developers.fortumo.com/getting-started/dashboard-and-reporting/">Dashboard.</a>) files to the assets folder.
 You can find a sample <a href="https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive/assets">here.</a>
@@ -439,24 +439,24 @@ Example of inapp-products.xml
 
 Unity Plugin
 =====
-There is also Unity engine [plugin](unity_plugin) that will simplify integration for C#/JavaScript developers. No need to write any java code.
+There is also an Unity engine [plugin](unity_plugin) that will simplify integration for C#/JavaScript developers. No need to write any java code.
 
 OpenIAB - Open In-App Billing
 =====
-Uploading Android apps to all the existing Android app stores is a painful process and [AppDF](/onepf/AppDF)
+Uploading Android apps to all the existing Android app stores is a painful process and the [AppDF](/onepf/AppDF)
 project was designed to make it easier. But what is even more difficult for the developers is
 supporting different in-purchase APIs of different app stores. There are already a lot of different In-App Purchase APIs (e.g. Google Play, Amazon Appstore, Nokia Store, Samsung Apps) and the number is still increasing. 
-OpenIAB is an open source library which provides an easy way for the developers to develop their apps/games in a way that one APK will work in all the stores and automatically use right in-app purchase API under each store. OpenIAB also provides an open in-app billing API that stores could implement to support all the built APK files using this library. 
-Currently there are alreay 5 stores that support the Open API: <a href="http://store.yandex.com/">Yandex.Store</a>,  <a href="http://slideme.org/">SlideME</a>, <a href="http://www.appland.se/">Appland</a>, <a href="http://www.aptoide.com/">Aptoide</a> and <a href="http://www.openmobileww.com/#!appmall/cunq">AppMall</a>. The open stores don't need extra libraries to be included to your project, only OpenIAB is required to support all of them.
-For developers it means that in most cases they even don't need to recompile their apps for a new open store. The only thing that can be reqired is to add an RSA key if purchase verification is on the library side.
+OpenIAB is an open source library which provides an easy way for the developers to develop their apps/games in a way that one APK will work in all the stores and automatically use the right in-app purchase API under each store. OpenIAB also provides an open in-app billing API that stores could implement to support all the built APK files using this library. 
+Currently there are alreay 5 stores that support the Open API: <a href="http://store.yandex.com/">Yandex.Store</a>,  <a href="http://slideme.org/">SlideME</a>, <a href="http://www.appland.se/">Appland</a>, <a href="http://www.aptoide.com/">Aptoide</a> and <a href="http://www.openmobileww.com/#!appmall/cunq">AppMall</a>. The open stores don't need extra libraries to be included with your project, only OpenIAB is required to support all of them.
+For developers it means that in most cases they don't even need to recompile their apps for a new open store. The only thing that can be reqired is to add an RSA key if purchase verification is on the library side.
 
 How OpenIAB Works
 =====
 1. An Android app developer integrates OpenIAB library in his/her Android code
-2. An Android app developer implements in-app purchases using OpenIAB API (which is very close to Google Play IAB API, just few changes in source code will be needed)
+2. An Android app developer implements in-app purchases using OpenIAB API (which is very close to Google Play IAB API, just a few changes in source code will be needed)
 3. OpenIAB Lib detects which app store installed the app
-4. OpenIAB Lib redirects in-app purchase calls to the corresponding app store IAB API (OpenIAB Lib wrapps IAB APIs of severall apstores)
-5. All In-App Billing logic is handled by the corresponding app store, OpenIAB has no code to process in-app purchases and has no UI, it just wrapps In-App Billing APIs of different stores in one library
+4. OpenIAB Lib redirects in-app purchase calls to the corresponding app store IAB API (OpenIAB Lib wraps IAB APIs of severall apstores)
+5. All In-App Billing logic is handled by the corresponding app store, OpenIAB has no code to process in-app purchases and has no UI, it just wraps In-App Billing APIs of different stores in one library
 
 <img src="http://www.onepf.org/img/openiabdiagram1.png">
 
@@ -466,7 +466,7 @@ Current Status
 =====
 OpenIAB SDK is used in production by wide variety of application and games. OpenIAB packages are available for Android apps and games based on Unity3d or Marmalade SDK. OpenIAB protocol is implemented by several Appstores.
 
-We have some samples that works in any Appstore in our [samples folder](https://github.com/onepf/OpenIAB/tree/master/samples). To find differences between TrivialDrive provided by Google and TrivialDrive with OpenIAB, please check our [sample](https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive). It demonstrates what changes need to be done to work with all Appstores and Carrier Billing.
+We have some samples in our [samples folder](https://github.com/onepf/OpenIAB/tree/master/samples). To find differences between TrivialDrive provided by Google and TrivialDrive with OpenIAB, please check our [sample](https://github.com/onepf/OpenIAB/tree/master/samples/trivialdrive). It demonstrates what changes need to be done to work with all Appstores and Carrier Billing.
 
 If you an app store developer and want to know how to integrate OpenIAB protocol in your Appstore, please start with our [Step-By-Step How-To](https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md)
 
@@ -474,17 +474,17 @@ Basic Principles
 =====
 * **As close to Google Play In-app Billing API as possible** - we optimize the OpenIAB library by the following parameter "lines on code you need to change in an app that already works in Google Play to make it working in all the appstores"
 * **One APK works in all app stores** - OpenIAB chooses proper billing method automatically or follows your requirements
-* **Open In-App Billing protocol** - OpenIAB is designed provide lightweight solution that supports hundreds of appstores. When app store implements OpenIAB protocol on app store side all applications with OpenIAB become fully compatible with new app store without recompile.
+* **Open In-App Billing protocol** - OpenIAB is designed to provide a lightweight solution that supports hundreds of appstores. When app store implements OpenIAB protocol on app store side all applications with OpenIAB become fully compatible with new app store without recompiling.
 * **No middle man**
 
 No Middle Man
 =====
 OpenIAB is an open source library that handles OpenIAB protocol and wraps some already existing IAB SDKs as well.
-It is important to understand that all payments are processed directly by app store and there is no a middle man
-staying between the app developers and the appstores.
+It is important to understand that all payments are processed directly by the app store and there is no middle man
+standing between the app developers and the appstores.
 OpenIAB is not a payment service. It is just an API how the apps communicate with app stores to request in-app billing.
-There is a common open API all the stores can use instead of each new store implement their own API
-and developers have to integrate all these different APIs in their apps.
+There is a common open API all the stores can use instead of each new store implementing their own API
+and developers having to integrate all these different APIs in their apps.
 
 
 How Can I Help?
@@ -492,7 +492,7 @@ How Can I Help?
 
 * If you know about issues we missed - please, let us know in <a href="https://github.com/onepf/OpenIAB/issues">Issues on GitHub</a>
 * If you have contacts with an app store you like, ask them to implement <a href="https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md">OpenIAB</a> on their side
-* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?state=open">the list of open tasks</a>, see if any of these tasks interests you and comment it. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub and submit your code</li>
+* If you are an Android app developer check <a href="https://github.com/onepf/OpenIAB/issues?state=open">the list of open tasks</a>, see if any of these tasks interests you and comment on it. <a href="https://github.com/onepf/OpenIAB">Fork OpenIAB</a> on GitHub and submit your code</li>
 * If you are an app store and already support In-App Billing we will be happy to meet with your API and find best way to make it compatible with OpenIAB. Please, raise an <a href="https://github.com/onepf/OpenIAB/issues?state=open">Issue</a> to let us know</li>
 * If you are an app store that does not yet support in-app billing, but plans to support it, then we will be glad to help you with OpenIAB API. Please check our <a href="https://github.com/onepf/OpenIAB/blob/master/specification/How-to_Implement_OpenIAB_in_Appstore.md">How-To</a> and contact us to get deeper explanation of questions you have by raising an <a href="https://github.com/onepf/OpenIAB/issues?state=open">Issue</a></li>
 
