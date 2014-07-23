@@ -1,5 +1,6 @@
 package org.onepf.life;
 
+import android.annotation.SuppressLint;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
@@ -17,6 +18,7 @@ public class LifeViewRenderer implements Runnable {
         this.lifeView = lifeView;
     }
 
+    @SuppressLint("WrongCall")
     @Override
     public void run() {
         while (running) {
