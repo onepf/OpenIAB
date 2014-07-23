@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NokiaStoreHelper implements AppstoreInAppBillingService {
-
+    //todo why own constants?
 	public static final int RESULT_OK                  = 0;
 	public static final int RESULT_USER_CANCELED       = 1;
 	public static final int RESULT_BILLING_UNAVAILABLE = 3;
@@ -44,6 +44,8 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	public static final int RESULT_ITEM_ALREADY_OWNED  = 7;
 	public static final int RESULT_ITEM_NOT_OWNED      = 8;
 	public static final int RESULT_NO_SIM              = 9;
+
+    public static final int RESULT_BAD_RESPONSE = -1002;
 
 	private static final String  TAG           = NokiaStoreHelper.class.getSimpleName();
 	public static final  boolean IS_DEBUG_MODE = false;
@@ -128,12 +130,18 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 					"Billing service unavailable on device."));
 			}
 
-		} else {
-
-			mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
-
-		}
-	}
+        } else {
+            try {
+                mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+            } catch (SecurityException e) {
+                logError("Can't bind to the service", e);
+                if (listener != null) {
+                    listener.onIabSetupFinished(new NokiaResult(RESULT_BILLING_UNAVAILABLE,
+                            "Billing service unavailable on device due to lack of the permission \"com.nokia.payment.BILLING\"."));
+                }
+            }
+        }
+    }
 
 	private Intent getServiceIntent() {
 		final Intent intent = new Intent(NokiaStore.VENDING_ACTION);
@@ -180,29 +188,36 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 
 		try {
-			final Bundle buyIntentBundle = mService.getBuyIntent(
-				3, getPackageName(), sku, IabHelper.ITEM_TYPE_INAPP, extraData
-			);
+            if (mService == null) {
+                if (listener != null) {
+                    logError("Unable to buy item, Error response: service is not connected.");
+                    NokiaResult result = new NokiaResult(RESULT_ERROR, "Unable to buy item");
+                    listener.onIabPurchaseFinished(result, null);
+                }
+            } else {
+                final Bundle buyIntentBundle = mService.getBuyIntent(
+                        3, getPackageName(), sku, IabHelper.ITEM_TYPE_INAPP, extraData
+                );
 
-			logDebug("buyIntentBundle = " + buyIntentBundle);
+                logDebug("buyIntentBundle = " + buyIntentBundle);
 
- 			final int responseCode = buyIntentBundle.getInt("RESPONSE_CODE", 0);
-			final PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
+                final int responseCode = buyIntentBundle.getInt("RESPONSE_CODE", 0);
+                final PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 
- 			if (responseCode == RESULT_OK) {
- 				mRequestCode = requestCode;
- 				mPurchaseListener = listener;
+                if (responseCode == RESULT_OK) {
+                    mRequestCode = requestCode;
+                    mPurchaseListener = listener;
 
- 	            final IntentSender intentSender = pendingIntent.getIntentSender();
- 	            act.startIntentSenderForResult(
- 	                    intentSender, requestCode, new Intent(), 0, 0, 0
- 				);
- 			} else if(listener != null) {
- 				final IabResult result = new NokiaResult(responseCode, "Failed to get buy intent.");
- 				listener.onIabPurchaseFinished(result, null);
- 			}
-
-		} catch (RemoteException e) {
+                    final IntentSender intentSender = pendingIntent.getIntentSender();
+                    act.startIntentSenderForResult(
+                            intentSender, requestCode, new Intent(), 0, 0, 0
+                    );
+                } else if (listener != null) {
+                    final IabResult result = new NokiaResult(responseCode, "Failed to get buy intent.");
+                    listener.onIabPurchaseFinished(result, null);
+                }
+            }
+        } catch (RemoteException e) {
 			logError("RemoteException: " + e, e);
 
 			final IabResult result = new NokiaResult(IabHelper.IABHELPER_SEND_INTENT_FAILED, "Failed to send intent.");
@@ -460,6 +475,11 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		storeSkusBundle.putStringArrayList("ITEM_ID_LIST", storeSkus);
 
 		try {
+            if (mService == null) {
+                logError("Unable to refresh purchased items.");
+                throw new IabException(RESULT_BAD_RESPONSE, "Error refreshing inventory (querying owned items).");
+            }
+
 			final Bundle purchasedBundle = mService.getPurchases(
 				3, getPackageName(), OpenIabHelper.ITEM_TYPE_INAPP, storeSkusBundle, null
 			);
@@ -535,8 +555,12 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		storeSkusBundle.putStringArrayList("ITEM_ID_LIST", combinedStoreSkus);
 
 		try {
+            if (mService == null) {
+                logError("Unable to refresh item details.");
+                throw new IabException(RESULT_BAD_RESPONSE, "Error refreshing item details.");
+            }
 
-			final Bundle productDetailBundle = mService.getProductDetails(
+            final Bundle productDetailBundle = mService.getProductDetails(
 				3, getPackageName(), OpenIabHelper.ITEM_TYPE_INAPP, storeSkusBundle
 			);
 
