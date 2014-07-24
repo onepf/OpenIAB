@@ -18,7 +18,6 @@ public class LifeViewRenderer implements Runnable {
         this.lifeView = lifeView;
     }
 
-    @SuppressLint("WrongCall")
     @Override
     public void run() {
         while (running) {
