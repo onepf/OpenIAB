@@ -1,6 +1,19 @@
 #import "AppStoreDelegate.h"
 #import <StoreKit/StoreKit.h>
 
+// Helper method to create C string copy
+// By default mono string marshaler creates .Net string for returned UTF-8 C string
+// and calls free for returned value, thus returned strings should be allocated on heap
+char* MakeStringCopy(const char* string)
+{
+	if (string == NULL)
+		return NULL;
+	
+	char* res = (char*)malloc(strlen(string) + 1);
+	strcpy(res, string);
+	return res;
+}
+
 // Required by Unity
 extern void UnitySendMessage(const char* objectName, const char* methodName, const char* param);
 
@@ -8,7 +21,7 @@ const char* EventHandler = "OpenIABEventManager";
 
 @implementation AppStoreDelegate
 
-#pragma mark Internal
+// Internal
 
 NSSet* m_skus;
 NSMutableArray* m_skuMap;
@@ -25,7 +38,8 @@ NSMutableArray* m_skuMap;
         NSLog(@"Couldn't access standardUserDefaults. Purchase wasn't stored.");
 }
 
-#pragma mark General
+
+// General
 
 + (AppStoreDelegate*)instance
 {
@@ -38,11 +52,9 @@ NSMutableArray* m_skuMap;
 
 - (id)init
 {
-	if (self = [super init])
-	{
-		[[SKPaymentQueue defaultQueue] addTransactionObserver:self];
-	}
-	return self;
+    self = [super init];
+    [[SKPaymentQueue defaultQueue] addTransactionObserver:self];
+    return self;
 }
 
 - (void)dealloc
@@ -54,7 +66,8 @@ NSMutableArray* m_skuMap;
     [super dealloc];
 }
 
-#pragma mark Public Methods
+
+// Public
 
 - (BOOL)canMakePayments
 {
@@ -113,7 +126,7 @@ NSMutableArray* m_skuMap;
     NSError* error = nil;
     NSData* jsonData = [NSJSONSerialization dataWithJSONObject:inventory options:kNilOptions error:&error];
     NSString* message = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-	UnitySendMessage(EventHandler, "OnQueryInventorySucceeded", strdup([message UTF8String]));
+	UnitySendMessage(EventHandler, "OnQueryInventorySucceeded", MakeStringCopy([message UTF8String]));
 }
 
 - (void)restorePurchases
@@ -121,7 +134,8 @@ NSMutableArray* m_skuMap;
     [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
 }
 
-#pragma mark SKProductsRequestDelegate Protocol
+
+// SKProductsRequestDelegate Protocol
 
 - (void)productsRequest:(SKProductsRequest*)request didReceiveResponse:(SKProductsResponse*)response
 {
@@ -158,16 +172,21 @@ NSMutableArray* m_skuMap;
         [m_skuMap addObject:entry];
     }
     
-    UnitySendMessage(EventHandler, "OnBillingSupported", strdup(""));
+    UnitySendMessage(EventHandler, "OnBillingSupported", MakeStringCopy(""));
 }
 
 - (void)request:(SKRequest*)request didFailWithError:(NSError*)error
 {
-    UnitySendMessage(EventHandler, "OnBillingNotSupported", strdup([[error localizedDescription] UTF8String]));
+    UnitySendMessage(EventHandler, "OnBillingNotSupported", MakeStringCopy([[error localizedDescription] UTF8String]));
 }
 
 
-#pragma mark SKPaymentTransactionObserver Protocol
+// SKPaymentTransactionObserver Protocol
+
+- (void)paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads
+{
+    // Required by protocol
+}
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
 {
@@ -175,27 +194,23 @@ NSMutableArray* m_skuMap;
 	{
 		switch (transaction.transactionState)
 		{
-                // TODO: consider handling this state
-			case SKPaymentTransactionStatePurchasing:
-				return;
-                
 			case SKPaymentTransactionStateFailed:
                 if (transaction.error.code == SKErrorPaymentCancelled)
-                    UnitySendMessage(EventHandler, "OnPurchaseFailed", strdup("Transaction cancelled"));
+                    UnitySendMessage(EventHandler, "OnPurchaseFailed", MakeStringCopy("Transaction cancelled"));
                 else
-                    UnitySendMessage(EventHandler, "OnPurchaseFailed", strdup([[transaction.error localizedDescription] UTF8String]));
+                    UnitySendMessage(EventHandler, "OnPurchaseFailed", MakeStringCopy([[transaction.error localizedDescription] UTF8String]));
 				[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				break;
                 
             case SKPaymentTransactionStateRestored:
                 [self storePurchase:transaction.payment.productIdentifier];
-                UnitySendMessage(EventHandler, "OnPurchaseRestored", strdup([transaction.originalTransaction.payment.productIdentifier UTF8String]));
+                UnitySendMessage(EventHandler, "OnPurchaseRestored", MakeStringCopy([transaction.originalTransaction.payment.productIdentifier UTF8String]));
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 				break;
                 
 			case SKPaymentTransactionStatePurchased:
                 [self storePurchase:transaction.payment.productIdentifier];
-                UnitySendMessage(EventHandler, "OnPurchaseSucceeded", strdup([transaction.payment.productIdentifier UTF8String]));
+                UnitySendMessage(EventHandler, "OnPurchaseSucceeded", MakeStringCopy([transaction.payment.productIdentifier UTF8String]));
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
                 break;
 		}
@@ -204,17 +219,12 @@ NSMutableArray* m_skuMap;
 
 - (void)paymentQueue:(SKPaymentQueue*)queue restoreCompletedTransactionsFailedWithError:(NSError*)error
 {
-	UnitySendMessage(EventHandler, "OnRestoreFailed", strdup([[error localizedDescription] UTF8String]));
+	UnitySendMessage(EventHandler, "OnRestoreFailed", MakeStringCopy([[error localizedDescription] UTF8String]));
 }
 
 - (void)paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue*)queue
 {
-	UnitySendMessage(EventHandler, "OnRestoreFinished", "");
-}
-
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads
-{
-    // TODO: Required by protocol. Consider removal
+	UnitySendMessage(EventHandler, "OnRestoreFinished", MakeStringCopy(""));
 }
 
 @end
