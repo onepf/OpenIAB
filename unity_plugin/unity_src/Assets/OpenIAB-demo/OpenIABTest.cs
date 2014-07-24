@@ -9,6 +9,8 @@ public class OpenIABTest : MonoBehaviour
     const string SKU_AMMO = "sku_ammo_general";
     const string SKU_MEDKIT = "sku_medkit_general";
     const string SKU_SUBSCRIPTION = "sku_sub_general";
+    const string SKU_INFINITE_AMMO = "sku_inf_ammo_general";
+    const string SKU_COWBOY_HAT = "sku_hat_general";
 
 #pragma warning disable 0414
     string _label = "";
@@ -44,7 +46,12 @@ public class OpenIABTest : MonoBehaviour
     private void Start()
     {
         // Map skus for different stores
-        OpenIAB.mapSku(SKU, OpenIAB_Android.STORE_GOOGLE, "sku");
+        OpenIAB.mapSku(SKU_MEDKIT, OpenIAB_iOS.STORE, "30_real");
+        OpenIAB.mapSku(SKU_AMMO, OpenIAB_iOS.STORE, "75_real");
+        OpenIAB.mapSku(SKU_INFINITE_AMMO, OpenIAB_iOS.STORE, "noncons_2");
+        OpenIAB.mapSku(SKU_COWBOY_HAT, OpenIAB_iOS.STORE, "noncons_1");
+
+        OpenIAB.mapSku(SKU, OpenIAB_iOS.STORE, "sku");
 
         OpenIAB.mapSku(SKU_AMMO, OpenIAB_WP8.STORE, "sku_ammo");
         OpenIAB.mapSku(SKU_MEDKIT, OpenIAB_WP8.STORE, "sku_medkit");
@@ -116,6 +123,25 @@ public class OpenIABTest : MonoBehaviour
         {
             OpenIAB.consumeProduct(Purchase.CreateFromSku(SKU));
         }
+    }
+#endif
+
+#if UNITY_IOS
+    void OnGUI()
+    {
+        if (GUI.Button(new Rect(10, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Init"))
+        {
+            OpenIAB.init(new Options());
+        }
+        if (GUI.Button(new Rect(20 + Screen.width * 0.3f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Query inventory"))
+        {
+            OpenIAB.queryInventory(new string[] { SKU_MEDKIT });
+        }
+        if (GUI.Button(new Rect(30 + Screen.width * 0.6f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Purchase"))
+        {
+            OpenIAB.purchaseProduct(SKU_MEDKIT);
+        }
+        GUI.Label(new Rect(10, 20 + Screen.height * 0.1f, Screen.width, Screen.height), _label);
     }
 #endif
 
