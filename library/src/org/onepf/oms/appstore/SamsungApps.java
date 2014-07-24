@@ -39,7 +39,7 @@ import java.util.concurrent.CountDownLatch;
  * {@link #isPackageInstaller(String)} - there is no known reliable way to understand 
  * SamsungApps is installer of Application   
  * If you want SamsungApps to be used for purhases specify it in preffered stores by
- * {@link OpenIabHelper#OpenIabHelper(Context, java.util.Map, String[])} </p>   
+ * {@link OpenIabHelper#OpenIabHelper(android.content.Context, org.onepf.oms.OpenIabHelper.Options)}  </p>
  * 
  * Supported purchase details   
  * <pre>

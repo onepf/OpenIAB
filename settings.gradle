@@ -4,5 +4,5 @@ include':local_store'
 include':unity_plugin'
 include':life_openiab'
 
-project(':trivialdrive').projectDir = new File('samples/trivialdrive')
-project(':life_openiab').projectDir = new File('samples/life_openiab')
+project(':trivialdrive').projectDir = file('samples/trivialdrive')
+project(':life_openiab').projectDir = file('samples/life_openiab')

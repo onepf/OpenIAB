@@ -89,11 +89,11 @@ public class GameActivity extends Activity implements LifeViewListener {
         String GOOGLE_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
         String YANDEX_PUBLIC_KEY = "YOUR_YANDEX_PUBLIC_KEY";
         //IAB helper
-        Map<String, String> storeKeys = new HashMap<String, String>();
-        storeKeys.put(OpenIabHelper.NAME_GOOGLE, GOOGLE_PUBLIC_KEY);
-        storeKeys.put(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY);
+        OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
+        builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PUBLIC_KEY);
+        builder.addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY);
 
-        openIabHelper = new OpenIabHelper(this, storeKeys);
+        openIabHelper = new OpenIabHelper(this, builder.build());
         openIabHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
                                      public void onIabSetupFinished(IabResult result) {
                                          Log.d(TAG, "Setup finished.");
