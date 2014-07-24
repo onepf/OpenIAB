@@ -43,10 +43,20 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file("life_openiab.keystore")
+            storePassword "android"
+            keyAlias "OpenIab"
+            keyPassword "android"
+        }
+    }
+
     buildTypes {
         release {
             runProguard false
             proguardFiles 'proguard-project.txt'
+            signingConfig signingConfigs.release
         }
     }
     lintOptions {

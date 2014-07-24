@@ -16,6 +16,7 @@
 
 package org.onepf.life;
 
+import android.annotation.SuppressLint;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
