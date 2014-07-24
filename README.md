@@ -9,7 +9,7 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
 3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
 When setup is done call  `helper.queryInventory()`
     ```java
-      helper = new OpenIabHelper(this, storeKeys);
+      helper = new OpenIabHelper(this, options);
       helper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
           public void onIabSetupFinished(IabResult result) {
               if (!result.isSuccess()) {
@@ -119,14 +119,10 @@ Google Play and Open Stores
 2. Provide your public keys
 
     ```java
-    Map<String, String> storeKeys = new HashMap<String, String>();
-    storeKeys.put(OpenIabHelper.NAME_GOOGLE, googleBase64EncodedPublicKey);
-    storeKeys.put(OPEN_STORE_NAME, openStoreBase64EncodedPublicKey);
-    OpenIabHelper.Options options = new OpenIabHelper.Options();
-    options.storeKeys = storeKeys;
-    mHelper = new OpenIabHelper(this, options);
-    //or
-    mHelper = new OpenIabHelper(this, storeKeys);
+    OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
+    builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, googleBase64EncodedPublicKey);
+    builder.addStoreKey(OPEN_STORE_NAME, openStoreBase64EncodedPublicKey);
+    mHelper = new OpenIabHelper(this, builder.build());
     ```
     otherwise verify purchases on your server side.
 
@@ -157,9 +153,9 @@ Receipt Verification on Server
 1. Create OpenIabHelper with "Skip signature verification" option and no publicKeys. If you specify no publicKeys and forget VERIFY_SKIP option, an IllegalArgumentException will be thrown
 
     ```java
-    Options opts = new OpenIabHelper.Options();
-    opts.verifyMode = Options.VERIFY_SKIP;
-    mHelper = new OpenIabHelper(context, opts);
+    OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
+    builder.setVerifyMode(OpenIabHelper.Options.VERIFY_SKIP);
+    mHelper = new OpenIabHelper(context, builder.build());
     ```
 
 2. Get receipt data and signature from Purchase object and send it to your server
@@ -349,15 +345,13 @@ OpenIAB setup
 3. In the code setup an Options object
 
     ```java
-    OpenIabHelper.Options options = new OpenIabHelper.Options();
+    OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
     //set supportFortumo flag to true
-    options.supportFortumo = true;
+    builder.setSupportFortumo(true);
     //or
-    List<Appstore> storeList = new ArrayList<Appstore>();
-    storeList.add(new FortumoStore(this));
     //by the way, you can add other stores object to the list
-    options.availableStores = storeList;
-    mHelper = new OpenIabHelper(this, options);
+    builder.addAvailableStore(new FortumoStore(this));
+    mHelper = new OpenIabHelper(this, builder.build());
     ```
 4. Add <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/inapp-description.xsd">inapps_products.xml</a> (in-app products descriptions in terms similar to Google Play) and
 <a href="https://github.com/onepf/AppDF/blob/xsd-for-inapps/specification/fortumo-products-description.xsd">fortumo_inapps_details.xml</a> (data about your Fortumo services,

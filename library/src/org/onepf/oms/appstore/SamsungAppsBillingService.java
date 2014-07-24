@@ -28,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.OpenIabHelper.Options;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener;
@@ -138,7 +137,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private volatile boolean isBound;
     private IAPConnector mIapConnector;
     private Activity activity;
-    private Options options;
+    private OpenIabHelper.Options options;
     private ServiceConnection serviceConnection;
     private String purchasingItemType;
 
@@ -150,7 +149,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     private String mItemGroupId;
     private String mExtraData;
 
-    public SamsungAppsBillingService(Activity context, Options options) {
+    public SamsungAppsBillingService(Activity context, OpenIabHelper.Options options) {
         this.activity = context;
         this.options = options;
     }
@@ -162,7 +161,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         ComponentName com = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, ACCOUNT_ACTIVITY_NAME);
         Intent intent = new Intent();
         intent.setComponent(com);
-        activity.startActivityForResult(intent, options.samsungCertificationRequestCode);
+        activity.startActivityForResult(intent, options.getSamsungCertificationRequestCode());
     }
 
     @Override
@@ -259,7 +258,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
 
     @Override
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == options.samsungCertificationRequestCode) {
+        if (requestCode == options.getSamsungCertificationRequestCode()) {
             if (resultCode == Activity.RESULT_OK) {
                 bindIapService();
             } else if (resultCode == Activity.RESULT_CANCELED) {

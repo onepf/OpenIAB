@@ -15,9 +15,6 @@
 
 package org.onepf.trivialdrive;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
@@ -185,15 +182,15 @@ public class MainActivity extends Activity {
         
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
-        Map<String, String> storeKeys = new HashMap<String, String>();
-        storeKeys.put(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey);
-//      storeKeys.put(OpenIabHelper.NAME_AMAZON, "Unavailable. Amazon doesn't support RSA verification. So this mapping is not needed"); //
-//      storeKeys.put(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
-        storeKeys.put("com.yandex.store", YANDEX_PUBLIC_KEY);
-        storeKeys.put("Appland", APPLAND_PUBLIC_KEY);
-        storeKeys.put("SlideME", SLIDEME_PUBLIC_KEY);
+        OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
+        builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, base64EncodedPublicKey)
+                .addStoreKey("com.yandex.store", YANDEX_PUBLIC_KEY)
+                .addStoreKey("Appland", APPLAND_PUBLIC_KEY)
+                .addStoreKey("SlideME", SLIDEME_PUBLIC_KEY);
+//      builder.addStoreKey(OpenIabHelper.NAME_AMAZON, "Unavailable. Amazon doesn't support RSA verification. So this mapping is not needed"); //
+//      builder.addStoreKey(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
 
-        mHelper = new OpenIabHelper(this, storeKeys);
+        mHelper = new OpenIabHelper(this, builder.build());
         
         // enable debug logging (for a production application, you should set this to false).
         //mHelper.enableDebugLogging(true);
