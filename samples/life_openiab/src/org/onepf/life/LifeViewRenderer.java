@@ -39,6 +39,7 @@ public class LifeViewRenderer implements Runnable {
             if (lifeView.getHolder().getSurface().isValid()) {
                 Canvas canvas = lifeView.getHolder().lockCanvas();
                 lifeView.updateField();
+                lifeView.invalidate();
                 lifeView.onDraw(canvas);
                 lifeView.getHolder().unlockCanvasAndPost(canvas);
                 try {
