@@ -8,17 +8,12 @@ NSString* ToString(const char* c_string)
 
 extern "C"
 {
-    bool AppStore_canMakePayments()
-    {
-        return [[AppStoreDelegate instance] canMakePayments] != 0;
-    }
-    
     void AppStore_requestProducts(const char* skus[], int skuNumber)
     {
         NSMutableSet *skuSet = [NSMutableSet set];
         for (int i = 0; i < skuNumber; ++i)
             [skuSet addObject: ToString(skus[i])];
-        [[AppStoreDelegate instance] requestProducts:skuSet];
+        [[AppStoreDelegate instance] requestSKUs:skuSet];
     }
     
     void AppStore_startPurchase(const char* sku)

@@ -39,7 +39,7 @@ NSMutableArray* m_skuMap;
 }
 
 
-// General
+// Init
 
 + (AppStoreDelegate*)instance
 {
@@ -59,6 +59,7 @@ NSMutableArray* m_skuMap;
 
 - (void)dealloc
 {
+    [[SKPaymentQueue defaultQueue] removeTransactionObserver:self];
     [m_skuMap release];
     [m_skus release];
     m_skus = nil;
@@ -67,14 +68,9 @@ NSMutableArray* m_skuMap;
 }
 
 
-// Public
+// Setup
 
-- (BOOL)canMakePayments
-{
-    return [SKPaymentQueue canMakePayments];
-}
-
-- (void)requestProducts:(NSSet*)skus
+- (void)requestSKUs:(NSSet*)skus
 {
     m_skus = [skus retain];
     SKProductsRequest *request = [[SKProductsRequest alloc] initWithProductIdentifiers:skus];
@@ -82,60 +78,7 @@ NSMutableArray* m_skuMap;
 	[request start];
 }
 
-- (void)startPurchase:(NSString*)sku
-{
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProductIdentifier:sku];
-    [[SKPaymentQueue defaultQueue] addPayment:payment];
-}
-
-- (void)queryInventory
-{
-    NSMutableDictionary* inventory = [[NSMutableDictionary alloc] init];
-    NSMutableArray *purchaseMap = [[NSMutableArray alloc] init];
-    NSUserDefaults* standardUserDefaults = [NSUserDefaults standardUserDefaults];
-    if (!standardUserDefaults)
-        NSLog(@"Couldn't access purchase storage. Purchase map won't be available.");
-    else
-        for (NSString* sku in m_skus)
-            if ([standardUserDefaults boolForKey:sku])
-            {
-                // TODO: Probably store all purchase information. Not only sku
-                // Setup purchase
-                NSDictionary* purchase = [NSDictionary dictionaryWithObjectsAndKeys:
-                                          @"product", @"itemType",
-                                          @"", @"orderId",
-                                          @"", @"packageName",
-                                          sku, @"sku",
-                                          [NSNumber numberWithLong:0], @"purchaseTime",
-                                          // TODO: copy constants from Android if ever needed
-                                          [NSNumber numberWithInt:0], @"purchaseState",
-                                          @"", @"developerPayload",
-                                          @"", @"token",
-                                          @"", @"originalJson",
-                                          @"", @"signature",
-                                          @"", @"appstoreName",
-                                          nil];
-                
-                NSArray* entry = [NSArray arrayWithObjects:sku, purchase, nil];
-                [purchaseMap addObject:entry];
-            }
-    
-    [inventory setObject:purchaseMap forKey:@"purchaseMap"];
-    [inventory setObject:m_skuMap forKey:@"skuMap"];
-    
-    NSError* error = nil;
-    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:inventory options:kNilOptions error:&error];
-    NSString* message = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-	UnitySendMessage(EventHandler, "OnQueryInventorySucceeded", MakeStringCopy([message UTF8String]));
-}
-
-- (void)restorePurchases
-{
-    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
-}
-
-
-// SKProductsRequestDelegate Protocol
+// Setup handler
 
 - (void)productsRequest:(SKProductsRequest*)request didReceiveResponse:(SKProductsResponse*)response
 {
@@ -181,11 +124,66 @@ NSMutableArray* m_skuMap;
 }
 
 
-// SKPaymentTransactionObserver Protocol
+// Transactions
+
+- (void)startPurchase:(NSString*)sku
+{
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProductIdentifier:sku];
+    [[SKPaymentQueue defaultQueue] addPayment:payment];
+}
+
+- (void)queryInventory
+{
+    NSMutableDictionary* inventory = [[NSMutableDictionary alloc] init];
+    NSMutableArray* purchaseMap = [[NSMutableArray alloc] init];
+    NSUserDefaults* standardUserDefaults = [NSUserDefaults standardUserDefaults];
+    if (!standardUserDefaults)
+        NSLog(@"Couldn't access purchase storage. Purchase map won't be available.");
+    else
+        for (NSString* sku in m_skus)
+            if ([standardUserDefaults boolForKey:sku])
+            {
+                // TODO: Probably store all purchase information. Not only sku
+                // Setup purchase
+                NSDictionary* purchase = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          @"product", @"itemType",
+                                          @"", @"orderId",
+                                          @"", @"packageName",
+                                          sku, @"sku",
+                                          [NSNumber numberWithLong:0], @"purchaseTime",
+                                          // TODO: copy constants from Android if ever needed
+                                          [NSNumber numberWithInt:0], @"purchaseState",
+                                          @"", @"developerPayload",
+                                          @"", @"token",
+                                          @"", @"originalJson",
+                                          @"", @"signature",
+                                          @"", @"appstoreName",
+                                          nil];
+                
+                NSArray* entry = [NSArray arrayWithObjects:sku, purchase, nil];
+                [purchaseMap addObject:entry];
+            }
+    
+    [inventory setObject:purchaseMap forKey:@"purchaseMap"];
+    [inventory setObject:m_skuMap forKey:@"skuMap"];
+    
+    NSError* error = nil;
+    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:inventory options:kNilOptions error:&error];
+    NSString* message = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+	UnitySendMessage(EventHandler, "OnQueryInventorySucceeded", MakeStringCopy([message UTF8String]));
+}
+
+- (void)restorePurchases
+{
+    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+}
+
+
+// Transactions handler
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedDownloads:(NSArray *)downloads
 {
-    // Required by protocol
+    // Required by store protocol
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions

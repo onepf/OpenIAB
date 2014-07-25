@@ -5,9 +5,7 @@
 
 + (AppStoreDelegate*)instance;
 
-- (BOOL)canMakePayments;
-
-- (void)requestProducts:(NSSet*)skus;
+- (void)requestSKUs:(NSSet*)skus;
 
 - (void)startPurchase:(NSString*)sku;
 

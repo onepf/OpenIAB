@@ -13,10 +13,7 @@ namespace OnePF {
         public static readonly string STORE = "appstore";
 
 #if UNITY_IOS
-        #region NativeMethods
-		[DllImport ("__Internal")]
-        private static extern bool AppStore_canMakePayments();
-		
+        #region NativeMethods	
 		[DllImport ("__Internal")]
         private static extern void AppStore_requestProducts(string[] skus, int skusNumber);
 	
@@ -53,11 +50,6 @@ namespace OnePF {
 
 		public void init(Dictionary<string, string> storeKeys=null) {
 			if (!IsDevice()) return;
-
-            if (!AppStore_canMakePayments()) {
-                OpenIAB.EventManager.SendMessage("OnBillingNotSupported", "User cannot make payments.");
-                return;
-            }
 
             // Pass identifiers to the StoreKit
             string[] identifiers = new string[_sku2storeSkuMappings.Count];
