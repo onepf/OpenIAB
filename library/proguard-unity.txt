@@ -26,6 +26,12 @@
     public *** launchSubscriptionPurchaseFlow(...);
 }
 
+-keep class org.onepf.oms.OpenIabHelper$Options$Builder {
+    public *** setVerifyMode(...);
+    public *** addStoreKeys(...);
+    public org.onepf.oms.OpenIabHelper.Options build();
+}
+
 -keep class org.onepf.oms.OpenIabHelper {
     public static final *** !NAME_FORTUMO;
 }
