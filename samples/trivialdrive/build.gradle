@@ -27,10 +27,20 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file("trivialdrive.keystore")
+            storePassword "android"
+            keyAlias "OpenIab"
+            keyPassword "android"
+        }
+    }
+
     buildTypes {
         release {
             runProguard false
             proguardFiles 'proguard-project.txt'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -41,5 +51,5 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile project(':library')
+    compile project(':OpenIab Library')
 }

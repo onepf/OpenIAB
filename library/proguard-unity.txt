@@ -26,6 +26,10 @@
     public *** launchSubscriptionPurchaseFlow(...);
 }
 
+-keep class org.onepf.oms.OpenIabHelper$Options$Builder {
+    public *** !setSupportFortumo(...);
+}
+
 -keep class org.onepf.oms.OpenIabHelper {
     public static final *** !NAME_FORTUMO;
 }

@@ -177,14 +177,13 @@ public class SamsungApps extends DefaultAppstore {
         if (skuParts.length != 2) {
             throw new IllegalArgumentException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
         }
-        for (int i = 0; i < skuParts.length; i++) {
-            if (!TextUtils.isDigitsOnly(skuParts[i])) {
-                if (i == 0) {
-                    throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
-                } else if (i == 1) {
-                    throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_ID.");
-                }
-            }
+        String groupId = skuParts[0];
+        String itemId = skuParts[1];
+        if (TextUtils.isEmpty(groupId) || !TextUtils.isDigitsOnly(groupId)) {
+            throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
+        }
+        if (TextUtils.isEmpty(itemId)) {
+            throw new IllegalArgumentException("Samsung SKU must contain ITEM_ID.");
         }
     }
 }

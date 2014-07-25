@@ -43,7 +43,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile project(path: ':library', configuration: "noFortumoUnity")
+    compile project(path: ':OpenIab Library', configuration: "noFortumoUnity")
 }
 
 task buildPlugin(dependsOn: 'assembleRelease') << {
@@ -116,7 +116,7 @@ def getUnityExecutablePath() {
     if (project.hasProperty('unityExecutable')) {
         exePath = project.property('unityExecutable');
     } else {
-        def paths = ['unityWin86Path', 'unityMacPath', 'unityWin64Path',]
+        def paths = ['unityMacPath', 'unityWin86Path', 'unityWin64Path',]
         for (path in paths) {
             if (file(project.property(path)).exists()) {
                 return project.property(path);
