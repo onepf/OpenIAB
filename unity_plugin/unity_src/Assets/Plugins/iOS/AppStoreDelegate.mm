@@ -17,9 +17,11 @@
 #import "AppStoreDelegate.h"
 #import <StoreKit/StoreKit.h>
 
-// Helper method to create C string copy
-// By default mono string marshaler creates .Net string for returned UTF-8 C string
-// and calls free for returned value, thus returned strings should be allocated on heap
+/** 
+ * Helper method to create C string copy
+ * By default mono string marshaler creates .Net string for returned UTF-8 C string
+ * and calls free for returned value, thus returned strings should be allocated on heap
+ */
 char* MakeStringCopy(const char* string)
 {
 	if (string == NULL)
@@ -30,16 +32,29 @@ char* MakeStringCopy(const char* string)
 	return res;
 }
 
-// Required by Unity
+/**
+ * It is used to send callbacks to the Unity event handler
+ */
 extern void UnitySendMessage(const char* objectName, const char* methodName, const char* param);
 
+/**
+ * Name of the event handler object in Unity
+ */
 const char* EventHandler = "OpenIABEventManager";
 
 @implementation AppStoreDelegate
 
 // Internal
 
+/**
+ * Collection of product identifiers
+ */
 NSSet* m_skus;
+
+/**
+ * Map of product listings
+ * Information is requested from the store
+ */
 NSMutableArray* m_skuMap;
 
 - (void)storePurchase:(NSString *)sku

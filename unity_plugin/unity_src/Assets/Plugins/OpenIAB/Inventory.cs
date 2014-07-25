@@ -22,6 +22,9 @@ using UnityEngine;
 
 namespace OnePF
 {
+    /**
+     * Container for finished purchases and store listings
+     */ 
     public class Inventory
     {
         private Dictionary<String, SkuDetails> _skuMap = new Dictionary<String, SkuDetails>();
@@ -163,7 +166,9 @@ namespace OnePF
             return _purchaseMap.Values.ToList<Purchase>();
         }
 
-        /** Returns a list of all available {@code SkuDetails} products. */
+        /** 
+         * Returns a list of all available {@code SkuDetails} products. 
+         */
         public List<SkuDetails> GetAllAvailableSkus()
         {
             return _skuMap.Values.ToList();

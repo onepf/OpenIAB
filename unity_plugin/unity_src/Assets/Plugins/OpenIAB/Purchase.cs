@@ -14,12 +14,11 @@
  *       limitations under the License.
  ******************************************************************************/
 
-/**
- * Represents an in-app billing purchase.
- * 
- */
 namespace OnePF
 {
+    /**
+     * Represents an in-app billing purchase.
+     */
     public class Purchase
     {
         public string ItemType { get; private set; }  // ITEM_TYPE_INAPP or ITEM_TYPE_SUBS
@@ -38,6 +37,9 @@ namespace OnePF
         {
         }
 
+        /**
+         * Create purchase from json string
+         */ 
         public Purchase(string jsonString)
         {
             var json = new JSON(jsonString);

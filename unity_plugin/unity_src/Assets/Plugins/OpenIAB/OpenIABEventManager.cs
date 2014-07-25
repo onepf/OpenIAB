@@ -20,31 +20,65 @@ using System.Collections;
 using System.Collections.Generic;
 using OnePF;
 
+/**
+ * Simple event manager. Subscribe to handle billing events
+ */ 
 public class OpenIABEventManager : MonoBehaviour
 {
-    // Fired after init is called when billing is supported on the device
+    /**
+     * Successfull Init callback. Billing is supported on current platform
+     */ 
     public static event Action billingSupportedEvent;
-    // Fired after init is called when billing is not supported on the device
+
+    /**
+     * Failed Init callback. Billing is not supported on current platform
+     */
     public static event Action<string> billingNotSupportedEvent;
-    // Fired when the inventory and purchase history query has returned
+    
+    /**
+     * Successful QueryInventory callback. Purchase history and store listings are returned
+     */ 
     public static event Action<Inventory> queryInventorySucceededEvent;
-    // Fired when the inventory and purchase history query fails
+
+    /**
+     * Failed QueryInventory callback.
+     */
     public static event Action<string> queryInventoryFailedEvent;
-    // Fired when a purchase of a product or a subscription succeeds
+    
+    /**
+     * Successful purchase callback. Fired after purchase of a product or a subscription
+     */ 
     public static event Action<Purchase> purchaseSucceededEvent;
-    // Fired when a purchase fails
+    
+    /**
+     * Failed purchase callback
+     */ 
     public static event Action<int, string> purchaseFailedEvent;
-    // Fired when a call to consume a product succeeds
+    
+    /**
+     * Successful consume attempt callback
+     */ 
     public static event Action<Purchase> consumePurchaseSucceededEvent;
-    // Fired when a call to consume a product fails
+
+    /**
+     * Failed consume attempt callback
+     */ 
     public static event Action<string> consumePurchaseFailedEvent;
 
 #pragma warning disable 0067
-    // Fired when transaction was restored
+    /**
+     * Fired when transaction was restored
+     */ 
     public static event Action<string> transactionRestoredEvent;
-    // Fired when transaction restoration process failed
+    
+    /**
+     * Fired when transaction restoration process failed
+     */ 
     public static event Action<string> restoreFailedEvent;
-    // Fired when transaction restoration process succeeded
+    
+    /**
+     * Fired when transaction restoration process succeeded
+     */ 
     public static event Action restoreSucceededEvent;
 #pragma warning restore 0067
 

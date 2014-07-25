@@ -21,6 +21,9 @@ using System;
 
 namespace OnePF
 {
+    /**
+     * Android billing implentation
+     */ 
     public class OpenIAB_Android
 #if UNITY_ANDROID
  : IOpenIAB
@@ -108,29 +111,35 @@ namespace OnePF
 
             using (var j_optionsBuilder = new AndroidJavaObject("org.onepf.oms.OpenIabHelper$Options$Builder"))
             {
-                j_optionsBuilder.Call<AndroidJavaObject>("setDiscoveryTimeout", options.discoveryTimeoutMs)
-                                .Call<AndroidJavaObject>("setCheckInventory", options.checkInventory)
-                                .Call<AndroidJavaObject>("setCheckInventoryTimeout", options.checkInventoryTimeoutMs)
-                                .Call<AndroidJavaObject>("setVerifyMode", (int) options.verifyMode);
+                var clazz = j_optionsBuilder.GetRawClass();
+                var objPtr = j_optionsBuilder.GetRawObject();
 
-                foreach (var pair in options.storeKeys)
-                    j_optionsBuilder.Call<AndroidJavaObject>("addStoreKey", pair.Value, pair.Key);
+                // OpenIabHelper.Options.Builder.setDiscoveryTimeout(int discoveryTimeout);
+                var setDiscoveryTimeoutMethod = AndroidJNI.GetMethodID(clazz, "setDiscoveryTimeout", "(I)Lorg/onepf/oms/OpenIabHelper$Options$Builder;");
+                jvalue [] prms = new jvalue[1];
+                prms[0].i = options.discoveryTimeoutMs;
+                AndroidJNI.CallObjectMethod(objPtr, setDiscoveryTimeoutMethod, prms);
 
-                foreach (var storeName in options.prefferedStoreNames)
-                    j_optionsBuilder.Call<AndroidJavaObject>("addPreferredStoreName", storeName);
+                //j_optionsBuilder.Call<AndroidJavaObject>("setDiscoveryTimeout", options.discoveryTimeoutMs)
+                //                .Call<AndroidJavaObject>("setCheckInventory", options.checkInventory)
+                //                .Call<AndroidJavaObject>("setCheckInventoryTimeout", options.checkInventoryTimeoutMs)
+                //                .Call<AndroidJavaObject>("setVerifyMode", (int) options.verifyMode);
 
-                //j_optionsBuilder.Set<int>("discoveryTimeoutMs", options.discoveryTimeoutMs);
-                //j_optionsBuilder.Set<bool>("checkInventory", options.checkInventory);
-                //j_optionsBuilder.Set<int>("checkInventoryTimeoutMs", options.checkInventoryTimeoutMs);
-                //j_optionsBuilder.Set<int>("verifyMode", (int) options.verifyMode);
+                //foreach (var pair in options.storeKeys)
+                //    j_optionsBuilder.Call<AndroidJavaObject>("addStoreKey", pair.Value, pair.Key);
 
-                //AndroidJavaObject j_storeKeys = CreateJavaHashMap(options.storeKeys);
-                //j_optionsBuilder.Set("storeKeys", j_storeKeys);
-                //j_storeKeys.Dispose();
+                //foreach (var storeName in options.prefferedStoreNames)
+                //    j_optionsBuilder.Call<AndroidJavaObject>("addPreferredStoreName", storeName);
 
-                //j_optionsBuilder.Set("prefferedStoreNames", AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames));
+                // Build options instance
+                var buildMethod = AndroidJNI.GetMethodID(clazz, "build", "()Lorg/onepf/oms/OpenIabHelper$Options;");
+                var j_options = AndroidJNI.CallObjectMethod(objPtr, buildMethod, new jvalue[0]);
 
-                _plugin.Call("initWithOptions", j_optionsBuilder);
+                // UnityPlugin.initWithOptions(OpenIabHelper.Options options);
+                var initWithOptionsMethod = AndroidJNI.GetMethodID(_plugin.GetRawClass(), "initWithOptions", "(Lorg/onepf/oms/OpenIabHelper$Options;)V");
+                prms = new jvalue[1];
+                prms[0].l = j_options;
+                AndroidJNI.CallVoidMethod(_plugin.GetRawObject(), initWithOptionsMethod, prms);
             }
         }
 

@@ -16,11 +16,11 @@
 
 using UnityEngine;
 
-/**
- * Represents an in-app product's listing details.
- */
 namespace OnePF
 {
+    /**
+     * Represents an in-app product's listing details.
+     */
     public class SkuDetails
     {
         public string ItemType { get; private set; }

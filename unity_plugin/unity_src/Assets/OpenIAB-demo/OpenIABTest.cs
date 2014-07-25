@@ -18,6 +18,9 @@ using UnityEngine;
 using OnePF;
 using System.Collections.Generic;
 
+/**
+ * Example of OpenIAB usage
+ */ 
 public class OpenIABTest : MonoBehaviour
 {
     const string SKU = "sku";
@@ -91,6 +94,7 @@ public class OpenIABTest : MonoBehaviour
 
             var options = new Options();
             options.verifyMode = OptionsVerifyMode.VERIFY_SKIP;
+            options.prefferedStoreNames = new string[] { OpenIAB_Android.STORE_GOOGLE };
             options.storeKeys = new Dictionary<string, string> {
                 {OpenIAB_Android.STORE_GOOGLE, public_key}
             };

@@ -38,7 +38,6 @@ namespace OnePF
 {
     public class JSON
     {
-
         public Dictionary<string, object> fields = new Dictionary<string, object>();
 
         public JSON()

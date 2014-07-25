@@ -22,6 +22,9 @@ using OnePF.WP8;
 
 namespace OnePF
 {
+    /**
+     * Windows Phone 8 billing implementation
+     */ 
     public class OpenIAB_WP8
 #if UNITY_WP8
  : IOpenIAB

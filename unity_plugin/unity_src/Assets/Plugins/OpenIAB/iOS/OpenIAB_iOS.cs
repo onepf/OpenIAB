@@ -22,6 +22,9 @@ using System.Linq;
 
 namespace OnePF
 {
+    /**
+    * iOS AppStore billing implentation
+    */
     public class OpenIAB_iOS
 #if UNITY_IOS
  : IOpenIAB

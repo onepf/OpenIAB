@@ -20,6 +20,9 @@ using System.Collections.Generic;
 
 namespace OnePF
 {
+    /**
+     * Implement this to create billing service for new platform
+     */ 
     public interface IOpenIAB
     {
         void init(Options options);

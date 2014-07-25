@@ -33,9 +33,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Native java part of the Unity plugin
+ * All methods are called from the Unity side via JNI
+ */
 public class UnityPlugin {
 
     public static final String TAG = "OpenIAB-UnityPlugin";
+    /**
+     * Name of the event handler object in Unity
+     */
     private static final String EVENT_MANAGER = "OpenIABEventManager";
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
@@ -53,7 +60,9 @@ public class UnityPlugin {
     public static final String STORE_YANDEX = OpenIabHelper.NAME_YANDEX;
 	public static final String STORE_NOKIA = OpenIabHelper.NAME_NOKIA;
 
-    // (arbitrary) request code for the purchase flow
+    /**
+     * (arbitrary) request code for the purchase flow
+     */
     public static final int RC_REQUEST = 10001;
     public static boolean sendRequest = false;
 
@@ -82,6 +91,7 @@ public class UnityPlugin {
     public void init(final HashMap<String, String> storeKeys) {
         OpenIabHelper.Options options = new OpenIabHelper.Options.Builder()
                 .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
+                .setDiscoveryTimeout(100500)
                 .addStoreKeys(storeKeys)
                 .build();
         initWithOptions(options);
@@ -205,7 +215,9 @@ public class UnityPlugin {
         UnityPlayer.currentActivity.startActivity(i);
     }
 
-    // Listener that's called when we finish querying the items and subscriptions we own
+    /**
+     * Listener that's called when we finish querying the items and subscriptions we own
+     */
     IabHelper.QueryInventoryFinishedListener _queryInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
             Log.d(TAG, "Query inventory finished.");
@@ -226,7 +238,9 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a purchase is finished
+    /**
+     * Callback for when a purchase is finished
+     */
     IabHelper.OnIabPurchaseFinishedListener _purchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
             Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
@@ -247,7 +261,9 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a consumption is complete
+    /**
+     * Callback for when a consumption is complete
+     */
     IabHelper.OnConsumeFinishedListener _consumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);

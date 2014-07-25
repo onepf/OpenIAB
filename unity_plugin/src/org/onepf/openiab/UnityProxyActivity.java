@@ -23,6 +23,10 @@ import android.util.Log;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 
+/**
+ * Proxy activity is required to avoid making changes in the main Unity activity
+ * It is created when purchase is started
+ */
 public class UnityProxyActivity extends Activity {
 
     @Override
