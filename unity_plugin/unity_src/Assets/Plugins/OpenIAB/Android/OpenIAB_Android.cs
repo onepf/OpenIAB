@@ -114,22 +114,18 @@ namespace OnePF
                 var clazz = j_optionsBuilder.GetRawClass();
                 var objPtr = j_optionsBuilder.GetRawObject();
 
-                // OpenIabHelper.Options.Builder.setDiscoveryTimeout(int discoveryTimeout);
-                var setDiscoveryTimeoutMethod = AndroidJNI.GetMethodID(clazz, "setDiscoveryTimeout", "(I)Lorg/onepf/oms/OpenIabHelper$Options$Builder;");
-                jvalue [] prms = new jvalue[1];
-                prms[0].i = options.discoveryTimeoutMs;
-                AndroidJNI.CallObjectMethod(objPtr, setDiscoveryTimeoutMethod, prms);
+                j_optionsBuilder.Call<AndroidJavaObject>("setDiscoveryTimeout", options.discoveryTimeoutMs)
+                                .Call<AndroidJavaObject>("setCheckInventory", options.checkInventory)
+                                .Call<AndroidJavaObject>("setCheckInventoryTimeout", options.checkInventoryTimeoutMs)
+                                .Call<AndroidJavaObject>("setVerifyMode", (int) options.verifyMode);
 
-                //j_optionsBuilder.Call<AndroidJavaObject>("setDiscoveryTimeout", options.discoveryTimeoutMs)
-                //                .Call<AndroidJavaObject>("setCheckInventory", options.checkInventory)
-                //                .Call<AndroidJavaObject>("setCheckInventoryTimeout", options.checkInventoryTimeoutMs)
-                //                .Call<AndroidJavaObject>("setVerifyMode", (int) options.verifyMode);
+                foreach (var pair in options.storeKeys)
+                    j_optionsBuilder.Call<AndroidJavaObject>("addStoreKey", pair.Value, pair.Key);
 
-                //foreach (var pair in options.storeKeys)
-                //    j_optionsBuilder.Call<AndroidJavaObject>("addStoreKey", pair.Value, pair.Key);
-
-                //foreach (var storeName in options.prefferedStoreNames)
-                //    j_optionsBuilder.Call<AndroidJavaObject>("addPreferredStoreName", storeName);
+                var addPreferredStoreNameMethod = AndroidJNI.GetMethodID(clazz, "addPreferredStoreName", "([Ljava/lang/String;)Lorg/onepf/oms/OpenIabHelper$Options$Builder;");
+                var prms = new jvalue[1];
+                prms[0].l = AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames);
+                AndroidJNI.CallObjectMethod(objPtr, addPreferredStoreNameMethod, prms);
 
                 // Build options instance
                 var buildMethod = AndroidJNI.GetMethodID(clazz, "build", "()Lorg/onepf/oms/OpenIabHelper$Options;");
