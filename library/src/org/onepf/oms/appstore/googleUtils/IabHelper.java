@@ -598,6 +598,8 @@ public class IabHelper implements AppstoreInAppBillingService {
             throw new IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while refreshing inventory.", e);
         } catch (JSONException e) {
             throw new IabException(IABHELPER_BAD_RESPONSE, "Error parsing JSON response while refreshing inventory.", e);
+        } catch (Exception e) {
+            throw new IabException(IABHELPER_UNKNOWN_ERROR, "Exception while refreshing inventory.", e);
         }
     }
 
@@ -639,17 +641,31 @@ public class IabHelper implements AppstoreInAppBillingService {
                     inv = queryInventory(querySkuDetails, moreSkus);
                 } catch (IabException ex) {
                     result = ex.getResult();
+                } catch (NullPointerException e) {
+                    // Ignore errors if disposed during async operations
+                    if (mSetupDone) {
+                        flagEndAsync();
+                        throw e;
+                    }
+                } catch (IllegalStateException e) {
+                    // Ignore errors if disposed during async operations
+                    if (mSetupDone) {
+                        flagEndAsync();
+                        throw e;
+                    }
                 }
 
                 flagEndAsync();
 
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
-                handler.post(new Runnable() {
-                    public void run() {
-                        listener.onQueryInventoryFinished(result_f, inv_f);
-                    }
-                });
+                if (mSetupDone && listener != null) {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            listener.onQueryInventoryFinished(result_f, inv_f);
+                        }
+                    });
+                }
             }
         })).start();
     }
@@ -828,6 +844,11 @@ public class IabHelper implements AppstoreInAppBillingService {
 
     // Workaround to bug where sometimes response codes come as Long instead of Integer
     int getResponseCodeFromBundle(Bundle b) {
+
+        if (b == null) {
+            return BILLING_RESPONSE_RESULT_ERROR;
+        }
+
         Object o = b.get(RESPONSE_CODE);
         if (o == null) {
             logDebug("Bundle with null response code, assuming OK (known issue)");
@@ -843,7 +864,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
     // Workaround to bug where sometimes response codes come as Long instead of Integer
     int getResponseCodeFromIntent(Intent i) {
-        Object o = i.getExtras().get(RESPONSE_CODE);
+        Object o = (i.getExtras() != null) ? i.getExtras().get(RESPONSE_CODE) : null;
         if (o == null) {
             logError("Intent with no response code, assuming OK (known issue)");
             return BILLING_RESPONSE_RESULT_OK;
@@ -880,7 +901,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
         do {
             logDebug("Calling getPurchases with continuation token: " + continueToken);
-            if(mService==null){
+            if (mService == null){
                 logDebug("getPurchases() failed: service is not connected.");
                 return BILLING_RESPONSE_RESULT_ERROR;
             }
@@ -1023,14 +1044,14 @@ public class IabHelper implements AppstoreInAppBillingService {
                 }
 
                 flagEndAsync();
-                if (singleListener != null) {
+                if (mSetupDone && singleListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
                             singleListener.onConsumeFinished(purchases.get(0), results.get(0));
                         }
                     });
                 }
-                if (multiListener != null) {
+                if (mSetupDone && multiListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
                             multiListener.onConsumeMultiFinished(purchases, results);
