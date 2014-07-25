@@ -1,9 +1,8 @@
 package org.onepf.oms.appstore;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
+
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -12,6 +11,7 @@ import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.util.Logger;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -23,7 +23,6 @@ import java.util.concurrent.CountDownLatch;
  * @since 23.12.13
  */
 public class FortumoStore extends DefaultAppstore {
-    private static final String TAG = FortumoStore.class.getSimpleName();
     private boolean isNookDevice;
     private Boolean isBillingAvailable;
 
@@ -36,10 +35,6 @@ public class FortumoStore extends DefaultAppstore {
      * Contains additional information about Fortumo services
      */
     public static final String FORTUMO_DETAILS_FILE_NAME = "fortumo_inapps_details.xml";
-
-    private static boolean isDebugLog() {
-        return OpenIabHelper.isDebugLog();
-    }
 
     private Context context;
     private FortumoBillingService billingService;
@@ -66,9 +61,7 @@ public class FortumoStore extends DefaultAppstore {
         }
         billingService = (FortumoBillingService) getInAppBillingService();
         isBillingAvailable = billingService.setupBilling(isNookDevice);
-        if (isDebugLog()) {
-            Log.d(TAG, "isBillingAvailable: " + isBillingAvailable);
-        }
+        Logger.d("isBillingAvailable: ", isBillingAvailable);
         return isBillingAvailable;
     }
 
@@ -114,12 +107,10 @@ public class FortumoStore extends DefaultAppstore {
                                 if (!inventory.getAllPurchases().isEmpty()) {
                                     storeToReturn[0] = fortumoStore;
                                 } else {
-                                    if (isDebugLog()) {
-                                        Log.d(TAG, "Purchases not found");
-                                    }
+                                    Logger.d("Purchases not found");
                                 }
                             } catch (IabException e) {
-                                Log.e(TAG, "Error while requesting purchases", e);
+                                Logger.e("Error while requesting purchases", e);
                             }
                         } else {
                             storeToReturn[0] = fortumoStore;
@@ -131,7 +122,7 @@ public class FortumoStore extends DefaultAppstore {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                Log.e(TAG, "Setup was interrupted", e);
+                Logger.e("Setup was interrupted", e);
             }
         }
         return storeToReturn[0];
