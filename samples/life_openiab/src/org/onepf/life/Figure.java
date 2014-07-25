@@ -16,30 +16,42 @@
 
 package org.onepf.life;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.Arrays;
+
 /**
  * Package org.onepf.life
- * Author: Ruslan Sayfutdinov
+ * Author: Ruslan Sayfutdinov, Kirill Rozov
  * Date: 13/03/13
  */
-public abstract class Figures {
-    public static final int[][] glider = new int[][]
-            {{0, 1, 0},
+public final class Figure extends BoolMatrix {
+    public static final Figure GLIDER = new Figure(
+            new int[][]{
+                    {0, 1, 0},
                     {0, 0, 1},
-                    {1, 1, 1}};
+                    {1, 1, 1}
+            });
 
-    public static final int[][] bigGlider = new int[][]
-            {{0, 0, 0, 1, 0},
+    public static final Figure BIG_GLIDER = new Figure(
+            new int[][]{
+                    {0, 0, 0, 1, 0},
                     {0, 0, 0, 0, 1},
                     {1, 0, 0, 0, 1},
-                    {0, 1, 1, 1, 1}};
+                    {0, 1, 1, 1, 1}
+            });
 
-    public static final int[][] periodic = new int[][]
-            {{0, 0, 1, 0, 0, 0, 0, 1, 0, 0},
+    public static final Figure PERIODIC = new Figure(
+            new int[][]{
+                    {0, 0, 1, 0, 0, 0, 0, 1, 0, 0},
                     {1, 1, 0, 1, 1, 1, 1, 0, 1, 1},
-                    {0, 0, 1, 0, 0, 0, 0, 1, 0, 0}};
+                    {0, 0, 1, 0, 0, 0, 0, 1, 0, 0}
+            });
 
-    public static final int[][] robot = new int[][]
-            {{0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0},
+    public static final Figure ROBOT = new Figure(
+            new int[][]{
+                    {0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0},
                     {0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
                     {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0},
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -52,5 +64,24 @@ public abstract class Figures {
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                     {0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0},
                     {0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
-                    {0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0}};
+                    {0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0}
+            });
+
+    private Figure(int[][] points) {
+        super(points);
+    }
+
+    private Figure(Parcel in) {
+        super(in);
+    }
+
+    public static final Parcelable.Creator<Figure> CREATOR = new Parcelable.Creator<Figure>() {
+        public Figure createFromParcel(Parcel source) {
+            return new Figure(source);
+        }
+
+        public Figure[] newArray(int size) {
+            return new Figure[size];
+        }
+    };
 }
