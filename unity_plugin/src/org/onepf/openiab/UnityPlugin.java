@@ -108,7 +108,7 @@ public class UnityPlugin {
                             return;
                         }
 
-                        // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
+                        // Hooray, IAB is fully set up
                         Log.d(TAG, "Setup successful.");
                         UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_SUPPORTED_CALLBACK, "");
                     }

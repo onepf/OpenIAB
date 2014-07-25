@@ -145,69 +145,87 @@ public class OpenIABEventManager : MonoBehaviour
     }
 #endif
 
-#if UNITY_IOS 
-	private void OnBillingSupported(string empty) {
-		if (billingSupportedEvent != null) {
-			billingSupportedEvent();
-		}
-	}
+#if UNITY_IOS
+    private void OnBillingSupported(string empty)
+    {
+        if (billingSupportedEvent != null)
+        {
+            billingSupportedEvent();
+        }
+    }
 
-	private void OnBillingNotSupported(string error) {
-		if (billingNotSupportedEvent != null)
-			billingNotSupportedEvent(error);
-	}
+    private void OnBillingNotSupported(string error)
+    {
+        if (billingNotSupportedEvent != null)
+            billingNotSupportedEvent(error);
+    }
 
-	private void OnQueryInventorySucceeded(string json) {
-		if (queryInventorySucceededEvent != null) {
-			Inventory inventory = new Inventory(json);
-			queryInventorySucceededEvent(inventory);
-		}
-	}
+    private void OnQueryInventorySucceeded(string json)
+    {
+        if (queryInventorySucceededEvent != null)
+        {
+            Inventory inventory = new Inventory(json);
+            queryInventorySucceededEvent(inventory);
+        }
+    }
 
-	private void OnQueryInventoryFailed(string error) {
-		if (queryInventoryFailedEvent != null)
-			queryInventoryFailedEvent(error);
-	}
-	
-	private void OnPurchaseSucceeded(string sku) {
-		if (purchaseSucceededEvent != null) {
-			purchaseSucceededEvent(Purchase.CreateFromSku(OpenIAB_iOS.StoreSku2Sku(sku)));
-		}
-	}
-	
-	private void OnPurchaseFailed(string error) {	
-		if (purchaseFailedEvent != null) {
-			purchaseFailedEvent(-1, error);
-		}
-	}
+    private void OnQueryInventoryFailed(string error)
+    {
+        if (queryInventoryFailedEvent != null)
+            queryInventoryFailedEvent(error);
+    }
 
-	private void OnConsumePurchaseSucceeded(string json) {
-		if (consumePurchaseSucceededEvent != null)
-			consumePurchaseSucceededEvent(new Purchase(json));
-	}
+    private void OnPurchaseSucceeded(string sku)
+    {
+        if (purchaseSucceededEvent != null)
+        {
+            purchaseSucceededEvent(Purchase.CreateFromSku(OpenIAB_iOS.StoreSku2Sku(sku)));
+        }
+    }
 
-	private void OnConsumePurchaseFailed(string error) {
-		if (consumePurchaseFailedEvent != null)
-			consumePurchaseFailedEvent(error);
-	}
-	
-	public void OnPurchaseRestored(string sku) {
-		if (transactionRestoredEvent != null) {
-			transactionRestoredEvent(sku);
-		}
-	}
-	
-	public void OnRestoreFailed(string error) {
-		if (restoreFailedEvent != null) {
-			restoreFailedEvent(error);
-		}
-	}
-	
-	public void OnRestoreFinished(string message) {
-		if (restoreSucceededEvent != null) {
-			restoreSucceededEvent();
-		}
-	}
+    private void OnPurchaseFailed(string error)
+    {
+        if (purchaseFailedEvent != null)
+        {
+            purchaseFailedEvent(-1, error);
+        }
+    }
+
+    private void OnConsumePurchaseSucceeded(string json)
+    {
+        if (consumePurchaseSucceededEvent != null)
+            consumePurchaseSucceededEvent(new Purchase(json));
+    }
+
+    private void OnConsumePurchaseFailed(string error)
+    {
+        if (consumePurchaseFailedEvent != null)
+            consumePurchaseFailedEvent(error);
+    }
+
+    public void OnPurchaseRestored(string sku)
+    {
+        if (transactionRestoredEvent != null)
+        {
+            transactionRestoredEvent(sku);
+        }
+    }
+
+    public void OnRestoreFailed(string error)
+    {
+        if (restoreFailedEvent != null)
+        {
+            restoreFailedEvent(error);
+        }
+    }
+
+    public void OnRestoreFinished(string message)
+    {
+        if (restoreSucceededEvent != null)
+        {
+            restoreSucceededEvent();
+        }
+    }
 #endif
 
 #if UNITY_WP8

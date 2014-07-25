@@ -106,20 +106,31 @@ namespace OnePF
                 return;
             }
 
-            using (var j_options = new AndroidJavaObject("org.onepf.oms.OpenIabHelper$Options"))
+            using (var j_optionsBuilder = new AndroidJavaObject("org.onepf.oms.OpenIabHelper$Options$Builder"))
             {
-                j_options.Set<int>("discoveryTimeoutMs", options.discoveryTimeoutMs);
-                j_options.Set<bool>("checkInventory", options.checkInventory);
-                j_options.Set<int>("checkInventoryTimeoutMs", options.checkInventoryTimeoutMs);
-                j_options.Set<int>("verifyMode", (int) options.verifyMode);
+                j_optionsBuilder.Call<AndroidJavaObject>("setDiscoveryTimeout", options.discoveryTimeoutMs)
+                                .Call<AndroidJavaObject>("setCheckInventory", options.checkInventory)
+                                .Call<AndroidJavaObject>("setCheckInventoryTimeout", options.checkInventoryTimeoutMs)
+                                .Call<AndroidJavaObject>("setVerifyMode", (int) options.verifyMode);
 
-                AndroidJavaObject j_storeKeys = CreateJavaHashMap(options.storeKeys);
-                j_options.Set("storeKeys", j_storeKeys);
-                j_storeKeys.Dispose();
+                foreach (var pair in options.storeKeys)
+                    j_optionsBuilder.Call<AndroidJavaObject>("addStoreKey", pair.Value, pair.Key);
 
-                j_options.Set("prefferedStoreNames", AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames));
+                foreach (var storeName in options.prefferedStoreNames)
+                    j_optionsBuilder.Call<AndroidJavaObject>("addPreferredStoreName", storeName);
 
-                _plugin.Call("initWithOptions", j_options);
+                //j_optionsBuilder.Set<int>("discoveryTimeoutMs", options.discoveryTimeoutMs);
+                //j_optionsBuilder.Set<bool>("checkInventory", options.checkInventory);
+                //j_optionsBuilder.Set<int>("checkInventoryTimeoutMs", options.checkInventoryTimeoutMs);
+                //j_optionsBuilder.Set<int>("verifyMode", (int) options.verifyMode);
+
+                //AndroidJavaObject j_storeKeys = CreateJavaHashMap(options.storeKeys);
+                //j_optionsBuilder.Set("storeKeys", j_storeKeys);
+                //j_storeKeys.Dispose();
+
+                //j_optionsBuilder.Set("prefferedStoreNames", AndroidJNIHelper.ConvertToJNIArray(options.prefferedStoreNames));
+
+                _plugin.Call("initWithOptions", j_optionsBuilder);
             }
         }
 
