@@ -27,10 +27,13 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.text.TextUtils;
+
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.util.CollectionUtils;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -126,8 +129,10 @@ public class SamsungApps extends DefaultAppstore {
                     new Thread(new Runnable() {
                         public void run() {
                             try {
-                                Inventory inventory = getInAppBillingService().queryInventory(true, OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
-                                if (inventory.mSkuMap != null && inventory.mSkuMap.size() > 0) {
+                                Inventory inventory = getInAppBillingService()
+                                        .queryInventory(true, SkuManager.getInstance()
+                                                .getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
+                                if (!CollectionUtils.isEmpty(inventory.mSkuMap)) {
                                     isBillingAvailable = true;
                                 }
                             } catch (IabException e) {

@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Purchase;
@@ -74,7 +75,7 @@ public class TStoreRequestCallback implements IapPlugin.RequestCallback {
             for (Response.Product product : response.result.product) {
                 // TODO: set correct type
                 purchase.setItemType(product.type);
-                purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_TSTORE, product.id));
+                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_TSTORE, product.id));
             }
         } else {
             // TODO: support other error codes
