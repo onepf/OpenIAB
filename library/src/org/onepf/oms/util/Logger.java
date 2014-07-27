@@ -25,6 +25,18 @@ public class Logger {
         }
     }
 
+    public static void i(Object... values) {
+        if (debuggable) {
+            Log.i(TAG, TextUtils.join("", values));
+        }
+    }
+
+    public static void i(String msg) {
+        if (debuggable) {
+            Log.i(TAG, msg);
+        }
+    }
+
     public static void d(String msg) {
         if (debuggable) {
             Log.d(TAG, msg);
@@ -76,6 +88,12 @@ public class Logger {
     public static void w(String msg, Throwable e) {
         if (debuggable) {
             Log.w(TAG, msg, e);
+        }
+    }
+
+    public static void v(Object... msgs) {
+        if (debuggable) {
+            Log.v(TAG, TextUtils.join("", msgs));
         }
     }
 

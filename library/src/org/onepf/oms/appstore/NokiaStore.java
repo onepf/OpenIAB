@@ -16,12 +16,12 @@ package org.onepf.oms.appstore;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.nokiaUtils.NokiaStoreHelper;
+import org.onepf.oms.util.Logger;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -30,11 +30,8 @@ import java.util.List;
 
 public class NokiaStore extends DefaultAppstore {
 
-	private static final String TAG = NokiaStore.class.getSimpleName();
-
 	private final Context context;
 
-	private static final boolean          IS_DEBUG_MODE  = false;
 	private              NokiaStoreHelper billingService = null;
 
 	//This is the expected SHA1 finger-print in HEX format
@@ -44,7 +41,7 @@ public class NokiaStore extends DefaultAppstore {
 	public static final String VENDING_ACTION  = "com.nokia.payment.iapenabler.InAppBillingService.BIND";
 
 	public NokiaStore(final Context context) {
-		logInfo("NokiaStore.NokiaStore");
+		Logger.i("NokiaStore.NokiaStore");
 
 		this.context = context;
 	}
@@ -55,12 +52,8 @@ public class NokiaStore extends DefaultAppstore {
 	 */
 	@Override
 	public boolean isBillingAvailable(final String packageName) {
-		logInfo("NokiaStore.isBillingAvailable");
-		logDebug("packageName = " + packageName);
-
-		if (IS_DEBUG_MODE) {
-			return IS_DEBUG_MODE;
-		}
+		Logger.i("NokiaStore.isBillingAvailable");
+		Logger.d("packageName = ", packageName);
 
 		final PackageManager packageManager = context.getPackageManager();
 		final List<PackageInfo> allPackages = packageManager.getInstalledPackages(0);
@@ -80,26 +73,19 @@ public class NokiaStore extends DefaultAppstore {
 	 */
 	@Override
 	public boolean isPackageInstaller(final String packageName) {
-		logInfo("NokiaStore.isPackageInstaller");
-		logDebug("packageName = " + packageName);
-
-		if (IS_DEBUG_MODE) {
-			return true;
-		}
+		Logger.d("sPackageInstaller: packageName = ", packageName);
 
 		final PackageManager packageManager = context.getPackageManager();
 		final String installerPackageName = packageManager.getInstallerPackageName(packageName);
 
-		logDebug("installerPackageName = " + installerPackageName);
+		Logger.d("installerPackageName = ", installerPackageName);
 
-		return (NOKIA_INSTALLER.equals(installerPackageName));
+		return NOKIA_INSTALLER.equals(installerPackageName);
 	}
 
 	@Override
 	public int getPackageVersion(final String packageName) {
-		logInfo("NokiaStore.getPackageVersion");
-		logDebug("packageName = " + packageName);
-
+		Logger.d("getPackageVersion: packageName = " + packageName);
 		return Appstore.PACKAGE_VERSION_UNDEFINED;
 	}
 
@@ -110,8 +96,6 @@ public class NokiaStore extends DefaultAppstore {
 
 	@Override
 	public AppstoreInAppBillingService getInAppBillingService() {
-		logInfo("NokiaStore.getInAppBillingService");
-
 		if (billingService == null) {
 			billingService = new NokiaStoreHelper(context, this);
 		}
@@ -131,7 +115,6 @@ public class NokiaStore extends DefaultAppstore {
 				.getPackageInfo(NOKIA_INSTALLER, PackageManager.GET_SIGNATURES);
 
 			if (info.signatures.length == 1) {
-
 				byte[] cert = info.signatures[0].toByteArray();
 				MessageDigest digest;
 				digest = MessageDigest.getInstance("SHA1");
@@ -139,7 +122,7 @@ public class NokiaStore extends DefaultAppstore {
 				byte[] EXPECTED_FINGERPRINT = hexStringToByteArray(EXPECTED_SHA1_FINGERPRINT);
 
 				if (Arrays.equals(ENABLER_FINGERPRINT, EXPECTED_FINGERPRINT)) {
-					Log.i("isBillingAvailable", "NIAP signature verified");
+					Logger.i("isBillingAvailable", "NIAP signature verified");
 					return true;
 				}
 			}
@@ -159,21 +142,4 @@ public class NokiaStore extends DefaultAppstore {
 		}
 		return data;
 	}
-
-	private void logDebug(String msg) {
-		if (IS_DEBUG_MODE) {
-			Log.d(TAG, msg);
-		}
-	}
-
-	private void logInfo(String msg) {
-		if (IS_DEBUG_MODE) {
-			Log.i(TAG, msg);
-		}
-	}
-
-	private void logError(String msg) {
-		Log.e(TAG, msg);
-	}
-
 }

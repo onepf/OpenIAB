@@ -325,18 +325,6 @@ public class UnityPlugin {
         }
     }
 
-    public boolean isDebugLog() {
-        return OpenIabHelper.isDebugLog();
-    }
-
-    public void enableDebugLogging(boolean enabled) {
-        OpenIabHelper.enableDebugLogging(enabled);
-    }
-
-    public void enableDebugLogging(boolean enabled, String tag) {
-        OpenIabHelper.enableDebugLogging(enabled, tag);
-    }
-
     // Yandex specific
     public static final String YANDEX_STORE_SERVICE = "com.yandex.store.service";
     public static final String YANDEX_STORE_ACTION_PURCHASE_STATE_CHANGED = YANDEX_STORE_SERVICE + ".PURCHASE_STATE_CHANGED";
