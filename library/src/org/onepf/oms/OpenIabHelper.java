@@ -728,7 +728,7 @@ public class OpenIabHelper {
         }
         final CountDownLatch storesToCheck = new CountDownLatch(infoList.size());
         for (ResolveInfo info : infoList) {
-            String packageName = info.serviceInfo.packageName;
+            final String packageName = info.serviceInfo.packageName;
             String name = info.serviceInfo.name;
             Intent intentAppstore = new Intent(intentAppstoreServices);
             intentAppstore.setClassName(packageName, name);
@@ -750,6 +750,7 @@ public class OpenIabHelper {
                                 // don't connect to OpenStore if no key provided and verification is strict
                                 Log.e(TAG, "discoverOpenStores() verification is required but publicKey is not provided: " + name);
                             } else {
+                                billingIntent.setPackage(packageName);
                                 String publicKey = options.getStoreKey(appstoreName);
                                 if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
                                 final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, this);
