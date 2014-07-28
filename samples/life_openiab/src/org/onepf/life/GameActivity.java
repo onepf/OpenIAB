@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -185,6 +184,12 @@ public class GameActivity extends Activity {
                 showErrorMessage(R.string.error_openiab_setup_disposed, false);
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        purchaseHelper.dispose();
+        super.onDestroy();
     }
 
     @Override
@@ -352,6 +357,10 @@ public class GameActivity extends Activity {
             launchPurchase(SKU_FIGURES, payload);
         }
 
+
+        public void dispose() {
+            openIabHelper.dispose();
+        }
 
         /**
          * Verifies the developer payload of a purchase.
