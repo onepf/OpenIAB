@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2012-2014 One Platform Foundation
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ ******************************************************************************/
+
 package org.onepf.openiab;
 
 import android.app.Activity;
@@ -11,16 +27,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Native java part of the Unity plugin
+ * All methods are called from the Unity side via JNI
+ */
 public class UnityPlugin {
 
     public static final String TAG = "OpenIAB-UnityPlugin";
-    private static final String EVENT_MANAGER = "OpenIABEventManager";
+    private static final String EVENT_MANAGER = "OpenIABEventManager"; /**< Name of the event handler object in Unity */
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
     private static final String QUERY_INVENTORY_SUCCEEDED_CALLBACK = "OnQueryInventorySucceeded";
@@ -37,8 +58,7 @@ public class UnityPlugin {
     public static final String STORE_YANDEX = OpenIabHelper.NAME_YANDEX;
 	public static final String STORE_NOKIA = OpenIabHelper.NAME_NOKIA;
 
-    // (arbitrary) request code for the purchase flow
-    public static final int RC_REQUEST = 10001;
+    public static final int RC_REQUEST = 10001; /**< (arbitrary) request code for the purchase flow */
     public static boolean sendRequest = false;
 
     private static UnityPlugin _instance;
@@ -59,13 +79,19 @@ public class UnityPlugin {
         return _instance;
     }
 
+    /**
+     * @deprecated Use {@link org.onepf.oms.SkuManager#mapSku(String, String, String)}
+     *
+     * @param sku
+     * @param storeName
+     * @param storeSku
+     */
     public void mapSku(String sku, String storeName, String storeSku)  {
-        OpenIabHelper.mapSku(sku, storeName, storeSku);
+        SkuManager.getInstance().mapSku(sku, storeName, storeSku);
     }
 
     public void init(final HashMap<String, String> storeKeys) {
         OpenIabHelper.Options options = new OpenIabHelper.Options.Builder()
-                .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
                 .addStoreKeys(storeKeys)
                 .build();
         initWithOptions(options);
@@ -92,7 +118,7 @@ public class UnityPlugin {
                             return;
                         }
 
-                        // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
+                        // Hooray, IAB is fully set up
                         Log.d(TAG, "Setup successful.");
                         UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_SUPPORTED_CALLBACK, "");
                     }
@@ -189,7 +215,9 @@ public class UnityPlugin {
         UnityPlayer.currentActivity.startActivity(i);
     }
 
-    // Listener that's called when we finish querying the items and subscriptions we own
+    /**
+     * Listener that's called when we finish querying the items and subscriptions we own
+     */
     IabHelper.QueryInventoryFinishedListener _queryInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
             Log.d(TAG, "Query inventory finished.");
@@ -210,7 +238,9 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a purchase is finished
+    /**
+     * Callback for when a purchase is finished
+     */
     IabHelper.OnIabPurchaseFinishedListener _purchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
             Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
@@ -231,13 +261,14 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a consumption is complete
+    /**
+     * Callback for when a consumption is complete
+     */
     IabHelper.OnConsumeFinishedListener _consumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
 
-            String sku = purchase.getSku();
-            purchase.setSku(OpenIabHelper.getSku(purchase.getAppstoreName(), sku));
+            purchase.setSku(SkuManager.getInstance().getSku(purchase.getAppstoreName(), purchase.getSku()));
 
             if (result.isFailure()) {
                 Log.e(TAG, "Error while consuming: " + result);
@@ -282,6 +313,12 @@ public class UnityPlugin {
         return json.toString();
     }
 
+    /**
+     * Serialize purchase data to json
+     * @param purchase purchase data
+     * @return json string
+     * @throws JSONException
+     */
     private String purchaseToJson(Purchase purchase) throws JSONException {
         return new JSONStringer().object()
                 .key("itemType").value(purchase.getItemType())
@@ -298,6 +335,12 @@ public class UnityPlugin {
                 .endObject().toString();
     }
 
+    /**
+     * Serialize sku details data to json
+     * @param skuDetails sku details data
+     * @return json string
+     * @throws JSONException
+     */
     private String skuDetailsToJson(SkuDetails skuDetails) throws JSONException {
         return new JSONStringer().object()
                 .key("itemType").value(skuDetails.getItemType())
@@ -323,18 +366,6 @@ public class UnityPlugin {
         } catch (Exception ex) {
             Log.d(TAG, "destroyBroadcasts exception:\n" + ex.getMessage());
         }
-    }
-
-    public boolean isDebugLog() {
-        return OpenIabHelper.isDebugLog();
-    }
-
-    public void enableDebugLogging(boolean enabled) {
-        OpenIabHelper.enableDebugLogging(enabled);
-    }
-
-    public void enableDebugLogging(boolean enabled, String tag) {
-        OpenIabHelper.enableDebugLogging(enabled, tag);
     }
 
     // Yandex specific

@@ -3,16 +3,33 @@
 
 @interface AppStoreDelegate : NSObject <SKPaymentTransactionObserver, SKProductsRequestDelegate>
 
+/**
+ * Get instance of the StoreKit delegate
+ * @return instance of the StoreKit delegate
+ */
 + (AppStoreDelegate*)instance;
 
-- (BOOL)canMakePayments;
+/**
+ * Request sku listing from the AppStore
+ * @param skus product IDs
+ */
+- (void)requestSKUs:(NSSet*)skus;
 
-- (void)requestProducts:(NSSet*)skus;
-
+/**
+ * Start async purchase process
+ * @param product ID
+ */
 - (void)startPurchase:(NSString*)sku;
 
+/**
+ * Request purchase history
+ */
 - (void)queryInventory;
 
+/**
+ * This is required by AppStore. 
+ * Separate button for restoration should be added somewhere in the application
+ */
 - (void)restorePurchases;
 
 @end

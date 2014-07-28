@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2013 One Platform Foundation
+/*
+ * Copyright 2012-2014 One Platform Foundation
  *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *           http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.onepf.oms.appstore;
 
@@ -20,9 +20,9 @@ import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.util.Logger;
 
 import android.content.Context;
-import android.util.Log;
 
 /**
  * Analize whether app is installed from Amazon Appstore.
@@ -33,12 +33,7 @@ import android.util.Log;
  * @since 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final String TAG = AmazonAppstore.class.getSimpleName();
     private static final String AMAZON_INSTALLER = "com.amazon.venezia";
-
-    private static boolean isDebugLog() {
-        return OpenIabHelper.isDebugLog();
-    }
     
     private volatile Boolean sandboxMode;// = false;
     
@@ -57,7 +52,7 @@ public class AmazonAppstore extends DefaultAppstore {
         }
         boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
         sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
-        if (isDebugLog()) Log.d(TAG, "isPackageInstaller() sandBox: " + sandboxMode);
+        Logger.d("isPackageInstaller() sandBox: " ,sandboxMode);
         return !sandboxMode;
     }
 
@@ -75,7 +70,7 @@ public class AmazonAppstore extends DefaultAppstore {
                 localClassLoader.loadClass("com.amazon.android.Kiwi");
                 result = true;
             } catch (Throwable localThrowable) {
-                if (isDebugLog()) Log.d(TAG, "hasAmazonClasses() cannot load class com.amazon.android.Kiwi ");
+                Logger.d("hasAmazonClasses() cannot load class com.amazon.android.Kiwi");
                 result = false;
             }
         }
