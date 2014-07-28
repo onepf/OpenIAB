@@ -23,10 +23,11 @@ import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.text.TextUtils;
+
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -126,7 +127,9 @@ public class SamsungApps extends DefaultAppstore {
                     new Thread(new Runnable() {
                         public void run() {
                             try {
-                                Inventory inventory = getInAppBillingService().queryInventory(true, OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
+                                Inventory inventory = getInAppBillingService()
+                                        .queryInventory(true, SkuManager.getInstance()
+                                                .getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
                                 if (!CollectionUtils.isEmpty(inventory.mSkuMap)) {
                                     isBillingAvailable = true;
                                 }

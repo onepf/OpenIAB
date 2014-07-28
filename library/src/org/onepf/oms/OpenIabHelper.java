@@ -157,18 +157,8 @@ public class OpenIabHelper {
     public static final String NAME_NOKIA = "com.nokia.nstore";
 
     /**
-     * NOTE: used as sync object in related methods<br>
-     * <p/>
-     * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
-     */
-    private static final Map<String, Map<String, String>> sku2storeSkuMappings = new HashMap<String, Map<String, String>>();
-
-    /**
-     * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
-     */
-    private static final Map<String, Map<String, String>> storeSku2skuMappings = new HashMap<String, Map<String, String>>();
-
-    /**
+     * @deprecated Use {@link org.onepf.oms.SkuManager#mapSku(String, String, String)}
+     *
      * Map sku and storeSku for particular store.
      * <p/>
      * The best approach is to use SKU that unique in universe like <code>com.companyname.application.item</code>.
@@ -183,76 +173,41 @@ public class OpenIabHelper {
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
      */
     public static void mapSku(String sku, String storeName, String storeSku) {
-        synchronized (sku2storeSkuMappings) {
-            Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
-            if (skuMap == null) {
-                skuMap = new HashMap<String, String>();
-                sku2storeSkuMappings.put(storeName, skuMap);
-            }
-            if (skuMap.get(sku) != null) {
-                throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
-            }
-            Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
-            if (storeSkuMap == null) {
-                storeSkuMap = new HashMap<String, String>();
-                storeSku2skuMappings.put(storeName, storeSkuMap);
-            }
-            if (storeSkuMap.get(storeSku) != null) {
-                throw new IllegalArgumentException("Ambigous SKU mapping. You try to map sku: " + sku + " -> storeSku: " + storeSku + ", that is already mapped to sku: " + storeSkuMap.get(storeSku));
-            }
-            skuMap.put(sku, storeSku);
-            storeSkuMap.put(storeSku, sku);
-        }
+        SkuManager.getInstance().mapSku(sku, storeName, storeSku);
     }
 
     /**
+     * @deprecated Use {@link org.onepf.oms.SkuManager#getStoreSku(String, String)}
+     *
      * Return previously mapped store SKU for specified inner SKU
+     * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      *
      * @param appstoreName
-     * @param sku          - inner SKU
+     * @param sku - inner SKU
      * @return SKU used in store for specified inner SKU
-     * @see #mapSku(String, String, String)
      */
     public static String getStoreSku(final String appstoreName, String sku) {
-        synchronized (sku2storeSkuMappings) {
-            String currentStoreSku = sku;
-            Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-            if (skuMap != null && skuMap.get(sku) != null) {
-                currentStoreSku = skuMap.get(sku);
-                Logger.d("getStoreSku() using mapping for sku: ", sku, " -> ", currentStoreSku);
-            }
-            return currentStoreSku;
-        }
+        return SkuManager.getInstance().getStoreSku(appstoreName, sku);
     }
 
     /**
-     * Return mapped application inner SKU using store name and store SKU.
+     * @deprecated Use {@link org.onepf.oms.SkuManager#getSku(String, String)}
      *
-     * @see #mapSku(String, String, String)
+     * Return mapped application inner SKU using store name and store SKU.
+     * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      */
     public static String getSku(final String appstoreName, String storeSku) {
-        synchronized (sku2storeSkuMappings) {
-            String sku = storeSku;
-            Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
-            if (skuMap != null && skuMap.get(sku) != null) {
-                sku = skuMap.get(sku);
-                Logger.d("getSku() restore sku from storeSku: ", storeSku, " -> ", sku);
-            }
-            return sku;
-        }
+        return SkuManager.getInstance().getSku(appstoreName, storeSku);
     }
 
     /**
+     * @deprecated Use {@link org.onepf.oms.SkuManager#getAllStoreSkus(String)}
+     *
      * @param appstoreName for example {@link OpenIabHelper#NAME_AMAZON}
      * @return list of skus those have mappings for specified appstore
      */
     public static List<String> getAllStoreSkus(final String appstoreName) {
-        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-        List<String> result = new ArrayList<String>();
-        if (skuMap != null) {
-            result.addAll(skuMap.values());
-        }
-        return result;
+        return SkuManager.getInstance().getAllStoreSkus(appstoreName);
     }
 
     /**
@@ -384,7 +339,7 @@ public class OpenIabHelper {
                                 : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
                         stores2check.add(new GooglePlay(context, publicKey));
                     }
-
+                    
                     // try AmazonApps if in-app-purchasing.jar with Amazon SDK is compiled with app 
                     try {
                         OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
@@ -399,7 +354,7 @@ public class OpenIabHelper {
                     } catch (ClassNotFoundException e) {
                     }
 
-                    if (!getAllStoreSkus(NAME_SAMSUNG).isEmpty()) {
+                    if (!CollectionUtils.isEmpty(SkuManager.getInstance().getAllStoreSkus(NAME_SAMSUNG))) {
                         // SamsungApps shows lot of UI stuff during init 
                         // try it only if samsung SKUs are specified
                         stores2check.add(new SamsungApps(activity, options));
@@ -492,17 +447,14 @@ public class OpenIabHelper {
 
     /**
      * Must be called after setup is finished. See {@link #startSetup(OnIabSetupFinishedListener)}
-     *
-     * @return <code>null</code> if no appstore connected, otherwise name of Appstore OpenIAB has connected to.
+     * @return <code>null</code> if no appstore connected, otherwise name of Appstore OpenIAB has connected to.  
      */
     public synchronized String getConnectedAppstoreName() {
         if (mAppstore == null) return null;
         return mAppstore.getAppstoreName();
     }
-
-    /**
-     * Check options are valid
-     */
+    
+    /** Check options are valid */
     public static void checkOptions(Options options) {
         if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) { // check publicKeys. Must be not null and valid
             for (Entry<String, String> entry : options.storeKeys.entrySet()) {
@@ -518,7 +470,7 @@ public class OpenIabHelper {
         }
     }
 
-    private static void checkSettings(Options options, Context context) {
+    private static void checkSettings(Options options, Context context){
         checkOptions(options);
         checkSamsung(context);
         if (BuildConfig.FORTUMO_ENABLE) {
@@ -553,8 +505,8 @@ public class OpenIabHelper {
                 checkPermission(context, "android.permission.INTERNET", manifestResultBuilder);
                 checkPermission(context, "android.permission.ACCESS_NETWORK_STATE", manifestResultBuilder);
                 checkPermission(context, "android.permission.READ_PHONE_STATE", manifestResultBuilder);
-                //            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
-                //            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
+    //            checkPermission(context, "android.permission.RECEIVE_SMS", manifestResultBuilder);
+    //            checkPermission(context, "android.permission.SEND_SMS", manifestResultBuilder);
 
                 Intent paymentActivityIntent = new Intent();
                 paymentActivityIntent.setClassName(context.getPackageName(), "mp.MpActivity");
@@ -671,11 +623,12 @@ public class OpenIabHelper {
 
 
     private static void checkSamsung(Context context) {
-        List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!allStoreSkus.isEmpty()) { // it means that Samsung is among the candidates
             for (String sku : allStoreSkus) {
                 SamsungApps.checkSku(sku);
             }
+
             if (!(context instanceof Activity)) {
                 //
                 // Unfortunately, SamsungApps requires to launch their own "Certification Activity"
@@ -688,10 +641,10 @@ public class OpenIabHelper {
                 //
                 //
                 throw new IllegalArgumentException(
-                        "\n "
+                                  "\n "
                                 + "\nContext is not instance of Activity."
                                 + "\nUnfortunately, SamsungApps requires to launch their own Certification Activity "
-                                + "\nin order to connect to billing service. So it's also needed for OpenIAB."
+                                + "\nin order to connect to billing service. So it's also needed for OpenIAB."                                
                                 + "\n "
                                 + "\nBecause of SKU for SamsungApps are specified, instance of Activity needs to be passed "
                                 + "\nto OpenIAB constructor to launch Samsung Cerfitication Activity."
@@ -894,7 +847,9 @@ public class OpenIabHelper {
                 return appstore;
             }
         }
-        if (candidates.size() == 0) return null;
+        if (candidates.isEmpty()) {
+            return null;
+        }
 
         // lookup for developer preffered stores
         if (options.prefferedStoreNames != null) {
@@ -917,7 +872,7 @@ public class OpenIabHelper {
         for (Appstore candidate : candidates.values()) {
             final int storeVersion = candidate.getPackageVersion(packageName);
             if (storeVersion == versionCode) {
-                sameVersion.add(candidate);
+                 sameVersion.add(candidate);
             } else if (storeVersion > versionCode) {
                 higherVersion.add(candidate);
             }
@@ -931,7 +886,7 @@ public class OpenIabHelper {
             return new ArrayList<Appstore>(candidates.values()).get(new Random().nextInt(candidates.size()));
         }
     }
-
+    
     public void dispose() {
         Logger.d("Disposing.");
         if (mAppstoreBillingService != null) {
@@ -967,8 +922,12 @@ public class OpenIabHelper {
     public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
-        String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
-        mAppstoreBillingService.launchPurchaseFlow(act, storeSku, itemType, requestCode, listener, extraData);
+        mAppstoreBillingService.launchPurchaseFlow(act,
+                SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), sku),
+                itemType,
+                requestCode,
+                listener,
+                extraData);
     }
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
@@ -1006,21 +965,25 @@ public class OpenIabHelper {
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         checkSetupDone("queryInventory");
 
-        List<String> moreItemStoreSkus = null;
+        List<String> moreItemStoreSkus;
+        final SkuManager skuManager = SkuManager.getInstance();
         if (moreItemSkus != null) {
-            moreItemStoreSkus = new ArrayList<String>();
+            moreItemStoreSkus = new ArrayList<String>(moreItemSkus.size());
             for (String sku : moreItemSkus) {
-                String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
-                moreItemStoreSkus.add(storeSku);
+                moreItemStoreSkus.add(skuManager.getStoreSku(mAppstore.getAppstoreName(), sku));
             }
+        } else {
+            moreItemStoreSkus = null;
         }
-        List<String> moreSubsStoreSkus = null;
+
+        List<String> moreSubsStoreSkus;
         if (moreSubsSkus != null) {
-            moreSubsStoreSkus = new ArrayList<String>();
+            moreSubsStoreSkus = new ArrayList<String>(moreSubsSkus.size());
             for (String sku : moreSubsSkus) {
-                String storeSku = getStoreSku(mAppstore.getAppstoreName(), sku);
-                moreSubsStoreSkus.add(storeSku);
+                moreSubsStoreSkus.add(skuManager.getStoreSku(mAppstore.getAppstoreName(), sku));
             }
+        } else {
+            moreSubsStoreSkus = null;
         }
         return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
     }
@@ -1104,7 +1067,7 @@ public class OpenIabHelper {
     public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
         Purchase purchaseStoreSku = (Purchase) itemInfo.clone(); // TODO: use Purchase.getStoreSku()
-        purchaseStoreSku.setSku(getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
+        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
         mAppstoreBillingService.consume(purchaseStoreSku);
     }
 
@@ -1267,24 +1230,25 @@ public class OpenIabHelper {
 
         /**
          * Verify signatures only if publicKey is available. Otherwise skip verification.
-         * <p/>
+         * <p>
          * Developer is responsible for verify
          */
         public static final int VERIFY_ONLY_KNOWN = 2;
 
         /**
+         *
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getAvailableStores()}
          * Will be private since 1.0.
-         * <p/>
+         *
          * List of stores to be used for store elections. By default GooglePlay, Amazon, SamsungApps and
          * all installed OpenStores are used.
-         * <p/>
+         * <p>
          * To specify your own list, you need to instantiate Appstore object manually.
          * GooglePlay, Amazon and SamsungApps could be instantiated directly. OpenStore can be discovered
          * using {@link OpenIabHelper#discoverOpenStores(Context, List, Options)}
-         * <p/>
+         * <p>
          * If you put only your instance of Appstore in this list OpenIAB will use it
-         * <p/>
+         *
          * TODO: consider to use AppstoreFactory.get(storeName) -> Appstore instance
          */
         public List<Appstore> availableStores;
@@ -1292,8 +1256,8 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getDiscoveryTimeout()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * Wait specified amount of ms to find all OpenStores on device
          */
         public int discoveryTimeoutMs = DEFAULT_DISCOVER_TIMEOUT;
@@ -1301,10 +1265,10 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#isCheckInventory()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * Check user inventory in every store to select proper store
-         * <p/>
+         * <p>
          * Will try to connect to each billingService and extract user's purchases.
          * If purchases have been found in the only store that store will be used for further purchases.
          * If purchases have been found in multiple stores only such stores will be used for further elections
@@ -1314,7 +1278,7 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getCheckInventoryTimeout()}
          * Will be private since 1.0.
-         * <p/>
+         *
          * Wait specified amount of ms to check inventory in all stores
          */
         public int checkInventoryTimeoutMs = CHECK_INVENTORY_TIMEOUT;
@@ -1322,10 +1286,10 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getVerifyMode()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * OpenIAB could skip receipt verification by publicKey for GooglePlay and OpenStores
-         * <p/>
+         * <p>
          * Receipt could be verified in {@link org.onepf.oms.appstore.googleUtils.IabHelper.OnIabPurchaseFinishedListener#onIabPurchaseFinished(org.onepf.oms.appstore.googleUtils.IabResult, org.onepf.oms.appstore.googleUtils.Purchase)}
          * using {@link Purchase#getOriginalJson()} and {@link Purchase#getSignature()}
          */
@@ -1335,17 +1299,17 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getStoreKeys()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * storeKeys is map of [ appstore name -> publicKeyBase64 ]
          * Put keys for all stores you support in this Map and pass it to instantiate {@link OpenIabHelper}
-         * <p/>
+         * <p>
          * <b>publicKey</b> key is used to verify receipt is created by genuine Appstore using
          * provided signature. It can be found in Developer Console of particular store
-         * <p/>
+         * <p>
          * <b>name</b> of particular store can be provided by local_store tool if you run it on device.
          * For Google Play OpenIAB uses {@link OpenIabHelper#NAME_GOOGLE}.
-         * <p/>
+         * <p>
          * <p>Note:
          * AmazonApps and SamsungApps doesn't use RSA keys for receipt verification, so you don't need
          * to specify it
@@ -1355,18 +1319,18 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getPreferredStoreNames()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * Used as priority list if store that installed app is not found and there are
          * multiple stores installed on device that supports billing.
          */
-        public String[] prefferedStoreNames = new String[]{};
+        public String[] prefferedStoreNames = new String[] {};
 
         /**
          * @deprecated Usr {@link org.onepf.oms.OpenIabHelper.Options#getSamsungCertificationRequestCode()}
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * Used for SamsungApps setup. Specify your own value if default one interfere your code.
          * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION}
          */
@@ -1375,8 +1339,8 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#isSupportFortumo()}.
          * Will be private since 1.0.
-         * <p/>
-         * <p/>
+         *
+         *
          * Is Fortumo supported?
          */
         public boolean supportFortumo;
@@ -1384,7 +1348,7 @@ public class OpenIabHelper {
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options.Builder} instead.
          */
-        public Options() {
+        public Options(){
         }
 
         private Options(List<Appstore> availableStores,
