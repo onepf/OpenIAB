@@ -40,7 +40,7 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import java.util.Map;
 
 public class GameActivity extends Activity {
-    public static final String TAG = "Life";
+    public static final String TAG = "LifeOpenIab";
 
     public static final String DEFAULT_APP_PACKAGE = "org.onepf.life";
 
@@ -63,6 +63,12 @@ public class GameActivity extends Activity {
         showProgressDialog(true);
     }
 
+    /**
+     * Show error message as dialog and write message to logcat.
+     *
+     * @param messageResId String resources that used for message text.
+     * @param finishActivityOnClose Need activity close when 'Cancel' button.
+     */
     void showErrorMessage(@StringRes int messageResId, boolean finishActivityOnClose) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(messageResId)
@@ -274,6 +280,11 @@ public class GameActivity extends Activity {
     }
 
     /**
+     * Utility class for work with billing via OpenIAB. Before make purchase you need call
+     * {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
+     *
+     * Sample work with Google Play Store and Yandex.Store.
+     *
      * Created by Kirill Rozov on 7/28/14.
      */
     public class PurchaseHelper {
@@ -295,6 +306,9 @@ public class GameActivity extends Activity {
 
         private OpenIabHelper openIabHelper;
 
+        /**
+         * Make preparation for work with billing.
+         */
         public void startSetup() {
             //public keys
             //IAB helper
@@ -325,6 +339,9 @@ public class GameActivity extends Activity {
             return true;
         }
 
+        /**
+         * Buy additional 50 changes. Work async.
+         */
         void buyChanges() {
             String payload = "";
             launchPurchase(SKU_CHANGES, payload);
@@ -339,10 +356,21 @@ public class GameActivity extends Activity {
             }
         }
 
+        /**
+         * Handle purchase result. Need call this method
+         * from {@link android.app.Activity#onActivityResult(int, int, android.content.Intent)}.
+         *
+         * @return Does activity result handled.
+         *
+         * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+         */
         boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
             return openIabHelper.handleActivityResult(requestCode, resultCode, data);
         }
 
+        /**
+         * Buy orange cell. Work async.
+         */
         void buyOrangeCells() {
             if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
                 openIabHelper.launchSubscriptionPurchaseFlow(GameActivity.this, SKU_ORANGE_CELLS,
@@ -352,18 +380,26 @@ public class GameActivity extends Activity {
             }
         }
 
+        /**
+         * Buy additional figures. Work async.
+         */
         void buyFigures() {
             String payload = "";
             launchPurchase(SKU_FIGURES, payload);
         }
 
-
+        /**
+         * Dispose {@link org.onepf.oms.OpenIabHelper} associated with this instance
+         * of {@link org.onepf.life.GameActivity.PurchaseHelper}. After this action you can't make
+         * purchase and need restart service via {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
+         */
         public void dispose() {
             openIabHelper.dispose();
         }
 
         /**
-         * Verifies the developer payload of a purchase.
+         * Verifies the developer payload of a purchase. Default implementation verify that purchase
+         * isn't null.
          */
         boolean verifyDeveloperPayload(Purchase p) {
         /*
