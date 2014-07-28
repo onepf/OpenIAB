@@ -32,9 +32,8 @@ public class OpenIABTest : MonoBehaviour
 
 #pragma warning disable 0414
     string _label = "";
-#pragma warning restore 0414
-
     bool _isInitialized = false;
+#pragma warning restore 0414
 
     private void OnEnable()
     {
@@ -77,14 +76,25 @@ public class OpenIABTest : MonoBehaviour
     }
 
 #if UNITY_ANDROID
+    
+    const float SCREEN_XY_OFFSET = 5.0f;
+    const float Y_OFFSET = 10.0f;
+    const int SMALL_SCREEN_SIZE = 800;
+    const int LARGE_FONT_SIZE = 34;
+    const int SMALL_FONT_SIZE = 34;
+    const int LARGE_WIDTH = 380;
+    const int SMALL_WIDTH = 160;
+    const int LARGE_HEIGHT = 100;
+    const int SMALL_HEIGHT = 40;
+
     private void OnGUI()
     {
-        float yPos = 5.0f;
-        float xPos = 5.0f;
-        GUI.skin.button.fontSize = (Screen.width >= 800 || Screen.height >= 800) ? 34 : 14;
-        float width = (Screen.width >= 800 || Screen.height >= 800) ? 380 : 160;
-        float height = (Screen.width >= 800 || Screen.height >= 800) ? 100 : 40;
-        float heightPlus = height + 10.0f;
+        float yPos = SCREEN_XY_OFFSET;
+        float xPos = SCREEN_XY_OFFSET;
+        GUI.skin.button.fontSize = (Screen.width >= SMALL_SCREEN_SIZE || Screen.height >= SMALL_SCREEN_SIZE) ? LARGE_FONT_SIZE : SMALL_FONT_SIZE;
+        float width = (Screen.width >= SMALL_SCREEN_SIZE || Screen.height >= SMALL_SCREEN_SIZE) ? LARGE_WIDTH : SMALL_WIDTH;
+        float height = (Screen.width >= SMALL_SCREEN_SIZE || Screen.height >= SMALL_SCREEN_SIZE) ? LARGE_HEIGHT : SMALL_HEIGHT;
+        float heightPlus = height + Y_OFFSET;
 
         if (GUI.Button(new Rect(xPos, yPos, width, height), "Initialize OpenIAB"))
         {
@@ -120,8 +130,8 @@ public class OpenIABTest : MonoBehaviour
             OpenIAB.purchaseProduct("android.test.item_unavailable");
         }
 
-        xPos = Screen.width - width - 5.0f;
-        yPos = 5.0f;
+        xPos = Screen.width - width - SCREEN_XY_OFFSET;
+        yPos = SCREEN_XY_OFFSET;
 
         if (GUI.Button(new Rect(xPos, yPos, width, height), "Test Purchase Canceled"))
         {
@@ -146,40 +156,48 @@ public class OpenIABTest : MonoBehaviour
 #endif
 
 #if UNITY_IOS
+    const int CONTROL_OFFSET = 10;
+    const float SCREEN_Y_MULT = 0.1f;
+    const float SCREEN_X_MULT = 0.3f;
+
     void OnGUI()
     {
-        if (GUI.Button(new Rect(10, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Init"))
+        if (GUI.Button(new Rect(CONTROL_OFFSET, CONTROL_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "Init"))
         {
             OpenIAB.init(new Options());
         }
-        if (GUI.Button(new Rect(20 + Screen.width * 0.3f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Query inventory"))
+        if (GUI.Button(new Rect(CONTROL_OFFSET * 2 + Screen.width * SCREEN_X_MULT, CONTROL_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "Query inventory"))
         {
             OpenIAB.queryInventory(new string[] { SKU_MEDKIT });
         }
-        if (GUI.Button(new Rect(30 + Screen.width * 0.6f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Purchase"))
+        if (GUI.Button(new Rect(CONTROL_OFFSET * 3 + Screen.width * SCREEN_X_MULT * 2, CONTROL_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "Purchase"))
         {
             OpenIAB.purchaseProduct(SKU_MEDKIT);
         }
-        GUI.Label(new Rect(10, 20 + Screen.height * 0.1f, Screen.width, Screen.height), _label);
+        GUI.Label(new Rect(CONTROL_OFFSET, CONTROL_OFFSET * 2 + Screen.height * SCREEN_Y_MULT, Screen.width, Screen.height), _label);
     }
 #endif
 
 #if UNITY_WP8
+    const int BUTTON_OFFSET = 10;
+    const float SCREEN_Y_MULT = 0.1f;
+    const float SCREEN_X_MULT = 0.3f;
+
     void OnGUI()
     {
-        if (GUI.Button(new Rect(10, 10, Screen.width * 0.3f, Screen.height * 0.1f), "QUERY INVENTORY"))
+        if (GUI.Button(new Rect(BUTTON_OFFSET, BUTTON_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "QUERY INVENTORY"))
         {
             OpenIAB.queryInventory(new string[] { SKU_AMMO, SKU_MEDKIT, SKU_SUBSCRIPTION });
         }
-        if (GUI.Button(new Rect(20 + Screen.width * 0.3f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Purchase"))
+        if (GUI.Button(new Rect(BUTTON_OFFSET * 2 + Screen.width * SCREEN_X_MULT, BUTTON_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "Purchase"))
         {
             OpenIAB.purchaseProduct(SKU_MEDKIT);
         }
-        if (GUI.Button(new Rect(30 + Screen.width * 0.6f, 10, Screen.width * 0.3f, Screen.height * 0.1f), "Consume"))
+        if (GUI.Button(new Rect(BUTTON_OFFSET * 3 + Screen.width * SCREEN_X_MULT * 2, BUTTON_OFFSET, Screen.width * SCREEN_X_MULT, Screen.height * SCREEN_Y_MULT), "Consume"))
         {
             OpenIAB.consumeProduct(Purchase.CreateFromSku(SKU_MEDKIT));
         }
-        GUI.Label(new Rect(10, 20 + Screen.height * 0.1f, Screen.width, Screen.height), _label);
+        GUI.Label(new Rect(BUTTON_OFFSET, BUTTON_OFFSET * 2 + Screen.height * SCREEN_Y_MULT, Screen.width, Screen.height), _label);
     }
 #endif
 
