@@ -90,8 +90,6 @@ public class UnityPlugin {
 
     public void init(final HashMap<String, String> storeKeys) {
         OpenIabHelper.Options options = new OpenIabHelper.Options.Builder()
-                .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
-                .setDiscoveryTimeout(100500)
                 .addStoreKeys(storeKeys)
                 .build();
         initWithOptions(options);
