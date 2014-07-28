@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2013 One Platform Foundation
+/*
+ * Copyright 2012-2014 One Platform Foundation
  *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *           http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.onepf.oms.appstore;
 
@@ -25,6 +25,7 @@ import com.skplanet.dodo.IapPlugin;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.appstore.googleUtils.*;
 import org.onepf.oms.appstore.tstoreUtils.ParamsBuilder;
+import org.onepf.oms.util.Logger;
 
 import java.util.List;
 
@@ -33,7 +34,6 @@ import java.util.List;
  * Date: 16.05.13
  */
 public class TStoreBillingService implements AppstoreInAppBillingService {
-    private static final String TAG = "IabHelper";
     private final Context mContext;
     private final String mAppId;
     private IapPlugin mPlugin;
@@ -56,11 +56,11 @@ public class TStoreBillingService implements AppstoreInAppBillingService {
         paramsBuilder.put(ParamsBuilder.KEY_PID, sku);
         Bundle req = mPlugin.sendPaymentRequest(paramsBuilder.build(), new TStoreRequestCallback(this, mContext, listener));
         if (req == null) {
-            Log.e(TAG, "TStore buy request failure");
+            Logger.e("TStore buy request failure");
         } else {
             String mRequestId = req.getString(IapPlugin.EXTRA_REQUEST_ID);
             if (mRequestId == null || mRequestId.length() == 0) {
-                Log.e(TAG, "TStore request failure");
+                Logger.e("TStore request failure");
             }
         }
     }

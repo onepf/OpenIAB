@@ -1,18 +1,18 @@
-/*******************************************************************************
- * Copyright 2013 One Platform Foundation
+/*
+ * Copyright 2012-2014 One Platform Foundation
  *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *           http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.onepf.oms.appstore;
 
@@ -23,7 +23,6 @@ import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.text.TextUtils;
@@ -34,6 +33,7 @@ import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.util.CollectionUtils;
+import org.onepf.oms.util.Logger;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -62,7 +62,6 @@ import java.util.concurrent.CountDownLatch;
  * @since 10.10.2013
  */
 public class SamsungApps extends DefaultAppstore {
-    private static final String TAG = SamsungApps.class.getSimpleName();
     private static final String SAMSUNG_INSTALLER = "com.sec.android.app.samsungapps";
 
     private static final int IAP_SIGNATURE_HASHCODE = 0x7a7eaf4b;
@@ -75,7 +74,6 @@ public class SamsungApps extends DefaultAppstore {
     
     // isSamsungTestMode = true -> always returns Samsung Apps is installer and billing is available
     public static boolean isSamsungTestMode;
-    private boolean debugLog;
     
     private Boolean isBillingAvailable;
 
@@ -99,9 +97,9 @@ public class SamsungApps extends DefaultAppstore {
         }
         
         if (isSamsungTestMode) {
-            if (debugLog) Log.d(TAG, "isBillingAvailable() billing is supported in test mode.");
+            Logger.d("isBillingAvailable() billing is supported in test mode.");
             isBillingAvailable = true;
-            return isBillingAvailable;
+            return true;
         }
 
         boolean iapInstalled = false;
@@ -114,12 +112,12 @@ public class SamsungApps extends DefaultAppstore {
                 iapInstalled = true;
             }
         } catch (Exception e) {
-            if (debugLog) Log.d(TAG, "isBillingAvailable() Samsung IAP Service is not installed");
+           Logger.d("isBillingAvailable() Samsung IAP Service is not installed");
         }
 
         isBillingAvailable = false;
         if (!iapInstalled) {
-            return isBillingAvailable;
+            return false;
         }
 
         final CountDownLatch mainLatch = new CountDownLatch(1);
@@ -136,7 +134,7 @@ public class SamsungApps extends DefaultAppstore {
                                     isBillingAvailable = true;
                                 }
                             } catch (IabException e) {
-                                Log.e(TAG, "isBillingAvailable() failed", e);
+                                Logger.e("isBillingAvailable() failed", e);
                             } finally {
                                 getInAppBillingService().dispose();
                                 mainLatch.countDown();
@@ -153,7 +151,7 @@ public class SamsungApps extends DefaultAppstore {
         try {
             mainLatch.await();
         } catch (InterruptedException e) {
-            Log.e(TAG, "isBillingAvailable() interrupted", e);
+            Logger.e("isBillingAvailable() interrupted", e);
         }
 
         return isBillingAvailable;
