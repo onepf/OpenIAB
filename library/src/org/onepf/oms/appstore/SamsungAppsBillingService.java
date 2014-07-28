@@ -408,9 +408,10 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             return false;
         }
 
-        for (String itemString : itemsBundle.getStringArrayList(KEY_NAME_RESULT_LIST)) {
+        ArrayList<String> nameResults = itemsBundle.getStringArrayList(KEY_NAME_RESULT_LIST);
+        for (String nameResult : nameResults) {
             try {
-                JSONObject item = new JSONObject(itemString);
+                JSONObject item = new JSONObject(nameResult);
                 String itemId = item.getString(JSON_KEY_ITEM_ID);
                 if (queryItemIds == null || queryItemIds.contains(itemId)) {
                     String rawType = item.getString(JSON_KEY_TYPE);
@@ -448,7 +449,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                 Log.e(TAG, "JSON parse error: " + e.getMessage());
             }
         }
-        return items.size() == ITEM_RESPONSE_COUNT;
+        return nameResults.size() == ITEM_RESPONSE_COUNT;
     }
 
 }
