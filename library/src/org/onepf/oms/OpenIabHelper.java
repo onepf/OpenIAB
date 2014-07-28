@@ -1627,6 +1627,26 @@ public class OpenIabHelper {
             }
 
             /**
+             * Get list of added available stores.
+             *
+             * @return List of available store of null if nothing was add.
+             */
+            @Nullable
+            public List<Appstore> getAvailableStores() {
+                return availableStores;
+            }
+
+            /**
+             * Get map "store name -> public key" of added store keys.
+             *
+             * @return Map of added store keys or null if nothing was add.
+             */
+            @Nullable
+            public Map<String, String> getStoreKeys() {
+                return storeKeys;
+            }
+
+            /**
              * Add single store keys to options.
              *
              * @param storeName Name of store.

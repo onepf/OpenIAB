@@ -36,7 +36,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 
 public class LifeView extends SurfaceView {
-    public static final int DEFAULT_CHANGES_COUNT = 50;
     private static final int FIELD_PADDING = 3;
 
     private final int cellWidth;
@@ -47,7 +46,7 @@ public class LifeView extends SurfaceView {
 
     // Edits
     private boolean editMode = true;
-    private int changeCount = DEFAULT_CHANGES_COUNT;
+    private int changeCount;
 
     // Cell images
     private Bitmap activeCellBitmap;
