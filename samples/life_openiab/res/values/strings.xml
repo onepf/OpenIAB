@@ -33,4 +33,9 @@
     <string name="not_enough_space">Not enough space for this figure</string>
     <string name="waiting_dialog_message">Please wait…</string>
     <string name="subscribe_thank">Thank you for subscribing to orange cells!</string>
+
+    <string name="error">Error</string>
+    <string name="error_no_store_public_keys">You need set public key for stores.</string>
+    <string name="error_need_sign_app">You need change application package and sigh it with same keystore that uploaded on store.</string>
+    <string name="cancel">Cancel</string>
 </resources>

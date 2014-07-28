@@ -43,7 +43,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile project(path: ':library', configuration: "noFortumoUnity")
+    compile project(path: ':OpenIab Library', configuration: "noFortumoUnity")
 }
 
 task buildPlugin(dependsOn: 'assembleRelease') << {

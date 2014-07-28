@@ -669,6 +669,7 @@ public class OpenIabHelper {
     }
 
 
+
     private static void checkSamsung(Context context) {
         List<String> allStoreSkus = getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!allStoreSkus.isEmpty()) { // it means that Samsung is among the candidates
@@ -822,7 +823,7 @@ public class OpenIabHelper {
                 candidates.put(appstore.getAppstoreName(), appstore);
             }
         }
-        Logger.dWithTimeFromUp(candidates.size() + " inventory candidates");
+        Logger.dWithTimeFromUp(candidates.size(), " inventory candidates");
         final List<Appstore> equippedStores = Collections.synchronizedList(new ArrayList<Appstore>());
         final CountDownLatch storeRemains = new CountDownLatch(candidates.size());
         // for every appstore: connect to billing service and check inventory 
