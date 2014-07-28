@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2012-2014 One Platform Foundation
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ ******************************************************************************/
+
 #import "AppStoreDelegate.h"
 
 // Unity to NS String conversion
@@ -8,17 +24,12 @@ NSString* ToString(const char* c_string)
 
 extern "C"
 {
-    bool AppStore_canMakePayments()
-    {
-        return [[AppStoreDelegate instance] canMakePayments] != 0;
-    }
-    
     void AppStore_requestProducts(const char* skus[], int skuNumber)
     {
         NSMutableSet *skuSet = [NSMutableSet set];
         for (int i = 0; i < skuNumber; ++i)
             [skuSet addObject: ToString(skus[i])];
-        [[AppStoreDelegate instance] requestProducts:skuSet];
+        [[AppStoreDelegate instance] requestSKUs:skuSet];
     }
     
     void AppStore_startPurchase(const char* sku)

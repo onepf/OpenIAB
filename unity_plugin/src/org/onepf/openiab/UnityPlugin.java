@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2012-2014 One Platform Foundation
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ ******************************************************************************/
+
 package org.onepf.openiab;
 
 import android.app.Activity;
@@ -17,9 +33,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Native java part of the Unity plugin
+ * All methods are called from the Unity side via JNI
+ */
 public class UnityPlugin {
 
     public static final String TAG = "OpenIAB-UnityPlugin";
+    /**
+     * Name of the event handler object in Unity
+     */
     private static final String EVENT_MANAGER = "OpenIABEventManager";
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
@@ -37,7 +60,9 @@ public class UnityPlugin {
     public static final String STORE_YANDEX = OpenIabHelper.NAME_YANDEX;
 	public static final String STORE_NOKIA = OpenIabHelper.NAME_NOKIA;
 
-    // (arbitrary) request code for the purchase flow
+    /**
+     * (arbitrary) request code for the purchase flow
+     */
     public static final int RC_REQUEST = 10001;
     public static boolean sendRequest = false;
 
@@ -65,7 +90,6 @@ public class UnityPlugin {
 
     public void init(final HashMap<String, String> storeKeys) {
         OpenIabHelper.Options options = new OpenIabHelper.Options.Builder()
-                .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
                 .addStoreKeys(storeKeys)
                 .build();
         initWithOptions(options);
@@ -92,7 +116,7 @@ public class UnityPlugin {
                             return;
                         }
 
-                        // Hooray, IAB is fully set up. Now, let's get an inventory of stuff we own.
+                        // Hooray, IAB is fully set up
                         Log.d(TAG, "Setup successful.");
                         UnityPlayer.UnitySendMessage(EVENT_MANAGER, BILLING_SUPPORTED_CALLBACK, "");
                     }
@@ -189,7 +213,9 @@ public class UnityPlugin {
         UnityPlayer.currentActivity.startActivity(i);
     }
 
-    // Listener that's called when we finish querying the items and subscriptions we own
+    /**
+     * Listener that's called when we finish querying the items and subscriptions we own
+     */
     IabHelper.QueryInventoryFinishedListener _queryInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
             Log.d(TAG, "Query inventory finished.");
@@ -210,7 +236,9 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a purchase is finished
+    /**
+     * Callback for when a purchase is finished
+     */
     IabHelper.OnIabPurchaseFinishedListener _purchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
             Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
@@ -231,7 +259,9 @@ public class UnityPlugin {
         }
     };
 
-    // Callback for when a consumption is complete
+    /**
+     * Callback for when a consumption is complete
+     */
     IabHelper.OnConsumeFinishedListener _consumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);

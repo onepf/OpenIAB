@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package org.onepf.life;
+package org.onepf.life.util;
+
+import android.content.SharedPreferences;
+import android.os.Build;
 
 /**
- * Created by akarimova on 29.11.13.
+ * Created by krozov on 7/25/14.
  */
-public interface LifeViewListener {
-    public static final int DEFAULT_CHANGES_COUNT = 50;
+public final class SharedPreferencesEditorCompat {
 
-    public void setChangeCount(int count);
+    private SharedPreferencesEditorCompat() {
+    }
 
-    public void onNoChangesFound();
-
-    public void notEnoughSpaceForFigure();
+    public static void apply(SharedPreferences.Editor e) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            e.apply();
+        } else {
+            e.commit();
+        }
+    }
 }
