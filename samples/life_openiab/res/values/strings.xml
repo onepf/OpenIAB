@@ -37,5 +37,9 @@
     <string name="error">Error</string>
     <string name="error_no_store_public_keys">You need set public key for stores.</string>
     <string name="error_need_sign_app">You need change application package and sigh it with same keystore that uploaded on store.</string>
+    <string name="error_openiab_setup_in_progress">OpenIAB helper setup in progress.Before make in-app purchase OpenIabHelper must done successfully setup.</string>
+    <string name="error_openiab_setup_result_failure">OpenIAB helper setup finished with fail. Before make in-app purchase OpenIabHelper must done successfully setup.</string>
+    <string name="error_openiab_setup_not_started">OpenIAB helper setup not started yet. Before make in-app purchase OpenIabHelper must done successfully setup.</string>
+    <string name="error_openiab_setup_disposed">OpenIAB helper setup disposed. Before make in-app purchase OpenIabHelper must done successfully setup.</string>
     <string name="cancel">Cancel</string>
 </resources>
