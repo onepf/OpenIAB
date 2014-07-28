@@ -25,6 +25,7 @@ import org.json.JSONException;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.GooglePlay;
 
 import android.app.Activity;
@@ -515,11 +516,11 @@ public class IabHelper implements AppstoreInAppBillingService {
             return;
         }
 
-        Purchase purchase = null;
+        Purchase purchase;
         try {
             purchase = new Purchase(mPurchasingItemType, purchaseData, dataSignature, appstore.getAppstoreName());
             String sku = purchase.getSku();
-            purchase.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), sku));
+            purchase.setSku(SkuManager.getInstance().getSku(appstore.getAppstoreName(), sku));
 
             if (!isValidDataSignature(mSignatureBase64, purchaseData, dataSignature)) {
                 logError("Purchase signature verification FAILED for sku " + sku);
@@ -912,7 +913,7 @@ public class IabHelper implements AppstoreInAppBillingService {
                     logDebug("Sku is owned: " + sku);
                     Purchase purchase = new Purchase(itemType, purchaseData, signature, appstore.getAppstoreName());
                     String storeSku = purchase.getSku();
-                    purchase.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), storeSku));
+                    purchase.setSku(SkuManager.getInstance().getSku(appstore.getAppstoreName(), storeSku));
 
                     if (TextUtils.isEmpty(purchase.getToken())) {
                         logWarn("BUG: empty/null token!");
@@ -942,17 +943,19 @@ public class IabHelper implements AppstoreInAppBillingService {
      */
     int querySkuDetails(String itemType, Inventory inv, List<String> moreSkus) throws RemoteException, JSONException {
         logDebug("querySkuDetails() Querying SKU details.");
+        final SkuManager skuManager = SkuManager.getInstance();
+        final String appstoreName = appstore.getAppstoreName();
+
         Set<String> storeSkus = new TreeSet<String>();
-        final List<String> allOwnedSkus = inv.getAllOwnedSkus(itemType);
-        for (String sku : allOwnedSkus) {
-            storeSkus.add(OpenIabHelper.getStoreSku(appstore.getAppstoreName(), sku));
+        for (String sku : inv.getAllOwnedSkus(itemType)) {
+            storeSkus.add(skuManager.getStoreSku(appstoreName, sku));
         }
         if (moreSkus != null) {
             for (String sku : moreSkus) {
-                storeSkus.add(OpenIabHelper.getStoreSku(appstore.getAppstoreName(), sku));
+                storeSkus.add(skuManager.getStoreSku(appstoreName, sku));
             }
         }
-        if (storeSkus.size() == 0) {
+        if (storeSkus.isEmpty()) {
             logDebug("querySkuDetails(): nothing to do because there are no SKUs.");
             return BILLING_RESPONSE_RESULT_OK;
         }
@@ -996,7 +999,7 @@ public class IabHelper implements AppstoreInAppBillingService {
 
             for (String thisResponse : responseList) {
                 SkuDetails d = new SkuDetails(itemType, thisResponse);
-                d.setSku(OpenIabHelper.getSku(appstore.getAppstoreName(), d.getSku()));
+                d.setSku(SkuManager.getInstance().getSku(appstoreName, d.getSku()));
                 logDebug("querySkuDetails() Got sku details: " + d);
                 inv.addSkuDetails(d);
             }

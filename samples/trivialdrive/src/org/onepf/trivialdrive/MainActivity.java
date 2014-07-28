@@ -16,6 +16,7 @@
 package org.onepf.trivialdrive;
 
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -104,28 +105,29 @@ public class MainActivity extends Activity {
     static final String SKU_INFINITE_GAS = "sku_infinite_gas";
     
     static {
-        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
-        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
-        OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003746");
-        OpenIabHelper.mapSku(SKU_PREMIUM, "com.yandex.store", "org.onepf.trivialdrive.premium");
-        OpenIabHelper.mapSku(SKU_PREMIUM, "Appland", "org.onepf.trivialdrive.premium");
-		OpenIabHelper.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, "1023608");
-		OpenIabHelper.mapSku(SKU_PREMIUM, "SlideME", "slideme_sku_premium");
+        final SkuManager skuManager = SkuManager.getInstance();
+        skuManager.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.premium");
+        skuManager.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_TSTORE, "tstore_sku_premium");
+        skuManager.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003746");
+        skuManager.mapSku(SKU_PREMIUM, "com.yandex.store", "org.onepf.trivialdrive.premium");
+        skuManager.mapSku(SKU_PREMIUM, "Appland", "org.onepf.trivialdrive.premium");
+		skuManager.mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, "1023608");
+		skuManager.mapSku(SKU_PREMIUM, "SlideME", "slideme_sku_premium");
 
-        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
-        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
-        OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
-        OpenIabHelper.mapSku(SKU_GAS, "com.yandex.store", "org.onepf.trivialdrive.gas");
-        OpenIabHelper.mapSku(SKU_GAS, "Appland", "org.onepf.trivialdrive.gas");
-		OpenIabHelper.mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, "1023609");
-		OpenIabHelper.mapSku(SKU_GAS, "SlideME", "slideme_sku_gas");
+        skuManager.mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.gas");
+        skuManager.mapSku(SKU_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_gas");
+        skuManager.mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003744");
+        skuManager.mapSku(SKU_GAS, "com.yandex.store", "org.onepf.trivialdrive.gas");
+        skuManager.mapSku(SKU_GAS, "Appland", "org.onepf.trivialdrive.gas");
+		skuManager.mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, "1023609");
+		skuManager.mapSku(SKU_GAS, "SlideME", "slideme_sku_gas");
 
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
-        OpenIabHelper.mapSku(SKU_INFINITE_GAS, "com.yandex.store", "org.onepf.trivialdrive.infinite_gas");
-		OpenIabHelper.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, "1023610");
-		OpenIabHelper.mapSku(SKU_INFINITE_GAS, "SlideME", "slideme_sku_inifinite_gas");
+        skuManager.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.trivialdrive.amazon.infinite_gas");
+        skuManager.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_TSTORE, "tstore_sku_infinite_gas");
+        skuManager.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000100696/000001003747");
+        skuManager.mapSku(SKU_INFINITE_GAS, "com.yandex.store", "org.onepf.trivialdrive.infinite_gas");
+		skuManager.mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, "1023610");
+		skuManager.mapSku(SKU_INFINITE_GAS, "SlideME", "slideme_sku_inifinite_gas");
     }
     
     // (arbitrary) request code for the purchase flow

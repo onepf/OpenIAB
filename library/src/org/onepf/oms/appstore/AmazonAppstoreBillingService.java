@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -167,11 +168,11 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             if (moreSubsSkus != null) {
                 querySkus.addAll(moreSubsSkus);
             }
-            if (querySkus.size() > 0) {
+            if (!querySkus.isEmpty()) {
                 inventoryLatch = new CountDownLatch(1);
                 HashSet<String> queryStoreSkus = new HashSet<String>(querySkus.size());
                 for (String sku : querySkus) {
-                    queryStoreSkus.add(OpenIabHelper.getStoreSku(OpenIabHelper.NAME_AMAZON, sku));
+                    queryStoreSkus.add(SkuManager.getInstance().getStoreSku(OpenIabHelper.NAME_AMAZON, sku));
                 }
                 PurchasingManager.initiateItemDataRequest(queryStoreSkus);
                 try {
@@ -211,7 +212,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                         case ENTITLED:
                             purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
                             purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-                            purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                            purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                             inventory.addPurchase(purchase);
                             if (isDebugLog()) Log.d(TAG, "Add to inventory SKU: " + storeSku);
                             break;
@@ -220,39 +221,15 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                             if (subscriptionPeriod.getEndDate() == null) {
                                 purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
                                 purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
-                                purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                                 inventory.addPurchase(purchase);
                                 if (isDebugLog()) Log.d(TAG, "Add subscription to inventory SKU: " + storeSku);
                             }
-                            
-//                            final Date startDate = subscriptionPeriod.getStartDate();
-//                            if (latestSubscriptionPeriod == null || startDate.after(latestSubscriptionPeriod.getStartDate())) {
-//                                currentSubscriptionPeriods.clear();
-//                                latestSubscriptionPeriod = subscriptionPeriod;
-//                                currentSubscriptionPeriods.add(latestSubscriptionPeriod);
-//                            } else if (startDate.equals(latestSubscriptionPeriod.getStartDate())) {
-//                                currentSubscriptionPeriods.add(receipt.getSubscriptionPeriod());
-//                            }
 
                             break;
 
                     }
-                    //printReceipt(receipt);
                 }
-            /*
-             * Check the latest subscription periods once all receipts have been read, if there is a subscription
-             * with an existing end date, then the subscription is not active.
-             */
-//                    if (latestSubscriptionPeriod != null) {
-//                        boolean hasSubscription = true;
-//                        for (SubscriptionPeriod subscriptionPeriod : currentSubscriptionPeriods) {
-//                            if (subscriptionPeriod.getEndDate() != null) {
-//                                hasSubscription = false;
-//                                break;
-//                            }
-//                        }
-//                        editor.putBoolean(GameActivity.ORANGE_CELLS, hasSubscription);
-//                    }
 
                 final Offset newOffset = purchaseUpdatesResponse.getOffset();
                 if (purchaseUpdatesResponse.isMore()) {
@@ -267,7 +244,6 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 return;
         }
         inventoryLatch.countDown();
-        return;
     }
 
     @Override
@@ -285,11 +261,11 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 final Map<String, Item> items = itemDataResponse.getItemData();
                 for (final String key : items.keySet()) {
                     Item i = items.get(key);
-                    final String storeSku = i.getSku();
-                    if (isDebugLog()) Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
+                    if (isDebugLog()) Log.v(TAG, String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n", i.getTitle(), i.getItemType(), i.getSku(), i.getPrice(), i.getDescription()));
                     String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_SUBS : IabHelper.ITEM_TYPE_INAPP;
-                    String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku);
-                    SkuDetails skuDetails = new SkuDetails(itemType, sku, i.getTitle(), i.getPrice(), i.getDescription());
+                    SkuDetails skuDetails = new SkuDetails(itemType,
+                            SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, i.getSku()),
+                            i.getTitle(), i.getPrice(), i.getDescription());
                     inventory.addSkuDetails(skuDetails);
                 }
                 break;
@@ -323,7 +299,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                     final String storeSku = receipt.getSku();
                     
                     purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
-                    purchase.setSku(OpenIabHelper.getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                    purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE :
                         case ENTITLED :

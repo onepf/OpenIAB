@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.googleUtils.*;
 
@@ -336,27 +337,22 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		logInfo("NokiaStoreHelper.processPurchaseSuccess");
 		logDebug("purchaseData = " + purchaseData);
 
-		Purchase purchase = null;
+		Purchase purchase;
 		try {
 			final JSONObject obj = new JSONObject(purchaseData);
 
-			final String orderId = obj.getString("orderId");
-			final String packageName = obj.getString("packageName");
-			final String productId = obj.getString("productId");
-			final String purchaseToken = obj.getString("purchaseToken");
-			final String developerPayload = obj.getString("developerPayload");
-			final String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_NOKIA, productId);
+			final String sku = SkuManager.getInstance().getSku(OpenIabHelper.NAME_NOKIA, obj.getString("productId"));
 
 			logDebug("sku = " + sku);
 
 			purchase = new Purchase(OpenIabHelper.NAME_NOKIA);
 
 			purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-			purchase.setOrderId(orderId);
-			purchase.setPackageName(packageName);
+			purchase.setOrderId(obj.getString("orderId"));
+			purchase.setPackageName(obj.getString("packageName"));
 			purchase.setSku(sku);
-			purchase.setToken(purchaseToken);
-			purchase.setDeveloperPayload(developerPayload);
+			purchase.setToken(obj.getString("purchaseToken"));
+			purchase.setDeveloperPayload(obj.getString("developerPayload"));
 
 		} catch (JSONException e) {
 			logError("JSONException: " + e, e);
@@ -461,9 +457,11 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 	private void refreshPurchasedItems(final List<String> moreItemSkus, final Inventory inventory)
 		throws IabException {
+
 		logInfo("NokiaStoreHelper.refreshPurchasedItems");
 
-		final ArrayList<String> storeSkus = new ArrayList<String>(OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_NOKIA));
+		final ArrayList<String> storeSkus = new ArrayList<String>(
+                SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_NOKIA));
 		final Bundle storeSkusBundle = new Bundle(32);
 
 		if (moreItemSkus != null) {
@@ -509,25 +507,14 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		for (final String data : purchasedDataList) {
 			try {
 				final JSONObject obj = new JSONObject(data);
-
-				final String productId = obj.getString("productId");
-				final String purchaseToken = obj.getString("purchaseToken");
-
-				final String developerPayload = obj.optString("developerPayload", "");
-
-				final String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_NOKIA, productId);
-
 				final Purchase purchase = new Purchase(OpenIabHelper.NAME_NOKIA);
-
 				purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-				purchase.setSku(sku);
-				purchase.setToken(purchaseToken);
+				purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_NOKIA, obj.getString("productId")));
+				purchase.setToken(obj.getString("purchaseToken"));
 				purchase.setPackageName(getPackageName());
 				purchase.setPurchaseState(0);
-				purchase.setDeveloperPayload(developerPayload);
-
+				purchase.setDeveloperPayload(obj.optString("developerPayload", ""));
 				inventory.addPurchase(purchase);
-
 			} catch (JSONException e) {
 				logError("Exception: " + e, e);
 			}
@@ -537,18 +524,15 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	private void refreshItemDetails(final List<String> moreItemSkus, final Inventory inventory) throws IabException {
 		logInfo("NokiaStoreHelper.refreshItemDetails");
 
-		final List<String> storeSkus = OpenIabHelper.getAllStoreSkus(OpenIabHelper.NAME_NOKIA);
 		final Bundle storeSkusBundle = new Bundle(32);
 
 		final ArrayList<String> combinedStoreSkus = new ArrayList<String>(32);
 
-		combinedStoreSkus.addAll(storeSkus);
+		combinedStoreSkus.addAll(SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_NOKIA));
 
 		if (moreItemSkus != null) {
 			for (final String moreItemSku : moreItemSkus) {
-
-				combinedStoreSkus.add(OpenIabHelper.getStoreSku(OpenIabHelper.NAME_NOKIA, moreItemSku));
-
+				combinedStoreSkus.add(SkuManager.getInstance().getStoreSku(OpenIabHelper.NAME_NOKIA, moreItemSku));
 			}
 		}
 
@@ -589,17 +573,13 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		logInfo("NokiaStoreHelper.processDetailsList");
 
 		for (final String detailString : detailsList) {
-
 			final JSONObject obj = new JSONObject(detailString);
-
-			final String productId = obj.getString("productId");
-			final String name = obj.getString("title");
-			final String price = obj.getString("price");
-			final String description = obj.getString("shortdescription");
-
-			final String sku = OpenIabHelper.getSku(OpenIabHelper.NAME_NOKIA, productId);
-
-			inventory.addSkuDetails(new SkuDetails(IabHelper.ITEM_TYPE_INAPP, sku, name, price, description));
+			inventory.addSkuDetails(new SkuDetails(
+                    IabHelper.ITEM_TYPE_INAPP,
+                    SkuManager.getInstance().getSku(OpenIabHelper.NAME_NOKIA, obj.getString("productId")),
+                    obj.getString("title"),
+                    obj.getString("price"),
+                    obj.getString("shortdescription")));
 		}
 	}
 

@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
 import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.googleUtils.*;
 
 import java.util.Arrays;
@@ -78,8 +79,15 @@ public class UnityPlugin {
         return _instance;
     }
 
+    /**
+     * @deprecated Use {@link org.onepf.oms.SkuManager#mapSku(String, String, String)}
+     *
+     * @param sku
+     * @param storeName
+     * @param storeSku
+     */
     public void mapSku(String sku, String storeName, String storeSku)  {
-        OpenIabHelper.mapSku(sku, storeName, storeSku);
+        SkuManager.getInstance().mapSku(sku, storeName, storeSku);
     }
 
     public void init(final HashMap<String, String> storeKeys) {
@@ -260,8 +268,7 @@ public class UnityPlugin {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
 
-            String sku = purchase.getSku();
-            purchase.setSku(OpenIabHelper.getSku(purchase.getAppstoreName(), sku));
+            purchase.setSku(SkuManager.getInstance().getSku(purchase.getAppstoreName(), purchase.getSku()));
 
             if (result.isFailure()) {
                 Log.e(TAG, "Error while consuming: " + result);
