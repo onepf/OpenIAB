@@ -19,7 +19,6 @@ package org.onepf.life;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -58,109 +57,17 @@ public class GameActivity extends Activity {
     private LifeView lifeView;
     private ProgressDialog progressDialog;
 
-    private OpenIabHelper openIabHelper;
+    OpenIabHelper openIabHelper;
 
-    private final GameController gameController = new GameController();
-
-    // Listener that's called when we finish querying the items and subscriptions we own
-    private final IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-            if (result.isFailure()) {
-                Toast.makeText(GameActivity.this, "Failed to query inventory: " + result, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Toast.makeText(GameActivity.this, "Query inventory was successful." + result, Toast.LENGTH_SHORT).show();
-            /*
-             * Check for items we own. Notice that for each purchase, we check
-             * the developer payload to see if it's correct! See
-             * verifyDeveloperPayload().
-             */
-
-            // check for orange cells subscription
-            Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
-            if (verifyDeveloperPayload(orangeCellsPurchase)) {
-                AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
-                lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
-            }
-
-            //non-consumable figures
-            Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
-            if (verifyDeveloperPayload(figuresPurchase)) {
-                AppSettings.getInstance(GameActivity.this).setHasFigures(true);
-            }
-
-            //consumable changes
-            Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
-            if (verifyDeveloperPayload(changesPurchase)) {
-                openIabHelper.consumeAsync(changesPurchase, consumeFinishedListener);
-            }
-
-            invalidateOptionsMenu();
-        }
-    };
+    final GameController gameController = new GameController();
 
     // Callback for when a purchase is finished
     private final IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener
-            = new IabHelper.OnIabPurchaseFinishedListener() {
-        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
-            if (result.isFailure()) {
-                Toast.makeText(GameActivity.this, "Error purchasing: " + result,
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (!verifyDeveloperPayload(purchase)) {
-                Toast.makeText(GameActivity.this, "Error purchasing. Authenticity" +
-                        " verification failed.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Log.d(TAG, "Purchase successful.");
-
-            if (SKU_CHANGES.equals(purchase.getSku())) {
-                openIabHelper.consumeAsync(purchase, consumeFinishedListener);
-            } else {
-                if (SKU_FIGURES.equals(purchase.getSku())) {
-                    AppSettings.getInstance(GameActivity.this).setHasFigures(true);
-                } else if (SKU_ORANGE_CELLS.equals(purchase.getSku())) {
-                    Toast.makeText(GameActivity.this, R.string.subscribe_thank, Toast.LENGTH_SHORT).show();
-                    AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
-                    lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
-                }
-                invalidateOptionsMenu();
-            }
-        }
-    };
+            = new LifeGameOnIabPurchaseFinishedListener();
 
     // Called when consumption is complete
     private final IabHelper.OnConsumeFinishedListener consumeFinishedListener
-            = new IabHelper.OnConsumeFinishedListener() {
-        public void onConsumeFinished(Purchase purchase, IabResult result) {
-            Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
-            if (result.isSuccess()) {
-                if (SKU_CHANGES.equals(purchase.getSku())) {
-                    gameController.increaseChangesCount(LifeView.DEFAULT_CHANGES_COUNT);
-                }
-            } else {
-                Toast.makeText(GameActivity.this, "unsuccessful consume", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
-
-    private final IabHelper.OnIabSetupFinishedListener onIabSetupFinishedListener
-            = new IabHelper.OnIabSetupFinishedListener() {
-        public void onIabSetupFinished(IabResult result) {
-            Log.d(TAG, "Setup finished.");
-            showProgressDialog(false);
-            if (result.isSuccess()) {
-                Log.d(TAG, "Setup successful. Queuing inventory.");
-                openIabHelper.queryInventoryAsync(gotInventoryListener);
-            } else {
-                Toast.makeText(GameActivity.this, "Problem setting up in-app billing: "
-                        + result, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
+            = new LifeGameOnConsumeFinishedListener();
 
 
     @Override
@@ -190,7 +97,7 @@ public class GameActivity extends Activity {
         } else {
             OpenIabHelper.Options options = builder.build();
             openIabHelper = new OpenIabHelper(this, options);
-            openIabHelper.startSetup(onIabSetupFinishedListener);
+            openIabHelper.startSetup(new LifeGameOnIabSetupFinishedListener());
         }
     }
 
@@ -386,7 +293,7 @@ public class GameActivity extends Activity {
         }
     }
 
-    private void showProgressDialog(boolean show) {
+    void showProgressDialog(boolean show) {
         if (show) {
             if (progressDialog != null && !progressDialog.isShowing()) {
                 progressDialog = ProgressDialog.show(this, null, getString(R.string.waiting_dialog_message));
@@ -449,6 +356,100 @@ public class GameActivity extends Activity {
                 changesCount = AppSettings.getInstance(GameActivity.this).getChangesCount();
             }
             return changesCount;
+        }
+    }
+
+    private class LifeGameQueryInventoryFinishedListener implements IabHelper.QueryInventoryFinishedListener {
+        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+            if (result.isFailure()) {
+                Toast.makeText(GameActivity.this, "Failed to query inventory: " + result, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(GameActivity.this, "Query inventory was successful." + result, Toast.LENGTH_SHORT).show();
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+            // check for orange cells subscription
+            Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
+            if (verifyDeveloperPayload(orangeCellsPurchase)) {
+                AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
+                lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
+            }
+
+            //non-consumable figures
+            Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
+            if (verifyDeveloperPayload(figuresPurchase)) {
+                AppSettings.getInstance(GameActivity.this).setHasFigures(true);
+            }
+
+            //consumable changes
+            Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
+            if (verifyDeveloperPayload(changesPurchase)) {
+                openIabHelper.consumeAsync(changesPurchase, consumeFinishedListener);
+            }
+
+            invalidateOptionsMenu();
+        }
+    }
+
+    private class LifeGameOnIabPurchaseFinishedListener implements IabHelper.OnIabPurchaseFinishedListener {
+        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+            Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
+            if (result.isFailure()) {
+                Toast.makeText(GameActivity.this, "Error purchasing: " + result,
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!verifyDeveloperPayload(purchase)) {
+                Toast.makeText(GameActivity.this, "Error purchasing. Authenticity" +
+                        " verification failed.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Log.d(TAG, "Purchase successful.");
+
+            if (SKU_CHANGES.equals(purchase.getSku())) {
+                openIabHelper.consumeAsync(purchase, consumeFinishedListener);
+            } else {
+                if (SKU_FIGURES.equals(purchase.getSku())) {
+                    AppSettings.getInstance(GameActivity.this).setHasFigures(true);
+                } else if (SKU_ORANGE_CELLS.equals(purchase.getSku())) {
+                    Toast.makeText(GameActivity.this, R.string.subscribe_thank, Toast.LENGTH_SHORT).show();
+                    AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
+                    lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
+                }
+                invalidateOptionsMenu();
+            }
+        }
+    }
+
+    private class LifeGameOnConsumeFinishedListener implements IabHelper.OnConsumeFinishedListener {
+        public void onConsumeFinished(Purchase purchase, IabResult result) {
+            Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
+            if (result.isSuccess()) {
+                if (SKU_CHANGES.equals(purchase.getSku())) {
+                    gameController.increaseChangesCount(LifeView.DEFAULT_CHANGES_COUNT);
+                }
+            } else {
+                Toast.makeText(GameActivity.this, "unsuccessful consume", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class LifeGameOnIabSetupFinishedListener implements IabHelper.OnIabSetupFinishedListener {
+        public void onIabSetupFinished(IabResult result) {
+            Log.d(TAG, "Setup finished.");
+            showProgressDialog(false);
+            if (result.isSuccess()) {
+                Log.d(TAG, "Setup successful. Queuing inventory.");
+                openIabHelper.queryInventoryAsync(new LifeGameQueryInventoryFinishedListener());
+            } else {
+                Toast.makeText(GameActivity.this, "Problem setting up in-app billing: "
+                        + result, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
