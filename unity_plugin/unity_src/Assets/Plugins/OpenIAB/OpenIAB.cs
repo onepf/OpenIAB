@@ -30,6 +30,10 @@ namespace OnePF
 
         static IOpenIAB _billing;
 
+        /**
+         * Static constructor 
+         * Creates billing instance
+         */
         static OpenIAB()
         {
 #if UNITY_ANDROID
@@ -48,6 +52,9 @@ namespace OnePF
 
         /**
          * Must be only called before init
+         * @param sku product ID
+         * @param storeName name of the store
+         * @param storeSku product ID in the store
          */ 
         public static void mapSku(string sku, string storeName, string storeSku)
         {
@@ -56,6 +63,7 @@ namespace OnePF
 
         /**
          * Starts up the billing service. This will also check to see if in app billing is supported and fire the appropriate event
+         * @param options library options instance
          */
         public static void init(Options options)
         {
@@ -72,6 +80,7 @@ namespace OnePF
 
         /**
          * Checks if subscriptions are supported. Currently used only on Android
+         * @return true if subscriptions are supported on the device
          */
         public static bool areSubscriptionsSupported()
         {
@@ -88,6 +97,7 @@ namespace OnePF
 
         /**
          * Sends a request to get all completed purchases and specified skus information
+         * @param skus product IDs
          */ 
         public static void queryInventory(string[] skus)
         {
@@ -96,6 +106,8 @@ namespace OnePF
 
         /**
          * Purchases the product with the given sku and developerPayload
+         * @param product ID
+         * @param developerPayload payload to verify transaction
          */
         public static void purchaseProduct(string sku, string developerPayload = "")
         {
@@ -104,7 +116,9 @@ namespace OnePF
 
         /**
          * Purchases the subscription with the given sku and developerPayload
-         */ 
+         * @param sku product ID
+         * @param developerPayload payload to verify transaction
+         */
         public static void purchaseSubscription(string sku, string developerPayload = "")
         {
             _billing.purchaseSubscription(sku, developerPayload);
@@ -112,6 +126,7 @@ namespace OnePF
 
         /**
          * Sends out a request to consume the product
+         * @param purchase purchase data holder
          */ 
         public static void consumeProduct(Purchase purchase)
         {
@@ -128,6 +143,7 @@ namespace OnePF
 
         /**
          * Is verbose logging enabled
+         * @return true if logging is enabled
          */ 
 		public static bool isDebugLog()
         {
@@ -136,6 +152,7 @@ namespace OnePF
 
         /**
          * Get more debug information
+         * @param enabled if logging is enabled
          */ 
         public static void enableDebugLogging(bool enabled)
         {
@@ -144,6 +161,8 @@ namespace OnePF
 
         /**
          * Get more debug information
+         * @param enabled if logging is enabled
+         * @param tag Android log tag
          */
         public static void enableDebugLogging(bool enabled, string tag)
         {

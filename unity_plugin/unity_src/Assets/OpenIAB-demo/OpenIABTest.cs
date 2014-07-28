@@ -24,7 +24,6 @@ using System.Collections.Generic;
 public class OpenIABTest : MonoBehaviour
 {
     const string SKU = "sku";
-
     const string SKU_AMMO = "sku_ammo_general";
     const string SKU_MEDKIT = "sku_medkit_general";
     const string SKU_SUBSCRIPTION = "sku_sub_general";

@@ -20,34 +20,19 @@ namespace OnePF
 {
     /**
      * All options of OpenIAB can be found here
-     * 
-     * TODO: consider to use cloned instance of Options in OpenIABHelper   
      */
     public class Options
     {
-        /** */
+        /**
+         * Default timeout (in milliseconds) for discover all OpenStores on device.
+         */
         private const int DISCOVER_TIMEOUT_MS = 5000;
 
         /** 
-         * for generic stores it takes 1.5 - 3sec
-         * <p>
+         * For generic stores it takes 1.5 - 3sec
          * SamsungApps initialization is very time consuming (from 4 to 12 seconds). 
-         * TODO: Optimize: ~1sec is consumed for check account certification via account activity + ~3sec for actual setup
          */
         private const int INVENTORY_CHECK_TIMEOUT_MS = 10000;
-
-        /** 
-         * List of stores to be used for store elections. By default GooglePlay, Amazon, SamsungApps and 
-         * all installed OpenStores are used.
-         * <p>
-         * To specify your own list, you need to instantiate Appstore object manually.
-         * GooglePlay, Amazon and SamsungApps could be instantiated directly. OpenStore can be discovered 
-         * using {@link OpenIabHelper#discoverOpenStores(Context, List, Options)}
-         * <p>
-         * If you put only your instance of Appstore in this list OpenIAB will use it
-         */
-        // TODO: it can be configured only on the java side
-        //public List<Appstore> availableStores;
 
         /**
          * Wait specified amount of ms to find all OpenStores on device
@@ -97,10 +82,5 @@ namespace OnePF
          * multiple stores installed on device that supports billing.
          */
         public string[] prefferedStoreNames = new string[] { };
-
-        /** Used for SamsungApps setup. Specify your own value if default one interfere your code.
-         * <p>default value is {@link SamsungAppsBillingService#REQUEST_CODE_IS_ACCOUNT_CERTIFICATION} */
-        // TODO: not needed on the Unity side
-        //public int samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
     }
 }

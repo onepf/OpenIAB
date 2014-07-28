@@ -39,7 +39,8 @@ namespace OnePF
 
         /**
          * Create purchase from json string
-         */ 
+         * @param jsonString data serialized to json
+         */
         public Purchase(string jsonString)
         {
             var json = new JSON(jsonString);
@@ -74,7 +75,10 @@ namespace OnePF
         }
 #endif
 
-        // For debug purposes and editor mode
+        /**
+         * For debug purposes and editor mode
+         * @param sku product ID
+         */ 
         public static Purchase CreateFromSku(string sku)
         {
             return CreateFromSku(sku, "");
@@ -91,6 +95,10 @@ namespace OnePF
             return p;
         }
 
+        /**
+         * ToString
+         * @return original json
+         */ 
         public override string ToString()
         {
             return "SKU:" + Sku + ";" + OriginalJson;
@@ -110,6 +118,10 @@ namespace OnePF
 		}
 #endif
 
+        /**
+         * Serilize to json
+         * @return json string
+         */ 
         public string Serialize()
         {
             var j = new JSON();

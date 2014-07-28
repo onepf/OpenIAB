@@ -30,7 +30,7 @@ namespace OnePF
  : IOpenIAB
 #endif
     {
-        public static readonly string STORE = "wp8_store";
+        public static readonly string STORE = "wp8_store"; /**< Windows Phone store constant */
 
 #if UNITY_WP8
 

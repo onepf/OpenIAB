@@ -30,7 +30,7 @@ namespace OnePF
  : IOpenIAB
 #endif
     {
-        public static readonly string STORE = "appstore";
+        public static readonly string STORE = "appstore"; /**< AppStore name constant */
 
 #if UNITY_IOS
         #region NativeMethods

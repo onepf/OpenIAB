@@ -5,16 +5,19 @@
 
 /**
  * Get instance of the StoreKit delegate
+ * @return instance of the StoreKit delegate
  */
 + (AppStoreDelegate*)instance;
 
 /**
  * Request sku listing from the AppStore
+ * @param skus product IDs
  */
 - (void)requestSKUs:(NSSet*)skus;
 
 /**
  * Start async purchase process
+ * @param product ID
  */
 - (void)startPurchase:(NSString*)sku;
 

@@ -21,6 +21,7 @@
  * Helper method to create C string copy
  * By default mono string marshaler creates .Net string for returned UTF-8 C string
  * and calls free for returned value, thus returned strings should be allocated on heap
+ * @param string original C string
  */
 char* MakeStringCopy(const char* string)
 {
@@ -34,6 +35,9 @@ char* MakeStringCopy(const char* string)
 
 /**
  * It is used to send callbacks to the Unity event handler
+ * @param objectName name of the target GameObject
+ * @param methodName name of the handler method
+ * @param param message string
  */
 extern void UnitySendMessage(const char* objectName, const char* methodName, const char* param);
 

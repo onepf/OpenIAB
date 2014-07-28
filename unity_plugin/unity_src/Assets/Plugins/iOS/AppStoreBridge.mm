@@ -16,7 +16,10 @@
 
 #import "AppStoreDelegate.h"
 
-// Unity to NS String conversion
+/**
+ * Unity to NS String conversion
+ * @param c_string original C string
+ */ 
 NSString* ToString(const char* c_string)
 {
     return c_string == NULL ? [NSString stringWithUTF8String:""] : [NSString stringWithUTF8String:c_string];
@@ -24,6 +27,11 @@ NSString* ToString(const char* c_string)
 
 extern "C"
 {
+    /**
+     * Native 'requestProducts' wrapper
+     * @param skus product IDs
+     * @param skuNumber lenght of the 'skus' array
+     */
     void AppStore_requestProducts(const char* skus[], int skuNumber)
     {
         NSMutableSet *skuSet = [NSMutableSet set];
@@ -32,21 +40,37 @@ extern "C"
         [[AppStoreDelegate instance] requestSKUs:skuSet];
     }
     
+    /**
+     * Native 'startPurchase' wrapper
+     * @param sku product ID
+     */
     void AppStore_startPurchase(const char* sku)
     {
         [[AppStoreDelegate instance] startPurchase:ToString(sku)];
     }
     
+    /**
+     * Native 'restorePurchases' wrapper
+     */
     void AppStore_restorePurchases()
     {
         [[AppStoreDelegate instance] restorePurchases];
     }
     
+    /**
+     * Query inventory
+     * Restore purchased items
+     */
     void Inventory_query()
     {
         [[AppStoreDelegate instance] queryInventory];
     }
     
+    /**
+     * Checks if product is purchased
+     * @param sku product ID
+     * @return true if product was purchased
+     */
     bool Inventory_hasPurchase(const char* sku)
     {
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
@@ -61,6 +85,10 @@ extern "C"
         }
     }
     
+    /**
+     * Delete purchase information
+     * @param sku product ID
+     */    
     void Inventory_removePurchase(const char* sku)
     {
         NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];

@@ -89,6 +89,10 @@ namespace OnePF
                 CurrencyCode = json.ToString("price_currency_code");
         }
 
+        /**
+         * ToString
+         * @return formatted string
+         */ 
         public override string ToString()
         {
             return string.Format("[SkuDetails: type = {0}, SKU = {1}, title = {2}, price = {3}, description = {4}, priceValue={5}, currency={6}]",

@@ -40,10 +40,7 @@ import java.util.Map;
 public class UnityPlugin {
 
     public static final String TAG = "OpenIAB-UnityPlugin";
-    /**
-     * Name of the event handler object in Unity
-     */
-    private static final String EVENT_MANAGER = "OpenIABEventManager";
+    private static final String EVENT_MANAGER = "OpenIABEventManager"; /**< Name of the event handler object in Unity */
     private static final String BILLING_SUPPORTED_CALLBACK = "OnBillingSupported";
     private static final String BILLING_NOT_SUPPORTED_CALLBACK = "OnBillingNotSupported";
     private static final String QUERY_INVENTORY_SUCCEEDED_CALLBACK = "OnQueryInventorySucceeded";
@@ -60,10 +57,7 @@ public class UnityPlugin {
     public static final String STORE_YANDEX = OpenIabHelper.NAME_YANDEX;
 	public static final String STORE_NOKIA = OpenIabHelper.NAME_NOKIA;
 
-    /**
-     * (arbitrary) request code for the purchase flow
-     */
-    public static final int RC_REQUEST = 10001;
+    public static final int RC_REQUEST = 10001; /**< (arbitrary) request code for the purchase flow */
     public static boolean sendRequest = false;
 
     private static UnityPlugin _instance;
@@ -312,6 +306,12 @@ public class UnityPlugin {
         return json.toString();
     }
 
+    /**
+     * Serialize purchase data to json
+     * @param purchase purchase data
+     * @return json string
+     * @throws JSONException
+     */
     private String purchaseToJson(Purchase purchase) throws JSONException {
         return new JSONStringer().object()
                 .key("itemType").value(purchase.getItemType())
@@ -328,6 +328,12 @@ public class UnityPlugin {
                 .endObject().toString();
     }
 
+    /**
+     * Serialize sku details data to json
+     * @param skuDetails sku details data
+     * @return json string
+     * @throws JSONException
+     */
     private String skuDetailsToJson(SkuDetails skuDetails) throws JSONException {
         return new JSONStringer().object()
                 .key("itemType").value(skuDetails.getItemType())
