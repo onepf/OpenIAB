@@ -1,22 +1,22 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Plugins/OpenIAB/OpenIABEventManager.cs">
     <Files>
-      <File FileName="Assets/Plugins/OpenIAB/OpenIAB.cs" Line="61" Column="32" />
+      <File FileName="Assets/Plugins/OpenIAB/OpenIAB.cs" Line="62" Column="29" />
       <File FileName="Assets/Plugins/OpenIAB/IOpenIAB.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/OpenIAB/iOS/OpenIAB.cs" Line="1" Column="1" />
-      <File FileName="Assets/OpenIAB-demo/OpenIABTest.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/OpenIAB/OpenIABEventManager.cs" Line="134" Column="21" />
-      <File FileName="Assets/Plugins/OpenIAB/Android/OpenIAB.cs" Line="1" Column="1" />
+      <File FileName="Assets/OpenIAB-demo/OpenIABTest.cs" Line="81" Column="28" />
+      <File FileName="Assets/Plugins/OpenIAB/OpenIABEventManager.cs" Line="148" Column="4" />
       <File FileName="Assets/Plugins/OpenIAB/Inventory.cs" Line="1" Column="1" />
       <File FileName="Assets/Plugins/OpenIAB/SkuDetails.cs" Line="1" Column="1" />
       <File FileName="Assets/Plugins/OpenIAB/JSON.cs" Line="1" Column="1" />
-      <File FileName="Assets/Plugins/OpenIAB/Purchase.cs" Line="31" Column="37" />
+      <File FileName="Assets/Plugins/OpenIAB/Purchase.cs" Line="1" Column="1" />
+      <File FileName="Assets/Plugins/OpenIAB/iOS/OpenIAB_iOS.cs" Line="42" Column="27" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
+            <Node name="OpenIAB-demo" expanded="True" />
             <Node name="Plugins" expanded="True">
               <Node name="Android" expanded="True" />
             </Node>

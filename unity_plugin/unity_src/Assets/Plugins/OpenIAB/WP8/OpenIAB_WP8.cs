@@ -1,4 +1,20 @@
-﻿using UnityEngine;
+﻿/*******************************************************************************
+ * Copyright 2012-2014 One Platform Foundation
+ *
+ *       Licensed under the Apache License, Version 2.0 (the "License");
+ *       you may not use this file except in compliance with the License.
+ *       You may obtain a copy of the License at
+ *
+ *           http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *       Unless required by applicable law or agreed to in writing, software
+ *       distributed under the License is distributed on an "AS IS" BASIS,
+ *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *       See the License for the specific language governing permissions and
+ *       limitations under the License.
+ ******************************************************************************/
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -6,12 +22,15 @@ using OnePF.WP8;
 
 namespace OnePF
 {
+    /**
+     * Windows Phone 8 billing implementation
+     */ 
     public class OpenIAB_WP8
 #if UNITY_WP8
  : IOpenIAB
 #endif
     {
-        public static readonly string STORE = "wp8_store";
+        public static readonly string STORE = "wp8_store"; /**< Windows Phone store constant */
 
 #if UNITY_WP8
 
@@ -30,22 +49,22 @@ namespace OnePF
 
         static OpenIAB_WP8()
         {
-            Store.PurchaseSucceeded += (storeSku, payload) => 
+            Store.PurchaseSucceeded += (storeSku, payload) =>
             {
                 string sku = GetSku(storeSku);
                 Purchase purchase = Purchase.CreateFromSku(sku, payload);
-                OpenIAB.EventManager.SendMessage("OnPurchaseSucceeded", purchase); 
+                OpenIAB.EventManager.SendMessage("OnPurchaseSucceeded", purchase);
             };
             Store.PurchaseFailed += (error) => { OpenIAB.EventManager.SendMessage("OnPurchaseFailed", error); };
-            
-            Store.ConsumeSucceeded += (storeSku) => 
-            { 
+
+            Store.ConsumeSucceeded += (storeSku) =>
+            {
                 string sku = GetSku(storeSku);
                 Purchase purchase = Purchase.CreateFromSku(sku);
-                OpenIAB.EventManager.SendMessage("OnConsumePurchaseSucceeded", purchase); 
+                OpenIAB.EventManager.SendMessage("OnConsumePurchaseSucceeded", purchase);
             };
             Store.ConsumeFailed += (error) => { OpenIAB.EventManager.SendMessage("OnConsumePurchaseFailed", error); };
-            
+
             Store.LoadListingsSucceeded += (listings) =>
             {
                 Inventory inventory = GetInventory();

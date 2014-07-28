@@ -70,5 +70,6 @@ repositories {
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile project(':library')
+    compile project(':OpenIab Library')
+    compile 'com.android.support:support-annotations:+'
 }

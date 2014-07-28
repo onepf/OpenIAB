@@ -1,8 +1,11 @@
-include ':library'
-include':trivialdrive'
-include':local_store'
-include':unity_plugin'
-include':life_openiab'
+include ':OpenIab Library'
+include ':Trivial Drive Sample'
+include ':Local Store Sample'
+include ':Life Sample'
+include ':Unity Plugin'
 
-project(':trivialdrive').projectDir = file('samples/trivialdrive')
-project(':life_openiab').projectDir = file('samples/life_openiab')
+project(':Trivial Drive Sample').projectDir = file('samples/trivialdrive')
+project(':Life Sample').projectDir = file('samples/life_openiab')
+project(':OpenIab Library').projectDir = file('library')
+project(':Local Store Sample').projectDir = file('local_store')
+project(':Unity Plugin').projectDir = file('unity_plugin')
