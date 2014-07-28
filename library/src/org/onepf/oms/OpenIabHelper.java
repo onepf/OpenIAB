@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -95,7 +96,7 @@ public class OpenIabHelper {
     /** Necessary to initialize SamsungApps. For other stuff {@link #context} is used */
     private Activity activity;
 
-    private Handler notifyHandler = null;
+    private static final Handler notifyHandler = new Handler(Looper.getMainLooper());
 
     /** selected appstore */
     private Appstore mAppstore;
@@ -105,10 +106,14 @@ public class OpenIabHelper {
 
     private final Options options;
 
-    private static final int SETUP_RESULT_NOT_STARTED = -1;
-    private static final int SETUP_RESULT_SUCCESSFUL = 0;
-    private static final int SETUP_RESULT_FAILED = 1;
-    private static final int SETUP_DISPOSED = 2;
+    public static final int SETUP_RESULT_NOT_STARTED = -1;
+    public static final int SETUP_RESULT_SUCCESSFUL = 0;
+    public static final int SETUP_RESULT_FAILED = 1;
+    public static final int SETUP_DISPOSED = 2;
+    public static final int SETUP_IN_PROGRESS = 3;
+
+    @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
+            SETUP_RESULT_FAILED, SETUP_RESULT_NOT_STARTED, SETUP_RESULT_SUCCESSFUL})
     private int setupState = SETUP_RESULT_NOT_STARTED;
 
     /** SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't
@@ -126,12 +131,6 @@ public class OpenIabHelper {
     // (for logging/debugging)
     // if mAsyncInProgress == true, what asynchronous operation is in progress?
     private String mAsyncOperation = "";
-
-    // The request code used to launch purchase flow
-    int mRequestCode;
-
-    // The item type of the current purchase flow
-    String mPurchasingItemType;
 
     // Item types
     public static final String ITEM_TYPE_INAPP = "inapp";
@@ -293,11 +292,11 @@ public class OpenIabHelper {
      */
     public OpenIabHelper(Context context, Map<String, String> storeKeys, String[] prefferedStores, Appstore[] availableStores) {
         this(context,
-             new Options.Builder()
-                .addStoreKeys(storeKeys)
-                .addPreferredStoreName(prefferedStores)
-                .addAvailableStores(availableStores)
-                .build()
+                new Options.Builder()
+                        .addStoreKeys(storeKeys)
+                        .addPreferredStoreName(prefferedStores)
+                        .addAvailableStores(availableStores)
+                        .build()
         );
     }
 
@@ -348,11 +347,10 @@ public class OpenIabHelper {
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
         if (setupState != SETUP_RESULT_NOT_STARTED) {
-            String state = setupStateToString(setupState);
-            throw new IllegalStateException("Couldn't be set up. Current state: " + state);
+            throw new IllegalStateException("Couldn't be set up. Current state: " + setupStateToString(setupState));
         }
-        this.notifyHandler = new Handler();        
         started = System.currentTimeMillis();
+        setupState = SETUP_IN_PROGRESS;
         new Thread(new Runnable() {
             public void run() {
                 List<Appstore> stores2check = new ArrayList<Appstore>();
@@ -477,6 +475,13 @@ public class OpenIabHelper {
                 }
             }
         }, "openiab-setup").start();
+    }
+
+
+    @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
+            SETUP_RESULT_FAILED, SETUP_RESULT_NOT_STARTED, SETUP_RESULT_SUCCESSFUL})
+    public int getSetupState() {
+        return setupState;
     }
 
     /**
@@ -690,7 +695,9 @@ public class OpenIabHelper {
     }
 
     protected void fireSetupFinished(final IabHelper.OnIabSetupFinishedListener listener, final IabResult result) {
-        if (setupState == SETUP_DISPOSED) return;
+        if (setupState == SETUP_DISPOSED) {
+            return;
+        }
         if (isDebugLog()) Log.d(TAG, in() + " " + "fireSetupFinished() === SETUP DONE === result: " + result
             + (mAppstore != null ? ", appstore: " + mAppstore.getAppstoreName() : ""));
 

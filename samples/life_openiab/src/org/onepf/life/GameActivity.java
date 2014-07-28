@@ -19,11 +19,11 @@ package org.onepf.life;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,13 +31,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.intellij.lang.annotations.MagicConstant;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 
-public class GameActivity extends Activity implements LifeView.Listener {
+public class GameActivity extends Activity {
     public static final String TAG = "Life";
     private static final int REQUEST_CODE = 10001;
 
@@ -49,15 +50,17 @@ public class GameActivity extends Activity implements LifeView.Listener {
 
     //subscription
     private static final String SKU_ORANGE_CELLS = "org.onepf.life3.orange_cells";
-    public static final String DEFAULT_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
 
-    private int changesCount = -1;
+    public static final String DEFAULT_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
+    public static final String DEFAULT_APP_PACKAGE = "org.onepf.life";
+
 
     private LifeView lifeView;
     private ProgressDialog progressDialog;
 
     private OpenIabHelper openIabHelper;
 
+    private final GameController gameController = new GameController();
 
     // Listener that's called when we finish querying the items and subscriptions we own
     private final IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
@@ -75,20 +78,20 @@ public class GameActivity extends Activity implements LifeView.Listener {
 
             // check for orange cells subscription
             Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
-            if (orangeCellsPurchase != null && verifyDeveloperPayload(orangeCellsPurchase)) {
+            if (verifyDeveloperPayload(orangeCellsPurchase)) {
                 AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
                 lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
             }
 
             //non-consumable figures
             Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
-            if (figuresPurchase != null && verifyDeveloperPayload(figuresPurchase)) {
+            if (verifyDeveloperPayload(figuresPurchase)) {
                 AppSettings.getInstance(GameActivity.this).setHasFigures(true);
             }
 
             //consumable changes
             Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
-            if (changesPurchase != null && verifyDeveloperPayload(changesPurchase)) {
+            if (verifyDeveloperPayload(changesPurchase)) {
                 openIabHelper.consumeAsync(changesPurchase, consumeFinishedListener);
             }
 
@@ -97,15 +100,18 @@ public class GameActivity extends Activity implements LifeView.Listener {
     };
 
     // Callback for when a purchase is finished
-    private final IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+    private final IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener
+            = new IabHelper.OnIabPurchaseFinishedListener() {
         public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
             Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
             if (result.isFailure()) {
-                Toast.makeText(GameActivity.this, "Error purchasing: " + result, Toast.LENGTH_SHORT).show();
+                Toast.makeText(GameActivity.this, "Error purchasing: " + result,
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
             if (!verifyDeveloperPayload(purchase)) {
-                Toast.makeText(GameActivity.this, "Error purchasing. Authenticity verification failed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GameActivity.this, "Error purchasing. Authenticity" +
+                        " verification failed.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -127,12 +133,13 @@ public class GameActivity extends Activity implements LifeView.Listener {
     };
 
     // Called when consumption is complete
-    private final IabHelper.OnConsumeFinishedListener consumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
+    private final IabHelper.OnConsumeFinishedListener consumeFinishedListener
+            = new IabHelper.OnConsumeFinishedListener() {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
             if (result.isSuccess()) {
-                if (purchase.getSku().equals(SKU_CHANGES)) {
-                    increaseChangesCount(LifeView.DEFAULT_CHANGES_COUNT);
+                if (SKU_CHANGES.equals(purchase.getSku())) {
+                    gameController.increaseChangesCount(LifeView.DEFAULT_CHANGES_COUNT);
                 }
             } else {
                 Toast.makeText(GameActivity.this, "unsuccessful consume", Toast.LENGTH_SHORT).show();
@@ -140,15 +147,17 @@ public class GameActivity extends Activity implements LifeView.Listener {
         }
     };
 
-    private final IabHelper.OnIabSetupFinishedListener onIabSetupFinishedListener = new IabHelper.OnIabSetupFinishedListener() {
+    private final IabHelper.OnIabSetupFinishedListener onIabSetupFinishedListener
+            = new IabHelper.OnIabSetupFinishedListener() {
         public void onIabSetupFinished(IabResult result) {
             Log.d(TAG, "Setup finished.");
             showProgressDialog(false);
             if (result.isSuccess()) {
-                Log.d(TAG, "Setup successful. Queying inventory.");
+                Log.d(TAG, "Setup successful. Queuing inventory.");
                 openIabHelper.queryInventoryAsync(gotInventoryListener);
             } else {
-                Toast.makeText(GameActivity.this, "Problem setting up in-app billing: " + result, Toast.LENGTH_SHORT).show();
+                Toast.makeText(GameActivity.this, "Problem setting up in-app billing: "
+                        + result, Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -159,7 +168,7 @@ public class GameActivity extends Activity implements LifeView.Listener {
         super.onCreate(savedInstanceState);
         initUI();
 
-        if ("org.onepf.life".equals(getPackageName())) {
+        if (DEFAULT_APP_PACKAGE.equals(getPackageName())) {
             showErrorMessage(R.string.error_need_sign_app, false);
         }
 
@@ -208,13 +217,14 @@ public class GameActivity extends Activity implements LifeView.Listener {
     private void initUI() {
         setContentView(R.layout.activity_game);
         lifeView = (LifeView) findViewById(R.id.life_view);
-        lifeView.setUp(this, getChangeCount());
+        lifeView.setUp(gameController, gameController.getChangeCount());
         //start/edit game button
         Button startButton = (Button) findViewById(R.id.start_button);
         startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 lifeView.setEditMode(!lifeView.isInEditMode());
-                ((Button) v).setText(lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
+                ((Button) v).setText(
+                        lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
             }
         });
         startButton.setText(lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
@@ -247,7 +257,7 @@ public class GameActivity extends Activity implements LifeView.Listener {
          * installations is recommended.
          */
 
-        return true;
+        return p != null;
     }
 
 
@@ -307,18 +317,59 @@ public class GameActivity extends Activity implements LifeView.Listener {
         }
     }
 
-    private void buyChanges() {
-        String payload = "";
-        openIabHelper.launchPurchaseFlow(this, SKU_CHANGES, REQUEST_CODE, purchaseFinishedListener, payload);
+    void buyChanges() {
+        if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
+            String payload = "";
+            openIabHelper.launchPurchaseFlow(this, SKU_CHANGES,
+                    REQUEST_CODE, purchaseFinishedListener, payload);
+        } else {
+            showOpenIABServiceSetupError(openIabHelper.getSetupState());
+        }
     }
 
-    private void buyOrangeCells() {
-        openIabHelper.launchSubscriptionPurchaseFlow(this, SKU_ORANGE_CELLS, REQUEST_CODE, purchaseFinishedListener);
+    void buyOrangeCells() {
+        if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
+            openIabHelper.launchSubscriptionPurchaseFlow(this, SKU_ORANGE_CELLS,
+                    REQUEST_CODE, purchaseFinishedListener);
+        } else {
+            showOpenIABServiceSetupError(openIabHelper.getSetupState());
+        }
     }
 
-    private void buyFigures() {
-        String payload = "";
-        openIabHelper.launchPurchaseFlow(this, SKU_FIGURES, REQUEST_CODE, purchaseFinishedListener, payload);
+    void buyFigures() {
+        if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
+            String payload = "";
+            openIabHelper.launchPurchaseFlow(this, SKU_FIGURES, REQUEST_CODE,
+                    purchaseFinishedListener, payload);
+        } else {
+            showOpenIABServiceSetupError(openIabHelper.getSetupState());
+        }
+    }
+
+    private void showOpenIABServiceSetupError(
+            @MagicConstant(intValues = {OpenIabHelper.SETUP_DISPOSED,
+                    OpenIabHelper.SETUP_IN_PROGRESS,
+                    OpenIabHelper.SETUP_RESULT_NOT_STARTED,
+                    OpenIabHelper.SETUP_RESULT_FAILED})
+            int setupState) {
+
+        switch (setupState) {
+            case OpenIabHelper.SETUP_IN_PROGRESS:
+                showErrorMessage(R.string.error_openiab_setup_in_progress, false);
+                break;
+
+            case OpenIabHelper.SETUP_RESULT_FAILED:
+                showErrorMessage(R.string.error_openiab_setup_result_failure, false);
+                break;
+
+            case OpenIabHelper.SETUP_RESULT_NOT_STARTED:
+                showErrorMessage(R.string.error_openiab_setup_not_started, false);
+                break;
+
+            case OpenIabHelper.SETUP_DISPOSED:
+                showErrorMessage(R.string.error_openiab_setup_disposed, false);
+                break;
+        }
     }
 
     @Override
@@ -335,44 +386,6 @@ public class GameActivity extends Activity implements LifeView.Listener {
         }
     }
 
-    @Override
-    public void onChangeCountModified(int newChangeCount) {
-        AppSettings.getInstance(this).setChangesCount(newChangeCount);
-        changesCount = newChangeCount;
-    }
-
-    private void increaseChangesCount(int newChangesCount) {
-        changesCount = changesCount == -1 ? newChangesCount : changesCount + newChangesCount;
-        onChangeCountModified(changesCount);
-        lifeView.setChangeCount(changesCount);
-    }
-
-    private int getChangeCount() {
-        if (changesCount == -1) {
-            changesCount = AppSettings.getInstance(this).getChangesCount();
-        }
-        return changesCount;
-    }
-
-    @Override
-    public void onNoChangesFound() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.changes_ended)
-                .setMessage(R.string.changes_ended_message)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        buyChanges();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, null).show();
-    }
-
-    @Override
-    public void onNotEnoughSpaceForFigure(Figure figure) {
-        Toast.makeText(this, R.string.not_enough_space, Toast.LENGTH_SHORT).show();
-    }
-
     private void showProgressDialog(boolean show) {
         if (show) {
             if (progressDialog != null && !progressDialog.isShowing()) {
@@ -380,6 +393,62 @@ public class GameActivity extends Activity implements LifeView.Listener {
             }
         } else if (progressDialog != null) {
             progressDialog.dismiss();
+        }
+    }
+
+    /**
+     * Created by krozov on 7/28/14.
+     */
+    public final class GameController implements LifeView.Listener {
+        private int changesCount = -1;
+
+        public GameController() {
+            changesCount = AppSettings.getInstance(GameActivity.this).getChangesCount();
+        }
+
+        @Override
+        public void onChangeCountModified(int newChangeCount) {
+            AppSettings.getInstance(GameActivity.this).setChangesCount(newChangeCount);
+            changesCount = newChangeCount;
+        }
+
+        @Override
+        public void onNoChangesFound() {
+            new AlertDialog.Builder(GameActivity.this)
+                    .setTitle(R.string.changes_ended)
+                    .setMessage(R.string.changes_ended_message)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            buyChanges();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null).show();
+        }
+
+        @Override
+        public void onNotEnoughSpaceForFigure(Figure figure) {
+            Toast.makeText(GameActivity.this, R.string.not_enough_space, Toast.LENGTH_SHORT).show();
+        }
+
+        private void increaseChangesCount(int additionChangesCount) {
+            if (additionChangesCount < 0) {
+                throw new IllegalArgumentException("Can't add '" + additionChangesCount + "'" +
+                        " changes count. Negative value impossible");
+            }
+
+            if (additionChangesCount != 0) {
+                changesCount += additionChangesCount;
+                onChangeCountModified(changesCount);
+                lifeView.setChangeCount(changesCount);
+            }
+        }
+
+        private int getChangeCount() {
+            if (changesCount == -1) {
+                changesCount = AppSettings.getInstance(GameActivity.this).getChangesCount();
+            }
+            return changesCount;
         }
     }
 }
