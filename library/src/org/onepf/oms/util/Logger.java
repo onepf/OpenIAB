@@ -20,13 +20,14 @@ import android.text.TextUtils;
 import android.util.Log;
 
 /**
+ * Utility for log events.
+ *
  * @author Kirill Rozov
  * @since 25.07.14
  */
 public final class Logger {
-    private static final String TAG = "OpenIabLibrary";
+    public static final String LOG_TAG = "OpenIabLibrary";
 
-    //Is debug enabled?
     private static boolean debuggable;
 
     private static long started = System.currentTimeMillis();
@@ -39,86 +40,86 @@ public final class Logger {
     }
 
     public static void d(Object... values) {
-        if (debuggable) {
-            Log.d(TAG, TextUtils.join("", values));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            Log.d(LOG_TAG, TextUtils.join("", values));
         }
     }
 
     public static void i(Object... values) {
-        if (debuggable) {
-            Log.i(TAG, TextUtils.join("", values));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.INFO)) {
+            Log.i(LOG_TAG, TextUtils.join("", values));
         }
     }
 
     public static void i(String msg) {
-        if (debuggable) {
-            Log.i(TAG, msg);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.INFO)) {
+            Log.i(LOG_TAG, msg);
         }
     }
 
     public static void d(String msg) {
-        if (debuggable) {
-            Log.d(TAG, msg);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            Log.d(LOG_TAG, msg);
         }
     }
 
     public static void dWithTimeFromUp(String msg) {
-        if (debuggable) {
-            Log.d(TAG, in() + ' ' + msg);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            Log.d(LOG_TAG, in() + ' ' + msg);
         }
     }
 
     public static void dWithTimeFromUp(Object... msgs) {
-        if (debuggable) {
-            Log.d(TAG, in() + ' ' + TextUtils.join("", msgs));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            Log.d(LOG_TAG, in() + ' ' + TextUtils.join("", msgs));
         }
     }
 
     public static void e(Object... msgs) {
-        if (debuggable) {
-            Log.e(TAG, TextUtils.join("", msgs));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
+            Log.e(LOG_TAG, TextUtils.join("", msgs));
         }
     }
 
     public static void e(String msg, Throwable e) {
-        if (debuggable) {
-            Log.e(TAG, msg, e);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
+            Log.e(LOG_TAG, msg, e);
         }
     }
 
     public static void e(String msg) {
-        if (debuggable) {
-            Log.e(TAG, msg);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
+            Log.e(LOG_TAG, msg);
         }
     }
 
     public static void e(Throwable e, Object... msgs) {
-        if (debuggable) {
-            Log.e(TAG, TextUtils.join("", msgs), e);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
+            Log.e(LOG_TAG, TextUtils.join("", msgs), e);
         }
     }
 
     public static void w(String msg) {
-        if (debuggable) {
-            Log.w(TAG, msg);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.WARN)) {
+            Log.w(LOG_TAG, msg);
         }
     }
 
     public static void w(String msg, Throwable e) {
-        if (debuggable) {
-            Log.w(TAG, msg, e);
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.WARN)) {
+            Log.w(LOG_TAG, msg, e);
         }
     }
 
     public static void v(Object... msgs) {
-        if (debuggable) {
-            Log.v(TAG, TextUtils.join("", msgs));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
+            Log.v(LOG_TAG, TextUtils.join("", msgs));
         }
     }
 
     public static void w(Object... values) {
-        if (debuggable) {
-            Log.w(TAG, TextUtils.join("", values));
+        if (debuggable && Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
+            Log.w(LOG_TAG, TextUtils.join("", values));
         }
     }
 

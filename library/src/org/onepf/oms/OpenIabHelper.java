@@ -123,12 +123,6 @@ public class OpenIabHelper {
      */
     private volatile SamsungApps samsungInSetup;
 
-    /**
-     * used to track time used for {@link #startSetup(OnIabSetupFinishedListener)}
-     * TODO: think about smarter time tracker (i.e. Logger built-in)
-     */
-    private volatile static long started;
-
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
     private boolean mAsyncInProgress = false;
@@ -318,7 +312,7 @@ public class OpenIabHelper {
         if (setupState != SETUP_RESULT_NOT_STARTED) {
             throw new IllegalStateException("Couldn't be set up. Current state: " + setupStateToString(setupState));
         }
-        started = System.currentTimeMillis();
+        Logger.init();
         setupState = SETUP_IN_PROGRESS;
         new Thread(new Runnable() {
             public void run() {
