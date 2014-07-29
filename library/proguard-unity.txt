@@ -41,3 +41,9 @@
 -keep class org.onepf.oms.OpenIabHelper$Options {
    public static int VERIFY_ONLY_KNOWN;
 }
+
+# AMAZON
+-dontwarn com.amazon.**
+-keep class com.amazon.** {*;}
+-keepattributes *Annotation*
+-dontoptimize
