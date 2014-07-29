@@ -30,6 +30,7 @@ public final class AppSettings {
     private static final String KEY_HAS_ORANGE_CELLS = "has_orange_cells";
     private static final String KEY_HAS_FIGURES = "has_figures";
     private static final String KEY_CHANGES_COUNT = "changes_count";
+    private static final int DEFAULT_CHANGES_COUNT = 50;
 
     private static AppSettings instance;
 
@@ -67,7 +68,7 @@ public final class AppSettings {
     }
 
     public int getChangesCount(){
-        return prefs.getInt(KEY_CHANGES_COUNT, LifeView.DEFAULT_CHANGES_COUNT);
+        return prefs.getInt(KEY_CHANGES_COUNT, DEFAULT_CHANGES_COUNT);
     }
 
     public void setChangesCount(int changesCount){
