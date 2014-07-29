@@ -26,7 +26,7 @@ android {
         versionCode 11
         versionName '0.9.4'
 
-        applicationId = "org.onepf.life"
+        applicationId = "by.kirich1409.test.life"
 
         sourceSets {
             main {

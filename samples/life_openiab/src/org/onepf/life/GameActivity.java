@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,161 +30,46 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.intellij.lang.annotations.MagicConstant;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 
-public class GameActivity extends Activity implements LifeView.Listener {
-    public static final String TAG = "Life";
-    private static final int REQUEST_CODE = 10001;
+import java.util.Map;
 
-    //consumable
-    private static final String SKU_CHANGES = "org.onepf.life3.changes";
+public class GameActivity extends Activity {
+    public static final String TAG = "LifeOpenIab";
 
-    //non-consumable
-    private static final String SKU_FIGURES = "org.onepf.life3.figures";
-
-    //subscription
-    private static final String SKU_ORANGE_CELLS = "org.onepf.life3.orange_cells";
-    public static final String DEFAULT_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
-
-    private int changesCount = -1;
+    public static final String DEFAULT_APP_PACKAGE = "org.onepf.life";
 
     private LifeView lifeView;
     private ProgressDialog progressDialog;
 
-    private OpenIabHelper openIabHelper;
-
-
-    // Listener that's called when we finish querying the items and subscriptions we own
-    private final IabHelper.QueryInventoryFinishedListener gotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
-        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-            if (result.isFailure()) {
-                Toast.makeText(GameActivity.this, "Failed to query inventory: " + result, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Toast.makeText(GameActivity.this, "Query inventory was successful." + result, Toast.LENGTH_SHORT).show();
-            /*
-             * Check for items we own. Notice that for each purchase, we check
-             * the developer payload to see if it's correct! See
-             * verifyDeveloperPayload().
-             */
-
-            // check for orange cells subscription
-            Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
-            if (orangeCellsPurchase != null && verifyDeveloperPayload(orangeCellsPurchase)) {
-                AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
-                lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
-            }
-
-            //non-consumable figures
-            Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
-            if (figuresPurchase != null && verifyDeveloperPayload(figuresPurchase)) {
-                AppSettings.getInstance(GameActivity.this).setHasFigures(true);
-            }
-
-            //consumable changes
-            Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
-            if (changesPurchase != null && verifyDeveloperPayload(changesPurchase)) {
-                openIabHelper.consumeAsync(changesPurchase, consumeFinishedListener);
-            }
-
-            invalidateOptionsMenu();
-        }
-    };
-
-    // Callback for when a purchase is finished
-    private final IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-        public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
-            Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
-            if (result.isFailure()) {
-                Toast.makeText(GameActivity.this, "Error purchasing: " + result, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (!verifyDeveloperPayload(purchase)) {
-                Toast.makeText(GameActivity.this, "Error purchasing. Authenticity verification failed.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Log.d(TAG, "Purchase successful.");
-
-            if (SKU_CHANGES.equals(purchase.getSku())) {
-                openIabHelper.consumeAsync(purchase, consumeFinishedListener);
-            } else {
-                if (SKU_FIGURES.equals(purchase.getSku())) {
-                    AppSettings.getInstance(GameActivity.this).setHasFigures(true);
-                } else if (SKU_ORANGE_CELLS.equals(purchase.getSku())) {
-                    Toast.makeText(GameActivity.this, R.string.subscribe_thank, Toast.LENGTH_SHORT).show();
-                    AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
-                    lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
-                }
-                invalidateOptionsMenu();
-            }
-        }
-    };
-
-    // Called when consumption is complete
-    private final IabHelper.OnConsumeFinishedListener consumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
-        public void onConsumeFinished(Purchase purchase, IabResult result) {
-            Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
-            if (result.isSuccess()) {
-                if (purchase.getSku().equals(SKU_CHANGES)) {
-                    increaseChangesCount(LifeView.DEFAULT_CHANGES_COUNT);
-                }
-            } else {
-                Toast.makeText(GameActivity.this, "unsuccessful consume", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
-
-    private final IabHelper.OnIabSetupFinishedListener onIabSetupFinishedListener = new IabHelper.OnIabSetupFinishedListener() {
-        public void onIabSetupFinished(IabResult result) {
-            Log.d(TAG, "Setup finished.");
-            showProgressDialog(false);
-            if (result.isSuccess()) {
-                Log.d(TAG, "Setup successful. Queying inventory.");
-                openIabHelper.queryInventoryAsync(gotInventoryListener);
-            } else {
-                Toast.makeText(GameActivity.this, "Problem setting up in-app billing: " + result, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
-
+    final GameController gameController = new GameController();
+    final PurchaseHelper purchaseHelper = new PurchaseHelper();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initUI();
 
-        if ("org.onepf.life".equals(getPackageName())) {
+        if (DEFAULT_APP_PACKAGE.equals(getPackageName())) {
             showErrorMessage(R.string.error_need_sign_app, false);
         }
 
+        purchaseHelper.startSetup();
         showProgressDialog(true);
-
-        //public keys
-        String googlePublicKey = DEFAULT_PUBLIC_KEY;
-        String yandexPublicKey = DEFAULT_PUBLIC_KEY;
-        //IAB helper
-        OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
-        builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, googlePublicKey);
-        builder.addStoreKey(OpenIabHelper.NAME_YANDEX, yandexPublicKey);
-
-        openIabHelper = new OpenIabHelper(this, builder.build());
-
-        if (DEFAULT_PUBLIC_KEY.equals(googlePublicKey)
-                || DEFAULT_PUBLIC_KEY.equals(yandexPublicKey)) {
-            showErrorMessage(R.string.error_no_store_public_keys, true);
-        } else {
-            OpenIabHelper.Options options = builder.build();
-            openIabHelper = new OpenIabHelper(this, options);
-            openIabHelper.startSetup(onIabSetupFinishedListener);
-        }
     }
 
-    private void showErrorMessage(@StringRes int messageResId, boolean finishActivityOnClose) {
+    /**
+     * Show error message as dialog and write message to logcat.
+     *
+     * @param messageResId String resources that used for message text.
+     * @param finishActivityOnClose Need activity close when 'Cancel' button.
+     */
+    void showErrorMessage(@StringRes int messageResId, boolean finishActivityOnClose) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(messageResId)
                 .setTitle(R.string.error)
@@ -205,49 +89,23 @@ public class GameActivity extends Activity implements LifeView.Listener {
         Log.e(TAG, getString(messageResId));
     }
 
-    private void initUI() {
+    void initUI() {
         setContentView(R.layout.activity_game);
         lifeView = (LifeView) findViewById(R.id.life_view);
-        lifeView.setUp(this, getChangeCount());
+        lifeView.setUp(gameController, gameController.getChangeCount());
         //start/edit game button
         Button startButton = (Button) findViewById(R.id.start_button);
         startButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+            public void onClick(View startButtonView) {
                 lifeView.setEditMode(!lifeView.isInEditMode());
-                ((Button) v).setText(lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
+                updateStartButtonText(((Button) startButtonView));
             }
         });
-        startButton.setText(lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
+        updateStartButtonText(startButton);
     }
 
-    /**
-     * Verifies the developer payload of a purchase.
-     */
-    boolean verifyDeveloperPayload(Purchase p) {
-        /*
-         * TODO: verify that the developer payload of the purchase is correct. It will be
-         * the same one that you sent when initiating the purchase.
-         *
-         * WARNING: Locally generating a random string when starting a purchase and
-         * verifying it here might seem like a good approach, but this will fail in the
-         * case where the user purchases an item on one device and then uses your app on
-         * a different device, because on the other device you will not have access to the
-         * random string you originally generated.
-         *
-         * So a good developer payload has these characteristics:
-         *
-         * 1. If two different users purchase an item, the payload is different between them,
-         *    so that one user's purchase can't be replayed to another user.
-         *
-         * 2. The payload must be such that you can verify it even when the app wasn't the
-         *    one who initiated the purchase flow (so that items purchased by the user on
-         *    one device work on other devices owned by the user).
-         *
-         * Using your own server to store and verify developer payloads across app
-         * installations is recommended.
-         */
-
-        return true;
+    void updateStartButtonText(Button startButton) {
+        startButton.setText(lifeView.isInEditMode() ? R.string.start_button : R.string.edit_button);
     }
 
 
@@ -271,15 +129,15 @@ public class GameActivity extends Activity implements LifeView.Listener {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_buy_changes:
-                buyChanges();
+                purchaseHelper.buyChanges();
                 return true;
 
             case R.id.menu_buy_figures:
-                buyFigures();
+                purchaseHelper.buyFigures();
                 return true;
 
             case R.id.menu_buy_orange_cells:
-                buyOrangeCells();
+                purchaseHelper.buyOrangeCells();
                 return true;
 
             case R.id.menu_empty_field:
@@ -307,25 +165,44 @@ public class GameActivity extends Activity implements LifeView.Listener {
         }
     }
 
-    private void buyChanges() {
-        String payload = "";
-        openIabHelper.launchPurchaseFlow(this, SKU_CHANGES, REQUEST_CODE, purchaseFinishedListener, payload);
+    private void showOpenIABServiceSetupError(
+            @MagicConstant(intValues = {OpenIabHelper.SETUP_DISPOSED,
+                    OpenIabHelper.SETUP_IN_PROGRESS,
+                    OpenIabHelper.SETUP_RESULT_NOT_STARTED,
+                    OpenIabHelper.SETUP_RESULT_FAILED,
+                    OpenIabHelper.SETUP_RESULT_SUCCESSFUL})
+            int setupState) {
+
+        switch (setupState) {
+            case OpenIabHelper.SETUP_IN_PROGRESS:
+                showErrorMessage(R.string.error_openiab_setup_in_progress, false);
+                break;
+
+            case OpenIabHelper.SETUP_RESULT_FAILED:
+                showErrorMessage(R.string.error_openiab_setup_result_failure, false);
+                break;
+
+            case OpenIabHelper.SETUP_RESULT_NOT_STARTED:
+                showErrorMessage(R.string.error_openiab_setup_not_started, false);
+                break;
+
+            case OpenIabHelper.SETUP_DISPOSED:
+                showErrorMessage(R.string.error_openiab_setup_disposed, false);
+                break;
+        }
     }
 
-    private void buyOrangeCells() {
-        openIabHelper.launchSubscriptionPurchaseFlow(this, SKU_ORANGE_CELLS, REQUEST_CODE, purchaseFinishedListener);
-    }
-
-    private void buyFigures() {
-        String payload = "";
-        openIabHelper.launchPurchaseFlow(this, SKU_FIGURES, REQUEST_CODE, purchaseFinishedListener, payload);
+    @Override
+    protected void onDestroy() {
+        purchaseHelper.dispose();
+        super.onDestroy();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
         // Pass on the activity result to the helper for handling
-        if (openIabHelper.handleActivityResult(requestCode, resultCode, data)) {
+        if (purchaseHelper.handleActivityResult(requestCode, resultCode, data)) {
             Log.d(TAG, "onActivityResult handled by IABUtil.");
         } else {
             // not handled, so handle it ourselves (here's where you'd
@@ -335,51 +212,314 @@ public class GameActivity extends Activity implements LifeView.Listener {
         }
     }
 
-    @Override
-    public void onChangeCountModified(int newChangeCount) {
-        AppSettings.getInstance(this).setChangesCount(newChangeCount);
-        changesCount = newChangeCount;
-    }
-
-    private void increaseChangesCount(int newChangesCount) {
-        changesCount = changesCount == -1 ? newChangesCount : changesCount + newChangesCount;
-        onChangeCountModified(changesCount);
-        lifeView.setChangeCount(changesCount);
-    }
-
-    private int getChangeCount() {
-        if (changesCount == -1) {
-            changesCount = AppSettings.getInstance(this).getChangesCount();
-        }
-        return changesCount;
-    }
-
-    @Override
-    public void onNoChangesFound() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.changes_ended)
-                .setMessage(R.string.changes_ended_message)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        buyChanges();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, null).show();
-    }
-
-    @Override
-    public void onNotEnoughSpaceForFigure(Figure figure) {
-        Toast.makeText(this, R.string.not_enough_space, Toast.LENGTH_SHORT).show();
-    }
-
-    private void showProgressDialog(boolean show) {
+    void showProgressDialog(boolean show) {
         if (show) {
             if (progressDialog != null && !progressDialog.isShowing()) {
                 progressDialog = ProgressDialog.show(this, null, getString(R.string.waiting_dialog_message));
             }
         } else if (progressDialog != null) {
             progressDialog.dismiss();
+        }
+    }
+
+    /**
+     * Created by Kirill Rozov on 7/28/14.
+     */
+    public final class GameController implements LifeView.Listener {
+        public static final int ADDITIONAL_CHANGES_COUNT = 50;
+        private int changesCount = ADDITIONAL_CHANGES_COUNT;
+
+        public GameController() {
+            changesCount = AppSettings.getInstance(GameActivity.this).getChangesCount();
+        }
+
+        @Override
+        public void onChangeCountModified(int newChangeCount) {
+            AppSettings.getInstance(GameActivity.this).setChangesCount(newChangeCount);
+            changesCount = newChangeCount;
+        }
+
+        @Override
+        public void onNoChangesFound() {
+            new AlertDialog.Builder(GameActivity.this)
+                    .setTitle(R.string.changes_ended)
+                    .setMessage(R.string.changes_ended_message)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            purchaseHelper.buyChanges();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null).show();
+        }
+
+        @Override
+        public void onNotEnoughSpaceForFigure(Figure figure) {
+            Toast.makeText(GameActivity.this, R.string.not_enough_space, Toast.LENGTH_SHORT).show();
+        }
+
+        private void increaseChangesCount(int additionChangesCount) {
+            if (additionChangesCount < 0) {
+                throw new IllegalArgumentException("Can't add '" + additionChangesCount + "'" +
+                        " changes count. Negative value impossible");
+            }
+
+            if (additionChangesCount != 0) {
+                changesCount += additionChangesCount;
+                onChangeCountModified(changesCount);
+                lifeView.setChangeCount(changesCount);
+            }
+        }
+
+        private int getChangeCount() {
+            if (changesCount == -1) {
+                changesCount = AppSettings.getInstance(GameActivity.this).getChangesCount();
+            }
+            return changesCount;
+        }
+    }
+
+    /**
+     * Utility class for work with billing via OpenIAB. Before make purchase you need call
+     * {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
+     *
+     * Sample work with Google Play Store and Yandex.Store.
+     *
+     * Created by Kirill Rozov on 7/28/14.
+     */
+    public class PurchaseHelper {
+
+        //consumable
+        private static final String SKU_CHANGES = "org.onepf.life3.changes";
+
+        //non-consumable
+        private static final String SKU_FIGURES = "org.onepf.life3.figures";
+
+        //subscription
+        private static final String SKU_ORANGE_CELLS = "org.onepf.life3.orange_cells";
+
+        private static final String DEFAULT_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
+        public static final String GOOGLE_PUBLIC_KEY = DEFAULT_PUBLIC_KEY;
+        public static final String YANDEX_PUBLIC_KEY = DEFAULT_PUBLIC_KEY;
+
+        private static final int PURCHASE_REQUEST_CODE = 10001;
+
+        private OpenIabHelper openIabHelper;
+
+        /**
+         * Make preparation for work with billing.
+         */
+        public void startSetup() {
+            //public keys
+            //IAB helper
+            OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
+            builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PUBLIC_KEY)
+                    .addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY);
+
+            if (verifyStorePublicKeys(builder)) {
+                showErrorMessage(R.string.error_no_store_public_keys, true);
+            } else {
+                OpenIabHelper.Options options = builder.build();
+                openIabHelper = new OpenIabHelper(GameActivity.this, options);
+                openIabHelper.startSetup(new LifeGameOnIabSetupFinishedListener());
+            }
+        }
+
+        private boolean verifyStorePublicKeys(OpenIabHelper.Options.Builder builder) {
+            final Map<String, String> storeKeys = builder.getStoreKeys();
+            if (storeKeys == null) {
+                return false;
+            } else {
+                for (String storePublicKey : storeKeys.values()) {
+                    if (DEFAULT_PUBLIC_KEY.equals(storePublicKey)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Buy additional 50 changes. Work async.
+         */
+        void buyChanges() {
+            String payload = "";
+            launchPurchase(SKU_CHANGES, payload);
+        }
+
+        private void launchPurchase(String sku, String payload) {
+            if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
+                openIabHelper.launchPurchaseFlow(GameActivity.this, sku,
+                        PURCHASE_REQUEST_CODE, new LifeGameOnIabPurchaseFinishedListener(), payload);
+            } else {
+                showOpenIABServiceSetupError(openIabHelper.getSetupState());
+            }
+        }
+
+        /**
+         * Handle purchase result. Need call this method
+         * from {@link android.app.Activity#onActivityResult(int, int, android.content.Intent)}.
+         *
+         * @return Does activity result handled.
+         *
+         * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+         */
+        boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+            return openIabHelper.handleActivityResult(requestCode, resultCode, data);
+        }
+
+        /**
+         * Buy orange cell. Work async.
+         */
+        void buyOrangeCells() {
+            if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
+                openIabHelper.launchSubscriptionPurchaseFlow(GameActivity.this, SKU_ORANGE_CELLS,
+                        PURCHASE_REQUEST_CODE, new LifeGameOnIabPurchaseFinishedListener());
+            } else {
+                showOpenIABServiceSetupError(openIabHelper.getSetupState());
+            }
+        }
+
+        /**
+         * Buy additional figures. Work async.
+         */
+        void buyFigures() {
+            String payload = "";
+            launchPurchase(SKU_FIGURES, payload);
+        }
+
+        /**
+         * Dispose {@link org.onepf.oms.OpenIabHelper} associated with this instance
+         * of {@link org.onepf.life.GameActivity.PurchaseHelper}. After this action you can't make
+         * purchase and need restart service via {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
+         */
+        public void dispose() {
+            openIabHelper.dispose();
+        }
+
+        /**
+         * Verifies the developer payload of a purchase. Default implementation verify that purchase
+         * isn't null.
+         */
+        boolean verifyDeveloperPayload(Purchase p) {
+        /*
+         * TODO: verify that the developer payload of the purchase is correct. It will be
+         * the same one that you sent when initiating the purchase.
+         *
+         * WARNING: Locally generating a random string when starting a purchase and
+         * verifying it here might seem like a good approach, but this will fail in the
+         * case where the user purchases an item on one device and then uses your app on
+         * a different device, because on the other device you will not have access to the
+         * random string you originally generated.
+         *
+         * So a good developer payload has these characteristics:
+         *
+         * 1. If two different users purchase an item, the payload is different between them,
+         *    so that one user's purchase can't be replayed to another user.
+         *
+         * 2. The payload must be such that you can verify it even when the app wasn't the
+         *    one who initiated the purchase flow (so that items purchased by the user on
+         *    one device work on other devices owned by the user).
+         *
+         * Using your own server to store and verify developer payloads across app
+         * installations is recommended.
+         */
+
+            return p != null;
+        }
+
+        private class LifeGameOnIabPurchaseFinishedListener implements IabHelper.OnIabPurchaseFinishedListener {
+            public void onIabPurchaseFinished(IabResult result, Purchase purchase) {
+                Log.d(TAG, "Purchase finished: " + result + ", purchase: " + purchase);
+                if (result.isFailure()) {
+                    Toast.makeText(GameActivity.this, "Error purchasing: " + result,
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!verifyDeveloperPayload(purchase)) {
+                    Toast.makeText(GameActivity.this, "Error purchasing. Authenticity" +
+                            " verification failed.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Log.d(TAG, "Purchase successful.");
+
+                if (SKU_CHANGES.equals(purchase.getSku())) {
+                    openIabHelper.consumeAsync(purchase, new LifeGameOnConsumeFinishedListener());
+                } else {
+                    if (SKU_FIGURES.equals(purchase.getSku())) {
+                        AppSettings.getInstance(GameActivity.this).setHasFigures(true);
+                    } else if (SKU_ORANGE_CELLS.equals(purchase.getSku())) {
+                        Toast.makeText(GameActivity.this, R.string.subscribe_thank, Toast.LENGTH_SHORT).show();
+                        AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
+                        lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
+                    }
+                    invalidateOptionsMenu();
+                }
+            }
+        }
+
+        private class LifeGameOnConsumeFinishedListener implements IabHelper.OnConsumeFinishedListener {
+            public void onConsumeFinished(Purchase purchase, IabResult result) {
+                Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
+                if (result.isSuccess()) {
+                    if (SKU_CHANGES.equals(purchase.getSku())) {
+                        gameController.increaseChangesCount(GameController.ADDITIONAL_CHANGES_COUNT);
+                    }
+                } else {
+                    Toast.makeText(GameActivity.this, "unsuccessful consume", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        private class LifeGameOnIabSetupFinishedListener implements IabHelper.OnIabSetupFinishedListener {
+            public void onIabSetupFinished(IabResult result) {
+                Log.d(TAG, "Setup finished.");
+                showProgressDialog(false);
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Setup successful. Queuing inventory.");
+                    openIabHelper.queryInventoryAsync(new LifeGameQueryInventoryFinishedListener());
+                } else {
+                    Toast.makeText(GameActivity.this, "Problem setting up in-app billing: "
+                            + result, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        private class LifeGameQueryInventoryFinishedListener implements IabHelper.QueryInventoryFinishedListener {
+            public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                if (result.isFailure()) {
+                    Toast.makeText(GameActivity.this, "Failed to query inventory: " + result, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(GameActivity.this, "Query inventory was successful." + result, Toast.LENGTH_SHORT).show();
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+                // check for orange cells subscription
+                Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
+                if (verifyDeveloperPayload(orangeCellsPurchase)) {
+                    AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
+                    lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
+                }
+
+                //non-consumable figures
+                Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
+                if (verifyDeveloperPayload(figuresPurchase)) {
+                    AppSettings.getInstance(GameActivity.this).setHasFigures(true);
+                }
+
+                //consumable changes
+                Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
+                if (verifyDeveloperPayload(changesPurchase)) {
+                    openIabHelper.consumeAsync(changesPurchase, new LifeGameOnConsumeFinishedListener());
+                }
+
+                invalidateOptionsMenu();
+            }
         }
     }
 }

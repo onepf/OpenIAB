@@ -1,23 +1,24 @@
-/*******************************************************************************
- * Copyright 2013 One Platform Foundation
+/*
+ * Copyright 2012-2014 One Platform Foundation
  *
- *       Licensed under the Apache License, Version 2.0 (the "License");
- *       you may not use this file except in compliance with the License.
- *       You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *           http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *       Unless required by applicable law or agreed to in writing, software
- *       distributed under the License is distributed on an "AS IS" BASIS,
- *       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *       See the License for the specific language governing permissions and
- *       limitations under the License.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.onepf.oms.appstore;
 
 import org.onepf.oms.*;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.util.Logger;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,34 +27,32 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.android.vending.billing.IInAppBillingService;
 
 /**
- * 
  * @author Boris Minaev, Oleg Orlov
  * @since 28.05.13
  */
 public class OpenAppstore extends DefaultAppstore {
-    private static final String TAG = OpenAppstore.class.getSimpleName();
-    private static boolean isDebugLog() {
-        return OpenIabHelper.isDebugLog();
-    }
-    
+
     private Context context;
     private ServiceConnection serviceConn;
     private IOpenAppstore openAppstoreService;
     private AppstoreInAppBillingService mBillingService;
-    
-    /** id of OpenStore */
-    private final String appstoreName;
-    
-    /** for debug purposes */
-    public  ComponentName componentName;
 
     /**
-     * @param publicKey - used for signature verification. If <b>null</b> verification is disabled 
+     * id of OpenStore
+     */
+    private final String appstoreName;
+
+    /**
+     * for debug purposes
+     */
+    public ComponentName componentName;
+
+    /**
+     * @param publicKey - used for signature verification. If <b>null</b> verification is disabled
      */
     public OpenAppstore(Context context, String appstoreName, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey, ServiceConnection serviceConn) {
         this.context = context;
@@ -66,16 +65,18 @@ public class OpenAppstore extends DefaultAppstore {
                 protected Intent getServiceIntent() {
                     return billingIntent;
                 }
+
                 @Override
                 protected IInAppBillingService getServiceFromBinder(IBinder service) {
                     return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
                 }
+
                 @Override
                 public void dispose() {
                     super.dispose();
                     OpenAppstore.this.context.unbindService(OpenAppstore.this.serviceConn);
                 }
-                
+
             };
         }
     }
@@ -85,7 +86,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.isPackageInstaller(packageName);
         } catch (RemoteException e) {
-            if (isDebugLog()) Log.w(TAG, "RemoteException: " + e.getMessage());
+            Logger.w("RemoteException: ", e);
             return false;
         }
     }
@@ -95,7 +96,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.isBillingAvailable(packageName);
         } catch (RemoteException e) {
-            Log.e(TAG, "isBillingAvailable() packageName: " + packageName, e);
+            Logger.e(e, "isBillingAvailable() packageName: ", packageName);
             return false;
         }
     }
@@ -105,7 +106,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getPackageVersion(packageName);
         } catch (RemoteException e) {
-            Log.e(TAG, "getPackageVersion() packageName: " + packageName, e);
+            Logger.e(e, "getPackageVersion() packageName: ", packageName);
             return Appstore.PACKAGE_VERSION_UNDEFINED;
         }
     }
@@ -120,7 +121,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getProductPageIntent(packageName);
         } catch (RemoteException e) {
-            if (isDebugLog()) Log.w(TAG, "RemoteException: " + e.getMessage());
+            Logger.w("RemoteException: ", e);
             return null;
         }
     }
@@ -130,7 +131,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getRateItPageIntent(packageName);
         } catch (RemoteException e) {
-            if (isDebugLog()) Log.w(TAG, "RemoteException: " + e.getMessage());
+            Logger.w("RemoteException", e);
             return null;
         }
     }
@@ -140,7 +141,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.getSameDeveloperPageIntent(packageName);
         } catch (RemoteException e) {
-            if (isDebugLog()) Log.w(TAG, "RemoteException: " + e.getMessage());
+            Logger.w("RemoteException", e);
             return null;
         }
     }
@@ -150,7 +151,7 @@ public class OpenAppstore extends DefaultAppstore {
         try {
             return openAppstoreService.areOutsideLinksAllowed();
         } catch (RemoteException e) {
-            if (isDebugLog()) Log.w(TAG, "RemoteException: " + e.getMessage());
+            Logger.w("RemoteException", e);
             return false;
         }
     }
@@ -159,13 +160,14 @@ public class OpenAppstore extends DefaultAppstore {
     public AppstoreInAppBillingService getInAppBillingService() {
         return mBillingService;
     }
-    
+
     public String toString() {
         return "OpenStore {name: " + appstoreName + ", component: " + componentName + "}";
-        
     }
 
-    /** Represent {@link IOpenInAppBillingService} as {@link IInAppBillingService} */
+    /**
+     * Represent {@link IOpenInAppBillingService} as {@link IInAppBillingService}
+     */
     private static final class IOpenInAppBillingWrapper implements IInAppBillingService {
         private final IOpenInAppBillingService openStoreBilling;
 
