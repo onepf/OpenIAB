@@ -10,7 +10,7 @@ android {
         versionCode 1
         versionName '1.0'
 
-        applicationId = "org.onepf.store"
+        applicationId 'org.onepf.store'
 
         sourceSets {
             main {

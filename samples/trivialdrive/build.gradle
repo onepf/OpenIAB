@@ -10,7 +10,7 @@ android {
         versionCode 11
         versionName '0.9.4'
 
-        applicationId = "org.onepf.trivialdrive"
+        applicationId 'org.onepf.trivialdrive'
 
         sourceSets {
             main {
