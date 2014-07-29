@@ -29,7 +29,7 @@ android {
         versionCode 9
         versionName "2.7"
 
-        applicationId = 'org.onepf.oms'
+        applicationId 'org.onepf.oms'
 
         sourceSets {
             main {
