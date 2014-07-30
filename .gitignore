@@ -81,7 +81,7 @@ pip-log.txt
 *.iws
 *.ipr
 /*/out
-*/build
+/*/build
 /*/*/production
 
 #Gradle
