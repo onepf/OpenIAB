@@ -77,7 +77,6 @@ pip-log.txt
 
 # Android Studio (InteliJ)
 .idea
-!.idea/copyright/
 *.iml
 *.iws
 *.ipr
