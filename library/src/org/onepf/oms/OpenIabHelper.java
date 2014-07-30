@@ -38,7 +38,6 @@ import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
-import org.onepf.oms.appstore.TStore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
@@ -335,13 +334,6 @@ public class OpenIabHelper {
                     try {
                         OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
                         stores2check.add(new AmazonAppstore(context));
-                    } catch (ClassNotFoundException e) {
-                    }
-
-                    // try T-Store if iap_plugin-dev.jar with T-Store SDK is compiled with app 
-                    try {
-                        TStore.class.getClassLoader().loadClass("com.skplanet.dodo.IapPlugin");
-                        stores2check.add(new TStore(context, options.getStoreKey(OpenIabHelper.NAME_TSTORE)));
                     } catch (ClassNotFoundException e) {
                     }
 
