@@ -1,44 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion project.compileSdkVersion
-    buildToolsVersion project.buildToolsVersion
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion project.minSdkVersion
-        targetSdkVersion project.targetSdkVersion
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName '1.0'
 
         applicationId 'org.onepf.store'
-
-        sourceSets {
-            main {
-                manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
-                resources.srcDirs = ['src']
-                aidl.srcDirs = ['src']
-                renderscript.srcDirs = ['src']
-                res.srcDirs = ['res']
-                assets.srcDirs = ['assets']
-            }
-
-            androidTest.setRoot('tests')
-        }
     }
 
-    buildTypes {
-        release {
-            runProguard false
-            proguardFiles 'proguard-project.txt'
-        }
+    lintOptions {
+        abortOnError false
     }
-}
-
-repositories {
-    jcenter()
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: '*.jar')
+    compile project(':OpenIab Library')
 }
