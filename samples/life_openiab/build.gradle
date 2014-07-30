@@ -17,30 +17,16 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion project.compileSdkVersion
+    compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
-        versionCode 11
-        versionName '0.9.4'
+        versionCode 12
+        versionName '0.9.7'
 
-        applicationId = "by.kirich1409.test.life"
-
-        sourceSets {
-            main {
-                manifest.srcFile 'AndroidManifest.xml'
-                java.srcDirs = ['src']
-                resources.srcDirs = ['src']
-                aidl.srcDirs = ['src']
-                renderscript.srcDirs = ['src']
-                res.srcDirs = ['res']
-                assets.srcDirs = ['assets']
-            }
-
-            androidTest.setRoot('tests')
-        }
+        applicationId 'by.kirich1409.test.life'
     }
 
     signingConfigs {
@@ -59,17 +45,17 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
     lintOptions {
         abortOnError false
     }
 }
 
-repositories {
-    jcenter()
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
     compile project(':OpenIab Library')
+
     compile 'com.android.support:support-annotations:+'
+    compile 'com.android.support:support-v4:19.+'
+    compile 'com.google.code.gson:gson:2.2.+'
 }
