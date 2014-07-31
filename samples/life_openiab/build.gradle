@@ -26,7 +26,7 @@ android {
         versionCode 12
         versionName '0.9.7'
 
-        applicationId 'by.kirich1409.test.life'
+        applicationId 'org.onepf.life'
     }
 
     signingConfigs {
@@ -36,13 +36,20 @@ android {
             keyAlias "OpenIab"
             keyPassword "android"
         }
+
+        onePF {
+            storeFile file("onepf.keystore")
+            storePassword "_OnePlatform789"
+            keyAlias "one platform foundation production .apk key"
+            keyPassword "_OnePlatform789"
+        }
     }
 
     buildTypes {
         release {
             runProguard false
             proguardFiles 'proguard-project.txt'
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.onePF
         }
     }
 
