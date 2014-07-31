@@ -36,20 +36,13 @@ android {
             keyAlias "OpenIab"
             keyPassword "android"
         }
-
-        onePF {
-            storeFile file("onepf.keystore")
-            storePassword "_OnePlatform789"
-            keyAlias "one platform foundation production .apk key"
-            keyPassword "_OnePlatform789"
-        }
     }
 
     buildTypes {
         release {
             runProguard false
             proguardFiles 'proguard-project.txt'
-            signingConfig signingConfigs.onePF
+            signingConfig signingConfigs.release
         }
     }
 
