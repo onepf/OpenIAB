@@ -16,7 +16,8 @@
 
 package org.onepf.oms;
 
-import android.util.Log;
+import org.jetbrains.annotations.Nullable;
+import org.onepf.oms.util.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,10 +26,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Utility class for manage stores SKUs.
+ * Obtain instance of class by call {@link SkuManager#getInstance()}.
+ *
  * Created by krozov on 7/27/14.
  */
 public class SkuManager {
-    private static final String TAG = "SkuManager";
 
     /**
      * NOTE: used as sync object in related methods<br>
@@ -66,20 +69,21 @@ public class SkuManager {
         if (skuMap == null) {
             skuMap = new HashMap<String, String>();
             sku2storeSkuMappings.put(storeName, skuMap);
+        } else if (skuMap.get(sku) != null) {
+            throw new IllegalArgumentException("Already specified SKU. sku: "
+                    + sku + " -> storeSku: " + skuMap.get(sku));
         }
-        if (skuMap.get(sku) != null) {
-            throw new IllegalArgumentException("Already specified SKU. sku: " + sku + " -> storeSku: " + skuMap.get(sku));
-        }
+
         Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
         if (storeSkuMap == null) {
             storeSkuMap = new HashMap<String, String>();
             storeSku2skuMappings.put(storeName, storeSkuMap);
-        }
-        if (storeSkuMap.get(storeSku) != null) {
-            throw new IllegalArgumentException("Ambigous SKU mapping. You try to map sku: "
+        } else if (storeSkuMap.get(storeSku) != null) {
+            throw new IllegalArgumentException("Ambiguous SKU mapping. You try to map sku: "
                     + sku + " -> storeSku: " + storeSku
                     + ", that is already mapped to sku: " + storeSkuMap.get(storeSku));
         }
+
         skuMap.put(sku, storeSku);
         storeSkuMap.put(storeSku, sku);
     }
@@ -87,21 +91,20 @@ public class SkuManager {
     /**
      * Return previously mapped store SKU for specified inner SKU
      *
-     * @param appstoreName
-     * @param sku          - inner SKU
+     * @param appstoreName Name of app store.
+     * @param sku          Inner SKU
      * @return SKU used in store for specified inner SKU
      * @see #mapSku(String, String, String)
      */
     public String getStoreSku(final String appstoreName, String sku) {
-        String currentStoreSku = sku;
-        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-        if (skuMap != null && skuMap.get(sku) != null) {
-            currentStoreSku = skuMap.get(sku);
-            if (OpenIabHelper.isDebugLog()) {
-                Log.d(TAG, "getStoreSku() using mapping for sku: " + sku + " -> " + currentStoreSku);
+        Map<String, String> storeSku = sku2storeSkuMappings.get(appstoreName);
+        if (storeSku != null && storeSku.containsKey(sku)) {
+            if (Logger.isLoggable()) {
+                Logger.d("getStoreSku() using mapping for sku: ", sku, " -> ", storeSku.get(sku));
             }
+            return storeSku.get(sku);
         }
-        return currentStoreSku;
+        return sku;
     }
 
     /**
@@ -110,21 +113,21 @@ public class SkuManager {
      * @see #mapSku(String, String, String)
      */
     public String getSku(final String appstoreName, String storeSku) {
-        String sku = storeSku;
         Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
-        if (skuMap != null && skuMap.get(sku) != null) {
-            sku = skuMap.get(sku);
-            if (OpenIabHelper.isDebugLog()) {
-                Log.d(TAG, "getSku() restore sku from storeSku: " + storeSku + " -> " + sku);
+        if (skuMap != null && skuMap.containsKey(storeSku)) {
+            if (Logger.isLoggable()) {
+                Logger.d("getSku() restore sku from storeSku: ", storeSku, " -> ", skuMap.get(storeSku));
             }
+            return skuMap.get(storeSku);
         }
-        return sku;
+        return storeSku;
     }
 
     /**
      * @param appstoreName for example {@link OpenIabHelper#NAME_AMAZON}
      * @return list of skus those have mappings for specified appstore
      */
+    @Nullable
     public List<String> getAllStoreSkus(final String appstoreName) {
         Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
         return skuMap == null ? null : new ArrayList<String>(skuMap.values());
@@ -138,6 +141,6 @@ public class SkuManager {
     }
 
     private static final class InstanceHolder {
-        private static final SkuManager SKU_MANAGER = new SkuManager();
+        static final SkuManager SKU_MANAGER = new SkuManager();
     }
 }

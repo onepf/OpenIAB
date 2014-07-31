@@ -37,6 +37,7 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
+import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 
 import android.app.Activity;
@@ -168,8 +169,11 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
 
         /* Get all itemGroupIds from existing skus */
         Set<String> itemGroupIds = new HashSet<String>();
-        for (String sku : SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG)) {
-            itemGroupIds.add(getItemGroupId(sku));
+        final List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        if (!CollectionUtils.isEmpty(allStoreSkus)) {
+            for (String sku : allStoreSkus) {
+                itemGroupIds.add(getItemGroupId(sku));
+            }
         }
 
         /* Query getItemsInbox for each itemGroupId */

@@ -196,7 +196,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             return;
         }
 
-        if (Logger.isDebuggable()) {
+        if (Logger.isLoggable()) {
             // TODO: do something with this
             for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
                 Logger.v("Revoked Sku:", sku);
@@ -254,7 +254,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         switch (itemDataResponse.getItemDataRequestStatus()) {
             case SUCCESSFUL_WITH_UNAVAILABLE_SKUS:
                 // Skus that you can not purchase will be here.
-                if (Logger.isDebuggable()) {
+                if (Logger.isLoggable()) {
                     for (final String s : itemDataResponse.getUnavailableSkus()) {
                         Logger.v("Unavailable SKU:", s);
                     }
@@ -266,7 +266,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 for (final String key : items.keySet()) {
                     Item i = items.get(key);
                     final String storeSku = i.getSku();
-                    if (Logger.isDebuggable()) {
+                    if (Logger.isLoggable()) {
                         Logger.v(String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n",
                                 i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
                     }
