@@ -236,16 +236,14 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         String itemGroupId = getItemGroupId(sku);
         String itemId = getItemId(sku);
 
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_NAME_THIRD_PARTY_NAME, activity.getPackageName());
-        bundle.putString(KEY_NAME_ITEM_GROUP_ID, itemGroupId);
-        bundle.putString(KEY_NAME_ITEM_ID, itemId);
         Logger.d("launchPurchase: itemGroupId = ", itemGroupId, ", itemId = ", itemId);
         ComponentName cmpName = new ComponentName(SamsungApps.IAP_PACKAGE_NAME, PAYMENT_ACTIVITY_NAME);
         Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setComponent(cmpName);
-        intent.putExtras(bundle);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                .setComponent(cmpName)
+                .putExtra(KEY_NAME_THIRD_PARTY_NAME, activity.getPackageName())
+                .putExtra(KEY_NAME_ITEM_GROUP_ID, itemGroupId)
+                .putExtra(KEY_NAME_ITEM_ID, itemId);
         mRequestCode = requestCode;
         mPurchaseListener = listener;
         purchasingItemType = itemType;
@@ -274,7 +272,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         }
         int errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
         String errorMsg = "Unknown error";
-        Purchase purchase = new Purchase(OpenIabHelper.NAME_SAMSUNG);
+        Purchase.Builder builder = new Purchase.Builder(OpenIabHelper.NAME_SAMSUNG);
         if (data != null) {
             Bundle extras = data.getExtras();
             if (extras != null) {
@@ -287,39 +285,42 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                             case IAP_ERROR_NONE:
                                 errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
                                 break;
+
                             case IAP_ERROR_ALREADY_PURCHASED:
                                 errorCode = IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED;
                                 break;
+
                             case IAP_ERROR_PRODUCT_DOES_NOT_EXIST:
                                 errorCode = IabHelper.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE;
                                 break;
                         }
                         break;
+
                     case Activity.RESULT_CANCELED:
                         errorCode = IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED;
                         break;
                 }
+
                 String purchaseData = extras.getString(KEY_NAME_RESULT_OBJECT);
                 try {
                     JSONObject purchaseJson = new JSONObject(purchaseData);
-
-                    purchase.setOriginalJson(purchaseData);
-                    purchase.setOrderId(purchaseJson.getString(JSON_KEY_PAYMENT_ID));
-                    purchase.setPurchaseTime(Long.parseLong(purchaseJson.getString(JSON_KEY_PURCHASE_DATE)));
-                    purchase.setToken(purchaseJson.getString(JSON_KEY_PURCHASE_ID));
+                    builder.setOriginalJson(purchaseData)
+                            .setOrderId(purchaseJson.getString(JSON_KEY_PAYMENT_ID))
+                            .setPurchaseTime(Long.parseLong(purchaseJson.getString(JSON_KEY_PURCHASE_DATE)))
+                            .setToken(purchaseJson.getString(JSON_KEY_PURCHASE_ID));
                 } catch (JSONException e) {
                     Logger.e("JSON parse error: ", e);
                 }
 
-                purchase.setItemType(purchasingItemType);
-                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_SAMSUNG, mItemGroupId + '/' + itemId));
-                purchase.setPackageName(activity.getPackageName());
-                purchase.setPurchaseState(0);
-                purchase.setDeveloperPayload(mExtraData);
+                builder.setItemType(purchasingItemType)
+                        .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_SAMSUNG, mItemGroupId + '/' + itemId))
+                        .setPackageName(activity.getPackageName())
+                        .setPurchaseState(0)
+                        .setDeveloperPayload(mExtraData);
             }
         }
         Logger.d("Samsung result code: ", errorCode, ", msg: ", errorMsg);
-        mPurchaseListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), purchase);
+        mPurchaseListener.onIabPurchaseFinished(new IabResult(errorCode, errorMsg), builder.get());
         return true;
     }
 
@@ -416,27 +417,24 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
                     String itemType = rawType.equals(ITEM_TYPE_SUBSCRIPTION) ? IabHelper.ITEM_TYPE_SUBS : IabHelper.ITEM_TYPE_INAPP;
 
                     if (addPurchase) {
-                        Purchase purchase = new Purchase(OpenIabHelper.NAME_SAMSUNG);
-                        purchase.setItemType(itemType);
-                        purchase.setSku(SkuManager.getInstance()
-                                .getSku(OpenIabHelper.NAME_SAMSUNG, itemGroupId + '/' + itemId));
-                        purchase.setPackageName(activity.getPackageName());
-                        purchase.setPurchaseState(0);
-                        purchase.setDeveloperPayload("");
-
-                        purchase.setOrderId(item.getString(JSON_KEY_PAYMENT_ID));
-                        purchase.setPurchaseTime(Long.parseLong(item.getString(JSON_KEY_PURCHASE_DATE)));
-                        purchase.setToken(item.getString(JSON_KEY_PURCHASE_ID));
-
-                        inventory.addPurchase(purchase);
+                        Purchase.Builder builder = new Purchase.Builder(OpenIabHelper.NAME_SAMSUNG);
+                        builder.setItemType(itemType)
+                                .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_SAMSUNG, itemGroupId + '/' + itemId))
+                                .setPackageName(activity.getPackageName())
+                                .setPurchaseState(0)
+                                .setDeveloperPayload("")
+                                .setOrderId(item.getString(JSON_KEY_PAYMENT_ID))
+                                .setPurchaseTime(Long.parseLong(item.getString(JSON_KEY_PURCHASE_DATE)))
+                                .setToken(item.getString(JSON_KEY_PURCHASE_ID));
+                        inventory.addPurchase(builder.get());
                     }
                     if (!addPurchase || querySkuDetails) {
-                        String name = item.getString(JSON_KEY_ITEM_NAME);
-                        String price = item.getString(JSON_KEY_ITEM_PRICE_STRING);
-                        String desc = item.getString(JSON_KEY_ITEM_DESC);
-                        inventory.addSkuDetails(new SkuDetails(itemType,
-                                SkuManager.getInstance().getSku(OpenIabHelper.NAME_SAMSUNG, itemGroupId + '/' + itemId),
-                                name, price, desc));
+                        inventory.addSkuDetails(
+                                new SkuDetails(itemType, SkuManager.getInstance().getSku(OpenIabHelper.NAME_SAMSUNG, itemGroupId + '/' + itemId),
+                                        item.getString(JSON_KEY_ITEM_NAME),
+                                        item.getString(JSON_KEY_ITEM_PRICE_STRING),
+                                        item.getString(JSON_KEY_ITEM_DESC))
+                        );
                     }
                 }
             } catch (JSONException e) {

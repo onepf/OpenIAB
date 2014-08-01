@@ -97,12 +97,12 @@ public class OpenIabHelper {
     /**
      * selected appstore
      */
-    private Appstore mAppstore;
+    Appstore mAppstore;
 
     /**
      * selected appstore billing service
      */
-    private AppstoreInAppBillingService mAppstoreBillingService;
+    AppstoreInAppBillingService appstoreBillingService;
 
     private final Options options;
 
@@ -395,7 +395,7 @@ public class OpenIabHelper {
                         }
                     }
                     if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
+                        appstoreBillingService = mAppstore.getInAppBillingService();
                     }
                     fireSetupFinished(listener, result);
                 } else {   // no inventory check. Select store based on store parameters
@@ -406,8 +406,8 @@ public class OpenIabHelper {
                         }
                     }
                     if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
-                        mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
+                        appstoreBillingService = mAppstore.getInAppBillingService();
+                        appstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
                             public void onIabSetupFinished(IabResult result) {
                                 fireSetupFinished(listener, result);
                             }
@@ -784,10 +784,11 @@ public class OpenIabHelper {
                         public void run() {
                             try {
                                 Inventory inventory = billingService.queryInventory(false, null, null);
-                                if (inventory.getAllPurchases().size() > 0) {
+                                if (!inventory.getAllPurchases().isEmpty()) {
                                     equippedStores.add(appstore);
                                 }
-                                Logger.dWithTimeFromUp("inventoryCheck() in ", appstore.getAppstoreName(), " found: ", inventory.getAllPurchases().size(), " purchases");
+                                Logger.dWithTimeFromUp("inventoryCheck() in ",
+                                        appstore.getAppstoreName(), " found: ", inventory.getAllPurchases().size(), " purchases");
                             } catch (IabException e) {
                                 Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName());
                             }
@@ -879,15 +880,15 @@ public class OpenIabHelper {
 
     public void dispose() {
         Logger.d("Disposing.");
-        if (mAppstoreBillingService != null) {
-            mAppstoreBillingService.dispose();
+        if (appstoreBillingService != null) {
+            appstoreBillingService.dispose();
         }
         setupState = SETUP_DISPOSED;
     }
 
     public boolean subscriptionsSupported() {
         checkSetupDone("subscriptionsSupported");
-        return mAppstoreBillingService.subscriptionsSupported();
+        return appstoreBillingService.subscriptionsSupported();
     }
 
     public void launchPurchaseFlow(Activity act, String sku, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener) {
@@ -912,7 +913,7 @@ public class OpenIabHelper {
     public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode,
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
-        mAppstoreBillingService.launchPurchaseFlow(act,
+        appstoreBillingService.launchPurchaseFlow(act,
                 SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), sku),
                 itemType,
                 requestCode,
@@ -929,7 +930,7 @@ public class OpenIabHelper {
             Logger.d("handleActivityResult() setup is not done. requestCode: ", requestCode, " resultCode: ", resultCode, " data: ", data);
             return false;
         }
-        return mAppstoreBillingService.handleActivityResult(requestCode, resultCode, data);
+        return appstoreBillingService.handleActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -975,7 +976,7 @@ public class OpenIabHelper {
         } else {
             moreSubsStoreSkus = null;
         }
-        return mAppstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
+        return appstoreBillingService.queryInventory(querySkuDetails, moreItemStoreSkus, moreSubsStoreSkus);
     }
 
     /**
@@ -990,13 +991,15 @@ public class OpenIabHelper {
      *                        Ignored if null or if querySkuDetails is false.
      * @throws IabException if a problem occurs while refreshing the inventory.
      */
-    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus, final List<String> moreSubsSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus,
+                                    final List<String> moreSubsSkus,
+                                    final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventory");
         if (listener == null) {
             throw new IllegalArgumentException("Inventory listener must be not null");
         }
         flagStartAsync("refresh inventory");
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
                 IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
                 Inventory inv = null;
@@ -1018,13 +1021,14 @@ public class OpenIabHelper {
                     });
                 }
             }
-        })).start();
+        }).start();
     }
 
     /**
      * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
      */
-    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus,
+                                    final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventoryAsync");
         if (listener == null) {
             throw new IllegalArgumentException("Inventory listener must be not null!");
@@ -1056,9 +1060,9 @@ public class OpenIabHelper {
 
     public void consume(Purchase itemInfo) throws IabException {
         checkSetupDone("consume");
-        Purchase purchaseStoreSku = (Purchase) itemInfo.clone(); // TODO: use Purchase.getStoreSku()
-        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
-        mAppstoreBillingService.consume(purchaseStoreSku);
+        Purchase purchaseStoreSku = itemInfo.copy(
+                SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
+        appstoreBillingService.consume(purchaseStoreSku);
     }
 
     public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
@@ -1077,6 +1081,10 @@ public class OpenIabHelper {
             throw new IllegalArgumentException("Consume listener must be not null!");
         }
         consumeAsyncInternal(purchases, null, listener);
+    }
+
+    public void consume(ConsumeRequest request, ConsumeRequest.Listener l) {
+
     }
 
     void consumeAsyncInternal(final List<Purchase> purchases,
@@ -1485,6 +1493,7 @@ public class OpenIabHelper {
             return storeKeys != null && storeKeys.containsKey(storeName);
         }
 
+        @Nullable
         public String getStoreKey(String storeName) {
             return storeKeys != null ? storeKeys.get(storeName) : null;
         }

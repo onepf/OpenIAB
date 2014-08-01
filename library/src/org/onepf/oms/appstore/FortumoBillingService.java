@@ -85,7 +85,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 Purchase purchase = null;
                 final int billingStatus = paymentResponse.getBillingStatus();
                 if (billingStatus == MpUtils.MESSAGE_STATUS_BILLED) {
-                    purchase = purchaseFromPaymentResponse(context, paymentResponse);
+                    purchase = purchaseFromPaymentResponse(context, paymentResponse).get();
                     result = new IabResult(OpenIabHelper.BILLING_RESPONSE_RESULT_OK, "Purchase was successful.");
                     removePendingProduct(context, sku);
                 } else if (billingStatus == MpUtils.MESSAGE_STATUS_FAILED || billingStatus == MpUtils.MESSAGE_STATUS_USE_ALTERNATIVE_METHOD) {
@@ -117,11 +117,11 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         } else {
             int errorCode = IabHelper.BILLING_RESPONSE_RESULT_ERROR;
             String errorMsg = "Purchase error.";
-            Purchase purchase = null;
+            Purchase.Builder builder = null;
             if (resultCode == Activity.RESULT_OK) {
                 PaymentResponse paymentResponse = new PaymentResponse(intent);
-                purchase = purchaseFromPaymentResponse(context, paymentResponse);
-                purchase.setDeveloperPayload(developerPayload);
+                builder = purchaseFromPaymentResponse(context, paymentResponse);
+                builder.setDeveloperPayload(developerPayload);
                 if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
                     errorCode = IabHelper.BILLING_RESPONSE_RESULT_OK;
                 } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_PENDING) {
@@ -130,14 +130,14 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                     errorMsg = "Purchase is pending";
                     if (inappsMap.get(paymentResponse.getProductName()).isConsumable()) {
                         addPendingPayment(context, paymentResponse.getProductName(), String.valueOf(paymentResponse.getMessageId()));
-                        purchase = null;
+                        builder = null;
                     }
                 }
             }
             developerPayload = null;
             final IabResult result = new IabResult(errorCode, errorMsg);
             Logger.d("handleActivityResult: ", result);
-            purchaseFinishedListener.onIabPurchaseFinished(result, purchase);
+            purchaseFinishedListener.onIabPurchaseFinished(result, builder == null ? null : builder.get());
         }
         return true;
     }
@@ -156,8 +156,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                     final Long messageId = Long.valueOf(value);
                     final PaymentResponse paymentResponse = MpUtils.getPaymentResponse(context, messageId);
                     if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_BILLED) {
-                        Purchase purchase = purchaseFromPaymentResponse(context, paymentResponse);
-                        inventory.addPurchase(purchase);
+                        inventory.addPurchase(purchaseFromPaymentResponse(context, paymentResponse).get());
                     } else if (paymentResponse.getBillingStatus() == MpUtils.MESSAGE_STATUS_FAILED) {
                         editor.remove(key);
                     }
@@ -175,7 +174,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                     for (Object response : purchaseHistory) {
                         PaymentResponse paymentResponse = (PaymentResponse) response;
                         if (paymentResponse.getProductName().equals(fortumoProduct.getProductId())) {
-                            inventory.addPurchase(purchaseFromPaymentResponse(context, paymentResponse));
+                            inventory.addPurchase(purchaseFromPaymentResponse(context, paymentResponse).get());
                             if (querySkuDetails) {
                                 String fortumoPrice = getSkuPrice(fortumoProduct);
                                 inventory.addSkuDetails(fortumoProduct.toSkuDetails(fortumoPrice));
@@ -241,17 +240,17 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return true;
     }
 
-    private static Purchase purchaseFromPaymentResponse(Context context, PaymentResponse paymentResponse) {
-        Purchase purchase = new Purchase(OpenIabHelper.NAME_FORTUMO);
-        purchase.setSku(paymentResponse.getProductName());
-        purchase.setPackageName(context.getPackageName()); //todo remove?
-        purchase.setOrderId(paymentResponse.getPaymentCode());
+    private static Purchase.Builder purchaseFromPaymentResponse(Context context, PaymentResponse paymentResponse) {
+        Purchase.Builder builder = new Purchase.Builder(OpenIabHelper.NAME_FORTUMO);
+        builder.setSku(paymentResponse.getProductName())
+                .setPackageName(context.getPackageName()) //todo remove?
+                .setOrderId(paymentResponse.getPaymentCode());
         Date date = paymentResponse.getDate();
         if (date != null) {
-            purchase.setPurchaseTime(date.getTime());
+            builder.setPurchaseTime(date.getTime());
         }
-        purchase.setItemType(OpenIabHelper.ITEM_TYPE_INAPP);
-        return purchase;
+        builder.setItemType(OpenIabHelper.ITEM_TYPE_INAPP);
+        return builder;
     }
 
     static Map<String, FortumoProduct> getFortumoInapps(Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {

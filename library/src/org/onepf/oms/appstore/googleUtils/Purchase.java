@@ -21,13 +21,13 @@ import org.json.JSONObject;
 
 /**
  * Represents an in-app billing purchase.
- *
+ * <p/>
  * Purchase contains all data from receipt, including signature.
- * <p>
+ * <p/>
  * To verify signature manually - use {@link #getOriginalJson()} and {@link #getSignature()}
  * Appstore name purchase was done through can be accessed via {@link #getAppstoreName()}
- *
- * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere 
+ * <p/>
+ * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere
  * <p><b>TODO</b>: add getStoreSku() to use mapped value in Appstore's inner code
  */
 public class Purchase implements Cloneable {
@@ -41,51 +41,20 @@ public class Purchase implements Cloneable {
     String mToken;
     String mOriginalJson;
     String mSignature;
-    String appstoreName;
+    String mAppstoreName;
 
+    /**
+     *
+     * @param appstoreName
+     */
     public Purchase(String appstoreName) {
-        if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
-        this.appstoreName = appstoreName;
-    }
-    
-    public void setOriginalJson(String originalJson) {
-        mOriginalJson = originalJson;
-    }
-
-    public void setItemType(String itemType) {
-        mItemType = itemType;
-    }
-
-    public void setOrderId(String orderId) {
-        mOrderId = orderId;
-    }
-
-    public void setPackageName(String packageName) {
-        mPackageName = packageName;
-    }
-
-    public void setSku(String sku) {
-        mSku = sku;
-    }
-
-    public void setPurchaseTime(long purchaseTime) {
-        mPurchaseTime = purchaseTime;
-    }
-
-    public void setPurchaseState(int purchaseState) {
-        mPurchaseState = purchaseState;
-    }
-
-    public void setDeveloperPayload(String developerPayload) {
-        mDeveloperPayload = developerPayload;
-    }
-
-    public void setToken(String token) {
-        mToken = token;
+        if (appstoreName == null)
+            throw new IllegalArgumentException("appstoreName must be defined");
+        mAppstoreName = appstoreName;
     }
 
     public Purchase(String itemType, String jsonPurchaseInfo, String signature, String appstoreName) throws JSONException {
-        this.appstoreName = appstoreName;
+        mAppstoreName = appstoreName;
         mItemType = itemType;
         mOriginalJson = jsonPurchaseInfo;
         JSONObject o = new JSONObject(mOriginalJson);
@@ -99,9 +68,16 @@ public class Purchase implements Cloneable {
         mSignature = signature;
     }
 
-    public Object clone() {
+    public Purchase copy(String newSku) {
+        Purchase purchase = clone();
+        purchase.mSku = newSku;
+        return purchase;
+    }
+
+    @Override
+    public Purchase clone() {
         try {
-            return super.clone();
+            return (Purchase) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new IllegalStateException("Somebody forgot to add Cloneable to class", e);
         }
@@ -148,7 +124,7 @@ public class Purchase implements Cloneable {
     }
 
     public String getAppstoreName() {
-        return appstoreName;
+        return mAppstoreName;
     }
 
     @Override
@@ -162,5 +138,67 @@ public class Purchase implements Cloneable {
                 + ",\"developerPayload\":" + mDeveloperPayload
                 + ",\"token\":" + mToken
                 + "}";
+    }
+
+    public static class Builder {
+        private Purchase mPurchase;
+
+        public Builder(String appstoreName) {
+            mPurchase = new Purchase(appstoreName);
+        }
+
+        public Builder setItemType(String itemType) {
+            mPurchase.mItemType = itemType;
+            return this;
+        }
+
+        public Builder setOrderId(String orderId) {
+            mPurchase.mOrderId = orderId;
+            return this;
+        }
+
+        public Builder setPackageName(String packageName){
+            mPurchase.mPackageName = packageName;
+            return this;
+        }
+
+        public Builder setSku(String sku) {
+            mPurchase.mSku = sku;
+            return this;
+        }
+
+        public Builder setPurchaseTime(long purchaseTime){
+            mPurchase.mPurchaseTime = purchaseTime;
+            return this;
+        }
+
+        public Builder setPurchaseState(int purchaseState){
+            mPurchase.mPurchaseState = purchaseState;
+            return this;
+        }
+
+        public Builder setDeveloperPayload(String developerPayload) {
+            mPurchase.mDeveloperPayload = developerPayload;
+            return this;
+        }
+
+        public Builder setToken(String token) {
+            mPurchase.mToken = token;
+            return this;
+        }
+
+        public Builder setOriginalJson(String originalJson) {
+            mPurchase.mOriginalJson = originalJson;
+            return this;
+        }
+
+        public Builder setSignature(String signature) {
+            mPurchase.mSignature = signature;
+            return this;
+        }
+
+        public Purchase get() {
+            return mPurchase;
+        }
     }
 }

@@ -207,23 +207,22 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             case SUCCESSFUL:
                 for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
                     final String storeSku = receipt.getSku();
-                    Purchase purchase;
+                    Purchase.Builder purchaseBuilder;
                     switch (receipt.getItemType()) {
                         case ENTITLED:
-                            purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-                            purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-                            purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                            inventory.addPurchase(purchase);
+                            purchaseBuilder = new Purchase.Builder(OpenIabHelper.NAME_AMAZON);
+                            purchaseBuilder.setItemType(IabHelper.ITEM_TYPE_INAPP)
+                                    .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                            inventory.addPurchase(purchaseBuilder.get());
                             Logger.d("Add to inventory SKU: ", storeSku);
                             break;
 
                         case SUBSCRIPTION:
-                            final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
-                            if (subscriptionPeriod.getEndDate() == null) {
-                                purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-                                purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
-                                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                                inventory.addPurchase(purchase);
+                            if (receipt.getSubscriptionPeriod().getEndDate() == null) {
+                                purchaseBuilder = new Purchase.Builder(OpenIabHelper.NAME_AMAZON);
+                                purchaseBuilder.setItemType(IabHelper.ITEM_TYPE_SUBS)
+                                        .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                                inventory.addPurchase(purchaseBuilder.get());
                                 Logger.d("Add subscription to inventory SKU: ", storeSku);
                             }
 
@@ -292,7 +291,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
          Logger.v("onPurchaseResponse() PurchaseRequestStatus:", purchaseResponse.getPurchaseRequestStatus());
 
         IabResult result = null;
-        Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+        Purchase.Builder builder = new Purchase.Builder(OpenIabHelper.NAME_AMAZON);
 
         if ((currentUserId != null) && !currentUserId.equals(purchaseResponse.getUserId())) {
             Logger.w("onPurchaseResponse() userId: ", currentUserId, ", purchase.userId: ", purchaseResponse.getUserId());
@@ -301,17 +300,15 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             switch (purchaseResponse.getPurchaseRequestStatus()) {
                 case SUCCESSFUL :
                     final Receipt receipt = purchaseResponse.getReceipt();
-                    final String storeSku = receipt.getSku();
-
-                    purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
-                    purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                    builder.setOriginalJson(generateOriginalJson(purchaseResponse))
+                            .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, receipt.getSku()));
                     switch (receipt.getItemType()) {
                         case CONSUMABLE:
                         case ENTITLED:
-                            purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
+                            builder.setItemType(IabHelper.ITEM_TYPE_INAPP);
                             break;
                         case SUBSCRIPTION:
-                            purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
+                            builder.setItemType(IabHelper.ITEM_TYPE_SUBS);
                             break;
                     }
                     //printReceipt(purchaseResponse.getReceipt());
@@ -330,7 +327,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
         }
         IabHelper.OnIabPurchaseFinishedListener listener = getRequestListener(purchaseResponse.getRequestId());
         if (listener != null) {
-            listener.onIabPurchaseFinished(result, purchase);
+            listener.onIabPurchaseFinished(result, builder.get());
         } else {
             Logger.e("Something went wrong: PurchaseFinishedListener is null");
         }
@@ -358,10 +355,13 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             Receipt receipt = purchaseResponse.getReceipt();
             json.put(JSON_KEY_ORDER_ID, purchaseResponse.getRequestId());
             json.put(JSON_KEY_PRODUCT_ID, receipt.getSku());
-            if (purchaseResponse.getPurchaseRequestStatus() != null)
+            if (purchaseResponse.getPurchaseRequestStatus() != null) {
                 json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+            }
             json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
-            if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            if (receipt.getItemType() != null) {
+                json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            }
             json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
             Logger.d("generateOriginalJson(): JSON\n", json);
         } catch (JSONException e) {

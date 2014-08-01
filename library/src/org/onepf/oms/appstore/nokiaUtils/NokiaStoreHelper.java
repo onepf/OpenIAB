@@ -337,7 +337,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		Logger.i("NokiaStoreHelper.processPurchaseSuccess");
 		Logger.d("purchaseData = ", purchaseData);
 
-		Purchase purchase;
+		Purchase.Builder builder;
 		try {
 			final JSONObject obj = new JSONObject(purchaseData);
 
@@ -345,15 +345,14 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 			Logger.d("sku = ", sku);
 
-			purchase = new Purchase(OpenIabHelper.NAME_NOKIA);
+			builder = new Purchase.Builder(OpenIabHelper.NAME_NOKIA);
 
-			purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-			purchase.setOrderId(obj.getString("orderId"));
-			purchase.setPackageName(obj.getString("packageName"));
-			purchase.setSku(sku);
-			purchase.setToken(obj.getString("purchaseToken"));
-			purchase.setDeveloperPayload(obj.getString("developerPayload"));
-
+			builder.setItemType(IabHelper.ITEM_TYPE_INAPP)
+                    .setOrderId(obj.getString("orderId"))
+                    .setPackageName(obj.getString("packageName"))
+                    .setSku(sku)
+                    .setToken(obj.getString("purchaseToken"))
+                    .setDeveloperPayload(obj.getString("developerPayload"));
 		} catch (JSONException e) {
 			Logger.e(e, "JSONException: ", e);
 
@@ -366,7 +365,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 
 		if (mPurchaseListener != null) {
-			mPurchaseListener.onIabPurchaseFinished(new NokiaResult(RESULT_OK, "Success"), purchase);
+			mPurchaseListener.onIabPurchaseFinished(new NokiaResult(RESULT_OK, "Success"), builder.get());
 		}
 
 	}
@@ -506,14 +505,14 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		for (final String data : purchasedDataList) {
 			try {
 				final JSONObject obj = new JSONObject(data);
-				final Purchase purchase = new Purchase(OpenIabHelper.NAME_NOKIA);
-				purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-				purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_NOKIA, obj.getString("productId")));
-				purchase.setToken(obj.getString("purchaseToken"));
-				purchase.setPackageName(getPackageName());
-				purchase.setPurchaseState(0);
-				purchase.setDeveloperPayload(obj.optString("developerPayload", ""));
-				inventory.addPurchase(purchase);
+				final Purchase.Builder builder = new Purchase.Builder(OpenIabHelper.NAME_NOKIA);
+				builder.setItemType(IabHelper.ITEM_TYPE_INAPP)
+                        .setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_NOKIA, obj.getString("productId")))
+                        .setToken(obj.getString("purchaseToken"))
+                        .setPackageName(getPackageName())
+                        .setPurchaseState(0)
+                        .setDeveloperPayload(obj.optString("developerPayload", ""));
+				inventory.addPurchase(builder.get());
 			} catch (JSONException e) {
 				Logger.e(e, "Exception: ", e);
 			}
