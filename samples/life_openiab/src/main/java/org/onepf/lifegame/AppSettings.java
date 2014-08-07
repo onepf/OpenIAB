@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.onepf.life;
+package org.onepf.lifegame;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import org.onepf.life.util.SharedPreferencesEditorCompat;
+import org.onepf.lifegame.util.SharedPreferencesEditorCompat;
 
 /**
  * Created by krozov on 7/24/14.

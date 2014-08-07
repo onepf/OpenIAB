@@ -23,10 +23,12 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 12
-        versionName '0.9.7'
+        versionCode 31
+        versionName '2.8'
 
-        applicationId 'org.onepf.life'
+        applicationId 'org.onepf.lifegame'
+
+        buildConfigField 'String', 'DEFAULT_APP_PACKAGE_NAME', '"org.onepf.lifegame"'
     }
 
     signingConfigs {
