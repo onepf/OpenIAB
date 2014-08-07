@@ -16,7 +16,10 @@
 
 package org.onepf.oms;
 
+import android.text.TextUtils;
+
 import org.jetbrains.annotations.Nullable;
+import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Utility class for manage stores SKUs.
  * Obtain instance of class by call {@link SkuManager#getInstance()}.
- *
+ * <p/>
  * Created by krozov on 7/27/14.
  */
 public class SkuManager {
@@ -62,9 +65,12 @@ public class SkuManager {
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()}
      *                  or {@link org.onepf.oms.OpenIabHelper#NAME_AMAZON}
      *                  {@link org.onepf.oms.OpenIabHelper#NAME_GOOGLE}
-     *                  {@link org.onepf.oms.OpenIabHelper#NAME_TSTORE}
+     * @return Instance of {@link org.onepf.oms.SkuManager}.
+     * @throws java.lang.IllegalArgumentException If one of arguments is empty or null string.
      */
-    public void mapSku(String sku, String storeName, String storeSku) {
+    public SkuManager mapSku(String sku, String storeName, String storeSku) {
+        checkSkuMappingParams(sku, storeName, storeSku);
+
         Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
         if (skuMap == null) {
             skuMap = new HashMap<String, String>();
@@ -86,6 +92,49 @@ public class SkuManager {
 
         skuMap.put(sku, storeSku);
         storeSkuMap.put(storeSku, sku);
+        return this;
+    }
+
+    private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
+        if (TextUtils.isEmpty(sku)) {
+            throw new IllegalArgumentException("SKU can be null or empty value.");
+        }
+
+        if (TextUtils.isEmpty(storeName)) {
+            throw new IllegalArgumentException("Store name can be null or empty value.");
+        }
+
+        if (TextUtils.isEmpty(storeSku)) {
+            throw new IllegalArgumentException("Store sku can be null or empty value.");
+        }
+    }
+
+    /**
+     * Map sku and storeSku for particular sku.
+     * <p/>
+     * The best approach is to use SKU that unique in universe like <code>com.companyname.application.item</code>.
+     * Such SKU fit most of stores so it doesn't need to be mapped.
+     * <p/>
+     * If best approach is not applicable use application inner SKU in code (usually it is SKU for Google Play)
+     * and map SKU from other stores using this method. OpenIAB will map SKU in both directions,
+     * so you can use only your inner SKU
+     *
+     * @param sku       - application inner SKU
+     * @param storeSkus - Map of "store name -> sku id in store"
+     * @return Instance of {@link org.onepf.oms.SkuManager}.
+     * @throws java.lang.IllegalArgumentException If sku is empty or null string,
+     *                                            or storeSkus map is null, or
+     * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
+     */
+    public SkuManager mapSku(String sku, Map<String, String> storeSkus) {
+        if (storeSkus == null) {
+            throw new IllegalArgumentException("Store skus map can't be null.");
+        }
+
+        for (Map.Entry<String, String> entry : storeSkus.entrySet()) {
+            mapSku(sku, entry.getKey(), entry.getValue());
+        }
+        return this;
     }
 
     /**

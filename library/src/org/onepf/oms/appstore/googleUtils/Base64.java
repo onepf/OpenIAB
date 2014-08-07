@@ -33,6 +33,10 @@ package org.onepf.oms.appstore.googleUtils;
  * @version 1.3
  */
 
+import junit.framework.Assert;
+
+import org.onepf.oms.BuildConfig;
+
 /**
  * Base64 converter class. This code is not a complete MIME encoder;
  * it simply converts binary data to base64 data and back.
@@ -355,7 +359,9 @@ public class Base64 {
             e += 4;
         }
 
-        assert (e == outBuff.length);
+        if (BuildConfig.DEBUG) {
+            Assert.assertEquals(outBuff.length, e);
+        }
         return outBuff;
     }
 
