@@ -21,5 +21,5 @@ public interface PurchaseConfig {
     String SKU_FIGURES = BuildConfig.PACKAGE_NAME + ".figures";
 
     //subscription
-    String SKU_ORANGE_CELLS = BuildConfig.PACKAGE_NAME + ".orange_cells";
+    String SKU_ORANGE_CELLS = BuildConfig.PACKAGE_NAME + ".subscription.orange_cells";
 }
