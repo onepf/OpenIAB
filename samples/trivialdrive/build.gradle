@@ -7,7 +7,7 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 12
+        versionCode 13
         versionName '0.9.7'
 
         applicationId 'org.onepf.trivialdrive'
