@@ -13,10 +13,9 @@
  * limitations under the License.
  */
 
-package org.onepf.trivialdrive;
+package org.onepf.trivialdrivegame;
 
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -32,9 +31,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
