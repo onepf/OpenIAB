@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onepf.life;
+package org.onepf.lifegame;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,28 +37,26 @@ import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.onepf.oms.util.CollectionUtils;
 
 import java.util.Map;
 
 public class GameActivity extends Activity {
     public static final String TAG = "LifeOpenIab";
 
-    public static final String DEFAULT_APP_PACKAGE = "org.onepf.life";
-
     private LifeView lifeView;
     private ProgressDialog progressDialog;
 
-    final GameController gameController = new GameController();
-    final PurchaseHelper purchaseHelper = new PurchaseHelper();
+    GameController gameController;
+    PurchaseHelper purchaseHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initUI();
+        gameController = new GameController();
+        purchaseHelper = new PurchaseHelper();
 
-        if (DEFAULT_APP_PACKAGE.equals(getPackageName())) {
-            showErrorMessage(R.string.error_need_sign_app, false);
-        }
+        initUI();
 
         purchaseHelper.startSetup();
         showProgressDialog(true);
@@ -66,7 +65,7 @@ public class GameActivity extends Activity {
     /**
      * Show error message as dialog and write message to logcat.
      *
-     * @param messageResId String resources that used for message text.
+     * @param messageResId          String resources that used for message text.
      * @param finishActivityOnClose Need activity close when 'Cancel' button.
      */
     void showErrorMessage(@StringRes int messageResId, boolean finishActivityOnClose) {
@@ -281,27 +280,13 @@ public class GameActivity extends Activity {
 
     /**
      * Utility class for work with billing via OpenIAB. Before make purchase you need call
-     * {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
-     *
+     * {@link org.onepf.lifegame.GameActivity.PurchaseHelper#startSetup()}.
+     * <p/>
      * Sample work with Google Play Store and Yandex.Store.
-     *
+     * <p/>
      * Created by Kirill Rozov on 7/28/14.
      */
     public class PurchaseHelper {
-
-        //consumable
-        private static final String SKU_CHANGES = "org.onepf.life3.changes";
-
-        //non-consumable
-        private static final String SKU_FIGURES = "org.onepf.life3.figures";
-
-        //subscription
-        private static final String SKU_ORANGE_CELLS = "org.onepf.life3.orange_cells";
-
-        private static final String DEFAULT_PUBLIC_KEY = "YOUR_GOOGLE_PUBLIC_KEY";
-        public static final String GOOGLE_PUBLIC_KEY = DEFAULT_PUBLIC_KEY;
-        public static final String YANDEX_PUBLIC_KEY = DEFAULT_PUBLIC_KEY;
-
         private static final int PURCHASE_REQUEST_CODE = 10001;
 
         private OpenIabHelper openIabHelper;
@@ -313,8 +298,12 @@ public class GameActivity extends Activity {
             //public keys
             //IAB helper
             OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
-            builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PUBLIC_KEY)
-                    .addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY);
+            if (!TextUtils.isEmpty(PurchaseConfig.GOOGLE_PUBLIC_KEY)) {
+                builder.addStoreKey(OpenIabHelper.NAME_GOOGLE, PurchaseConfig.GOOGLE_PUBLIC_KEY);
+            }
+            if (!TextUtils.isEmpty(PurchaseConfig.YANDEX_PUBLIC_KEY)) {
+                builder.addStoreKey(OpenIabHelper.NAME_YANDEX, PurchaseConfig.YANDEX_PUBLIC_KEY);
+            }
 
             if (verifyStorePublicKeys(builder)) {
                 showErrorMessage(R.string.error_no_store_public_keys, true);
@@ -327,11 +316,11 @@ public class GameActivity extends Activity {
 
         private boolean verifyStorePublicKeys(OpenIabHelper.Options.Builder builder) {
             final Map<String, String> storeKeys = builder.getStoreKeys();
-            if (storeKeys == null) {
+            if (CollectionUtils.isEmpty(storeKeys)) {
                 return false;
             } else {
                 for (String storePublicKey : storeKeys.values()) {
-                    if (DEFAULT_PUBLIC_KEY.equals(storePublicKey)) {
+                    if (!TextUtils.isEmpty(storePublicKey)) {
                         return false;
                     }
                 }
@@ -344,7 +333,7 @@ public class GameActivity extends Activity {
          */
         void buyChanges() {
             String payload = "";
-            launchPurchase(SKU_CHANGES, payload);
+            launchPurchase(PurchaseConfig.SKU_CHANGES, payload);
         }
 
         private void launchPurchase(String sku, String payload) {
@@ -361,7 +350,6 @@ public class GameActivity extends Activity {
          * from {@link android.app.Activity#onActivityResult(int, int, android.content.Intent)}.
          *
          * @return Does activity result handled.
-         *
          * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
          */
         boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
@@ -373,7 +361,7 @@ public class GameActivity extends Activity {
          */
         void buyOrangeCells() {
             if (openIabHelper.getSetupState() == OpenIabHelper.SETUP_RESULT_SUCCESSFUL) {
-                openIabHelper.launchSubscriptionPurchaseFlow(GameActivity.this, SKU_ORANGE_CELLS,
+                openIabHelper.launchSubscriptionPurchaseFlow(GameActivity.this, PurchaseConfig.SKU_ORANGE_CELLS,
                         PURCHASE_REQUEST_CODE, new LifeGameOnIabPurchaseFinishedListener());
             } else {
                 showOpenIABServiceSetupError(openIabHelper.getSetupState());
@@ -385,13 +373,13 @@ public class GameActivity extends Activity {
          */
         void buyFigures() {
             String payload = "";
-            launchPurchase(SKU_FIGURES, payload);
+            launchPurchase(PurchaseConfig.SKU_FIGURES, payload);
         }
 
         /**
          * Dispose {@link org.onepf.oms.OpenIabHelper} associated with this instance
-         * of {@link org.onepf.life.GameActivity.PurchaseHelper}. After this action you can't make
-         * purchase and need restart service via {@link org.onepf.life.GameActivity.PurchaseHelper#startSetup()}.
+         * of {@link org.onepf.lifegame.GameActivity.PurchaseHelper}. After this action you can't make
+         * purchase and need restart service via {@link org.onepf.lifegame.GameActivity.PurchaseHelper#startSetup()}.
          */
         public void dispose() {
             openIabHelper.dispose();
@@ -444,12 +432,12 @@ public class GameActivity extends Activity {
 
                 Log.d(TAG, "Purchase successful.");
 
-                if (SKU_CHANGES.equals(purchase.getSku())) {
+                if (PurchaseConfig.SKU_CHANGES.equals(purchase.getSku())) {
                     openIabHelper.consumeAsync(purchase, new LifeGameOnConsumeFinishedListener());
                 } else {
-                    if (SKU_FIGURES.equals(purchase.getSku())) {
+                    if (PurchaseConfig.SKU_FIGURES.equals(purchase.getSku())) {
                         AppSettings.getInstance(GameActivity.this).setHasFigures(true);
-                    } else if (SKU_ORANGE_CELLS.equals(purchase.getSku())) {
+                    } else if (PurchaseConfig.SKU_ORANGE_CELLS.equals(purchase.getSku())) {
                         Toast.makeText(GameActivity.this, R.string.subscribe_thank, Toast.LENGTH_SHORT).show();
                         AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
                         lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
@@ -463,7 +451,7 @@ public class GameActivity extends Activity {
             public void onConsumeFinished(Purchase purchase, IabResult result) {
                 Log.d(TAG, "Consumption finished. Purchase: " + purchase + ", result: " + result);
                 if (result.isSuccess()) {
-                    if (SKU_CHANGES.equals(purchase.getSku())) {
+                    if (PurchaseConfig.SKU_CHANGES.equals(purchase.getSku())) {
                         gameController.increaseChangesCount(GameController.ADDITIONAL_CHANGES_COUNT);
                     }
                 } else {
@@ -500,20 +488,20 @@ public class GameActivity extends Activity {
              */
 
                 // check for orange cells subscription
-                Purchase orangeCellsPurchase = inventory.getPurchase(SKU_ORANGE_CELLS);
+                Purchase orangeCellsPurchase = inventory.getPurchase(PurchaseConfig.SKU_ORANGE_CELLS);
                 if (verifyDeveloperPayload(orangeCellsPurchase)) {
                     AppSettings.getInstance(GameActivity.this).setHasOrangeCells(true);
                     lifeView.setActiveCellBitmap(R.drawable.cell_active_orange);
                 }
 
                 //non-consumable figures
-                Purchase figuresPurchase = inventory.getPurchase(SKU_FIGURES);
+                Purchase figuresPurchase = inventory.getPurchase(PurchaseConfig.SKU_FIGURES);
                 if (verifyDeveloperPayload(figuresPurchase)) {
                     AppSettings.getInstance(GameActivity.this).setHasFigures(true);
                 }
 
                 //consumable changes
-                Purchase changesPurchase = inventory.getPurchase(SKU_CHANGES);
+                Purchase changesPurchase = inventory.getPurchase(PurchaseConfig.SKU_CHANGES);
                 if (verifyDeveloperPayload(changesPurchase)) {
                     openIabHelper.consumeAsync(changesPurchase, new LifeGameOnConsumeFinishedListener());
                 }

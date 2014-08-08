@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onepf.life;
+package org.onepf.lifegame;
 
 
 import android.content.Context;
@@ -29,11 +29,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
-import android.view.View;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
 
 public class LifeView extends SurfaceView {
     private static final int FIELD_PADDING = 3;
@@ -216,18 +213,19 @@ public class LifeView extends SurfaceView {
         if (figure == null) {
             field.clear();
         } else {
-            if (figure.getWidth() + FIELD_PADDING > field.getHeight()
-                    || figure.getHeight() + FIELD_PADDING > field.getWidth()) { //todo fix width check
+            if (figure.getWidth() + FIELD_PADDING > field.getWidth()
+                    || figure.getHeight() + FIELD_PADDING > field.getHeight()) { //todo fix width check
                 if (listener != null) {
                     listener.onNotEnoughSpaceForFigure(figure);
                 }
             } else {
-                for (int y = 0; y < figure.getWidth(); y++) {
+                for (int y = 0; y < figure.getHeight(); y++) {
                     final int y1 = y + FIELD_PADDING;
-                    for (int x = 0; x < figure.getHeight(); x++) {
+                    for (int x = 0; x < figure.getWidth(); x++) {
                         field.markAt(x + FIELD_PADDING, y1, figure.isMarked(x, y));
                     }
                 }
+                invalidate();
             }
         }
     }

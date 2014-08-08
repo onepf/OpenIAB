@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.onepf.life.util;
+package org.onepf.lifegame.util;
 
 import android.content.SharedPreferences;
 import android.os.Build;

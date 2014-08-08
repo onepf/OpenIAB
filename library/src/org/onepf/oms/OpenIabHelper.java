@@ -141,11 +141,12 @@ public class OpenIabHelper {
 
     public static final String NAME_GOOGLE = "com.google.play";
     public static final String NAME_AMAZON = "com.amazon.apps";
-    public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
     public static final String NAME_FORTUMO = "com.fortumo.billing";
     public static final String NAME_YANDEX = "com.yandex.store";
     public static final String NAME_NOKIA = "com.nokia.nstore";
+    public static final String NAME_APPLAND = "Appland";
+    public static final String NAME_SLIDEME = "SlideME";
 
     /**
      * @param sku       - application inner SKU
