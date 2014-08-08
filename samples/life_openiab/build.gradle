@@ -23,20 +23,19 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 31
+        versionCode 33
         versionName '2.8'
 
         applicationId 'org.onepf.lifegame'
-
-        buildConfigField 'String', 'DEFAULT_APP_PACKAGE_NAME', '"org.onepf.lifegame"'
     }
+
 
     signingConfigs {
         release {
-            storeFile file("life_openiab.keystore")
-            storePassword "android"
-            keyAlias "OpenIab"
-            keyPassword "android"
+            storeFile file("onepf.keystore")
+            storePassword "_OnePlatform789"
+            keyAlias "one platform foundation production .apk key"
+            keyPassword "_OnePlatform789"
         }
     }
 

@@ -58,10 +58,6 @@ public class GameActivity extends Activity {
 
         initUI();
 
-        if (BuildConfig.DEFAULT_APP_PACKAGE_NAME.equals(getPackageName())) {
-            showErrorMessage(R.string.error_need_sign_app, false);
-        }
-
         purchaseHelper.startSetup();
         showProgressDialog(true);
     }
