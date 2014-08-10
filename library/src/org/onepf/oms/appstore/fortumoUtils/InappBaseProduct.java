@@ -18,6 +18,7 @@ package org.onepf.oms.appstore.fortumoUtils;
 
 import android.text.TextUtils;
 
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -137,6 +138,14 @@ public class InappBaseProduct {
         } else {
             return basePrice;
         }
+    }
+
+    public String getPriceDetails() {
+        Locale defaultLocale = Locale.getDefault();
+        Float mapValue = localeToPrice.get(defaultLocale.getCountry());
+        float price = mapValue != null ? mapValue : basePrice;
+        String symbol = mapValue != null ? Currency.getInstance(defaultLocale).getSymbol() : Currency.getInstance(Locale.US).getSymbol();
+        return String.format("%.2f %s", price, symbol);
     }
 
     public float getBasePrice() {

@@ -270,19 +270,24 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             final String serviceId = isNook ? fortumoDetails.getNookServiceId() : fortumoDetails.getServiceId();
             final String serviceInAppSecret = isNook ? fortumoDetails.getNookInAppSecret() : fortumoDetails.getServiceInAppSecret();
             List fetchedPriceData = MpUtils.getFetchedPriceData(context, serviceId, serviceInAppSecret);
+            String price = null;
             if (fetchedPriceData == null || fetchedPriceData.size() == 0) {
                 final boolean supportedOperator = MpUtils.isSupportedOperator(context, serviceId, serviceInAppSecret);
                 if (supportedOperator) {
                     fetchedPriceData = MpUtils.getFetchedPriceData(context, serviceId, serviceInAppSecret);
-                } else {
-                    Logger.d(productId, " not available for this carrier");
-                    itemsNotSupportedCount++;
-                    continue;
                 }
             }
-            String price = null;
             if (fetchedPriceData != null && !fetchedPriceData.isEmpty()) {
                 price = (String) fetchedPriceData.get(0);
+            }
+            if (TextUtils.isEmpty(price)) {
+                price = item.getPriceDetails();
+                if (TextUtils.isEmpty(price)) {
+                    Logger.d(productId, " not available for this carrier and the price is not specified in the inapps_products.xml");
+                    itemsNotSupportedCount++;
+                    continue;
+
+                }
             }
             FortumoProduct fortumoProduct = new FortumoProduct(item, fortumoDetails, price);
             map.put(productId, fortumoProduct);
