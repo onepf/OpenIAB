@@ -10,10 +10,17 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Created by krozov on 08.08.14.
  */
-public final class PackageManagerUtils {
-    private PackageManagerUtils() {
+public final class Utils {
+    private Utils() {
     }
 
+    /**
+     * Verify does AndroidManifest contains permission.
+     *
+     * @param context    Context of application. Need for access to {@link android.content.pm.PackageManager}.
+     * @param permission Require permission.
+     * @return true if permission described, otherwise - false.
+     */
     public static boolean hasRequestedPermission(@NotNull Context context, final String permission) {
         if (TextUtils.isEmpty(permission)) {
             throw new IllegalArgumentException("Permission can't be null or empty.");

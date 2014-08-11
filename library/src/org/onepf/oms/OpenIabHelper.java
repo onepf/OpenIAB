@@ -48,14 +48,13 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.Security;
 import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
-import org.onepf.oms.util.PackageManagerUtils;
+import org.onepf.oms.util.Utils;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -348,7 +347,7 @@ public class OpenIabHelper {
                     }
                     //Nokia TODO change logic
                     stores2check.add(new NokiaStore(context));
-                    if (!PackageManagerUtils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
+                    if (!Utils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
                         Logger.w("Required permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
                     }
                 }
@@ -579,7 +578,7 @@ public class OpenIabHelper {
 
     private static void checkNokia(Options options, Context context) {
         if (options.hasAvailableStoreWithName(NAME_NOKIA)
-                && !PackageManagerUtils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
+                && !Utils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
             throw new IllegalStateException("Nokia permission \"" +
                     NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
         }
