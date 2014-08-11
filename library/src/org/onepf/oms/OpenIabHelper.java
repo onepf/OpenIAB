@@ -83,7 +83,6 @@ public class OpenIabHelper {
     private static final int DEFAULT_DISCOVER_TIMEOUT = 5 * 1000;
 
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
-    private static final String NOKIA_BILLING_PERMISSION = "com.nokia.payment.BILLING";
 
     /**
      * Used for all communication with Android services
@@ -347,8 +346,9 @@ public class OpenIabHelper {
                     }
                     //Nokia TODO change logic
                     stores2check.add(new NokiaStore(context));
-                    if (!Utils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
-                        Logger.w("Required permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
+                    if (!Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
+                        Logger.w("Required permission \""+
+                                NokiaStore.NOKIA_BILLING_PERMISSION+"\" NOT REQUESTED");
                     }
                 }
 
@@ -578,9 +578,9 @@ public class OpenIabHelper {
 
     private static void checkNokia(Options options, Context context) {
         if (options.hasAvailableStoreWithName(NAME_NOKIA)
-                && !Utils.hasRequestedPermission(context, NOKIA_BILLING_PERMISSION)) {
+                && !Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
             throw new IllegalStateException("Nokia permission \"" +
-                    NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
+                    NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
         }
     }
 
