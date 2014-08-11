@@ -19,6 +19,7 @@ package org.onepf.oms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -199,8 +200,9 @@ public class OpenIabHelper {
      * @deprecated Use {@link org.onepf.oms.SkuManager#getAllStoreSkus(String)}
      */
     public static List<String> getAllStoreSkus(final String appstoreName) {
-        final List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(appstoreName);
-        return allStoreSkus == null ? Collections.<String>emptyList() : allStoreSkus;
+        final Collection<String> allStoreSkus =
+                SkuManager.getInstance().getAllStoreSkus(appstoreName);
+        return allStoreSkus == null ? Collections.<String>emptyList() : new ArrayList<>(allStoreSkus);
     }
 
     /**
@@ -604,7 +606,7 @@ public class OpenIabHelper {
 
 
     private static void checkSamsung(Context context) {
-        List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        Collection<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!CollectionUtils.isEmpty(allStoreSkus)) { // it means that Samsung is among the candidates
             for (String sku : allStoreSkus) {
                 SamsungApps.checkSku(sku);
