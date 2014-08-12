@@ -16,23 +16,47 @@
 
 package org.onepf.oms.util;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Different utils for arrays, collections and maps.
+ *
+ * @author Kirill Rozov
+ */
 public final class CollectionUtils {
-    public static boolean isEmpty(Map<?, ?> list) {
-        return list == null || list.isEmpty();
+    /**
+     * Verify does map null or empty.
+     *
+     * @param map Map to verify.
+     * @return Does map null or empty.
+     */
+    public static boolean isEmpty(@Nullable Map<?, ?> map) {
+        return map == null || map.isEmpty();
     }
 
-    public static boolean isEmpty(Collection<?> list) {
-        return list == null || list.isEmpty();
+    /**
+     * Verify does collection null or empty.
+     *
+     * @param collection Collection to verify.
+     * @return Does collection null or empty.
+     */
+    public static boolean isEmpty(@Nullable Collection<?> collection) {
+        return collection == null || collection.isEmpty();
     }
 
-    public static <E> boolean isEmpty(E[] array) {
+    /**
+     * Verify does array null or empty.
+     *
+     * @param array Array to verify.
+     * @return Does array null or empty.
+     */
+    public static boolean isEmpty(@Nullable Object[] array) {
         return array == null || array.length == 0;
     }
 
-    private CollectionUtils(){
-
+    private CollectionUtils() {
     }
 }

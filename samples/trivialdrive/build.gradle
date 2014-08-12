@@ -15,10 +15,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("trivialdrive.keystore")
-            storePassword "android"
-            keyAlias "OpenIab"
-            keyPassword "android"
+            storeFile file("onepf.keystore")
+            storePassword "_OnePlatform789"
+            keyAlias "one platform foundation production .apk key"
+            keyPassword "_OnePlatform789"
         }
     }
 
