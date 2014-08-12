@@ -29,7 +29,6 @@ android {
         applicationId 'org.onepf.lifegame'
     }
 
-
     signingConfigs {
         release {
             storeFile file("life_openiab.keystore")
