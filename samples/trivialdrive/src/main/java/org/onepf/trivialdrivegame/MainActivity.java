@@ -207,10 +207,35 @@ public class MainActivity extends Activity {
 
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
+        //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         SkuManager.getInstance()
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS_NOKIA_STORE)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE);
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_YANDEX, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_YANDEX, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_YANDEX, SKU_PREMIUM)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, SKU_PREMIUM)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_APPLAND, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, SKU_PREMIUM)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_SLIDEME, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_GOOGLE, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_GOOGLE, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_GOOGLE, SKU_PREMIUM)
+
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_FORTUMO, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_FORTUMO, SKU_GAS)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_FORTUMO, SKU_PREMIUM);
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
                 .addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PLAY_KEY)
                 .addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY)
