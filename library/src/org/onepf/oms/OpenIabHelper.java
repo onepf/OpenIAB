@@ -19,6 +19,7 @@ package org.onepf.oms;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,13 +49,13 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.Security;
 import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -62,6 +63,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.text.TextUtils;
 
 /**
  * @author Boris Minaev, Oleg Orlov, Kirill Rozov
@@ -87,6 +89,7 @@ public class OpenIabHelper {
      * Used for all communication with Android services
      */
     private final Context context;
+
     /**
      * Necessary to initialize SamsungApps. For other stuff {@link #context} is used
      */
@@ -141,16 +144,18 @@ public class OpenIabHelper {
 
     public static final String NAME_GOOGLE = "com.google.play";
     public static final String NAME_AMAZON = "com.amazon.apps";
-    public static final String NAME_TSTORE = "com.tmobile.store";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
     public static final String NAME_FORTUMO = "com.fortumo.billing";
     public static final String NAME_YANDEX = "com.yandex.store";
     public static final String NAME_NOKIA = "com.nokia.nstore";
+    public static final String NAME_APPLAND = "Appland";
+    public static final String NAME_SLIDEME = "SlideME";
 
     /**
      * @param sku       - application inner SKU
      * @param storeSku  - shouldn't duplicate already mapped values
-     * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON} {@link #NAME_GOOGLE} {@link #NAME_TSTORE}
+     * @param storeName - @see {@link IOpenAppstore#getAppstoreName()} or {@link #NAME_AMAZON}, {@link #NAME_GOOGLE}
+     * @throws java.lang.IllegalArgumentException If one of arguments is empty or null string.
      * @deprecated Use {@link org.onepf.oms.SkuManager#mapSku(String, String, String)}
      * <p/>
      * Map sku and storeSku for particular store.
@@ -167,7 +172,7 @@ public class OpenIabHelper {
     }
 
     /**
-     * @param appstoreName
+     * @param appstoreName - Name of store.
      * @param sku          - inner SKU
      * @return SKU used in store for specified inner SKU
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
@@ -195,8 +200,9 @@ public class OpenIabHelper {
      * @deprecated Use {@link org.onepf.oms.SkuManager#getAllStoreSkus(String)}
      */
     public static List<String> getAllStoreSkus(final String appstoreName) {
-        final List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(appstoreName);
-        return allStoreSkus == null ? Collections.<String>emptyList() : allStoreSkus;
+        final Collection<String> allStoreSkus =
+                SkuManager.getInstance().getAllStoreSkus(appstoreName);
+        return allStoreSkus == null ? Collections.<String>emptyList() : new ArrayList<>(allStoreSkus);
     }
 
     /**
@@ -332,7 +338,7 @@ public class OpenIabHelper {
                     try {
                         OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
                         stores2check.add(new AmazonAppstore(context));
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException ignored) {
                     }
 
                     if (!CollectionUtils.isEmpty(SkuManager.getInstance().getAllStoreSkus(NAME_SAMSUNG))) {
@@ -342,8 +348,9 @@ public class OpenIabHelper {
                     }
                     //Nokia TODO change logic
                     stores2check.add(new NokiaStore(context));
-                    if (!hasRequestedPermission(context, "com.nokia.payment.BILLING")) {
-                        Logger.w("Required permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
+                    if (!Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
+                        Logger.w("Required permission \""+
+                                NokiaStore.NOKIA_BILLING_PERMISSION+"\" NOT REQUESTED");
                     }
                 }
 
@@ -452,10 +459,12 @@ public class OpenIabHelper {
                 if (entry.getValue() == null) {
                     throw new IllegalArgumentException("Null publicKey for store: " + entry.getKey() + ", key: " + entry.getValue());
                 }
+
                 try {
                     Security.generatePublicKey(entry.getValue());
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("Invalid publicKey for store: " + entry.getKey() + ", key: " + entry.getValue(), e);
+                    throw new IllegalArgumentException("Invalid publicKey for store: "
+                            + entry.getKey() + ", key: " + entry.getValue(), e);
                 }
             }
         }
@@ -571,26 +580,10 @@ public class OpenIabHelper {
 
     private static void checkNokia(Options options, Context context) {
         if (options.hasAvailableStoreWithName(NAME_NOKIA)
-                && !hasRequestedPermission(context, "com.nokia.payment.BILLING")) {
-            throw new IllegalStateException("Nokia permission \"com.nokia.payment.BILLING\" NOT REQUESTED");
+                && !Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
+            throw new IllegalStateException("Nokia permission \"" +
+                    NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
         }
-    }
-
-    //todo move to Utils
-    private static boolean hasRequestedPermission(Context context, String permission) {
-        try {
-            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
-            if (info.requestedPermissions != null) {
-                for (String p : info.requestedPermissions) {
-                    if (p.equals(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (NameNotFoundException e) {
-            Logger.e(e, "Error during checking permissions.");
-        }
-        return false;
     }
 
     //todo move to Utils
@@ -613,7 +606,7 @@ public class OpenIabHelper {
 
 
     private static void checkSamsung(Context context) {
-        List<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
+        Collection<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!CollectionUtils.isEmpty(allStoreSkus)) { // it means that Samsung is among the candidates
             for (String sku : allStoreSkus) {
                 SamsungApps.checkSku(sku);
@@ -868,12 +861,13 @@ public class OpenIabHelper {
             }
         }
         // use random if found stores with same version of package  
-        if (sameVersion.size() > 0) {
+        if (!sameVersion.isEmpty()) {
             return sameVersion.get(new Random().nextInt(sameVersion.size()));
-        } else if (higherVersion.size() > 0) {  // or one of higher version
+        } else if (!higherVersion.isEmpty()) {  // or one of higher version
             return higherVersion.get(new Random().nextInt(higherVersion.size()));
         } else {                                // ok, return no matter what
-            return new ArrayList<Appstore>(candidates.values()).get(new Random().nextInt(candidates.size()));
+            return new ArrayList<Appstore>(candidates.values())
+                    .get(new Random().nextInt(candidates.size()));
         }
     }
 
@@ -1471,7 +1465,7 @@ public class OpenIabHelper {
         }
 
         public boolean hasAvailableStoreWithName(@NotNull String name) {
-            if (availableStores != null) {
+            if (!CollectionUtils.isEmpty(availableStores)) {
                 for (Appstore s : availableStores) {
                     if (name.equals(s.getAppstoreName())) {
                         return true;
@@ -1607,7 +1601,9 @@ public class OpenIabHelper {
              *
              * @param storeName Name of store.
              * @param publicKey Key of store.
-             * @throws java.lang.IllegalArgumentException if storeName is null.
+             * @throws java.lang.IllegalArgumentException If value pair (storeName, publicKey) can't be add.
+             *                                            It can be when store name empty or null,
+             *                                            or store public key is not in base64 decode format.
              * @see org.onepf.oms.OpenIabHelper.Options#getStoreKeys()
              */
             public Builder addStoreKey(String storeName, String publicKey) {
@@ -1621,8 +1617,23 @@ public class OpenIabHelper {
             }
 
             private static void checkStoreKeyParam(String storeName, String publicKey) {
-                if (storeName == null) {
-                    throw new IllegalArgumentException("Store name can't be null value.");
+                if (TextUtils.isEmpty(storeName)) {
+                    throw new IllegalArgumentException(
+                            "Store name can't be null or empty value.");
+                }
+
+                if (TextUtils.isEmpty(publicKey)) {
+                    throw new IllegalArgumentException(
+                            "Store public key can't be null or empty value.");
+                }
+
+                try {
+                    Security.generatePublicKey(publicKey);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(
+                            String.format("Invalid publicKey for store: %s, key: %s.",
+                                    storeName, publicKey),
+                            e);
                 }
             }
 
@@ -1644,7 +1655,8 @@ public class OpenIabHelper {
              * Add store keys to options.
              *
              * @param storeKeys Map storeName - store public key.
-             * @throws java.lang.IllegalArgumentException if one of store names is null.
+             * @throws java.lang.IllegalArgumentException If one of item in map can't be add.
+             * @see org.onepf.oms.OpenIabHelper.Options.Builder#addStoreKeys(java.util.Map)
              * @see org.onepf.oms.OpenIabHelper.Options#getStoreKeys()
              */
             public Builder addStoreKeys(Map<String, String> storeKeys) {

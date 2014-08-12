@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package org.onepf.life;
+package org.onepf.lifegame;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.util.Arrays;
 
 /**
  * Package org.onepf.life

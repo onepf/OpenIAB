@@ -20,7 +20,11 @@ import android.text.TextUtils;
 import android.util.Log;
 
 /**
- * Utility for log events.
+ * Utility for log events. For log event set
+ * {@link #setLoggable(boolean)} to true.
+ * <p/>
+ * For correct use log event with timing like {@link #dWithTimeFromUp(String)}
+ * or {@link #dWithTimeFromUp(Object...)}, you must init start time via call {@link #init}.
  *
  * @author Kirill Rozov
  * @since 25.07.14

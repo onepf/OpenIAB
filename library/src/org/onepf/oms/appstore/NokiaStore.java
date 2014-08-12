@@ -33,7 +33,8 @@ import java.util.List;
 
 public class NokiaStore extends DefaultAppstore {
 
-	private final Context context;
+    public static final String NOKIA_BILLING_PERMISSION = "com.nokia.payment.BILLING";
+    private final Context context;
 
 	private              NokiaStoreHelper billingService = null;
 
