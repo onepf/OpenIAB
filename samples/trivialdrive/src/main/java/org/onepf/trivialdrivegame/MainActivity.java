@@ -93,12 +93,12 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
     // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
-    public static final String SKU_PREMIUM = BuildConfig.PACKAGE_NAME + ".sku_premium";
+    public static final String SKU_PREMIUM = "sku_premium";
 
-    public static final String SKU_GAS = BuildConfig.PACKAGE_NAME + ".sku_gas";
+    public static final String SKU_GAS = "sku_gas";
 
     // SKU for our subscription (infinite gas)
-    public static final String SKU_INFINITE_GAS = BuildConfig.PACKAGE_NAME + ".sku_infinite_gas";
+    public static final String SKU_INFINITE_GAS = "sku_infinite_gas";
 
     /**
      * Google play public key.
