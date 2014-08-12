@@ -22,9 +22,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.util.Logger;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -185,13 +187,14 @@ public class SkuManager {
      * @see #mapSku(String, String, String)
      */
     @Nullable
-    public Collection<String> getAllStoreSkus(@NotNull final String appstoreName) {
+    public List<String> getAllStoreSkus(@NotNull final String appstoreName) {
         if (TextUtils.isEmpty(appstoreName)) {
             throw new IllegalArgumentException("Store name can't be null.");
         }
 
         Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-        return skuMap == null ? null : Collections.unmodifiableCollection(skuMap.values());
+        return skuMap == null ? null :
+                Collections.unmodifiableList(new ArrayList<String>(skuMap.values()));
     }
 
     public static SkuManager getInstance() {

@@ -202,7 +202,8 @@ public class OpenIabHelper {
     public static List<String> getAllStoreSkus(final String appstoreName) {
         final Collection<String> allStoreSkus =
                 SkuManager.getInstance().getAllStoreSkus(appstoreName);
-        return allStoreSkus == null ? Collections.<String>emptyList() : new ArrayList<>(allStoreSkus);
+        return allStoreSkus == null ? Collections.<String>emptyList()
+                : new ArrayList<String>(allStoreSkus);
     }
 
     /**
