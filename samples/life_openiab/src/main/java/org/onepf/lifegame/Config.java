@@ -13,12 +13,12 @@ public final class Config {
     /**
      * Public key for Yandex.Store.
      */
-    public static final String YANDEX_PUBLIC_KEY = "";
+    public static final String YANDEX_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl+f8rFyrOHu9jOKn9Aj1Cg+y7T4BP24YuPWjTdZJ3sjY50qYYuBIGKQKiQ7t/8R+d+zui1+HYWieVqomy/dO/f5AThjgVl43a3WeJbCJzK+2ctXLfDbyiDpHYJKs01japLMPqXNfOYxL4NqR6anJWS2SKpCaKDyasFXZ5axDmH/kScuYM2MksCudRoxRTHriKgBPuRG6GLmbPBa9FCxcBq9g5WBhuztZl+JBdyBrY9seYD3dv0PtD5RMBzJuNv9mqaQe6vlYUITDuR7ZnJOE9HyeDvSZieKcDAgHq+SPUBNTHpsfC+ZuK8uXqtEBuHjz0wweLrfw3AOGy6jdhNKfdwIDAQAB";
 
     /**
      * Public key for Google Play.
      */
-    public static final String GOOGLE_PLAY_PUBLIC_KEY = "";
+    public static final String GOOGLE_PLAY_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgjIHTYMXI0oCR0QRtxKwt4bEYBiMmXujSqAiyEq+3g6Hnb1+UkxaQR5C8hwxu6KA1wR/61kMP+/KzFjz1Zr1VGQquJ3bWSAnbnF1ypDVu9nLeyraDBPlPVLrQNtu0OvkbMJp6WX81z/Y8LaxvAGVSh/vSG84/IrTJ5y8iJq9JN/zGecdR4J7/zD+R/K8b8vYQBhJ7vsTBbowR8oJ3HDVQHFX0BBqTfTJp6uszG6JeleKfhrzyEsNBM8WXS9sAlDY6CGhm9ZFGLHLHRUQBTScgYX7t4Ne8gOKaVsUcsUCCpc5/MhS52e/TNbYBfV/fejcqXtpfvLXk0WNA0q9dj1wZwIDAQAB";
 
     /**
      * Public key for Appland store.
@@ -70,8 +70,8 @@ public final class Config {
         STORE_KEYS_MAP = new HashMap<>();
         STORE_KEYS_MAP.put(OpenIabHelper.NAME_GOOGLE, Config.GOOGLE_PLAY_PUBLIC_KEY);
         STORE_KEYS_MAP.put(OpenIabHelper.NAME_YANDEX, Config.YANDEX_PUBLIC_KEY);
-        STORE_KEYS_MAP.put(OpenIabHelper.NAME_APPLAND, Config.APPLAND_PUBLIC_KEY);
-        STORE_KEYS_MAP.put(OpenIabHelper.NAME_SLIDEME, Config.SLIDEME_PUBLIC_KEY);
+//        STORE_KEYS_MAP.put(OpenIabHelper.NAME_APPLAND, Config.APPLAND_PUBLIC_KEY);
+//        STORE_KEYS_MAP.put(OpenIabHelper.NAME_SLIDEME, Config.SLIDEME_PUBLIC_KEY);
 
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         SkuManager.getInstance()
