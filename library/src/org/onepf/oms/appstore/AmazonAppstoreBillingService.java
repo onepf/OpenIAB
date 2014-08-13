@@ -289,7 +289,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void onPurchaseResponse(final PurchaseResponse purchaseResponse) {
-         Logger.v("onPurchaseResponse() PurchaseRequestStatus:", purchaseResponse.getPurchaseRequestStatus());
+        Logger.v("onPurchaseResponse() PurchaseRequestStatus:", purchaseResponse.getPurchaseRequestStatus());
 
         IabResult result = null;
         Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
@@ -299,7 +299,7 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "userId doesn't match purchase.userId");
         } else {
             switch (purchaseResponse.getPurchaseRequestStatus()) {
-                case SUCCESSFUL :
+                case SUCCESSFUL:
                     final Receipt receipt = purchaseResponse.getReceipt();
                     final String storeSku = receipt.getSku();
 
@@ -317,13 +317,13 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                     //printReceipt(purchaseResponse.getReceipt());
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
                     break;
-                case ALREADY_ENTITLED :
+                case ALREADY_ENTITLED:
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Already owned");
                     break;
-                case FAILED :
+                case FAILED:
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED, "Purchase failed");
                     break;
-                case INVALID_SKU :
+                case INVALID_SKU:
                     result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Invalid sku");
                     break;
             }
@@ -338,19 +338,19 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     /**
      * Converts purchase response to json for transfer with purchase object
-     *   
+     * <p/>
      * <pre>
-     {
-        "orderId"           : "purchaseResponse.getRequestId"
-        "productId"         : "receipt.getSku"
-        "purchaseStatus"    : "purchaseRequestStatus.name"
-        "userId"            : "purchaseResponse.getUserId()" // can be null
-        "itemType"          : "receipt.getItemType().name()" // if non-null
-        "purchaseToken"     : "receipt.purchaseToken"
-     } </pre>
-     * 
-     * @param purchaseResponse
-     * @return
+     * {
+     * "orderId"           : "purchaseResponse.getRequestId"
+     * "productId"         : "receipt.getSku"
+     * "purchaseStatus"    : "purchaseRequestStatus.name"
+     * "userId"            : "purchaseResponse.getUserId()" // can be null
+     * "itemType"          : "receipt.getItemType().name()" // if non-null
+     * "purchaseToken"     : "receipt.purchaseToken"
+     * } </pre>
+     *
+     * @param purchaseResponse Purchase to convert.
+     * @return Generate JSON from purchase.
      */
     private String generateOriginalJson(PurchaseResponse purchaseResponse) {
         JSONObject json = new JSONObject();
@@ -361,7 +361,8 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             if (purchaseResponse.getPurchaseRequestStatus() != null)
                 json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
             json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
-            if (receipt.getItemType() != null) json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            if (receipt.getItemType() != null)
+                json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
             json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
             Logger.d("generateOriginalJson(): JSON\n", json);
         } catch (JSONException e) {
@@ -382,14 +383,14 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void dispose() {
-        
+
     }
 
     @Override
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         return false;
     }
-    
+
     private void storeRequestListener(String requestId, IabHelper.OnIabPurchaseFinishedListener listener) {
         mRequestListeners.put(requestId, listener);
     }

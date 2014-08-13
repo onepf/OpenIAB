@@ -350,8 +350,8 @@ public class OpenIabHelper {
                     //Nokia TODO change logic
                     stores2check.add(new NokiaStore(context));
                     if (!Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
-                        Logger.w("Required permission \""+
-                                NokiaStore.NOKIA_BILLING_PERMISSION+"\" NOT REQUESTED");
+                        Logger.w("Required permission \"" +
+                                NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
                     }
                 }
 
@@ -442,7 +442,7 @@ public class OpenIabHelper {
     }
 
     /**
-     * Must be called after setup is finished. See {@link #startSetup(OnIabSetupFinishedListener)}
+     * Must be called after setup is finished. See {@link org.onepf.oms.OpenIabHelper#startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener)}
      *
      * @return <code>null</code> if no appstore connected, otherwise name of Appstore OpenIAB has connected to.
      */
@@ -749,7 +749,7 @@ public class OpenIabHelper {
      *
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
-     * @see {@link org.onepf.oms.OpenIabHelper#CHECK_INVENTORY_TIMEOUT} to set timout value
+     * @see org.onepf.oms.OpenIabHelper@CHECK_INVENTORY_TIMEOUT
      */
     protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
@@ -1017,7 +1017,7 @@ public class OpenIabHelper {
     }
 
     /**
-     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventoryAsync");
@@ -1028,7 +1028,7 @@ public class OpenIabHelper {
     }
 
     /**
-     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventoryAsync");
@@ -1039,7 +1039,7 @@ public class OpenIabHelper {
     }
 
     /**
-     * For details see {@link #queryInventoryAsync(boolean, List, List, QueryInventoryFinishedListener)}
+     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
      */
     public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventoryAsync");
