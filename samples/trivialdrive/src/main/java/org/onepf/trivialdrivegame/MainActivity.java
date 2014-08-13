@@ -210,7 +210,7 @@ public class MainActivity extends Activity {
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         SkuManager.getInstance()
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS_NOKIA_STORE)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_GAS_NOKIA_STORE)
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE)
 
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_YANDEX, SKU_INFINITE_GAS)
