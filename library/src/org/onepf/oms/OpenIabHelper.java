@@ -1257,7 +1257,7 @@ public class OpenIabHelper {
          * If purchases have been found in the only store that store will be used for further purchases.
          * If purchases have been found in multiple stores only such stores will be used for further elections
          */
-        public boolean checkInventory = true;
+        public boolean checkInventory;
 
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getCheckInventoryTimeout()}
