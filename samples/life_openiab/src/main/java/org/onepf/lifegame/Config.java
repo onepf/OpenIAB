@@ -34,20 +34,19 @@ public final class Config {
      * SKU of purchase that add 50 addition changes.
      */
     //consumable
-    public static final String SKU_CHANGES = BuildConfig.PACKAGE_NAME + ".changes";
+    public static final String SKU_CHANGES = "changes";
 
     /**
      * SKU of purchase that unlock new figures.
      */
     //non-consumable
-    public static final String SKU_FIGURES = BuildConfig.PACKAGE_NAME + ".figures";
+    public static final String SKU_FIGURES = "figures";
 
     /**
      * SKU of purchase that unlock orange cells of one month.
      */
     //subscription
-    public static final String SKU_ORANGE_CELLS = BuildConfig.PACKAGE_NAME
-            + ".subscription.orange_cells";
+    public static final String SKU_ORANGE_CELLS = "subscription.orange_cells";
 
     /**
      * Nokia Store specific SKU for {@link #SKU_CHANGES}
