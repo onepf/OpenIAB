@@ -31,7 +31,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("life_openiab.keystore")
+            storeFile file("onepf.keystore")
             storePassword "android"
             keyAlias "OpenIab"
             keyPassword "android"
