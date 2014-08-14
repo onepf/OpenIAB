@@ -32,9 +32,9 @@ android {
     signingConfigs {
         release {
             storeFile file("onepf.keystore")
-            storePassword "_OnePlatform789"
-            keyAlias "one platform foundation production .apk key"
-            keyPassword "_OnePlatform789"
+            storePassword "android"
+            keyAlias "OpenIab"
+            keyPassword "android"
         }
     }
 
@@ -57,8 +57,9 @@ android {
 }
 
 dependencies {
-    compile 'org.onepf:openiab:0.9.7'
-    compile 'com.intellij:annotations:12.0'
+    compile fileTree(dir: 'libs', include: '*.jar')
+    compile project(':OpenIab Library')
+
     compile 'com.android.support:support-annotations:19.+'
     compile 'com.android.support:support-v4:19.+'
     compile 'com.google.code.gson:gson:2.2.+'
