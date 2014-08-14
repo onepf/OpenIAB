@@ -483,6 +483,51 @@ Basic Principles
 * **Open In-App Billing protocol** - OpenIAB is designed to provide a lightweight solution that supports hundreds of appstores. When app store implements OpenIAB protocol on app store side all applications with OpenIAB become fully compatible with new app store without recompiling.
 * **No middle man**
 
+How to Work with multiplе build variants in library
+=====
+
+[New build system (NBS)][2] is using in library for build version of jar with or without 
+support Fortumo (for build Unity plugin).
+Version without fortumo doesn't include fortumo library and remove all code, that contains fortumo code.
+
+In library described two flavors:
+
+```groovy
+ noFortumo {
+    buildConfigField "boolean", "FORTUMO_ENABLE", "false"
+ }
+ complete {
+    buildConfigField "boolean", "FORTUMO_ENABLE", "true"
+ }
+```
+
+and three build types:
+```groovy
+ debug
+ release
+ unity {
+     runProguard true
+     proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
+ }
+```
+
+Flavors need for boolean generate FORTUMO_ENABLE constant in BuildConfig class.
+We use this constant in condition for remove code about fortumo.
+
+Build types debug and release are the same that in default building.
+Only `Unity` build type run proguard in project.
+
+If you don't wanna remove fortumo code, you must use `completeDebug` or `completeRelease` build
+variant. For remove fortumo code you must use `noFortumoUnity` build variant.<br>
+<br>
+
+In you project you must add dependencies on library project<br>
+
+```groovy
+   flavor1Compile project(path: ':OpenIab Library', configuration: 'completeRelease')
+   flavor2Compile project(path: ':OpenIab Library', configuration: 'noFortumoUnity')
+```
+
 No Middle Man
 =====
 OpenIAB is an open source library that handles OpenIAB protocol and wraps some already existing IAB SDKs as well.
@@ -512,3 +557,4 @@ The OpenIAB API specification and the related texts are available under the term
 http://creativecommons.org/licenses/by/2.5/
 
 [1]: http://search.maven.org/remotecontent?filepath=org/onepf/openiab/0.9.7/openiab-0.9.7.jar
+[2]: http://tools.android.com/tech-docs/new-build-system
