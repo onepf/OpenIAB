@@ -749,7 +749,7 @@ public class OpenIabHelper {
      *
      * @param availableStores - list of stores to check
      * @return list of stores with non-empty inventory
-     * @see org.onepf.oms.OpenIabHelper@CHECK_INVENTORY_TIMEOUT
+     * @see org.onepf.oms.OpenIabHelper#CHECK_INVENTORY_TIMEOUT
      */
     protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
         String packageName = context.getPackageName();
@@ -778,16 +778,18 @@ public class OpenIabHelper {
                         public void run() {
                             try {
                                 Inventory inventory = billingService.queryInventory(false, null, null);
-                                if (inventory.getAllPurchases().size() > 0) {
+                                if (!inventory.getAllPurchases().isEmpty()) {
                                     equippedStores.add(appstore);
                                 }
-                                Logger.dWithTimeFromUp("inventoryCheck() in ", appstore.getAppstoreName(), " found: ", inventory.getAllPurchases().size(), " purchases");
+                                Logger.dWithTimeFromUp("inventoryCheck() in ",
+                                        appstore.getAppstoreName(), " found: ",
+                                        inventory.getAllPurchases().size(), " purchases");
                             } catch (IabException e) {
                                 Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName());
                             }
                             storeRemains.countDown();
                         }
-                    }, "inv-check[" + appstore.getAppstoreName() + "]").start();
+                    }, "inv-check[" + appstore.getAppstoreName() + ']').start();
                 }
             });
         }

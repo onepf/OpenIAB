@@ -358,11 +358,13 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
             Receipt receipt = purchaseResponse.getReceipt();
             json.put(JSON_KEY_ORDER_ID, purchaseResponse.getRequestId());
             json.put(JSON_KEY_PRODUCT_ID, receipt.getSku());
-            if (purchaseResponse.getPurchaseRequestStatus() != null)
+            if (purchaseResponse.getPurchaseRequestStatus() != null) {
                 json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+            }
             json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
-            if (receipt.getItemType() != null)
+            if (receipt.getItemType() != null) {
                 json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            }
             json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
             Logger.d("generateOriginalJson(): JSON\n", json);
         } catch (JSONException e) {
