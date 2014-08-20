@@ -19,7 +19,7 @@ Or download [the latest JAR][1] or grab via Gradle:
    ```
 
 2. Map Google Play SKUs to Yandex/Amazon/etc SKUs like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L211
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L211
 
 3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
 When setup is done call  `helper.queryInventory()`
@@ -36,10 +36,10 @@ When setup is done call  `helper.queryInventory()`
               }
       });
     ```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L254
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L254
 
 4. Handle the results of `helper.queryInventory()` in an inventory listener and update UI to show what was purchased
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L570
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L570
 
 5. To process purchases you need to override `onActivityResult()` of your Activity
     ```java
@@ -50,16 +50,16 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/
        }
     ```
 When the user requests purchase of an item, call  `helper.launchPurchaseFlow()`
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L306
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L306
 and handle the results with the listener
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L418
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L418
 
 6. If the user has purchased a consumable item, call  ``` helper.consume() ```
 to remove it from the inventory. If it is not removed from the invetnory, the store assumes it as non-consumable item and still will not allow it to be purchased more than once. Also it will be returned by ``` helper.queryInventory() ``` next time
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L437
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L437
 
 7. Specify keys for different stores like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/org/onepf/trivialdrive/MainActivity.java#L240
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L240
 
 8. Add the required permissions to the AndroidManifest.xml
 
