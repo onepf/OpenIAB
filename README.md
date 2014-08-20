@@ -2,11 +2,11 @@ How To add OpenIAB into an app
 =====
 1. Download the latest version of OpenIAB.jar from http://www.onepf.org/openiab and attach it to the project.
 Or clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
-Or download [the latest JAR][1] or grab via Gradle:
+Or download [the latest release JARS][1] or grab via Gradle:
    ```groovy
-   compile 'org.onepf:openiab:0.9.7'
+   compile 'org.onepf:openiab:0.9.7' // Fortumo inside
    //or
-   compile 'org.onepf:openiab:0.9.7.1:noFortumo'
+   compile 'org.onepf:openiab:0.9.7.1:noFortumo'// no Fortumo, less 
    
    ```
    or Maven:
@@ -559,5 +559,5 @@ http://www.apache.org/licenses/LICENSE-2.0
 The OpenIAB API specification and the related texts are available under the terms of the Creative Commons Attribution 2.5 license:
 http://creativecommons.org/licenses/by/2.5/
 
-[1]: http://search.maven.org/remotecontent?filepath=org/onepf/openiab/0.9.7/openiab-0.9.7.jar
+[1]: https://github.com/onepf/OpenIAB/releases/
 [2]: http://tools.android.com/tech-docs/new-build-system
