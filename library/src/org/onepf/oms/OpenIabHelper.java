@@ -150,6 +150,8 @@ public class OpenIabHelper {
     public static final String NAME_NOKIA = "com.nokia.nstore";
     public static final String NAME_APPLAND = "Appland";
     public static final String NAME_SLIDEME = "SlideME";
+    public static final String NAME_APTOIDE = "cm.aptoide.pt";
+
 
     /**
      * @param sku       - application inner SKU
