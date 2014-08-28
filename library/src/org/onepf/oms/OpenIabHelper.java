@@ -358,15 +358,21 @@ public class OpenIabHelper {
                 }
 
                 //todo redo
-                boolean hasFortumoInSetup;
+                boolean hasFortumoInSetup = false;
                 if (BuildConfig.FORTUMO_ENABLE) {
-                    hasFortumoInSetup = false;
                     for (Appstore store : stores2check) {
-                        if (store instanceof SamsungApps) {
-                            samsungInSetup = (SamsungApps) store;
-                        } else if (store instanceof FortumoStore) {
+                        if (store instanceof FortumoStore) {
                             hasFortumoInSetup = true;
+                            break;
                         }
+                    }
+                }
+
+                //todo get rid of this, DO NOT save anything to fields!
+                for (Appstore store : stores2check) {
+                    if (store instanceof SamsungApps) {
+                        samsungInSetup = (SamsungApps) store;
+                        break;
                     }
                 }
 
