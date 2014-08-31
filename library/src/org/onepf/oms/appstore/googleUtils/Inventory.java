@@ -17,17 +17,17 @@
 package org.onepf.oms.appstore.googleUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents a block of information about in-app items.
  * An Inventory is returned by such methods as {@link IabHelper#queryInventory}.
  */
 public class Inventory {
-    public Map<String, SkuDetails> mSkuMap = new HashMap<String, SkuDetails>();
-    public Map<String, Purchase> mPurchaseMap = new HashMap<String, Purchase>();
+    private final Map<String, SkuDetails> mSkuMap = new ConcurrentHashMap<>();
+    private final Map<String, Purchase> mPurchaseMap = new ConcurrentHashMap<>();
 
     public Inventory() {
     }
@@ -76,14 +76,14 @@ public class Inventory {
      * Returns a list of all owned product IDs.
      */
     public List<String> getAllOwnedSkus() {
-        return new ArrayList<String>(mPurchaseMap.keySet());
+        return new ArrayList<>(mPurchaseMap.keySet());
     }
 
     /**
      * Returns a list of all owned product IDs of a given type
      */
     public List<String> getAllOwnedSkus(String itemType) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (Purchase p : mPurchaseMap.values()) {
             if (p.getItemType().equals(itemType)) result.add(p.getSku());
         }
@@ -94,7 +94,7 @@ public class Inventory {
      * Returns a list of all purchases.
      */
     public List<Purchase> getAllPurchases() {
-        return new ArrayList<Purchase>(mPurchaseMap.values());
+        return new ArrayList<>(mPurchaseMap.values());
     }
 
     public void addSkuDetails(SkuDetails d) {
