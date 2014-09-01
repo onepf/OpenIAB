@@ -519,34 +519,6 @@ Basic Principles
 * **Open In-App Billing protocol** - OpenIAB is designed to provide a lightweight solution that supports hundreds of appstores. When app store implements OpenIAB protocol on app store side all applications with OpenIAB become fully compatible with new app store without recompiling.
 * **No middle man**
 
-How to Work with multiplе build variants in library
-=====
-
-[New build system (NBS)][2] is using in library for build version of jar with or without 
-support Fortumo (for build Unity plugin).
-Version without fortumo doesn't include fortumo library and remove all code, that contains fortumo code.
-
-In library described two flavors:
-
-```groovy
- noFortumo {
-    buildConfigField "boolean", "FORTUMO_ENABLE", "false"
- }
- complete {
-    buildConfigField "boolean", "FORTUMO_ENABLE", "true"
- }
-```
-
-and three build types:
-```groovy
- debug
- release
- unity {
-     runProguard true
-     proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
- }
-```
-
 Flavors need for boolean generate FORTUMO_ENABLE constant in BuildConfig class.
 We use this constant in condition for remove code about fortumo.
 
