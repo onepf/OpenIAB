@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * An Inventory is returned by such methods as {@link IabHelper#queryInventory}.
  */
 public class Inventory {
-    private final Map<String, SkuDetails> mSkuMap = new ConcurrentHashMap<>();
-    private final Map<String, Purchase> mPurchaseMap = new ConcurrentHashMap<>();
+    private final Map<String, SkuDetails> mSkuMap = new ConcurrentHashMap<String, SkuDetails>();
+    private final Map<String, Purchase> mPurchaseMap = new ConcurrentHashMap<String, Purchase>();
 
     public Inventory() {
     }
@@ -76,14 +76,14 @@ public class Inventory {
      * Returns a list of all owned product IDs.
      */
     public List<String> getAllOwnedSkus() {
-        return new ArrayList<>(mPurchaseMap.keySet());
+        return new ArrayList<String>(mPurchaseMap.keySet());
     }
 
     /**
      * Returns a list of all owned product IDs of a given type
      */
     public List<String> getAllOwnedSkus(String itemType) {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<String>();
         for (Purchase p : mPurchaseMap.values()) {
             if (p.getItemType().equals(itemType)) result.add(p.getSku());
         }
@@ -94,7 +94,7 @@ public class Inventory {
      * Returns a list of all purchases.
      */
     public List<Purchase> getAllPurchases() {
-        return new ArrayList<>(mPurchaseMap.values());
+        return new ArrayList<Purchase>(mPurchaseMap.values());
     }
 
     public void addSkuDetails(SkuDetails d) {

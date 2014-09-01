@@ -24,6 +24,8 @@ import org.onepf.oms.util.Logger;
 
 import android.content.Context;
 
+import com.amazon.device.iap.PurchasingService;
+
 /**
  * Analize whether app is installed from Amazon Appstore.
  * <p>
@@ -35,8 +37,6 @@ import android.content.Context;
 public class AmazonAppstore extends DefaultAppstore {
     private static final String AMAZON_INSTALLER = "com.amazon.venezia";
     
-    private volatile Boolean sandboxMode;// = false;
-    
     private final Context context;
     
     private AmazonAppstoreBillingService mBillingService;
@@ -47,13 +47,10 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        if (sandboxMode != null) {
-            return !sandboxMode;
-        }
-        boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
-        sandboxMode = !amazonIsInstaller && !hasAmazonClasses();
-        Logger.d("isPackageInstaller() sandBox: " ,sandboxMode);
-        return !sandboxMode;
+        final boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
+        final boolean result = amazonIsInstaller || hasAmazonClasses();
+        Logger.d("isPackageInstaller() sandBox: ", PurchasingService.IS_SANDBOX_MODE);
+        return PurchasingService.IS_SANDBOX_MODE || result;
     }
 
     /** 

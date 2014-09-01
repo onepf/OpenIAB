@@ -16,12 +16,22 @@
 
 package org.onepf.oms.appstore;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+
+import com.amazon.device.iap.PurchasingListener;
+import com.amazon.device.iap.PurchasingService;
+import com.amazon.device.iap.model.FulfillmentResult;
+import com.amazon.device.iap.model.Product;
+import com.amazon.device.iap.model.ProductDataResponse;
+import com.amazon.device.iap.model.ProductType;
+import com.amazon.device.iap.model.PurchaseResponse;
+import com.amazon.device.iap.model.PurchaseUpdatesResponse;
+import com.amazon.device.iap.model.Receipt;
+import com.amazon.device.iap.model.RequestId;
+import com.amazon.device.iap.model.UserData;
+import com.amazon.device.iap.model.UserDataResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,28 +45,20 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.onepf.oms.util.Logger;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-
-import com.amazon.inapp.purchasing.BasePurchasingObserver;
-import com.amazon.inapp.purchasing.GetUserIdResponse;
-import com.amazon.inapp.purchasing.Item;
-import com.amazon.inapp.purchasing.ItemDataResponse;
-import com.amazon.inapp.purchasing.Offset;
-import com.amazon.inapp.purchasing.PurchaseResponse;
-import com.amazon.inapp.purchasing.PurchaseUpdatesResponse;
-import com.amazon.inapp.purchasing.PurchasingManager;
-import com.amazon.inapp.purchasing.Receipt;
-import com.amazon.inapp.purchasing.SubscriptionPeriod;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Amazon billing service impl
  *
- * @author Ruslan Sayfutdinov, Oleg Orlov
+ * @author Ruslan Sayfutdinov, Oleg Orlov, Roman Zhilich
  * @since 16.04.13
  */
-public class AmazonAppstoreBillingService extends BasePurchasingObserver implements AppstoreInAppBillingService {
+public class AmazonAppstoreBillingService implements AppstoreInAppBillingService, PurchasingListener {
 
     // ========================================================================
     // PURCHASE RESPONSE JSON KEYS
@@ -68,13 +70,16 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     public static final String JSON_KEY_USER_ID = "userId";
     public static final String JSON_KEY_RECEIPT_PURCHASE_TOKEN = "purchaseToken";
 
-    private Map<String, IabHelper.OnIabPurchaseFinishedListener> mRequestListeners = new HashMap<String, IabHelper.OnIabPurchaseFinishedListener>();
+    private final Map<RequestId, IabHelper.OnIabPurchaseFinishedListener> requestListeners =
+            new HashMap<RequestId, IabHelper.OnIabPurchaseFinishedListener>();
+
+    private final Context context;
 
     /**
      * Only for verification all requests are for the same user
      * <p>Not expected to be undefined after setup is completed
-     * <p>Initialized at {@link #onGetUserIdResponse(GetUserIdResponse)} if GetUserIdRequestStatus.SUCCESSFUL
-     * durint startSetup().
+     * <p>Initialized at {@link #onUserDataResponse(UserDataResponse)} if GetUserIdRequestStatus.SUCCESSFUL
+     * during startSetup().
      */
     private String currentUserId;
 
@@ -82,22 +87,22 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
      * To process {@link #queryInventory(boolean, List, List)} request following steps are done:
      * <p>
      * {@link #queryInventory(boolean, List, List)} - initialize inventory object, request purchase data by
-     * <code>initiatePurchaseUpdatesRequest()</code> and locks thread on inventoryLatch.
-     * After whole purchase data is recieved request SKU details by <code>initiateItemDataRequest()</code>
+     * <code>getPurchaseUpdates()</code> and locks thread on inventoryLatch.
+     * After whole purchase data is received request SKU details by <code>getProductData()</code>
      * <br>
      * {@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)} - triggered by Amazon SDK.
      * Handles purchases data chunk by chunk. Releases inventoryLatch lock after last chunk is handled
      * <p>
-     * {@link #onItemDataResponse(ItemDataResponse)} - triggered by Amazon SDK.
+     * {@link #onProductDataResponse(ProductDataResponse)} - triggered by Amazon SDK.
      * Handles items data chunk by chunk. Releases inventoryLatch lock after last chunk is handled
      * <p/>
      * <p>NOTES:</p>
      * Amazon SDK may trigger on*Response() before queryInventory() is called. It happens
      * when confirmation of processed purchase was not delivered to application (when applications
-     * crashes or relaunched). So inventory object must be not null as well as inventoryLatch
+     * crashes or relaunched). So inventory object must not be null.
      */
-    private Inventory inventory = new Inventory();
-    private CountDownLatch inventoryLatch = new CountDownLatch(0);
+    private final Inventory inventory = new Inventory();
+    private volatile CountDownLatch inventoryLatch;
 
     /**
      * If not null will be notified from
@@ -106,43 +111,46 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
 
     public AmazonAppstoreBillingService(Context context) {
-        super(context);
+        this.context = context.getApplicationContext();
     }
 
     /**
-     * @param listener - is triggered when {@link #onGetUserIdResponse(GetUserIdResponse)} happens
+     * @param listener - is triggered when {@link #onUserDataResponse(UserDataResponse)} happens
      */
     @Override
     public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
-        PurchasingManager.registerObserver(this);
         this.setupListener = listener;
+        PurchasingService.registerListener(context, this);
+        PurchasingService.getUserData();
     }
 
     @Override
-    public void onSdkAvailable(final boolean isSandboxMode) {
-        Logger.v("onSdkAvailable() isSandBox: ", isSandboxMode);
-        PurchasingManager.initiateGetUserIdRequest();
-    }
+    public void onUserDataResponse(final UserDataResponse userDataResponse) {
+        Logger.d("onUserDataResponse() reqId: ", userDataResponse.getRequestId(),
+                ", status: ", userDataResponse.getRequestStatus());
 
-    @Override
-    public void onGetUserIdResponse(final GetUserIdResponse userIdResponse) {
-        Logger.d("onGetUserIdResponse() reqId: ", userIdResponse.getRequestId(),
-                ", status: ", userIdResponse.getUserIdRequestStatus());
-
-        if (userIdResponse.getUserIdRequestStatus() == GetUserIdResponse.GetUserIdRequestStatus.SUCCESSFUL) {
-            final String userId = userIdResponse.getUserId();
-            Logger.d("Set current userId: ", userId);
-            this.currentUserId = userId;
-            if (setupListener != null) {
-                setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful."));
-                setupListener = null;
-            }
-        } else {
-            Logger.d("onGetUserIdResponse() Unable to get user ID");
-            if (setupListener != null) {
-                setupListener.onIabSetupFinished(new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Unable to get userId"));
-                setupListener = null;
-            }
+        final IabResult iabResult;
+        switch (userDataResponse.getRequestStatus()) {
+            case SUCCESSFUL:
+                final UserData userData = userDataResponse.getUserData();
+                final String userId = userData.getUserId();
+                this.currentUserId = userId;
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Setup successful.");
+                Logger.d("Set current userId: ", userId);
+                break;
+            case FAILED:
+                // Fall through
+            case NOT_SUPPORTED:
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Unable to get userId");
+                Logger.d("onUserDataResponse() Unable to get user ID");
+                break;
+            default:
+                iabResult = null;
+        }
+        //noinspection ConstantConditions
+        if (setupListener != null && iabResult != null) {
+            setupListener.onIabSetupFinished(iabResult);
+            setupListener = null;
         }
     }
 
@@ -150,16 +158,20 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
     public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
         Logger.d("queryInventory() querySkuDetails: ", querySkuDetails, " moreItemSkus: ",
                 moreItemSkus, " moreSubsSkus: ", moreSubsSkus);
-        inventory = new Inventory();
+
         inventoryLatch = new CountDownLatch(1);
-        PurchasingManager.initiatePurchaseUpdatesRequest(Offset.BEGINNING);
+        PurchasingService.getPurchaseUpdates(true);
         try {
             inventoryLatch.await();
         } catch (InterruptedException e) {
+            Logger.e("queryInventory() await interrupted");
             return null;
+        } finally {
+            inventoryLatch = null;
         }
+
         if (querySkuDetails) {
-            Set<String> querySkus = new HashSet<String>(inventory.getAllOwnedSkus());
+            final Set<String> querySkus = new HashSet<String>(inventory.getAllOwnedSkus());
             if (moreItemSkus != null) {
                 querySkus.addAll(moreItemSkus);
             }
@@ -167,16 +179,19 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
                 querySkus.addAll(moreSubsSkus);
             }
             if (!querySkus.isEmpty()) {
-                inventoryLatch = new CountDownLatch(1);
-                HashSet<String> queryStoreSkus = new HashSet<String>(querySkus.size());
+                final HashSet<String> queryStoreSkus = new HashSet<String>(querySkus.size());
                 for (String sku : querySkus) {
                     queryStoreSkus.add(SkuManager.getInstance().getStoreSku(OpenIabHelper.NAME_AMAZON, sku));
                 }
-                PurchasingManager.initiateItemDataRequest(queryStoreSkus);
+                inventoryLatch = new CountDownLatch(1);
+                PurchasingService.getProductData(queryStoreSkus);
                 try {
                     inventoryLatch.await();
                 } catch (InterruptedException e) {
                     Logger.w("queryInventory() SkuDetails fetching interrupted");
+                    return null;
+                } finally {
+                    inventoryLatch = null;
                 }
             }
         }
@@ -186,153 +201,168 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
-        Logger.v("onPurchaseUpdatesResponse() reqStatus: ", purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus(),
+        final PurchaseUpdatesResponse.RequestStatus requestStatus = purchaseUpdatesResponse.getRequestStatus();
+        Logger.v("onPurchaseUpdatesResponse() reqStatus: ", requestStatus,
                 "reqId: ", purchaseUpdatesResponse.getRequestId());
 
-        if ((currentUserId != null) && !currentUserId.equals(purchaseUpdatesResponse.getUserId())) {
-            Logger.w("onPurchaseUpdatesResponse() Current UserId: ", currentUserId, ", purchase UserId: ",
-                    purchaseUpdatesResponse.getUserId());
-            inventoryLatch.countDown();
-            return;
-        }
-
-        if (Logger.isLoggable()) {
-            // TODO: do something with this
-            for (final String sku : purchaseUpdatesResponse.getRevokedSkus()) {
-                Logger.v("Revoked Sku:", sku);
-            }
-        }
-
-        switch (purchaseUpdatesResponse.getPurchaseUpdatesRequestStatus()) {
+        switch (requestStatus) {
             case SUCCESSFUL:
+                for (final String sku : inventory.getAllOwnedSkus()) {
+                    inventory.erasePurchase(sku);
+                }
+                final UserData userData = purchaseUpdatesResponse.getUserData();
+                final String userId = userData.getUserId();
+                if (!userId.equals(currentUserId)) {
+                    Logger.w("onPurchaseUpdatesResponse() Current UserId: ", currentUserId,
+                            ", purchase UserId: ", userId);
+                    break;
+                }
                 for (final Receipt receipt : purchaseUpdatesResponse.getReceipts()) {
-                    final String storeSku = receipt.getSku();
-                    Purchase purchase;
-                    switch (receipt.getItemType()) {
-                        case ENTITLED:
-                            purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-                            purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-                            purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                            inventory.addPurchase(purchase);
-                            Logger.d("Add to inventory SKU: ", storeSku);
-                            break;
-
-                        case SUBSCRIPTION:
-                            final SubscriptionPeriod subscriptionPeriod = receipt.getSubscriptionPeriod();
-                            if (subscriptionPeriod.getEndDate() == null) {
-                                purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-                                purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
-                                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                                inventory.addPurchase(purchase);
-                                Logger.d("Add subscription to inventory SKU: ", storeSku);
-                            }
-
-                            break;
-
-                    }
+                    inventory.addPurchase(getPurchase(receipt));
                 }
-
-                final Offset newOffset = purchaseUpdatesResponse.getOffset();
-                if (purchaseUpdatesResponse.isMore()) {
-                    Logger.v("Initiating Another Purchase Updates with offset: ", newOffset);
-                    PurchasingManager.initiatePurchaseUpdatesRequest(newOffset);
-                } else {
-                    inventoryLatch.countDown();
-                }
-                return;
-            case FAILED:
-                inventoryLatch.countDown();
-                return;
-        }
-        inventoryLatch.countDown();
-    }
-
-    @Override
-    public void onItemDataResponse(final ItemDataResponse itemDataResponse) {
-        Logger.v("onItemDataResponse() reqStatus: ", itemDataResponse.getItemDataRequestStatus(),
-                ", reqId: ", itemDataResponse.getRequestId());
-        switch (itemDataResponse.getItemDataRequestStatus()) {
-            case SUCCESSFUL_WITH_UNAVAILABLE_SKUS:
-                // Skus that you can not purchase will be here.
-                if (Logger.isLoggable()) {
-                    for (final String s : itemDataResponse.getUnavailableSkus()) {
-                        Logger.v("Unavailable SKU:", s);
-                    }
-                }
-            case SUCCESSFUL:
-                // Information you'll want to display about your IAP items is here
-                // In this example we'll simply log them.
-                final Map<String, Item> items = itemDataResponse.getItemData();
-                for (final String key : items.keySet()) {
-                    Item i = items.get(key);
-                    final String storeSku = i.getSku();
-                    if (Logger.isLoggable()) {
-                        Logger.v(String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n",
-                                i.getTitle(), i.getItemType(), storeSku, i.getPrice(), i.getDescription()));
-                    }
-                    String itemType = i.getItemType() == Item.ItemType.SUBSCRIPTION ? IabHelper.ITEM_TYPE_SUBS : IabHelper.ITEM_TYPE_INAPP;
-                    SkuDetails skuDetails = new SkuDetails(itemType,
-                            SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, i.getSku()),
-                            i.getTitle(), i.getPrice(), i.getDescription());
-                    inventory.addSkuDetails(skuDetails);
+                if (purchaseUpdatesResponse.hasMore()) {
+                    PurchasingService.getPurchaseUpdates(false);
+                    Logger.v("Initiating Another Purchase Updates with offset: ");
                 }
                 break;
+            case FAILED:
+                break;
         }
-        inventoryLatch.countDown();
+        if (inventoryLatch != null) {
+            inventoryLatch.countDown();
+        }
+    }
+
+    private Purchase getPurchase(final Receipt receipt) {
+        final String storeSku = receipt.getSku();
+
+        final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+        purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+
+        switch (receipt.getProductType()) {
+            case CONSUMABLE:
+                // TODO Make sure this behavior is intended
+            case ENTITLED:
+                purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
+                Logger.d("Add to inventory SKU: ", storeSku);
+                break;
+            case SUBSCRIPTION:
+                // TODO Make sure cancelDate is always available
+                purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
+                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                Logger.d("Add subscription to inventory SKU: ", storeSku);
+                break;
+        }
+        return purchase;
     }
 
     @Override
-    public void launchPurchaseFlow(Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
-        String requestId = PurchasingManager.initiatePurchaseRequest(sku);
-        storeRequestListener(requestId, listener);
+    public void onProductDataResponse(final ProductDataResponse productDataResponse) {
+        final ProductDataResponse.RequestStatus status = productDataResponse.getRequestStatus();
+        Logger.v("onItemDataResponse() reqStatus: ", status,
+                ", reqId: ", productDataResponse.getRequestId());
+
+        switch (status) {
+            case SUCCESSFUL:
+                final Map<String, Product> productData = productDataResponse.getProductData();
+                for (final String key : productData.keySet()) {
+                    final Product product = productData.get(key);
+                    inventory.addSkuDetails(getSkuDetails(product));
+                }
+                break;
+            case FAILED:
+                // Fall through
+            case NOT_SUPPORTED:
+                break;
+        }
+        if (inventoryLatch != null) {
+            inventoryLatch.countDown();
+        }
+    }
+
+    private SkuDetails getSkuDetails(final Product product) {
+        final String sku = product.getSku();
+        final String price = product.getPrice().toString();
+        final String title = product.getTitle();
+        final String description = product.getDescription();
+        final ProductType productType = product.getProductType();
+        Logger.v(String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n",
+                title, productType, sku, price, description));
+
+        final String openIabSkuType = productType == ProductType.SUBSCRIPTION
+                ? IabHelper.ITEM_TYPE_SUBS
+                : IabHelper.ITEM_TYPE_INAPP;
+        final String openIabSku = SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, sku);
+        return new SkuDetails(openIabSkuType, openIabSku, title, price, description);
+    }
+
+    @Override
+    public void launchPurchaseFlow(
+            final Activity activity,
+            final String sku,
+            final  String itemType,
+            final int requestCode,
+            final IabHelper.OnIabPurchaseFinishedListener listener,
+            final String extraData) {
+        requestListeners.put(PurchasingService.purchase(sku), listener);
     }
 
     @Override
     public void onPurchaseResponse(final PurchaseResponse purchaseResponse) {
-        Logger.v("onPurchaseResponse() PurchaseRequestStatus:", purchaseResponse.getPurchaseRequestStatus());
+        final PurchaseResponse.RequestStatus status = purchaseResponse.getRequestStatus();
+        final RequestId requestId = purchaseResponse.getRequestId();
+        Logger.v("onPurchaseResponse() PurchaseRequestStatus:", status,
+                ", reqId: ", requestId);
 
-        IabResult result = null;
-        Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-
-        if ((currentUserId != null) && !currentUserId.equals(purchaseResponse.getUserId())) {
-            Logger.w("onPurchaseResponse() userId: ", currentUserId, ", purchase.userId: ", purchaseResponse.getUserId());
-            result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "userId doesn't match purchase.userId");
-        } else {
-            switch (purchaseResponse.getPurchaseRequestStatus()) {
-                case SUCCESSFUL:
-                    final Receipt receipt = purchaseResponse.getReceipt();
-                    final String storeSku = receipt.getSku();
-
-                    purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
-                    purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                    switch (receipt.getItemType()) {
-                        case CONSUMABLE:
-                        case ENTITLED:
-                            purchase.setItemType(IabHelper.ITEM_TYPE_INAPP);
-                            break;
-                        case SUBSCRIPTION:
-                            purchase.setItemType(IabHelper.ITEM_TYPE_SUBS);
-                            break;
-                    }
-                    //printReceipt(purchaseResponse.getReceipt());
-                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
+        final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+        final IabResult result;
+        boolean shouldNotifyFulfillment = false;
+        switch (status){
+            case SUCCESSFUL:
+                final UserData userData = purchaseResponse.getUserData();
+                final String userId = userData.getUserId();
+                if (!userId.equals(currentUserId)) {
+                    Logger.w("onPurchaseResponse() Current UserId: ", currentUserId,
+                            ", purchase UserId: ", userId);
+                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR,
+                            "Current UserId doesn't match purchase UserId");
                     break;
-                case ALREADY_ENTITLED:
-                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Already owned");
-                    break;
-                case FAILED:
-                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_USER_CANCELED, "Purchase failed");
-                    break;
-                case INVALID_SKU:
-                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Invalid sku");
-                    break;
-            }
+                }
+                final Receipt receipt = purchaseResponse.getReceipt();
+                final String storeSku = receipt.getSku();
+                purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
+                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+                final String openIabSkuType = receipt.getProductType() == ProductType.SUBSCRIPTION
+                        ? IabHelper.ITEM_TYPE_SUBS
+                        : IabHelper.ITEM_TYPE_INAPP;
+                purchase.setItemType(openIabSkuType);
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
+                shouldNotifyFulfillment = true;
+                break;
+            case INVALID_SKU:
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE, "Invalid SKU");
+                break;
+            case ALREADY_PURCHASED:
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Item is already purchased");
+                break;
+            case FAILED:
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase failed");
+                break;
+            case NOT_SUPPORTED:
+                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "This call is not supported");
+                break;
+            default:
+                result = null;
         }
-        IabHelper.OnIabPurchaseFinishedListener listener = getRequestListener(purchaseResponse.getRequestId());
+        final IabHelper.OnIabPurchaseFinishedListener listener = requestListeners.remove(requestId);
         if (listener != null) {
             listener.onIabPurchaseFinished(result, purchase);
+            if (shouldNotifyFulfillment) {
+                final Receipt receipt = purchaseResponse.getReceipt();
+                PurchasingService.notifyFulfillment(receipt.getReceiptId(), FulfillmentResult.FULFILLED);
+            }
         } else {
-            Logger.e("Something went wrong: PurchaseFinishedListener is null");
+            Logger.e("Something went wrong: PurchaseFinishedListener is not found");
         }
     }
 
@@ -344,28 +374,33 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
      * "orderId"           : "purchaseResponse.getRequestId"
      * "productId"         : "receipt.getSku"
      * "purchaseStatus"    : "purchaseRequestStatus.name"
-     * "userId"            : "purchaseResponse.getUserId()" // can be null
+     * "userId"            : "purchaseResponse.getUserId()" // if non-null
      * "itemType"          : "receipt.getItemType().name()" // if non-null
-     * "purchaseToken"     : "receipt.purchaseToken"
+     * "purchaseToken"     : "receipt.getReceiptId()"
      * } </pre>
      *
      * @param purchaseResponse Purchase to convert.
      * @return Generate JSON from purchase.
      */
     private String generateOriginalJson(PurchaseResponse purchaseResponse) {
-        JSONObject json = new JSONObject();
+        final JSONObject json = new JSONObject();
         try {
             Receipt receipt = purchaseResponse.getReceipt();
             json.put(JSON_KEY_ORDER_ID, purchaseResponse.getRequestId());
             json.put(JSON_KEY_PRODUCT_ID, receipt.getSku());
-            if (purchaseResponse.getPurchaseRequestStatus() != null) {
-                json.put(JSON_KEY_PURCHASE_STATUS, purchaseResponse.getPurchaseRequestStatus().name());
+            final PurchaseResponse.RequestStatus requestStatus = purchaseResponse.getRequestStatus();
+            if (requestStatus != null) {
+                json.put(JSON_KEY_PURCHASE_STATUS, requestStatus.name());
             }
-            json.put(JSON_KEY_USER_ID, purchaseResponse.getUserId());
-            if (receipt.getItemType() != null) {
-                json.put(JSON_KEY_RECEIPT_ITEM_TYPE, receipt.getItemType().name());
+            final UserData userData = purchaseResponse.getUserData();
+            if (userData != null) {
+                json.put(JSON_KEY_USER_ID, userData.getUserId());
             }
-            json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getPurchaseToken());
+            final ProductType productType = receipt.getProductType();
+            if (productType != null) {
+                json.put(JSON_KEY_RECEIPT_ITEM_TYPE, productType.name());
+            }
+            json.put(JSON_KEY_RECEIPT_PURCHASE_TOKEN, receipt.getReceiptId());
             Logger.d("generateOriginalJson(): JSON\n", json);
         } catch (JSONException e) {
             Logger.e("generateOriginalJson() failed to generate JSON", e);
@@ -385,19 +420,11 @@ public class AmazonAppstoreBillingService extends BasePurchasingObserver impleme
 
     @Override
     public void dispose() {
-
+        // Nothing to do here
     }
 
     @Override
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         return false;
-    }
-
-    private void storeRequestListener(String requestId, IabHelper.OnIabPurchaseFinishedListener listener) {
-        mRequestListeners.put(requestId, listener);
-    }
-
-    public IabHelper.OnIabPurchaseFinishedListener getRequestListener(String requestId) {
-        return mRequestListeners.get(requestId);
     }
 }

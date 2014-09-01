@@ -19,6 +19,7 @@ package org.onepf.oms;
 import android.app.Activity;
 import android.content.Intent;
 
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.Inventory;
@@ -43,7 +44,16 @@ public interface AppstoreInAppBillingService {
 
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 
-    Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
+    /**
+     * Blocking request, must not be called from UI thread.
+     *
+     * @param querySkuDetails
+     * @param moreItemSkus
+     * @param moreSubsSkus
+     * @return relevant for current user inventory object, or null if request was interrupted.
+     * @throws IabException
+     */
+    @Nullable Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
 
     void consume(Purchase itemInfo) throws IabException;
 
