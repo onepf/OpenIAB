@@ -20,10 +20,10 @@ import android.text.TextUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.util.Logger;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +78,7 @@ public class SkuManager {
         if (skuMap == null) {
             skuMap = new HashMap<String, String>();
             sku2storeSkuMappings.put(storeName, skuMap);
-        } else if (skuMap.get(sku) != null) {
+        } else if (skuMap.containsKey(sku)) {
             throw new IllegalArgumentException("Already specified SKU. sku: "
                     + sku + " -> storeSku: " + skuMap.get(sku));
         }
@@ -98,20 +98,23 @@ public class SkuManager {
         return this;
     }
 
-
     private static void checkSkuMappingParams(String storeName, String storeSku) {
         if (TextUtils.isEmpty(storeName)) {
-            throw new IllegalArgumentException("Store name can be null or empty value.");
+            throw new IllegalArgumentException("Store name can't be null or empty value.");
         }
 
         if (TextUtils.isEmpty(storeSku)) {
-            throw new IllegalArgumentException("Store sku can be null or empty value.");
+            throw new IllegalArgumentException("Store sku can't be null or empty value.");
+        }
+
+        if (OpenIabHelper.NAME_SAMSUNG.equals(storeName)) {
+            SamsungApps.checkSku(storeSku);
         }
     }
 
     private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
         if (TextUtils.isEmpty(sku)) {
-            throw new IllegalArgumentException("SKU can be null or empty value.");
+            throw new IllegalArgumentException("SKU can't be null or empty value.");
         }
         checkSkuMappingParams(storeName, storeSku);
     }
@@ -150,9 +153,18 @@ public class SkuManager {
      * @param appstoreName Name of app store.
      * @param sku          Inner SKU
      * @return SKU used in store for specified inner SKU
+     * @throws java.lang.IllegalArgumentException When appstoreName or sku param is empty or null value.
      * @see #mapSku(String, String, String)
      */
-    public String getStoreSku(final String appstoreName, String sku) {
+    @NotNull
+    public String getStoreSku(@NotNull String appstoreName, @NotNull String sku) {
+        if (TextUtils.isEmpty(appstoreName)) {
+            throw new IllegalArgumentException("Store name can't be null or empty value.");
+        }
+        if (TextUtils.isEmpty(sku)) {
+            throw new IllegalArgumentException("SKU can't be null or empty value.");
+        }
+
         Map<String, String> storeSku = sku2storeSkuMappings.get(appstoreName);
         if (storeSku != null && storeSku.containsKey(sku)) {
             final String s = storeSku.get(sku);
@@ -165,9 +177,11 @@ public class SkuManager {
     /**
      * Return mapped application inner SKU using store name and store SKU.
      *
+     * @throws java.lang.IllegalArgumentException When appstoreName or storeSku params is empty or null value.
      * @see #mapSku(String, String, String)
      */
-    public String getSku(final String appstoreName, String storeSku) {
+    @NotNull
+    public String getSku(@NotNull String appstoreName, @NotNull String storeSku) {
         checkSkuMappingParams(appstoreName, storeSku);
 
         Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
@@ -181,15 +195,14 @@ public class SkuManager {
 
     /**
      * @param appstoreName App store name.
-     * @return Unmodifiable collection of SKUs those have mappings for specified appstore.
-     * If store has no mapped SKUs return null.
+     * @return Unmodifiable collection of SKUs those have mappings for specified appstore. If store has no mapped SKUs return null.
      * @throws java.lang.IllegalArgumentException If store name null or empty.
      * @see #mapSku(String, String, String)
      */
     @Nullable
     public List<String> getAllStoreSkus(@NotNull final String appstoreName) {
         if (TextUtils.isEmpty(appstoreName)) {
-            throw new IllegalArgumentException("Store name can't be null.");
+            throw new IllegalArgumentException("Store name can't be null or empty value.");
         }
 
         Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);

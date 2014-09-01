@@ -484,9 +484,6 @@ public class OpenIabHelper {
     private static void checkSamsung(Context context) {
         Collection<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!CollectionUtils.isEmpty(allStoreSkus)) { // it means that Samsung is among the candidates
-            for (String sku : allStoreSkus) {
-                SamsungApps.checkSku(sku);
-            }
 
             if (!(context instanceof Activity)) {
                 //
