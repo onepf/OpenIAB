@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -91,10 +92,10 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
      * After whole purchase data is received request SKU details by <code>getProductData()</code>
      * <br>
      * {@link #onPurchaseUpdatesResponse(PurchaseUpdatesResponse)} - triggered by Amazon SDK.
-     * Handles purchases data chunk by chunk. Releases inventoryLatch lock after last chunk is handled
+     * Handles purchases data chunk by chunk. Releases inventoryLatch lock after last chunk is handled.
      * <p>
      * {@link #onProductDataResponse(ProductDataResponse)} - triggered by Amazon SDK.
-     * Handles items data chunk by chunk. Releases inventoryLatch lock after last chunk is handled
+     * Handles items data. Releases inventoryLatch lock when all data is handled.
      * <p/>
      * <p>NOTES:</p>
      * Amazon SDK may trigger on*Response() before queryInventory() is called. It happens
@@ -102,7 +103,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
      * crashes or relaunched). So inventory object must not be null.
      */
     private final Inventory inventory = new Inventory();
-    private volatile CountDownLatch inventoryLatch;
+    private final Map<RequestId, CountDownLatch> inventoryLatchMap = new ConcurrentHashMap<RequestId, CountDownLatch>();
 
     /**
      * If not null will be notified from
@@ -159,15 +160,14 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         Logger.d("queryInventory() querySkuDetails: ", querySkuDetails, " moreItemSkus: ",
                 moreItemSkus, " moreSubsSkus: ", moreSubsSkus);
 
-        inventoryLatch = new CountDownLatch(1);
-        PurchasingService.getPurchaseUpdates(true);
+        final RequestId purchaseUpdatesRequestId = PurchasingService.getPurchaseUpdates(true);
+        final CountDownLatch purchaseUpdatesLatch = new CountDownLatch(1);
+        inventoryLatchMap.put(purchaseUpdatesRequestId, purchaseUpdatesLatch);
         try {
-            inventoryLatch.await();
+            purchaseUpdatesLatch.await();
         } catch (InterruptedException e) {
             Logger.e("queryInventory() await interrupted");
             return null;
-        } finally {
-            inventoryLatch = null;
         }
 
         if (querySkuDetails) {
@@ -183,15 +183,14 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 for (String sku : querySkus) {
                     queryStoreSkus.add(SkuManager.getInstance().getStoreSku(OpenIabHelper.NAME_AMAZON, sku));
                 }
-                inventoryLatch = new CountDownLatch(1);
-                PurchasingService.getProductData(queryStoreSkus);
+                final RequestId productDataRequestId = PurchasingService.getProductData(queryStoreSkus);
+                final CountDownLatch productDataLatch = new CountDownLatch(1);
+                inventoryLatchMap.put(productDataRequestId, productDataLatch);
                 try {
-                    inventoryLatch.await();
+                    productDataLatch.await();
                 } catch (InterruptedException e) {
                     Logger.w("queryInventory() SkuDetails fetching interrupted");
                     return null;
-                } finally {
-                    inventoryLatch = null;
                 }
             }
         }
@@ -202,8 +201,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     @Override
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
         final PurchaseUpdatesResponse.RequestStatus requestStatus = purchaseUpdatesResponse.getRequestStatus();
+        final RequestId requestId = purchaseUpdatesResponse.getRequestId();
         Logger.v("onPurchaseUpdatesResponse() reqStatus: ", requestStatus,
-                "reqId: ", purchaseUpdatesResponse.getRequestId());
+                "reqId: ", requestId);
 
         switch (requestStatus) {
             case SUCCESSFUL:
@@ -221,15 +221,18 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                     inventory.addPurchase(getPurchase(receipt));
                 }
                 if (purchaseUpdatesResponse.hasMore()) {
-                    PurchasingService.getPurchaseUpdates(false);
+                    final RequestId purchaseUpdatesRequestId = PurchasingService.getPurchaseUpdates(false);
+                    inventoryLatchMap.put(purchaseUpdatesRequestId, inventoryLatchMap.remove(requestId));
                     Logger.v("Initiating Another Purchase Updates with offset: ");
+                    return;
                 }
                 break;
             case FAILED:
                 break;
         }
-        if (inventoryLatch != null) {
-            inventoryLatch.countDown();
+        final CountDownLatch countDownLatch = inventoryLatchMap.remove(requestId);
+        if (countDownLatch != null) {
+            countDownLatch.countDown();
         }
     }
 
@@ -259,8 +262,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     @Override
     public void onProductDataResponse(final ProductDataResponse productDataResponse) {
         final ProductDataResponse.RequestStatus status = productDataResponse.getRequestStatus();
+        final RequestId requestId = productDataResponse.getRequestId();
         Logger.v("onItemDataResponse() reqStatus: ", status,
-                ", reqId: ", productDataResponse.getRequestId());
+                ", reqId: ", requestId);
 
         switch (status) {
             case SUCCESSFUL:
@@ -275,8 +279,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
             case NOT_SUPPORTED:
                 break;
         }
-        if (inventoryLatch != null) {
-            inventoryLatch.countDown();
+        final CountDownLatch countDownLatch = inventoryLatchMap.remove(requestId);
+        if (countDownLatch != null) {
+            countDownLatch.countDown();
         }
     }
 
