@@ -351,6 +351,7 @@ Aptoide
 Fortumo: carrier billing and NOOK
 =================================
 
+
 Before starting to work with OpenIAB library
 -----------------------------------------
 Create a <a href="http://fortumo.com/?utm_source=openiab&utm_medium=openiab&utm_campaign=openiab">Fortumo account</a> and add a required number of <a href="http://developers.fortumo.com/in-app-purchasing-on-nook/">NOOK</a> and <a href="http://developers.fortumo.com/in-app-purchasing-on-android/">Android</a> services.
@@ -478,6 +479,10 @@ Example of inapp-products.xml
      # FORTUMO
      -keep class mp.** { *; }
      ```
+
+Fortumo
+=====
+Source code of library with Fortumo locate in "master_with_fortumo" branch.
 
 Unity Plugin
 =====
