@@ -33,9 +33,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 /**
  * Example game using in-app billing version 3.
@@ -231,11 +228,7 @@ public class MainActivity extends Activity {
 
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_GOOGLE, SKU_INFINITE_GAS)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_GOOGLE, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_GOOGLE, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_FORTUMO, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_FORTUMO, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_FORTUMO, SKU_PREMIUM);
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_GOOGLE, SKU_PREMIUM);
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
                 .addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PLAY_KEY)
                 .addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY)

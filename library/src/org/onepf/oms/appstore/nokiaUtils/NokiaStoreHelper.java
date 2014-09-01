@@ -32,6 +32,7 @@ import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.googleUtils.*;
+import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 
 import java.util.ArrayList;
@@ -527,7 +528,11 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 
 		final ArrayList<String> combinedStoreSkus = new ArrayList<String>(32);
 
-		combinedStoreSkus.addAll(SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_NOKIA));
+        List<String> allNokiaStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_NOKIA);
+
+        if (!CollectionUtils.isEmpty(allNokiaStoreSkus)) {
+            combinedStoreSkus.addAll(allNokiaStoreSkus);
+        }
 
 		if (moreItemSkus != null) {
 			for (final String moreItemSku : moreItemSkus) {
