@@ -48,26 +48,8 @@ android {
         }
     }
 
-    buildTypes {
-        debug
-        release
-        unity {
-            runProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt', 'proguard-unity.txt'
-        }
-    }
-
     lintOptions {
         abortOnError false
-    }
-
-    productFlavors {
-        noFortumo {
-            buildConfigField "boolean", "FORTUMO_ENABLE", "false"
-        }
-        complete {
-            buildConfigField "boolean", "FORTUMO_ENABLE", "true"
-        }
     }
 }
 
