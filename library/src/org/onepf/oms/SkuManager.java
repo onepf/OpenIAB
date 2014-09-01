@@ -68,7 +68,7 @@ public class SkuManager {
      *                  or {@link org.onepf.oms.OpenIabHelper#NAME_AMAZON}
      *                  {@link org.onepf.oms.OpenIabHelper#NAME_GOOGLE}
      * @return Instance of {@link org.onepf.oms.SkuManager}.
-     * @throws java.lang.IllegalArgumentException If one of arguments is empty or null string.
+     * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see #mapSku(String, java.util.Map)
      */
     public SkuManager mapSku(String sku, String storeName, String storeSku) {
@@ -79,7 +79,7 @@ public class SkuManager {
             skuMap = new HashMap<String, String>();
             sku2storeSkuMappings.put(storeName, skuMap);
         } else if (skuMap.containsKey(sku)) {
-            throw new IllegalArgumentException("Already specified SKU. sku: "
+            throw new SkuMappingException("Already specified SKU. sku: "
                     + sku + " -> storeSku: " + skuMap.get(sku));
         }
 
@@ -88,7 +88,7 @@ public class SkuManager {
             storeSkuMap = new HashMap<String, String>();
             storeSku2skuMappings.put(storeName, storeSkuMap);
         } else if (storeSkuMap.get(storeSku) != null) {
-            throw new IllegalArgumentException("Ambiguous SKU mapping. You try to map sku: "
+            throw new SkuMappingException("Ambiguous SKU mapping. You try to map sku: "
                     + sku + " -> storeSku: " + storeSku
                     + ", that is already mapped to sku: " + storeSkuMap.get(storeSku));
         }
@@ -100,11 +100,11 @@ public class SkuManager {
 
     private static void checkSkuMappingParams(String storeName, String storeSku) {
         if (TextUtils.isEmpty(storeName)) {
-            throw new IllegalArgumentException("Store name can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
 
         if (TextUtils.isEmpty(storeSku)) {
-            throw new IllegalArgumentException("Store sku can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_SKU);
         }
 
         if (OpenIabHelper.NAME_SAMSUNG.equals(storeName)) {
@@ -114,7 +114,7 @@ public class SkuManager {
 
     private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
         if (TextUtils.isEmpty(sku)) {
-            throw new IllegalArgumentException("SKU can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
         checkSkuMappingParams(storeName, storeSku);
     }
@@ -132,13 +132,12 @@ public class SkuManager {
      * @param sku       - application inner SKU
      * @param storeSkus - Map of "store name -> sku id in store"
      * @return Instance of {@link org.onepf.oms.SkuManager}.
-     * @throws java.lang.IllegalArgumentException If sku is empty or null string,
-     *                                            or storeSkus map is null, or
+     * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      */
     public SkuManager mapSku(String sku, Map<String, String> storeSkus) {
         if (storeSkus == null) {
-            throw new IllegalArgumentException("Store skus map can't be null.");
+            throw new SkuMappingException("Store skus map can't be null.");
         }
 
         for (Map.Entry<String, String> entry : storeSkus.entrySet()) {
@@ -159,10 +158,10 @@ public class SkuManager {
     @NotNull
     public String getStoreSku(@NotNull String appstoreName, @NotNull String sku) {
         if (TextUtils.isEmpty(appstoreName)) {
-            throw new IllegalArgumentException("Store name can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
         if (TextUtils.isEmpty(sku)) {
-            throw new IllegalArgumentException("SKU can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
 
         Map<String, String> storeSku = sku2storeSkuMappings.get(appstoreName);
@@ -202,7 +201,7 @@ public class SkuManager {
     @Nullable
     public List<String> getAllStoreSkus(@NotNull final String appstoreName) {
         if (TextUtils.isEmpty(appstoreName)) {
-            throw new IllegalArgumentException("Store name can't be null or empty value.");
+            throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
 
         Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);

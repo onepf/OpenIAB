@@ -86,6 +86,7 @@ import android.widget.Toast;
  *
  * @author Bruno Oliveira (Google)
  */
+
 public class MainActivity extends Activity {
 
     // Debug tag, for logging
@@ -119,7 +120,51 @@ public class MainActivity extends Activity {
     private Boolean setupDone;
 
     // Listener that's called when we finish querying the items and subscriptions we own
-    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new GotInventoryFinishedListener();
+    private IabHelper.QueryInventoryFinishedListener mGotInventoryListener =
+            new IabHelper.QueryInventoryFinishedListener() {
+                @Override
+                public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                    Log.d(TAG, "Query inventory finished.");
+                    if (result.isFailure()) {
+                        complain("Failed to query inventory: " + result);
+                        return;
+                    }
+
+                    Log.d(TAG, "Query inventory was successful.");
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+                    // Do we have the premium upgrade?
+                    Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
+                    mIsPremium = premiumPurchase != null && verifyDeveloperPayload(premiumPurchase);
+                    Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+
+                    // Do we have the infinite gas plan?
+                    Purchase infiniteGasPurchase = inventory.getPurchase(Config.SKU_INFINITE_GAS);
+                    mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
+                            verifyDeveloperPayload(infiniteGasPurchase));
+                    Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
+                            + " infinite gas subscription.");
+                    if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
+
+                    // Check for gas delivery -- if we own gas, we should fill up the tank immediately
+                    Purchase gasPurchase = inventory.getPurchase(Config.SKU_GAS);
+                    if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
+                        Log.d(TAG, "We have gas. Consuming it.");
+                        mHelper.consumeAsync(inventory.getPurchase(Config.SKU_GAS),
+                                mConsumeFinishedListener);
+                        return;
+                    }
+
+                    updateUi();
+                    setWaitScreen(false);
+                    Log.d(TAG, "Initial inventory query finished; enabling main UI.");
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -151,6 +196,7 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Creating IAB helper.");
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
+                .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
                 .addStoreKeys(Config.STORE_KEYS_MAP);
         mHelper = new OpenIabHelper(this, builder.build());
 
@@ -474,48 +520,5 @@ public class MainActivity extends Activity {
         SharedPreferences sp = getPreferences(MODE_PRIVATE);
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
-    }
-
-    private class GotInventoryFinishedListener implements IabHelper.QueryInventoryFinishedListener {
-        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-            Log.d(TAG, "Query inventory finished.");
-            if (result.isFailure()) {
-                complain("Failed to query inventory: " + result);
-                return;
-            }
-
-            Log.d(TAG, "Query inventory was successful.");
-
-            /*
-             * Check for items we own. Notice that for each purchase, we check
-             * the developer payload to see if it's correct! See
-             * verifyDeveloperPayload().
-             */
-
-            // Do we have the premium upgrade?
-            Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
-            mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
-            Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
-
-            // Do we have the infinite gas plan?
-            Purchase infiniteGasPurchase = inventory.getPurchase(Config.SKU_INFINITE_GAS);
-            mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
-                    verifyDeveloperPayload(infiniteGasPurchase));
-            Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
-                    + " infinite gas subscription.");
-            if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
-
-            // Check for gas delivery -- if we own gas, we should fill up the tank immediately
-            Purchase gasPurchase = inventory.getPurchase(Config.SKU_GAS);
-            if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
-                Log.d(TAG, "We have gas. Consuming it.");
-                mHelper.consumeAsync(inventory.getPurchase(Config.SKU_GAS), mConsumeFinishedListener);
-                return;
-            }
-
-            updateUi();
-            setWaitScreen(false);
-            Log.d(TAG, "Initial inventory query finished; enabling main UI.");
-        }
     }
 }

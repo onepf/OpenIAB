@@ -28,6 +28,7 @@ import android.content.pm.Signature;
 import android.text.TextUtils;
 
 import org.onepf.oms.SkuManager;
+import org.onepf.oms.SkuMappingException;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -178,15 +179,15 @@ public class SamsungApps extends DefaultAppstore {
     public static void checkSku(String sku) {
         String[] skuParts = sku.split("/");
         if (skuParts.length != 2) {
-            throw new IllegalArgumentException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
+            throw new SkuMappingException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
         }
         String groupId = skuParts[0];
         String itemId = skuParts[1];
         if (TextUtils.isEmpty(groupId) || !TextUtils.isDigitsOnly(groupId)) {
-            throw new IllegalArgumentException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
+            throw new SkuMappingException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
         }
         if (TextUtils.isEmpty(itemId)) {
-            throw new IllegalArgumentException("Samsung SKU must contain ITEM_ID.");
+            throw new SkuMappingException("Samsung SKU must contain ITEM_ID.");
         }
     }
 }
