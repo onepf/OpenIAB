@@ -66,6 +66,22 @@ public final class Config {
     public static final String SKU_INFINITE_GAS_NOKIA_STORE = "1290302";
     public static final String SKU_PREMIUM_NOKIA_STORE = "1290315";
 
+    public static final String SKU_GAS_AMAZON = "amazon.sku_gas";
+    public static final String SKU_INFINITE_GAS_AMAZON = "amazon.sku_infinite_gas";
+    public static final String SKU_PREMIUM_AMAZON = "amazon.sku_premium";
+
+    public static final String SKU_GAS_YANDEX = "yandex.sku_gas";
+    public static final String SKU_INFINITE_GAS_YANDEX = "yandex.sku_infinite_gas";
+    public static final String SKU_PREMIUM_YANDEX = "yandex.sku_premium";
+
+    public static final String SKU_GAS_APPLAND = "appland.sku_gas";
+    public static final String SKU_INFINITE_GAS_APPLAND = "appland.sku_infinite_gas";
+    public static final String SKU_PREMIUM_APPLAND = "appland.sku_premium";
+
+    public static final String SKU_GAS_SLIDEME = "slideme.sku_gas";
+    public static final String SKU_INFINITE_GAS_SLIDEME = "slideme.sku_infinite_gas";
+    public static final String SKU_PREMIUM_SLIDEME = "slideme.sku_premium";
+
     public static final Map<String, String> STORE_KEYS_MAP;
 
     static {
@@ -80,30 +96,25 @@ public final class Config {
 //                "Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed");
 
         //Only map SKUs for stores where SKU that using in app different from described in store console.
+        // In this sample only Google Play store use the same skus.
         SkuManager.getInstance()
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS_NOKIA_STORE)
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_YANDEX, SKU_INFINITE_GAS_YANDEX)
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, SKU_INFINITE_GAS_AMAZON)
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_APPLAND, SKU_INFINITE_GAS_APPLAND)
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, SKU_INFINITE_GAS_SLIDEME)
+
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_GAS_NOKIA_STORE)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_YANDEX, SKU_GAS_YANDEX)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, SKU_GAS_AMAZON)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, SKU_GAS_APPLAND)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_SLIDEME, SKU_GAS_SLIDEME)
+
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_YANDEX, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_YANDEX, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_YANDEX, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_APPLAND, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_SLIDEME, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_GOOGLE, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_GOOGLE, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_GOOGLE, SKU_PREMIUM);
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_YANDEX, SKU_PREMIUM_YANDEX)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, SKU_PREMIUM_AMAZON)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, SKU_PREMIUM_APPLAND)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM_SLIDEME);
     }
 
     private Config() {
