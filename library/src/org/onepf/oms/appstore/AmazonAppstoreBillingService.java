@@ -49,8 +49,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -103,7 +104,12 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
      * crashes or relaunched). So inventory object must not be null.
      */
     private final Inventory inventory = new Inventory();
-    private final Map<RequestId, CountDownLatch> inventoryLatchMap = new ConcurrentHashMap<RequestId, CountDownLatch>();
+    /**
+     * Since {@link RequestId} returned by {@link PurchasingService#getPurchaseUpdates(boolean) } doesn't match
+     * the one from {@link PurchasingListener#onPurchaseUpdatesResponse(PurchaseUpdatesResponse)}, we'll just
+     * assume separate requests are equal and use simple queue for synchronization
+     */
+    private final Queue<CountDownLatch> inventoryLatchQueue = new ConcurrentLinkedQueue<CountDownLatch>();
 
     /**
      * If not null will be notified from
@@ -160,9 +166,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         Logger.d("queryInventory() querySkuDetails: ", querySkuDetails, " moreItemSkus: ",
                 moreItemSkus, " moreSubsSkus: ", moreSubsSkus);
 
-        final RequestId purchaseUpdatesRequestId = PurchasingService.getPurchaseUpdates(true);
         final CountDownLatch purchaseUpdatesLatch = new CountDownLatch(1);
-        inventoryLatchMap.put(purchaseUpdatesRequestId, purchaseUpdatesLatch);
+        inventoryLatchQueue.offer(purchaseUpdatesLatch);
+        PurchasingService.getPurchaseUpdates(true);
         try {
             purchaseUpdatesLatch.await();
         } catch (InterruptedException e) {
@@ -183,9 +189,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 for (String sku : querySkus) {
                     queryStoreSkus.add(SkuManager.getInstance().getStoreSku(OpenIabHelper.NAME_AMAZON, sku));
                 }
-                final RequestId productDataRequestId = PurchasingService.getProductData(queryStoreSkus);
                 final CountDownLatch productDataLatch = new CountDownLatch(1);
-                inventoryLatchMap.put(productDataRequestId, productDataLatch);
+                inventoryLatchQueue.offer(productDataLatch);
+                PurchasingService.getProductData(queryStoreSkus);
                 try {
                     productDataLatch.await();
                 } catch (InterruptedException e) {
@@ -221,8 +227,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                     inventory.addPurchase(getPurchase(receipt));
                 }
                 if (purchaseUpdatesResponse.hasMore()) {
-                    final RequestId purchaseUpdatesRequestId = PurchasingService.getPurchaseUpdates(false);
-                    inventoryLatchMap.put(purchaseUpdatesRequestId, inventoryLatchMap.remove(requestId));
+                    PurchasingService.getPurchaseUpdates(false);
                     Logger.v("Initiating Another Purchase Updates with offset: ");
                     return;
                 }
@@ -230,7 +235,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
             case FAILED:
                 break;
         }
-        final CountDownLatch countDownLatch = inventoryLatchMap.remove(requestId);
+        final CountDownLatch countDownLatch = inventoryLatchQueue.poll();
         if (countDownLatch != null) {
             countDownLatch.countDown();
         }
@@ -279,7 +284,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
             case NOT_SUPPORTED:
                 break;
         }
-        final CountDownLatch countDownLatch = inventoryLatchMap.remove(requestId);
+        final CountDownLatch countDownLatch = inventoryLatchQueue.poll();
         if (countDownLatch != null) {
             countDownLatch.countDown();
         }
@@ -301,15 +306,24 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         return new SkuDetails(openIabSkuType, openIabSku, title, price, description);
     }
 
+    /**
+     * As for Amazon IAP 2.0, {@link Receipt#getSku()} differs from requested one for subscription.
+     * <br>
+     * This map is intended to workaround this issue.
+     */
+    private final Map<RequestId, String> requestSkuMap = new HashMap<RequestId, String>();
+
     @Override
     public void launchPurchaseFlow(
             final Activity activity,
             final String sku,
-            final  String itemType,
+            final String itemType,
             final int requestCode,
             final IabHelper.OnIabPurchaseFinishedListener listener,
             final String extraData) {
-        requestListeners.put(PurchasingService.purchase(sku), listener);
+        final RequestId requestId = PurchasingService.purchase(sku);
+        requestSkuMap.put(requestId, sku);
+        requestListeners.put(requestId, listener);
     }
 
     @Override
@@ -319,10 +333,11 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         Logger.v("onPurchaseResponse() PurchaseRequestStatus:", status,
                 ", reqId: ", requestId);
 
+        final String requestSku = requestSkuMap.remove(requestId);
         final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
         final IabResult result;
         boolean shouldNotifyFulfillment = false;
-        switch (status){
+        switch (status) {
             case SUCCESSFUL:
                 final UserData userData = purchaseResponse.getUserData();
                 final String userId = userData.getUserId();
@@ -333,15 +348,25 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                             "Current UserId doesn't match purchase UserId");
                     break;
                 }
-                final Receipt receipt = purchaseResponse.getReceipt();
-                final String storeSku = receipt.getSku();
+
                 purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
-                purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
-                final String openIabSkuType = receipt.getProductType() == ProductType.SUBSCRIPTION
+
+                final Receipt receipt = purchaseResponse.getReceipt();
+                final ProductType productType = receipt.getProductType();
+
+                final String storeSku = receipt.getSku();
+                final String sku = SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON,
+                        productType == ProductType.SUBSCRIPTION ? requestSku :storeSku
+                );
+                purchase.setSku(sku);
+
+                final String openIabSkuType = productType == ProductType.SUBSCRIPTION
                         ? IabHelper.ITEM_TYPE_SUBS
                         : IabHelper.ITEM_TYPE_INAPP;
                 purchase.setItemType(openIabSkuType);
+
                 result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
+
                 shouldNotifyFulfillment = true;
                 break;
             case INVALID_SKU:
