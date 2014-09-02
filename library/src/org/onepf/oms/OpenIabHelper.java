@@ -1337,7 +1337,7 @@ public class OpenIabHelper {
             private List<Appstore> availableStores;
             private int discoveryTimeout = DEFAULT_DISCOVER_TIMEOUT;
             private int checkInventoryTimeout = CHECK_INVENTORY_TIMEOUT;
-            private boolean checkInventory = true;
+            private boolean checkInventory;
             private int samsungCertificationRequestCode
                     = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
 
