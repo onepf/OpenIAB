@@ -32,16 +32,14 @@ android {
     signingConfigs {
         release {
             storeFile file("onepf.keystore")
-            storePassword "android"
-            keyAlias "OpenIab"
-            keyPassword "android"
+            storePassword "_OnePlatform789"
+            keyAlias "one platform foundation production .apk key"
+            keyPassword "_OnePlatform789"
         }
     }
 
     buildTypes {
         release {
-            runProguard false
-            proguardFiles 'proguard-project.txt'
             signingConfig signingConfigs.release
         }
     }
