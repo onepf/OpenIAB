@@ -6,7 +6,7 @@ Or download [the latest release JARS][1] or grab via Gradle:
    ```groovy
    compile 'org.onepf:openiab:0.9.7.2' // no Fortumo, ~ 200 kb
    //or
-   compile 'org.onepf:openiab:0.9.7.2-fortumo// Fortumo inside, ~ 800 kb
+   compile 'org.onepf:openiab:0.9.7.2-fortumo'// Fortumo inside, ~ 700 kb
    
    ```
    or Maven:
