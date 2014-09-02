@@ -4,9 +4,9 @@ How To add OpenIAB into an app
 Or clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
 Or download [the latest release JARS][1] or grab via Gradle:
    ```groovy
-   compile 'org.onepf:openiab:0.9.7' // Fortumo inside
+   compile 'org.onepf:openiab:0.9.7.2' // no Fortumo, ~ 200 kb
    //or
-   compile 'org.onepf:openiab:0.9.7.1:noFortumo'// no Fortumo, less 
+   compile 'org.onepf:openiab:0.9.7.2-fortumo// Fortumo inside, ~ 800 kb
    
    ```
    or Maven:
@@ -14,12 +14,12 @@ Or download [the latest release JARS][1] or grab via Gradle:
    <dependency>
        <groupId>org.onepf</groupId>
        <artifactId>openiab</artifactId>
-       <version>0.9.7</version>
+       <version>0.9.7.2</version>
    </dependency>
    ```
 
 2. Map Google Play SKUs to Yandex/Amazon/etc SKUs like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L211
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L198
 
 3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
 When setup is done call  `helper.queryInventory()`
@@ -36,10 +36,10 @@ When setup is done call  `helper.queryInventory()`
               }
       });
     ```
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L254
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L209
 
 4. Handle the results of `helper.queryInventory()` in an inventory listener and update UI to show what was purchased
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L570
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L123
 
 5. To process purchases you need to override `onActivityResult()` of your Activity
     ```java
@@ -50,16 +50,18 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/
        }
     ```
 When the user requests purchase of an item, call  `helper.launchPurchaseFlow()`
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L306
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L261
 and handle the results with the listener
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L418
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L373
 
 6. If the user has purchased a consumable item, call  ``` helper.consume() ```
-to remove it from the inventory. If it is not removed from the invetnory, the store assumes it as non-consumable item and still will not allow it to be purchased more than once. Also it will be returned by ``` helper.queryInventory() ``` next time
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L437
+to remove it from the inventory. If it is not removed from the invetnory, 
+the store assumes it as non-consumable item and still will not allow it to be purchased more than once.
+ Also it will be returned by ``` helper.queryInventory() ``` next time
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L392
 
 7. Specify keys for different stores like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L240
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L200
 
 8. Add the required permissions to the AndroidManifest.xml
 
@@ -569,5 +571,5 @@ http://www.apache.org/licenses/LICENSE-2.0
 The OpenIAB API specification and the related texts are available under the terms of the Creative Commons Attribution 2.5 license:
 http://creativecommons.org/licenses/by/2.5/
 
-[1]: https://github.com/onepf/OpenIAB/releases/
+[1]: http://mvnrepository.com/artifact/org.onepf/openiab
 [2]: http://tools.android.com/tech-docs/new-build-system

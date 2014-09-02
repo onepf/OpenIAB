@@ -24,8 +24,6 @@ android {
 
     buildTypes {
         release {
-            runProguard false
-            proguardFiles 'proguard-project.txt'
             signingConfig signingConfigs.release
         }
     }
@@ -41,5 +39,5 @@ android {
 }
 
 dependencies {
-    compile 'org.onepf:openiab:0.9.7'
+    compile project(':OpenIab Library')
 }
