@@ -39,5 +39,5 @@ android {
 }
 
 dependencies {
-    compile 'org.onepf:openiab:0.9.7.2-SNAPSHOT'
+    compile project(':OpenIab Library')
 }

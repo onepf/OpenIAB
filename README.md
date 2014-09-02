@@ -4,9 +4,9 @@ How To add OpenIAB into an app
 Or clone the library `git clone https://github.com/onepf/OpenIAB.git` and add /library as a Library Project.
 Or download [the latest release JARS][1] or grab via Gradle:
    ```groovy
-   compile 'org.onepf:openiab:0.9.7.2' // no Fortumo, less 
+   compile 'org.onepf:openiab:0.9.7.2' // no Fortumo, ~ 200 kb
    //or
-   compile 'org.onepf:openiab:0.9.7.2-fortumo'// Fortumo inside
+   compile 'org.onepf:openiab:0.9.7.2-fortumo// Fortumo inside, ~ 800 kb
    
    ```
    or Maven:
