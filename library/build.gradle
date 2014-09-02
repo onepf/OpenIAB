@@ -20,9 +20,6 @@ android {
     compileSdkVersion project.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
 
-    defaultPublishConfig 'completeRelease'
-    publishNonDefault true
-
     defaultConfig {
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion

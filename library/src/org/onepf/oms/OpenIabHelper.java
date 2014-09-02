@@ -42,6 +42,7 @@ import org.onepf.oms.appstore.SamsungAppsBillingService;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
+import org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
@@ -381,6 +382,7 @@ public class OpenIabHelper {
                             mAppstore = FortumoStore.initFortumoStore(context, true);
                         }
                     }
+
                     Logger.dWithTimeFromUp("select equipped");
                     if (mAppstore != null) {
                         final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
@@ -603,9 +605,6 @@ public class OpenIabHelper {
     private static void checkSamsung(Context context) {
         Collection<String> allStoreSkus = SkuManager.getInstance().getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG);
         if (!CollectionUtils.isEmpty(allStoreSkus)) { // it means that Samsung is among the candidates
-            for (String sku : allStoreSkus) {
-                SamsungApps.checkSku(sku);
-            }
 
             if (!(context instanceof Activity)) {
                 //

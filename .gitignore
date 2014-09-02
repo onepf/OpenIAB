@@ -6,7 +6,6 @@
 .project
 .metadata
 bin/
-tmp/
 *.tmp
 *.bak
 *.swp
@@ -81,7 +80,6 @@ pip-log.txt
 *.iws
 *.ipr
 /*/out
-/*/build
 /*/*/production
 
 #Gradle
