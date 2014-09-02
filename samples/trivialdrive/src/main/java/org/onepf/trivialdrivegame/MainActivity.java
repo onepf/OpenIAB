@@ -16,7 +16,6 @@
 package org.onepf.trivialdrivegame;
 
 import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.SkuManager;
 import org.onepf.oms.appstore.AmazonAppstore;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
@@ -32,9 +31,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -90,61 +86,8 @@ import java.util.Map;
  *
  * @author Bruno Oliveira (Google)
  */
+
 public class MainActivity extends Activity {
-
-    // SKUs for our products: the premium upgrade (non-consumable) and gas (consumable)
-    public static final String SKU_PREMIUM = "sku_premium";
-
-    public static final String SKU_GAS = "sku_gas";
-
-    // SKU for our subscription (infinite gas)
-    public static final String SKU_INFINITE_GAS = "sku_infinite_gas";
-
-    /**
-     * Google play public key.
-     */
-    public static final String GOOGLE_PLAY_KEY
-            = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjAGOuq8Il7/hWFBabpKUp99D9CtqXw6" +
-            "JXN0WN4nbLbGqRw6lZUCIaZF96mf/ihQ1HVbNs8OMfBG5Aso3z7aUqlBVDLJ2nH/WpMlBtEP4hhIJA" +
-            "L59H9cLBA0hyxL8vf9OCG+u5WdWFa8u8pk1W1+6ALaJEzRonfqF8kWu3lPPMyOmrr/9+hRhQCFH8Zv" +
-            "JgMWOUT1JSY20ubmEj8SF9ICL2W/aR7cAQPfMPQJCkJg5lBal8kWiLX7l6lJ3qATg9tkT5pzSEAlxM" +
-            "7UpLqvdsaEYdslO1+ajLvTvw01HG/izhZPl3IsRH1/By4Ug32LVRmfm9YnsjpvuG+vfiL1v0yqH9QIDAQAB";
-
-    /**
-     * Yandex.Store public key.
-     */
-    public static final String YANDEX_PUBLIC_KEY
-            = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsGEswqmagEHk5nY+xStc8cBxdfEuKgbt4j" +
-            "KSpYc7T1nwUulX6E+7zY4+vk/l6hmcZiHYT8cuXUEV1+Kq2rJLKlZnf4HATEMQgtzHxbBBmcHccYKOb6t" +
-            "pVi/Tj/ws9l+KBiX8o3JlF3zpzdx0y1dPuVlOyUA7dmB2X4+7DXQDumLvjTkTxMOpZmb/ajKBNF73OeO" +
-            "q/Fsi0MNhzzBv+GHeKDE2rBHNCuAVL2hsHhYYldjogZNd4j5a54xH8h0Wn5UKIvZPZ2r5kOxU/dpUi0Fp" +
-            "+iokOxuMV9yX5rOYw+5t+Asok5+dtrCpLBZx2fzAoANLnmRK/3mNWr9KY7YXJPiQ1QIDAQAB";
-
-    /**
-     * Appland store public key.
-     */
-    public static final String APPLAND_PUBLIC_KEY =
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC5idC9c24V7a7qCJu7kdIyOZsk\n" +
-                    "W0Rc7/q+K+ujEXsUaAdb5nwmlOJqpoJeCh5Fmq5A1NdF3BwkI8+GwTkH757NBZAS\n" +
-                    "SdEuN0pLZmA6LopOiMIy0LoIWknM5eWMa3e41CxCEFoMv48gFIVxDNJ/KAQAX7+K\n" +
-                    "ysYzIdlA3W3fBXXyGQIDAQAB";
-
-    /**
-     * SlideMe store public key.
-     */
-    public static final String SLIDEME_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBC" +
-            "gKCAQEAq6rFm2wb9sm" +
-            "bcowrfZHYw71ISHYxF/tG9Jn9c+nRzFCVDSXjvedBxKllw16/GEx9DQ32Ut8azVAznB2wBDNUsS" +
-            "M8nzNhHeCSDvEX2/Ozq1dEq3V3DF4jBEKDAkIOMzIBRWN8fpA5MU/9m8QD9xkJDfP7Mw/6zEMidk" +
-            "2CEE8EZRTlpQ8ULVgBlFISd8Mt9w8ZFyeTyJTZhF2Z9+RZN8woU+cSXiVRmiA0+v2R8Pf+YNJb9fd" +
-            "V5yvM8r9K1MEdRaXisJyMOnjL7H2mZWigWLm7uGoUGuIg9HHi09COBMm3dzAe9yLZoPSG75SvYDs" +
-            "AZ6ms8IYxF6FAniNqfMOuMFV8zwIDAQAB";
-
-    public static final String SKU_GAS_NOKIA_STORE = "1290250";
-
-    public static final String SKU_INFINITE_GAS_NOKIA_STORE = "1290302";
-
-    public static final String SKU_PREMIUM_NOKIA_STORE = "1290315";
 
     // Debug tag, for logging
     static final String TAG = "TrivialDrive";
@@ -177,7 +120,51 @@ public class MainActivity extends Activity {
     private Boolean setupDone;
 
     // Listener that's called when we finish querying the items and subscriptions we own
-    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new GotInventoryFinishedListener();
+    private IabHelper.QueryInventoryFinishedListener mGotInventoryListener =
+            new IabHelper.QueryInventoryFinishedListener() {
+                @Override
+                public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                    Log.d(TAG, "Query inventory finished.");
+                    if (result.isFailure()) {
+                        complain("Failed to query inventory: " + result);
+                        return;
+                    }
+
+                    Log.d(TAG, "Query inventory was successful.");
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+                    // Do we have the premium upgrade?
+                    Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
+                    mIsPremium = premiumPurchase != null && verifyDeveloperPayload(premiumPurchase);
+                    Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
+
+                    // Do we have the infinite gas plan?
+                    Purchase infiniteGasPurchase = inventory.getPurchase(Config.SKU_INFINITE_GAS);
+                    mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
+                            verifyDeveloperPayload(infiniteGasPurchase));
+                    Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
+                            + " infinite gas subscription.");
+                    if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
+
+                    // Check for gas delivery -- if we own gas, we should fill up the tank immediately
+                    Purchase gasPurchase = inventory.getPurchase(Config.SKU_GAS);
+                    if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
+                        Log.d(TAG, "We have gas. Consuming it.");
+                        mHelper.consumeAsync(inventory.getPurchase(Config.SKU_GAS),
+                                mConsumeFinishedListener);
+                        return;
+                    }
+
+                    updateUi();
+                    setWaitScreen(false);
+                    Log.d(TAG, "Initial inventory query finished; enabling main UI.");
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -208,41 +195,9 @@ public class MainActivity extends Activity {
         // Create the helper, passing it our context and the public key to verify signatures with
         Log.d(TAG, "Creating IAB helper.");
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
-        SkuManager.getInstance()
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_NOKIA, SKU_INFINITE_GAS_NOKIA_STORE)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_GAS_NOKIA_STORE)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_YANDEX, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_YANDEX, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_YANDEX, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_APPLAND, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_SLIDEME, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_GOOGLE, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_GOOGLE, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_GOOGLE, SKU_PREMIUM)
-
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_FORTUMO, SKU_INFINITE_GAS)
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_FORTUMO, SKU_GAS)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_FORTUMO, SKU_PREMIUM);
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
-                .addStoreKey(OpenIabHelper.NAME_GOOGLE, GOOGLE_PLAY_KEY)
-                .addStoreKey(OpenIabHelper.NAME_YANDEX, YANDEX_PUBLIC_KEY)
-                .addStoreKey(OpenIabHelper.NAME_APPLAND, APPLAND_PUBLIC_KEY)
-                .addStoreKey(OpenIabHelper.NAME_SLIDEME, SLIDEME_PUBLIC_KEY);
-//      builder.addStoreKey(OpenIabHelper.NAME_AMAZON, "Unavailable. Amazon doesn't support RSA verification. So this mapping is not needed"); //
-//      builder.addStoreKey(OpenIabHelper.NAME_SAMSUNG,"Unavailable. SamsungApps doesn't support RSA verification. So this mapping is not needed"); //
+                .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
+                .addStoreKeys(Config.STORE_KEYS_MAP);
         mHelper = new OpenIabHelper(this, builder.build());
 
         // enable debug logging (for a production application, you should set this to false).
@@ -303,7 +258,7 @@ public class MainActivity extends Activity {
          *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
          *        an empty string, but on a production app you should carefully generate this. */
         String payload = "";
-        mHelper.launchPurchaseFlow(this, SKU_GAS, RC_REQUEST, mPurchaseFinishedListener, payload);
+        mHelper.launchPurchaseFlow(this, Config.SKU_GAS, RC_REQUEST, mPurchaseFinishedListener, payload);
     }
 
     // User clicked the "Upgrade to Premium" button.
@@ -327,7 +282,7 @@ public class MainActivity extends Activity {
          *        an empty string, but on a production app you should carefully generate this. */
         String payload = "";
 
-        mHelper.launchPurchaseFlow(this, SKU_PREMIUM, RC_REQUEST,
+        mHelper.launchPurchaseFlow(this, Config.SKU_PREMIUM, RC_REQUEST,
                 mPurchaseFinishedListener, payload);
     }
 
@@ -357,7 +312,7 @@ public class MainActivity extends Activity {
         setWaitScreen(true);
         Log.d(TAG, "Launching purchase flow for infinite gas subscription.");
         mHelper.launchPurchaseFlow(this,
-                SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
+                Config.SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
                 RC_REQUEST, mPurchaseFinishedListener, payload);
     }
 
@@ -431,18 +386,18 @@ public class MainActivity extends Activity {
 
             Log.d(TAG, "Purchase successful.");
 
-            if (purchase.getSku().equals(SKU_GAS)) {
+            if (purchase.getSku().equals(Config.SKU_GAS)) {
                 // bought 1/4 tank of gas. So consume it.
                 Log.d(TAG, "Purchase is gas. Starting gas consumption.");
                 mHelper.consumeAsync(purchase, mConsumeFinishedListener);
-            } else if (purchase.getSku().equals(SKU_PREMIUM)) {
+            } else if (purchase.getSku().equals(Config.SKU_PREMIUM)) {
                 // bought the premium upgrade!
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
                 alert("Thank you for upgrading to premium!");
                 mIsPremium = true;
                 updateUi();
                 setWaitScreen(false);
-            } else if (purchase.getSku().equals(SKU_INFINITE_GAS)) {
+            } else if (purchase.getSku().equals(Config.SKU_INFINITE_GAS)) {
                 // bought the infinite gas subscription
                 Log.d(TAG, "Infinite gas subscription purchased.");
                 alert("Thank you for subscribing to infinite gas!");
@@ -565,48 +520,5 @@ public class MainActivity extends Activity {
         SharedPreferences sp = getPreferences(MODE_PRIVATE);
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
-    }
-
-    private class GotInventoryFinishedListener implements IabHelper.QueryInventoryFinishedListener {
-        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-            Log.d(TAG, "Query inventory finished.");
-            if (result.isFailure()) {
-                complain("Failed to query inventory: " + result);
-                return;
-            }
-
-            Log.d(TAG, "Query inventory was successful.");
-
-            /*
-             * Check for items we own. Notice that for each purchase, we check
-             * the developer payload to see if it's correct! See
-             * verifyDeveloperPayload().
-             */
-
-            // Do we have the premium upgrade?
-            Purchase premiumPurchase = inventory.getPurchase(SKU_PREMIUM);
-            mIsPremium = (premiumPurchase != null && verifyDeveloperPayload(premiumPurchase));
-            Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
-
-            // Do we have the infinite gas plan?
-            Purchase infiniteGasPurchase = inventory.getPurchase(SKU_INFINITE_GAS);
-            mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
-                    verifyDeveloperPayload(infiniteGasPurchase));
-            Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
-                    + " infinite gas subscription.");
-            if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
-
-            // Check for gas delivery -- if we own gas, we should fill up the tank immediately
-            Purchase gasPurchase = inventory.getPurchase(SKU_GAS);
-            if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
-                Log.d(TAG, "We have gas. Consuming it.");
-                mHelper.consumeAsync(inventory.getPurchase(SKU_GAS), mConsumeFinishedListener);
-                return;
-            }
-
-            updateUi();
-            setWaitScreen(false);
-            Log.d(TAG, "Initial inventory query finished; enabling main UI.");
-        }
     }
 }
