@@ -152,10 +152,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 Logger.d("onUserDataResponse() Unable to get user ID");
                 break;
             default:
-                iabResult = null;
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Unknown response code");
         }
-        //noinspection ConstantConditions
-        if (setupListener != null && iabResult != null) {
+        if (setupListener != null) {
             setupListener.onIabSetupFinished(iabResult);
             setupListener = null;
         }
@@ -208,7 +207,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void onPurchaseUpdatesResponse(final PurchaseUpdatesResponse purchaseUpdatesResponse) {
         final PurchaseUpdatesResponse.RequestStatus requestStatus = purchaseUpdatesResponse.getRequestStatus();
         final RequestId requestId = purchaseUpdatesResponse.getRequestId();
-        Logger.v("onPurchaseUpdatesResponse() reqStatus: ", requestStatus,
+        Logger.d("onPurchaseUpdatesResponse() reqStatus: ", requestStatus,
                 "reqId: ", requestId);
 
         switch (requestStatus) {
@@ -228,7 +227,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 }
                 if (purchaseUpdatesResponse.hasMore()) {
                     PurchasingService.getPurchaseUpdates(false);
-                    Logger.v("Initiating Another Purchase Updates with offset: ");
+                    Logger.d("Initiating Another Purchase Updates with offset: ");
                     return;
                 }
                 break;
@@ -268,7 +267,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void onProductDataResponse(final ProductDataResponse productDataResponse) {
         final ProductDataResponse.RequestStatus status = productDataResponse.getRequestStatus();
         final RequestId requestId = productDataResponse.getRequestId();
-        Logger.v("onItemDataResponse() reqStatus: ", status,
+        Logger.d("onItemDataResponse() reqStatus: ", status,
                 ", reqId: ", requestId);
 
         switch (status) {
@@ -296,7 +295,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         final String title = product.getTitle();
         final String description = product.getDescription();
         final ProductType productType = product.getProductType();
-        Logger.v(String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n",
+        Logger.d(String.format("Item: %s\n Type: %s\n SKU: %s\n Price: %s\n Description: %s\n",
                 title, productType, sku, price, description));
 
         final String openIabSkuType = productType == ProductType.SUBSCRIPTION
@@ -330,7 +329,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public void onPurchaseResponse(final PurchaseResponse purchaseResponse) {
         final PurchaseResponse.RequestStatus status = purchaseResponse.getRequestStatus();
         final RequestId requestId = purchaseResponse.getRequestId();
-        Logger.v("onPurchaseResponse() PurchaseRequestStatus:", status,
+        Logger.d("onPurchaseResponse() PurchaseRequestStatus:", status,
                 ", reqId: ", requestId);
 
         final String requestSku = requestSkuMap.remove(requestId);
@@ -450,7 +449,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public void dispose() {
-        // Nothing to do here
+        setupListener = null;
     }
 
     @Override
