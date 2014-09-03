@@ -179,15 +179,15 @@ public class SamsungApps extends DefaultAppstore {
     public static void checkSku(String sku) {
         String[] skuParts = sku.split("/");
         if (skuParts.length != 2) {
-            throw new SkuMappingException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
+            throw new SamsungSkuFormatException("Samsung SKU must contain ITEM_GROUP_ID and ITEM_ID.");
         }
         String groupId = skuParts[0];
         String itemId = skuParts[1];
         if (TextUtils.isEmpty(groupId) || !TextUtils.isDigitsOnly(groupId)) {
-            throw new SkuMappingException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
+            throw new SamsungSkuFormatException("Samsung SKU must contain numeric ITEM_GROUP_ID.");
         }
         if (TextUtils.isEmpty(itemId)) {
-            throw new SkuMappingException("Samsung SKU must contain ITEM_ID.");
+            throw new SamsungSkuFormatException("Samsung SKU must contain ITEM_ID.");
         }
     }
 }
