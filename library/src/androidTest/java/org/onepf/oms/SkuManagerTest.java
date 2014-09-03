@@ -2,18 +2,19 @@ package org.onepf.oms;
 
 import junit.framework.Assert;
 
-import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.onepf.oms.appstore.SamsungSkuFormatException;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.List;
 
 /**
  * Created by krozov on 01.09.14.
  */
+@Config(emulateSdk = 18, manifest = Config.NONE)
 @RunWith(RobolectricTestRunner.class)
 public class SkuManagerTest {
 
