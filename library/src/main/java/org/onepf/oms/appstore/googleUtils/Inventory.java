@@ -17,17 +17,17 @@
 package org.onepf.oms.appstore.googleUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents a block of information about in-app items.
  * An Inventory is returned by such methods as {@link IabHelper#queryInventory}.
  */
 public class Inventory {
-    public Map<String, SkuDetails> mSkuMap = new HashMap<String, SkuDetails>();
-    public Map<String, Purchase> mPurchaseMap = new HashMap<String, Purchase>();
+    private final Map<String, SkuDetails> mSkuMap = new ConcurrentHashMap<String, SkuDetails>();
+    private final Map<String, Purchase> mPurchaseMap = new ConcurrentHashMap<String, Purchase>();
 
     public Inventory() {
     }

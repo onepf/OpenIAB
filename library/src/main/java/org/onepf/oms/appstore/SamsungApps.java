@@ -131,7 +131,7 @@ public class SamsungApps extends DefaultAppstore {
                                 Inventory inventory = getInAppBillingService()
                                         .queryInventory(true, SkuManager.getInstance()
                                                 .getAllStoreSkus(OpenIabHelper.NAME_SAMSUNG), null);
-                                if (inventory != null && !CollectionUtils.isEmpty(inventory.mSkuMap)) {
+                                if (inventory != null && !CollectionUtils.isEmpty(inventory.getAllOwnedSkus())) {
                                     isBillingAvailable = true;
                                 }
                             } catch (IabException e) {

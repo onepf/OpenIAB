@@ -666,7 +666,7 @@ public class OpenIabHelper {
             });
         }
         try {
-            storeRemains.await(options.checkInventoryTimeoutMs, TimeUnit.MILLISECONDS);
+            storeRemains.await();
             Logger.dWithTimeFromUp("inventory check done");
         } catch (InterruptedException e) {
             Logger.e(e, "selectBillingService()  inventory check is failed. candidates: ", candidates.size()
