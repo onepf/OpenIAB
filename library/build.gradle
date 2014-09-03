@@ -28,22 +28,6 @@ android {
         versionName "2.7"
 
         applicationId 'org.onepf.oms'
-
-        sourceSets {
-            main {
-                manifest.srcFile 'AndroidManifest.xml'
-                resources.srcDirs = ['src']
-                aidl.srcDirs = ['src']
-                jni.srcDirs = ['jni']
-                jniLibs.srcDirs = ['libs']
-                renderscript.srcDirs = ['src']
-                res.srcDirs = ['res']
-                assets.srcDirs = ['assets']
-                java.srcDirs = ['src']
-            }
-
-            androidTest.setRoot('tests')
-        }
     }
 
     lintOptions {
