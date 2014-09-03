@@ -20,6 +20,7 @@ import android.text.TextUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.util.Logger;
 
@@ -109,6 +110,10 @@ public class SkuManager {
 
         if (OpenIabHelper.NAME_SAMSUNG.equals(storeName)) {
             SamsungApps.checkSku(storeSku);
+        }
+
+        if (OpenIabHelper.NAME_NOKIA.equals(storeName)){
+            NokiaStore.checkSku(storeSku);
         }
     }
 
