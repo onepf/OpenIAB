@@ -17,6 +17,7 @@
 package org.onepf.oms;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
@@ -55,6 +54,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -141,11 +141,56 @@ public class OpenIabHelper {
     public static final String NAME_GOOGLE = "com.google.play";
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
-    public static final String NAME_YANDEX = "com.yandex.store";
     public static final String NAME_NOKIA = "com.nokia.nstore";
+
+    public static final String NAME_YANDEX = "com.yandex.store";
     public static final String NAME_APPLAND = "Appland";
     public static final String NAME_SLIDEME = "SlideME";
     public static final String NAME_APTOIDE = "cm.aptoide.pt";
+
+    private static enum Wrapper {
+        Google("com.google.play") {
+            @Override
+            Appstore instantiate(final Context context) {
+                return super.instantiate(context);
+            }
+        },
+        Amazon("com.amazon.apps") {
+            @Override
+            Appstore instantiate(final Context context) {
+                return super.instantiate(context);
+            }
+        },
+        Samsung("com.samsung.apps") {
+            @Override
+            Appstore instantiate(final Context context) {
+                return super.instantiate(context);
+            }
+        },
+        Nokia("com.nokia.nstore") {
+            @Override
+            Appstore instantiate(final Context context) {
+                return super.instantiate(context);
+            }
+        };
+
+        Wrapper(final String wrappedPackage) {
+            this.wrappedPackage = wrappedPackage;
+        }
+
+        private final String wrappedPackage;
+
+        Appstore instantiate(final Context context) {
+            return null;
+        }
+    }
+
+    private static final List<String> WRAPPED_PACKAGES = Arrays.asList(
+            NAME_GOOGLE,
+            NAME_AMAZON,
+            NAME_SAMSUNG,
+            NAME_NOKIA
+    );
 
 
     /**
@@ -314,102 +359,221 @@ public class OpenIabHelper {
         }
         Logger.init();
         setupState = SETUP_IN_PROGRESS;
-        new Thread(new Runnable() {
-            public void run() {
-                List<Appstore> stores2check = new ArrayList<Appstore>();
-                if (options.availableStores != null) {
-                    stores2check.addAll(options.availableStores);
-                } else { // if appstores are not specified by user - lookup for all available stores
-                    final List<Appstore> openStores = discoverOpenStores(context, null, options);
-                    Logger.dWithTimeFromUp("startSetup() discovered openstores: ", openStores.toString());
-                    stores2check.addAll(openStores);
-                    if (options.getVerifyMode() == Options.VERIFY_EVERYTHING && !options.hasStoreKey(NAME_GOOGLE)) {
-                        // don't work with GooglePlay if verifyMode is strict and no publicKey provided 
-                    } else {
-                        final String publicKey = options.verifyMode == Options.VERIFY_SKIP ? null
-                                : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
-                        stores2check.add(new GooglePlay(context, publicKey));
-                    }
 
-                    // try AmazonApps if in-app-purchasing.jar with Amazon SDK is compiled with app 
-                    try {
-                        OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
-                        stores2check.add(new AmazonAppstore(context));
-                    } catch (ClassNotFoundException ignored) {
-                    }
 
-                    if (!CollectionUtils.isEmpty(SkuManager.getInstance().getAllStoreSkus(NAME_SAMSUNG))) {
-                        // SamsungApps shows lot of UI stuff during init 
-                        // try it only if samsung SKUs are specified
-                        stores2check.add(new SamsungApps(activity, options));
-                    }
-                    //Nokia TODO change logic
-                    stores2check.add(new NokiaStore(context));
-                    if (!Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
-                        Logger.w("Required permission \"" +
-                                NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
-                    }
-                }
-
-                //todo get rid of this, DO NOT save anything to fields!
-                for (Appstore store : stores2check) {
-                    if (store instanceof SamsungApps) {
-                        samsungInSetup = (SamsungApps) store;
-                        break;
-                    }
-                }
-
-                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
-
-                if (options.checkInventory) {
-
-                    final List<Appstore> equippedStores = checkInventory(stores2check);
-
-                    if (!equippedStores.isEmpty()) {
-                        mAppstore = selectBillingService(equippedStores);
-                    }
-
-                    Logger.dWithTimeFromUp("select equipped");
-                    if (mAppstore != null) {
-                        final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
-                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
-                        Logger.d(message);
-                    } else {
-                        // found no equipped stores. Select store based on store parameters
-                        mAppstore = selectBillingService(stores2check);
-                        Logger.dWithTimeFromUp("select non-equipped");
-                        if (mAppstore != null) {
-                            final String message = "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName();
-                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
-                            Logger.d(message);
-                        }
-                    }
-                    if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
-                    }
-                    fireSetupFinished(listener, result);
-                } else {   // no inventory check. Select store based on store parameters
-                    mAppstore = selectBillingService(stores2check);
-                    if (mAppstore != null) {
-                        mAppstoreBillingService = mAppstore.getInAppBillingService();
-                        mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
-                            public void onIabSetupFinished(IabResult result) {
-                                fireSetupFinished(listener, result);
-                            }
-                        });
-                    } else {
-                        fireSetupFinished(listener, result);
-                    }
-                }
-                for (Appstore store : stores2check) {
-                    if (store != mAppstore && store.getInAppBillingService() != null) {
-                        store.getInAppBillingService().dispose();
-                        Logger.dWithTimeFromUp("startSetup() disposing ", store.getAppstoreName());
-                    }
-                }
-            }
-        }, "openiab-setup").start();
+        final String packageName = context.getPackageName();
+        final String packageInstaller = context.getPackageManager().getInstallerPackageName(packageName);
+        // Package installer is set
+        if (TextUtils.isEmpty(packageInstaller)) {
+            setUp(listener);
+        } else {
+            setUpForPackage(listener, packageInstaller);
+        }
     }
+
+
+    private void setUpForPackage(final IabHelper.OnIabSetupFinishedListener listener, final String packageInstaller) {
+        final PackageManager packageManager = context.getPackageManager();
+        boolean packageInstalled;
+        try {
+            packageManager.getPackageInfo(packageInstaller, PackageManager.GET_ACTIVITIES);
+            packageInstalled = true;
+        } catch (NameNotFoundException exception) {
+            packageInstalled = false;
+        }
+
+        if (!packageInstalled) {
+            setUp(listener);
+            return;
+        }
+
+        // Package installer exist
+        Appstore appstore = null;
+        for (final Wrapper wrapper : Wrapper.values()) {
+            if (TextUtils.equals(packageInstaller, wrapper.wrappedPackage)){
+                appstore = wrapper.instantiate(context);
+                break;
+            }
+        }
+
+        final IabResult iabResult;
+        if (appstore != null) {
+            // We've got a wrapper for package installer
+            if (!appstore.isBillingAvailable(packageInstaller)) {
+                iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
+            } else {
+                iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
+            }
+            listener.onIabSetupFinished(iabResult);
+            return;
+        }
+
+        final Intent intentAppstoreServices = new Intent(BIND_INTENT);
+        Intent bindServiceIntent = null;
+        for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
+            final String servicePackage = serviceInfo.packageName;
+            if (TextUtils.equals(packageInstaller, servicePackage)) {
+                bindServiceIntent = new Intent(intentAppstoreServices);
+                bindServiceIntent.setClassName(servicePackage, serviceInfo.name);
+            }
+        }
+        if (bindServiceIntent != null) {
+            // We've got an open store as package installer
+            if (!context.bindService(bindServiceIntent, new ServiceConnection() {
+                // Open store is available
+                @Override
+                public void onServiceConnected(final ComponentName name, final IBinder service) {
+                    final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+                    IabResult iabResult;
+                    try {
+                        if (openAppstoreService.isBillingAvailable(packageInstaller)) {
+                            iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
+                        } else {
+                            iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
+                        }
+                    } catch (RemoteException e) {
+                        iabResult = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occurred during billing setup");
+                    }
+                    listener.onIabSetupFinished(iabResult);
+                }
+
+                @Override
+                public void onServiceDisconnected(final ComponentName name) {}
+            }, Context.BIND_AUTO_CREATE)) {
+                listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Can't bind to service"));
+            }
+        } else {
+            setUp(listener);
+        }
+    }
+
+    private void setUp(final IabHelper.OnIabSetupFinishedListener listener) {
+        // Look for appropriate open store
+        for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
+            final Intent bindServiceIntent = new Intent(BIND_INTENT);
+            if(!context.bindService(bindServiceIntent,new ServiceConnection() {
+                @Override
+                public void onServiceConnected(final ComponentName name, final IBinder service) {
+
+                }
+
+                @Override
+                public void onServiceDisconnected(final ComponentName name) {
+
+                }
+            },Context.BIND_AUTO_CREATE)){
+
+            }
+        }
+    }
+
+    private List<ServiceInfo> queryOpenStoreServices() {
+        final Intent intentAppstoreServices = new Intent(BIND_INTENT);
+        final PackageManager packageManager = context.getPackageManager();
+        final List<ResolveInfo> resolveInfos = packageManager.queryIntentServices(intentAppstoreServices, 0);
+        final List<ServiceInfo> serviceInfos = new ArrayList<ServiceInfo>();
+        for (final ResolveInfo resolveInfo : resolveInfos) {
+            serviceInfos.add(resolveInfo.serviceInfo);
+        }
+        return (List<ServiceInfo>) Collections.unmodifiableCollection(serviceInfos);
+    }
+
+//        new Thread(new Runnable() {
+//            public void run() {
+//                List<Appstore> stores2check = new ArrayList<Appstore>();
+//                if (options.availableStores != null) {
+//                    stores2check.addAll(options.availableStores);
+//                } else { // if appstores are not specified by user - lookup for all available stores
+//                    final List<Appstore> openStores = discoverOpenStores(context, null, options);
+//                    Logger.dWithTimeFromUp("startSetup() discovered openstores: ", openStores.toString());
+//                    stores2check.addAll(openStores);
+//                    if (options.getVerifyMode() == Options.VERIFY_EVERYTHING && !options.hasStoreKey(NAME_GOOGLE)) {
+//                        // don't work with GooglePlay if verifyMode is strict and no publicKey provided
+//                    } else {
+//                        final String publicKey = options.verifyMode == Options.VERIFY_SKIP ? null
+//                                : options.storeKeys.get(OpenIabHelper.NAME_GOOGLE);
+//                        stores2check.add(new GooglePlay(context, publicKey));
+//                    }
+//
+//                    // try AmazonApps if in-app-purchasing.jar with Amazon SDK is compiled with app
+//                    try {
+//                        OpenIabHelper.class.getClassLoader().loadClass("com.amazon.inapp.purchasing.PurchasingManager");
+//                        stores2check.add(new AmazonAppstore(context));
+//                    } catch (ClassNotFoundException ignored) {
+//                    }
+//
+//                    if (!CollectionUtils.isEmpty(SkuManager.getInstance().getAllStoreSkus(NAME_SAMSUNG))) {
+//                        // SamsungApps shows lot of UI stuff during init
+//                        // try it only if samsung SKUs are specified
+//                        stores2check.add(new SamsungApps(activity, options));
+//                    }
+//                    //Nokia TODO change logic
+//                    stores2check.add(new NokiaStore(context));
+//                    if (!Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION)) {
+//                        Logger.w("Required permission \"" +
+//                                NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
+//                    }
+//                }
+//
+//                //todo get rid of this, DO NOT save anything to fields!
+//                for (Appstore store : stores2check) {
+//                    if (store instanceof SamsungApps) {
+//                        samsungInSetup = (SamsungApps) store;
+//                        break;
+//                    }
+//                }
+//
+//                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing isn't supported");
+//
+//                if (options.checkInventory) {
+//
+//                    final List<Appstore> equippedStores = checkInventory(stores2check);
+//
+//                    if (!equippedStores.isEmpty()) {
+//                        mAppstore = selectBillingService(equippedStores);
+//                    }
+//
+//                    Logger.dWithTimeFromUp("select equipped");
+//                    if (mAppstore != null) {
+//                        final String message = "Successfully initialized with existing inventory: " + mAppstore.getAppstoreName();
+//                        result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+//                        Logger.d(message);
+//                    } else {
+//                        // found no equipped stores. Select store based on store parameters
+//                        mAppstore = selectBillingService(stores2check);
+//                        Logger.dWithTimeFromUp("select non-equipped");
+//                        if (mAppstore != null) {
+//                            final String message = "Successfully initialized with non-equipped store: " + mAppstore.getAppstoreName();
+//                            result = new IabResult(BILLING_RESPONSE_RESULT_OK, message);
+//                            Logger.d(message);
+//                        }
+//                    }
+//                    if (mAppstore != null) {
+//                        mAppstoreBillingService = mAppstore.getInAppBillingService();
+//                    }
+//                    fireSetupFinished(listener, result);
+//                } else {   // no inventory check. Select store based on store parameters
+//                    mAppstore = selectBillingService(stores2check);
+//                    if (mAppstore != null) {
+//                        mAppstoreBillingService = mAppstore.getInAppBillingService();
+//                        mAppstoreBillingService.startSetup(new OnIabSetupFinishedListener() {
+//                            public void onIabSetupFinished(IabResult result) {
+//                                fireSetupFinished(listener, result);
+//                            }
+//                        });
+//                    } else {
+//                        fireSetupFinished(listener, result);
+//                    }
+//                }
+//                for (Appstore store : stores2check) {
+//                    if (store != mAppstore && store.getInAppBillingService() != null) {
+//                        store.getInAppBillingService().dispose();
+//                        Logger.dWithTimeFromUp("startSetup() disposing ", store.getAppstoreName());
+//                    }
+//                }
+//            }
+//        }, "openiab-setup").start();
+//    }
 
 
     @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
