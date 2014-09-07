@@ -1,3 +1,28 @@
+Table of Contents
+=====
+
+* [How To add OpenIAB into an app](#how-to-add-openiab-into-an-app)
+* [Support instructions for the stores](#support-instructions-for-the-stores)
+  * [Google Play and Open Stores](#google-play-and-open-stores)
+  * [Receipt Verification on Server](#receipt-verification-on-server)
+  * [Amazon](#amazon)
+  * [Samsung Apps](#samsung-apps)
+  * [Nokia IAP](#nokia-iap)
+  * [SlideME](#slideme)
+  * [Aptoide](#aptoide)
+* [Fortumo: carrier billing and NOOK](#fortumo-carrier-billing-and-nook)
+  * [Before starting to work with OpenIAB library](#before-starting-to-work-with-openiab-library)
+  * [OpenIAB setup](#openiab-setup)
+* [Fortumo](#fortumo)
+* [Unity Plugin](#unity-plugin)
+* [OpenIAB - Open In-App Billing](#openiab---open-in-app-billing)
+* [How OpenIAB Works](#how-openiab-works)
+* [Current Status](#current-status)
+* [Basic Principles](#basic-principles)
+* [No Middle Man](#no-middle-man)
+* [How Can I Help?](#how-can-i-help)
+* [License](#license)
+
 How To add OpenIAB into an app
 =====
 1. Download the latest version of OpenIAB.jar from http://www.onepf.org/openiab and attach it to the project.
