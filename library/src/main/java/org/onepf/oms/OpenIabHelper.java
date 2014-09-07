@@ -151,26 +151,26 @@ public class OpenIabHelper {
     private static enum Wrapper {
         Google("com.google.play") {
             @Override
-            Appstore instantiate(final Context context) {
-                return super.instantiate(context);
+            Appstore createInstance(final Context context) {
+                return super.createInstance(context);
             }
         },
         Amazon("com.amazon.apps") {
             @Override
-            Appstore instantiate(final Context context) {
-                return super.instantiate(context);
+            Appstore createInstance(final Context context) {
+                return super.createInstance(context);
             }
         },
         Samsung("com.samsung.apps") {
             @Override
-            Appstore instantiate(final Context context) {
-                return super.instantiate(context);
+            Appstore createInstance(final Context context) {
+                return super.createInstance(context);
             }
         },
         Nokia("com.nokia.nstore") {
             @Override
-            Appstore instantiate(final Context context) {
-                return super.instantiate(context);
+            Appstore createInstance(final Context context) {
+                return super.createInstance(context);
             }
         };
 
@@ -180,18 +180,10 @@ public class OpenIabHelper {
 
         private final String wrappedPackage;
 
-        Appstore instantiate(final Context context) {
+        Appstore createInstance(final Context context) {
             return null;
         }
     }
-
-    private static final List<String> WRAPPED_PACKAGES = Arrays.asList(
-            NAME_GOOGLE,
-            NAME_AMAZON,
-            NAME_SAMSUNG,
-            NAME_NOKIA
-    );
-
 
     /**
      * @param sku       - application inner SKU
@@ -344,7 +336,6 @@ public class OpenIabHelper {
 
     /**
      * Discover all available stores and select the best billing service.
-     * If the flag {@link Options#checkInventory} is set to true, stores with existing inventory are checked first.
      * <p/>
      * Should be called from UI thread
      *
@@ -363,8 +354,8 @@ public class OpenIabHelper {
 
         final String packageName = context.getPackageName();
         final String packageInstaller = context.getPackageManager().getInstallerPackageName(packageName);
-        // Package installer is set
         if (TextUtils.isEmpty(packageInstaller)) {
+            // Package installer is not set
             setUp(listener);
         } else {
             setUpForPackage(listener, packageInstaller);
@@ -383,6 +374,7 @@ public class OpenIabHelper {
         }
 
         if (!packageInstalled) {
+            // Package installer no longer exist, fallback to default algorithm
             setUp(listener);
             return;
         }
@@ -391,7 +383,7 @@ public class OpenIabHelper {
         Appstore appstore = null;
         for (final Wrapper wrapper : Wrapper.values()) {
             if (TextUtils.equals(packageInstaller, wrapper.wrappedPackage)){
-                appstore = wrapper.instantiate(context);
+                appstore = wrapper.createInstance(context);
                 break;
             }
         }
@@ -404,12 +396,13 @@ public class OpenIabHelper {
             } else {
                 iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
             }
-            listener.onIabSetupFinished(iabResult);
+            finishSetUp(listener, iabResult, appstore);
             return;
         }
 
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         Intent bindServiceIntent = null;
+        // Look for package installer among available open stores
         for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
             final String servicePackage = serviceInfo.packageName;
             if (TextUtils.equals(packageInstaller, servicePackage)) {
@@ -417,33 +410,41 @@ public class OpenIabHelper {
                 bindServiceIntent.setClassName(servicePackage, serviceInfo.name);
             }
         }
-        if (bindServiceIntent != null) {
-            // We've got an open store as package installer
-            if (!context.bindService(bindServiceIntent, new ServiceConnection() {
-                // Open store is available
-                @Override
-                public void onServiceConnected(final ComponentName name, final IBinder service) {
-                    final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
-                    IabResult iabResult;
-                    try {
-                        if (openAppstoreService.isBillingAvailable(packageInstaller)) {
-                            iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
-                        } else {
-                            iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
-                        }
-                    } catch (RemoteException e) {
-                        iabResult = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occurred during billing setup");
+
+        if (bindServiceIntent == null) {
+            // No intent for open store service, fallback to default algorithm
+            setUp(listener);
+            return;
+        }
+
+        // We've got an open store as package installer
+        final ServiceConnection serviceConnection = new ServiceConnection() {
+            // Open store is available
+            @Override
+            public void onServiceConnected(final ComponentName name, final IBinder service) {
+                final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+                IabResult iabResult;
+                Appstore appstore = null;
+                try {
+                    if (openAppstoreService.isBillingAvailable(packageInstaller)) {
+                        iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
+                    } else {
+                        iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
                     }
-                    listener.onIabSetupFinished(iabResult);
+                    appstore = getOpenAppstore(name, this, openAppstoreService);
+                } catch (RemoteException e) {
+                    iabResult = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occurred during billing setup");
                 }
 
-                @Override
-                public void onServiceDisconnected(final ComponentName name) {}
-            }, Context.BIND_AUTO_CREATE)) {
-                listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Can't bind to service"));
+                finishSetUp(listener, iabResult, appstore);
             }
-        } else {
-            setUp(listener);
+
+            @Override
+            public void onServiceDisconnected(final ComponentName name) {}
+        };
+        if (!context.bindService(bindServiceIntent, serviceConnection , Context.BIND_AUTO_CREATE)) {
+            // Unable to connect to open store service
+            finishSetUp(listener, new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Can't bind to service"), null);
         }
     }
 
@@ -451,19 +452,6 @@ public class OpenIabHelper {
         // Look for appropriate open store
         for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
             final Intent bindServiceIntent = new Intent(BIND_INTENT);
-            if(!context.bindService(bindServiceIntent,new ServiceConnection() {
-                @Override
-                public void onServiceConnected(final ComponentName name, final IBinder service) {
-
-                }
-
-                @Override
-                public void onServiceDisconnected(final ComponentName name) {
-
-                }
-            },Context.BIND_AUTO_CREATE)){
-
-            }
         }
     }
 
@@ -476,6 +464,59 @@ public class OpenIabHelper {
             serviceInfos.add(resolveInfo.serviceInfo);
         }
         return (List<ServiceInfo>) Collections.unmodifiableCollection(serviceInfos);
+    }
+
+    private OpenAppstore getOpenAppstore(final ComponentName name,
+                                         final ServiceConnection serviceConnection,
+                                         final IOpenAppstore openAppstoreService)
+            throws RemoteException {
+        final String appstoreName = openAppstoreService.getAppstoreName();
+        final Intent billingIntent = openAppstoreService.getBillingServiceIntent();
+
+        if (appstoreName == null) { // no name - no service
+            Logger.e("discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: ", name);
+            return null;
+        }
+
+        if (billingIntent == null) {
+            Logger.d("discoverOpenStores(): billing is not supported by store: ", name);
+            return null;
+        }
+
+        // TODO Do something about verifyMode
+//      if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.hasStoreKey(appstoreName)) {
+//            don't connect to OpenStore if no key provided and verification is strict
+//            Logger.e("discoverOpenStores() verification is required but publicKey is not provided: ", name);
+//      }
+//        String publicKey = options.getStoreKey(appstoreName);
+//        if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
+
+        final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, null, serviceConnection);
+        openAppstore.componentName = name;
+        return openAppstore;
+    }
+
+    private void finishSetUp(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+                             @NotNull final IabResult iabResult,
+                             @Nullable final Appstore appstore) {
+        if (!Utils.uiThread()) {
+            throw new IllegalStateException("Must be called from UI thread.");
+        }
+        if (setupState != SETUP_IN_PROGRESS) {
+            throw new IllegalStateException("Setup is not started or already finished.");
+        }
+
+        final boolean setUpSuccessful = iabResult.isSuccess();
+        setupState = setUpSuccessful ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
+        if (setUpSuccessful) {
+            if (appstore == null) {
+                throw new IllegalStateException("Appstore can't be null if setup is successful");
+            }
+            mAppstore = appstore;
+            mAppstoreBillingService = appstore.getInAppBillingService();
+        }
+        Logger.dWithTimeFromUp("finishSetUp() === SETUP DONE === result: ", iabResult, " Appstore: ", appstore);
+        listener.onIabSetupFinished(iabResult);
     }
 
 //        new Thread(new Runnable() {
@@ -1455,7 +1496,7 @@ public class OpenIabHelper {
 
         /**
          * storeKeys is map of [ appstore name -> publicKeyBase64 ]
-         * Put keys for all stores you support in this Map and pass it to instantiate {@link OpenIabHelper}
+         * Put keys for all stores you support in this Map and pass it to createInstance {@link OpenIabHelper}
          * <p/>
          * <b>publicKey</b> key is used to verify receipt is created by genuine Appstore using
          * provided signature. It can be found in Developer Console of particular store

@@ -3,6 +3,7 @@ package org.onepf.oms.util;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,5 +41,9 @@ public final class Utils {
             Logger.e(e, "Error during checking permission ", permission);
         }
         return false;
+    }
+
+    public static boolean uiThread() {
+        return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
 }
