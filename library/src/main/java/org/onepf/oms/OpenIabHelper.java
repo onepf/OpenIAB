@@ -17,13 +17,14 @@
 package org.onepf.oms;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -351,7 +352,6 @@ public class OpenIabHelper {
         Logger.init();
         setupState = SETUP_IN_PROGRESS;
 
-
         final String packageName = context.getPackageName();
         final String packageInstaller = context.getPackageManager().getInstallerPackageName(packageName);
         if (TextUtils.isEmpty(packageInstaller)) {
@@ -361,7 +361,6 @@ public class OpenIabHelper {
             setUpForPackage(listener, packageInstaller);
         }
     }
-
 
     private void setUpForPackage(final IabHelper.OnIabSetupFinishedListener listener, final String packageInstaller) {
         final PackageManager packageManager = context.getPackageManager();
@@ -400,14 +399,12 @@ public class OpenIabHelper {
             return;
         }
 
-        final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         Intent bindServiceIntent = null;
         // Look for package installer among available open stores
         for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
             final String servicePackage = serviceInfo.packageName;
             if (TextUtils.equals(packageInstaller, servicePackage)) {
-                bindServiceIntent = new Intent(intentAppstoreServices);
-                bindServiceIntent.setClassName(servicePackage, serviceInfo.name);
+                bindServiceIntent = getBindServiceIntent(serviceInfo);
             }
         }
 
@@ -422,20 +419,18 @@ public class OpenIabHelper {
             // Open store is available
             @Override
             public void onServiceConnected(final ComponentName name, final IBinder service) {
-                final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
                 IabResult iabResult;
                 Appstore appstore = null;
                 try {
-                    if (openAppstoreService.isBillingAvailable(packageInstaller)) {
+                    appstore = checkOpenStoreService(name, service, this);
+                    if (appstore != null) {
                         iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
                     } else {
                         iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
                     }
-                    appstore = getOpenAppstore(name, this, openAppstoreService);
                 } catch (RemoteException e) {
                     iabResult = new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occurred during billing setup");
                 }
-
                 finishSetUp(listener, iabResult, appstore);
             }
 
@@ -450,9 +445,88 @@ public class OpenIabHelper {
 
     private void setUp(final IabHelper.OnIabSetupFinishedListener listener) {
         // Look for appropriate open store
-        for (final ServiceInfo serviceInfo : queryOpenStoreServices()) {
-            final Intent bindServiceIntent = new Intent(BIND_INTENT);
+        final List<ServiceInfo> serviceInfos = queryOpenStoreServices();
+        if (serviceInfos.isEmpty()) {
+            // No open stores available, fall back to wrappers
+            checkWrappers(listener);
+            return;
         }
+        final Queue<Intent> bindServiceIntents = new LinkedList<Intent>();
+        for (final ServiceInfo serviceInfo : serviceInfos) {
+            bindServiceIntents.add(getBindServiceIntent(serviceInfo));
+        }
+
+        checkOpenStores(listener, bindServiceIntents);
+    }
+
+    private void checkOpenStores(final IabHelper.OnIabSetupFinishedListener listener,
+                                 final Queue<Intent> bindServiceIntents) {
+        final ServiceConnection serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(final ComponentName name, final IBinder service) {
+                Appstore appstore = null;
+                try {
+                    appstore = checkOpenStoreService(name, service, this);
+                } catch (RemoteException ignore) {}
+                if (appstore != null && versionOk(appstore)) {
+                    // Found open store
+                    final IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
+                    finishSetUp(listener, iabResult, appstore);
+                    return;
+                }
+                // Check another store
+                checkOpenStores(listener, bindServiceIntents);
+            }
+
+            @Override
+            public void onServiceDisconnected(final ComponentName name) {}
+        };
+
+        while (!bindServiceIntents.isEmpty()) {
+            if (context.bindService(bindServiceIntents.poll(), serviceConnection, Context.BIND_AUTO_CREATE)) {
+                return;
+            }
+        }
+
+        // No suitable open store found, fall back to wrappers
+        checkWrappers(listener);
+    }
+
+    private Appstore checkOpenStoreService(final ComponentName name,
+                                           final IBinder service,
+                                           final ServiceConnection serviceConnection)
+            throws RemoteException {
+        final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
+        if (!openAppstoreService.isBillingAvailable(context.getPackageName())) {
+            return null;
+        }
+        return getOpenAppstore(name, serviceConnection, openAppstoreService);
+    }
+
+    private void checkWrappers(final IabHelper.OnIabSetupFinishedListener listener) {
+        for (final Wrapper wrapper : Wrapper.values()) {
+            final Appstore appstore = wrapper.createInstance(context);
+            final String packageName = context.getPackageName();
+            if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
+                // Found suitable wrapper
+                final IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_OK, "Setup ok");
+                finishSetUp(listener, iabResult, appstore);
+                return;
+            }
+        }
+
+        // No suitable store found
+        final IabResult iabResult = new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "Billing unavailable");
+        finishSetUp(listener, iabResult, null);
+    }
+
+    private boolean versionOk(@NotNull final Appstore appstore) {
+        final String packageName = context.getPackageName();
+        int versionCode = Appstore.PACKAGE_VERSION_UNDEFINED;
+        try {
+            versionCode = context.getPackageManager().getPackageInfo(packageName, 0).versionCode;
+        } catch (NameNotFoundException ignore) {}
+        return appstore.getPackageVersion(packageName) >= versionCode;
     }
 
     private List<ServiceInfo> queryOpenStoreServices() {
@@ -466,6 +540,7 @@ public class OpenIabHelper {
         return (List<ServiceInfo>) Collections.unmodifiableCollection(serviceInfos);
     }
 
+    @Nullable
     private OpenAppstore getOpenAppstore(final ComponentName name,
                                          final ServiceConnection serviceConnection,
                                          final IOpenAppstore openAppstoreService)
@@ -494,6 +569,12 @@ public class OpenIabHelper {
         final OpenAppstore openAppstore = new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, null, serviceConnection);
         openAppstore.componentName = name;
         return openAppstore;
+    }
+
+    private Intent getBindServiceIntent(final ServiceInfo serviceInfo) {
+        final Intent bindServiceIntent = new Intent(BIND_INTENT);
+        bindServiceIntent.setClassName(serviceInfo.packageName, serviceInfo.name);
+        return bindServiceIntent;
     }
 
     private void finishSetUp(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
