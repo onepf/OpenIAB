@@ -43,6 +43,15 @@ public final class Utils {
         return false;
     }
 
+    public static boolean packageInstalled(@NotNull Context context, final String packageName) {
+        final PackageManager packageManager = context.getPackageManager();
+        try {
+            packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException ignore) {}
+        return false;
+    }
+
     public static boolean uiThread() {
         return Thread.currentThread() == Looper.getMainLooper().getThread();
     }

@@ -28,13 +28,13 @@ import android.content.pm.Signature;
 import android.text.TextUtils;
 
 import org.onepf.oms.SkuManager;
-import org.onepf.oms.SkuMappingException;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -96,7 +96,11 @@ public class SamsungApps extends DefaultAppstore {
         if (isBillingAvailable != null) {
             return isBillingAvailable;
         }
-        
+
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must no be called from UI thread.");
+        }
+
         if (isSamsungTestMode) {
             Logger.d("isBillingAvailable() billing is supported in test mode.");
             isBillingAvailable = true;
