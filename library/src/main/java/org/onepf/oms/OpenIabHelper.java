@@ -80,10 +80,6 @@ public class OpenIabHelper {
      * TODO: Optimize: ~1sec is consumed for check account certification via account activity + ~3sec for actual setup
      */
     private static final int CHECK_INVENTORY_TIMEOUT = 10 * 1000;
-    /**
-     * Default timeout (in milliseconds) for discover all OpenStores on device.
-     */
-    private static final int DEFAULT_DISCOVER_TIMEOUT = 5 * 1000;
 
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
 
@@ -508,6 +504,7 @@ public class OpenIabHelper {
         final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
         final String appstoreName = openAppstoreService.getAppstoreName();
         final Intent billingIntent = openAppstoreService.getBillingServiceIntent();
+
         if (TextUtils.isEmpty(appstoreName)) { // no name - no service
             Logger.d("discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: ", name);
         } else if (billingIntent == null) {
@@ -783,15 +780,6 @@ public class OpenIabHelper {
         }
         Logger.d("checkSamsung() ignoring Samsung wrapper");
         appstoreFactoryMap.remove(NAME_SAMSUNG);
-    }
-
-
-    //todo move to Utils
-    private static void formatComponentStatus(String message, StringBuilder messageBuilder) {
-        if (messageBuilder.length() > 0) {
-            messageBuilder.append('\n');
-        }
-        messageBuilder.append(message);
     }
 
     /**
@@ -1237,12 +1225,9 @@ public class OpenIabHelper {
 
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#getDiscoveryTimeout()}
-         * Will be private since 1.0.
-         * <p/>
-         * <p/>
-         * Wait specified amount of ms to find all OpenStores on device
+         * No longer used.
          */
-        public int discoveryTimeoutMs = DEFAULT_DISCOVER_TIMEOUT;
+        public int discoveryTimeoutMs = 0;
 
         /**
          * @deprecated Use {@link org.onepf.oms.OpenIabHelper.Options#isCheckInventory()}
@@ -1318,14 +1303,12 @@ public class OpenIabHelper {
                         Map<String, String> storeKeys,
                         boolean checkInventory,
                         int checkInventoryTimeout,
-                        int discoveryTimeout,
                         @MagicConstant(intValues = {VERIFY_EVERYTHING, VERIFY_ONLY_KNOWN, VERIFY_SKIP}) int verifyMode,
                         List<String> preferredStoreNames,
                         int samsungCertificationRequestCode) {
             this.checkInventory = checkInventory;
             this.checkInventoryTimeoutMs = checkInventoryTimeout;
             this.availableStores = availableStores;
-            this.discoveryTimeoutMs = discoveryTimeout;
             this.storeKeys = storeKeys;
             this.preferredStoreNames = preferredStoreNames;
             this.verifyMode = verifyMode;
@@ -1370,11 +1353,9 @@ public class OpenIabHelper {
             return checkInventoryTimeoutMs;
         }
 
-        /**
-         * Wait specified amount of ms to find all OpenStores on device
-         */
+        @Deprecated
         public long getDiscoveryTimeout() {
-            return discoveryTimeoutMs;
+            return 0;
         }
 
         /**
@@ -1450,7 +1431,6 @@ public class OpenIabHelper {
             private List<String> preferredStoreNames;
             private Map<String, String> storeKeys;
             private List<Appstore> availableStores;
-            private int discoveryTimeout = DEFAULT_DISCOVER_TIMEOUT;
             private int checkInventoryTimeout = CHECK_INVENTORY_TIMEOUT;
             private boolean checkInventory;
             private int samsungCertificationRequestCode
@@ -1501,18 +1481,8 @@ public class OpenIabHelper {
                 return this;
             }
 
-            /**
-             * Set discovery timeout. By default 5 sec.
-             *
-             * @throws java.lang.IllegalArgumentException if timeout is negative value.
-             * @see org.onepf.oms.OpenIabHelper.Options#getDiscoveryTimeout()
-             */
+            @Deprecated
             public Builder setDiscoveryTimeout(int discoveryTimeout) {
-                if (discoveryTimeout < 0) {
-                    throw new IllegalArgumentException("Discovery timeout can't be" +
-                            " a negative value.");
-                }
-                this.discoveryTimeout = discoveryTimeout;
                 return this;
             }
 
@@ -1526,7 +1496,7 @@ public class OpenIabHelper {
              * @see org.onepf.oms.OpenIabHelper.Options.Builder#setCheckInventory(boolean)
              */
             public Builder setCheckInventoryTimeout(int checkInventoryTimeout) {
-                if (discoveryTimeout < 0) {
+                if (checkInventoryTimeout < 0) {
                     throw new IllegalArgumentException("Check inventory timeout can't be" +
                             " a negative value.");
                 }
@@ -1694,7 +1664,6 @@ public class OpenIabHelper {
                         storeKeys,
                         checkInventory,
                         checkInventoryTimeout,
-                        discoveryTimeout,
                         verifyMode,
                         preferredStoreNames,
                         samsungCertificationRequestCode);
