@@ -301,17 +301,17 @@ public class GameActivity extends Activity {
             OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder();
             builder.addStoreKeys(Config.STORE_KEYS_MAP);
 
-            if (verifyStorePublicKeys(builder)) {
+            final OpenIabHelper.Options options = builder.build();
+            if (verifyStorePublicKeys(options)) {
                 showErrorMessage(R.string.error_no_store_public_keys, true);
             } else {
-                OpenIabHelper.Options options = builder.build();
                 openIabHelper = new OpenIabHelper(GameActivity.this, options);
                 openIabHelper.startSetup(new LifeGameOnIabSetupFinishedListener());
             }
         }
 
-        private boolean verifyStorePublicKeys(OpenIabHelper.Options.Builder builder) {
-            final Map<String, String> storeKeys = builder.getStoreKeys();
+        private boolean verifyStorePublicKeys(OpenIabHelper.Options options) {
+            final Map<String, String> storeKeys = options.getStoreKeys();
             if (CollectionUtils.isEmpty(storeKeys)) {
                 return false;
             } else {
