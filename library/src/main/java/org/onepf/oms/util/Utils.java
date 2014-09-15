@@ -43,13 +43,19 @@ public final class Utils {
         return false;
     }
 
-    public static boolean packageInstalled(@NotNull Context context, final String packageName) {
+    public static boolean packageInstalled(@NotNull final Context context, final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         try {
             packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
             return true;
         } catch (PackageManager.NameNotFoundException ignore) {}
         return false;
+    }
+
+    public static boolean isPackageInstaller(@NotNull final Context context, final String packageName) {
+        final PackageManager packageManager = context.getPackageManager();
+        final String installerPackageName = packageManager.getInstallerPackageName(context.getPackageName());
+        return TextUtils.equals(installerPackageName, packageName);
     }
 
     public static boolean uiThread() {

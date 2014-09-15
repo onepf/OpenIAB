@@ -16,7 +16,6 @@
 
 package org.onepf.oms;
 
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,12 +26,14 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +51,6 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.Security;
-import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 import org.onepf.oms.util.Utils;
 
@@ -131,11 +131,11 @@ public class OpenIabHelper {
 
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
-    private boolean mAsyncInProgress = false;
+    private volatile boolean mAsyncInProgress = false;
 
     // (for logging/debugging)
     // if mAsyncInProgress == true, what asynchronous operation is in progress?
-    private String mAsyncOperation = "";
+    private volatile String mAsyncOperation = "";
 
     // Item types
     public static final String ITEM_TYPE_INAPP = "inapp";
@@ -171,7 +171,7 @@ public class OpenIabHelper {
         appstorePackageMap.put("cm.aptoide.pt", NAME_APTOIDE);
 
 
-        appstorePackageMap.put("com.android.vending", NAME_GOOGLE);
+        appstorePackageMap.put(GooglePlay.ANDROID_INSTALLER, NAME_GOOGLE);
         appstoreFactoryMap.put(NAME_GOOGLE, new AppstoreFactory() {
             @Override
             public Appstore get() {
@@ -180,7 +180,7 @@ public class OpenIabHelper {
             }
         });
 
-        appstorePackageMap.put("com.amazon.venezia", NAME_AMAZON);
+        appstorePackageMap.put(AmazonAppstore.AMAZON_INSTALLER, NAME_AMAZON);
         appstoreFactoryMap.put(NAME_AMAZON, new AppstoreFactory() {
             @Override
             public Appstore get() {
@@ -188,7 +188,7 @@ public class OpenIabHelper {
             }
         });
 
-        appstorePackageMap.put("com.sec.android.app.samsungapps", NAME_SAMSUNG);
+        appstorePackageMap.put(SamsungApps.SAMSUNG_INSTALLER, NAME_SAMSUNG);
         appstoreFactoryMap.put(NAME_SAMSUNG, new AppstoreFactory() {
             @Override
             public Appstore get() {
@@ -197,7 +197,7 @@ public class OpenIabHelper {
         });
 
         // TODO check package
-        appstorePackageMap.put("com.nokia.nstore", NAME_NOKIA);
+        appstorePackageMap.put(NokiaStore.NOKIA_INSTALLER, NAME_NOKIA);
         appstoreFactoryMap.put(NAME_NOKIA, new AppstoreFactory() {
             @Override
             public Appstore get() {
@@ -684,26 +684,32 @@ public class OpenIabHelper {
     private void discoverOpenStores(@NotNull final OpenStoresDiscoveredListener listener,
                                     @NotNull final Queue<Intent> bindServiceIntents,
                                     @NotNull final List<Appstore> appstores) {
-        final ServiceConnection serviceConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(final ComponentName name, final IBinder service) {
-                Appstore openAppstore = null;
-                try {
-                    openAppstore = getOpenAppstore(name, service, this);
-                } catch (RemoteException ignore) {}
-                if (openAppstore != null) {
-                    appstores.add(openAppstore);
-                }
-                discoverOpenStores(listener, bindServiceIntents, appstores);
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName name) {}
-        };
-
         while (!bindServiceIntents.isEmpty()) {
-            if (context.bindService(bindServiceIntents.poll(), serviceConnection, Context.BIND_AUTO_CREATE)) {
+            final Intent intent = bindServiceIntents.poll();
+            final ServiceConnection serviceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(final ComponentName name, final IBinder service) {
+                    Appstore openAppstore = null;
+                    try {
+                        openAppstore = getOpenAppstore(name, service, this);
+                    } catch (RemoteException exception) {
+                        Logger.w("onServiceConnected() Error creating appsotre: ", exception);
+                    }
+                    if (openAppstore != null) {
+                        appstores.add(openAppstore);
+                    }
+                    discoverOpenStores(listener, bindServiceIntents, appstores);
+                }
+
+                @Override
+                public void onServiceDisconnected(final ComponentName name) {}
+            };
+
+            if (context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)) {
+                // Wait for open store service
                 return;
+            } else {
+                Logger.e("discoverOpenStores() Couldn't connect to open store: " + intent);
             }
         }
 
@@ -712,13 +718,13 @@ public class OpenIabHelper {
 
     @Deprecated
     /**
-     * Use {@link OpenIabHelper#discoverOpenStores(OpenStoresDiscoveredListener)} or {@link OpenIabHelper#discoverOpenStores()} instead.
+     * Use {@link discoverOpenStores(OpenStoresDiscoveredListener)} or {@link discoverOpenStores()} instead.
      */
     public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
         throw new UnsupportedOperationException("This action is no longer supported.");
     }
 
-    private List<ServiceInfo> queryOpenStoreServices() {
+    private @NotNull List<ServiceInfo> queryOpenStoreServices() {
         final Intent intentAppstoreServices = new Intent(BIND_INTENT);
         final PackageManager packageManager = context.getPackageManager();
         final List<ResolveInfo> resolveInfos = packageManager.queryIntentServices(intentAppstoreServices, 0);
@@ -730,11 +736,11 @@ public class OpenIabHelper {
     }
 
     /**
-     * Must be called after setup is finished. See {@link org.onepf.oms.OpenIabHelper#startSetup(org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener)}
+     * Must be called after setup is finished. See {@link #startSetup(OnIabSetupFinishedListener)}
      *
      * @return <code>null</code> if no appstore connected, otherwise name of Appstore OpenIAB has connected to.
      */
-    public synchronized String getConnectedAppstoreName() {
+    public @Nullable String getConnectedAppstoreName() {
         if (mAppstore == null) return null;
         return mAppstore.getAppstoreName();
     }
@@ -788,8 +794,8 @@ public class OpenIabHelper {
             // Unfortunately, SamsungApps requires to launch their own "Certification Activity"
             // in order to connect to billing service. So it's also needed for OpenIAB.
             //
-            // Intance of Activity needs to be passed to OpenIAB constructor to launch
-            // Samsung Cerfitication Activity.
+            // Instance of Activity needs to be passed to OpenIAB constructor to launch
+            // Samsung Certification Activity.
             // Activity also need to pass activityResult to OpenIABHelper.handleActivityResult()
             throw new IllegalArgumentException("You must supply Activity object as context in order to use " + NAME_SAMSUNG + " store");
         }
@@ -798,62 +804,71 @@ public class OpenIabHelper {
     }
 
     /**
-     * Connects to Billing Service of each store. Request list of user purchases (inventory)
+     * Connects to Billing Service of each store and request list of user purchases (inventory).
+     * Can be used as a factor when looking for best fitting store.
      *
      * @param availableStores - list of stores to check
-     * @return list of stores with non-empty inventory
-     * @see org.onepf.oms.OpenIabHelper#CHECK_INVENTORY_TIMEOUT
+     * @return first found store with not empty inventory, null otherwise.
      */
-    protected List<Appstore> checkInventory(final List<Appstore> availableStores) {
-        String packageName = context.getPackageName();
-        // candidates:
-        Map<String, Appstore> candidates = new HashMap<String, Appstore>();
-        for (Appstore appstore : availableStores) {
-            if (appstore.isBillingAvailable(packageName)) {
-                candidates.put(appstore.getAppstoreName(), appstore);
-            }
+    private @Nullable Appstore checkInventory(@NotNull final Set<Appstore> availableStores) {
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must not be called from UI thread");
         }
-        Logger.dWithTimeFromUp(candidates.size(), " inventory candidates");
-        final List<Appstore> equippedStores = Collections.synchronizedList(new ArrayList<Appstore>());
-        final CountDownLatch storeRemains = new CountDownLatch(candidates.size());
-        // for every appstore: connect to billing service and check inventory 
-        for (Map.Entry<String, Appstore> entry : candidates.entrySet()) {
-            final Appstore appstore = entry.getValue();
-            final AppstoreInAppBillingService billingService = entry.getValue().getInAppBillingService();
-            billingService.startSetup(new OnIabSetupFinishedListener() {
-                public void onIabSetupFinished(IabResult result) {
-                    Logger.dWithTimeFromUp("billing set ", appstore.getAppstoreName());
-                    if (result.isFailure()) {
-                        storeRemains.countDown();
+
+        final Semaphore inventorySemaphore = new Semaphore(0);
+        final ExecutorService inventoryExecutor = Executors.newSingleThreadExecutor();
+        final Appstore[] inventoryAppstore = new Appstore[1];
+
+        for (final Appstore appstore : availableStores) {
+            final AppstoreInAppBillingService billingService = appstore.getInAppBillingService();
+            final OnIabSetupFinishedListener listener = new OnIabSetupFinishedListener() {
+                @Override
+                public void onIabSetupFinished(final IabResult result) {
+                    if (!result.isSuccess()) {
+                        inventorySemaphore.release();
                         return;
                     }
-                    new Thread(new Runnable() {
+                    // queryInventory() is a blocking call and must be call from background
+                    final Runnable checkInventoryRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             try {
-                                Inventory inventory = billingService.queryInventory(false, null, null);
-                                if (!inventory.getAllPurchases().isEmpty()) {
-                                    equippedStores.add(appstore);
+                                final Inventory inventory = billingService.queryInventory(false, null, null);
+                                if (inventory != null && !inventory.getAllPurchases().isEmpty()) {
+                                    inventoryAppstore[0] = appstore;
+                                    Logger.dWithTimeFromUp("inventoryCheck() in ",
+                                            appstore.getAppstoreName(), " found: ",
+                                            inventory.getAllPurchases().size(), " purchases");
                                 }
-                                Logger.dWithTimeFromUp("inventoryCheck() in ",
-                                        appstore.getAppstoreName(), " found: ",
-                                        inventory.getAllPurchases().size(), " purchases");
-                            } catch (IabException e) {
-                                Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName());
+                            } catch (IabException exception) {
+                                Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName() + " : ", exception);
                             }
-                            storeRemains.countDown();
+                            inventorySemaphore.release();
                         }
-                    }, "inv-check[" + appstore.getAppstoreName() + ']').start();
+                    };
+                    inventoryExecutor.execute(checkInventoryRunnable);
+                }
+            };
+            // startSetup() must be called form UI thread
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    billingService.startSetup(listener);
                 }
             });
+
+            try {
+                inventorySemaphore.acquire();
+            } catch (InterruptedException exception) {
+                Logger.e("checkInventory() Error during inventory check: ",exception);
+                return null;
+            }
+            if (inventoryAppstore[0] != null) {
+                return inventoryAppstore[0];
+            }
         }
-        try {
-            storeRemains.await();
-            Logger.dWithTimeFromUp("inventory check done");
-        } catch (InterruptedException e) {
-            Logger.e(e, "selectBillingService()  inventory check is failed. candidates: ", candidates.size()
-                    , ", inventory remains: ", storeRemains.getCount());
-        }
-        return equippedStores;
+
+        return null;
     }
 
     public void dispose() {
@@ -917,7 +932,9 @@ public class OpenIabHelper {
     /**
      * See {@link #queryInventory(boolean, List, List)} for details
      */
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreSkus) throws IabException {
+    public @Nullable Inventory queryInventory(final boolean querySkuDetails,
+                                              @Nullable final List<String> moreSkus)
+            throws IabException {
         return queryInventory(querySkuDetails, moreSkus, null);
     }
 
@@ -934,10 +951,16 @@ public class OpenIabHelper {
      *                        Ignored if null or if querySkuDetails is false.
      * @throws IabException if a problem occurs while refreshing the inventory.
      */
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
+    public @Nullable Inventory queryInventory(final boolean querySkuDetails,
+                                              @Nullable final List<String> moreItemSkus,
+                                              @Nullable final List<String> moreSubsSkus)
+            throws IabException {
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must not be called from UI thread");
+        }
         checkSetupDone("queryInventory");
 
-        List<String> moreItemStoreSkus;
+        final List<String> moreItemStoreSkus;
         final SkuManager skuManager = SkuManager.getInstance();
         if (moreItemSkus != null) {
             moreItemStoreSkus = new ArrayList<String>(moreItemSkus.size());
@@ -948,7 +971,7 @@ public class OpenIabHelper {
             moreItemStoreSkus = null;
         }
 
-        List<String> moreSubsStoreSkus;
+        final List<String> moreSubsStoreSkus;
         if (moreSubsSkus != null) {
             moreSubsStoreSkus = new ArrayList<String>(moreSubsSkus.size());
             for (String sku : moreSubsSkus) {
@@ -961,6 +984,30 @@ public class OpenIabHelper {
     }
 
     /**
+     * @see #queryInventoryAsync(boolean, List, List, IabHelper.QueryInventoryFinishedListener)
+     */
+    public void queryInventoryAsync(@NotNull final IabHelper.QueryInventoryFinishedListener listener) {
+        queryInventoryAsync(true, listener);
+    }
+
+    /**
+     * @see #queryInventoryAsync(boolean, List, List, IabHelper.QueryInventoryFinishedListener)
+     */
+    public void queryInventoryAsync(final boolean querySkuDetails,
+                                    @NotNull IabHelper.QueryInventoryFinishedListener listener) {
+        queryInventoryAsync(querySkuDetails, null, listener);
+    }
+
+    /**
+     * @see #queryInventoryAsync(boolean, List, List, IabHelper.QueryInventoryFinishedListener)
+     */
+    public void queryInventoryAsync(final boolean querySkuDetails,
+                                    @Nullable final List<String> moreSkus,
+                                    @NotNull final IabHelper.QueryInventoryFinishedListener listener) {
+        queryInventoryAsync(querySkuDetails, moreSkus, null, listener);
+    }
+
+    /**
      * Queries the inventory. This will query all owned items from the server, as well as
      * information on additional skus, if specified. This method may block or take long to execute.
      *
@@ -970,22 +1017,27 @@ public class OpenIabHelper {
      *                        Ignored if null or if querySkuDetails is false.
      * @param moreSubsSkus    additional SUBSCRIPTIONS skus to query information on, regardless of ownership.
      *                        Ignored if null or if querySkuDetails is false.
-     * @throws IabException if a problem occurs while refreshing the inventory.
      */
-    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreItemSkus, final List<String> moreSubsSkus, final IabHelper.QueryInventoryFinishedListener listener) {
+    public void queryInventoryAsync(final boolean querySkuDetails,
+                                    @Nullable final List<String> moreItemSkus,
+                                    @Nullable final List<String> moreSubsSkus,
+                                    @NotNull final IabHelper.QueryInventoryFinishedListener listener) {
         checkSetupDone("queryInventory");
+        //noinspection ConstantConditions
         if (listener == null) {
             throw new IllegalArgumentException("Inventory listener must be not null");
         }
         flagStartAsync("refresh inventory");
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
-                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
+                IabResult result;
                 Inventory inv = null;
                 try {
                     inv = queryInventory(querySkuDetails, moreItemSkus, moreSubsSkus);
-                } catch (IabException ex) {
-                    result = ex.getResult();
+                    result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Inventory refresh successful.");
+                } catch (IabException exception) {
+                    result = exception.getResult();
+                    Logger.e("queryInventoryAsync() Error : ",exception);
                 }
 
                 flagEndAsync();
@@ -1000,81 +1052,48 @@ public class OpenIabHelper {
                     });
                 }
             }
-        })).start();
+        }).start();
     }
 
-    /**
-     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
-     */
-    public void queryInventoryAsync(final boolean querySkuDetails, final List<String> moreSkus, final IabHelper.QueryInventoryFinishedListener listener) {
-        checkSetupDone("queryInventoryAsync");
-        if (listener == null) {
-            throw new IllegalArgumentException("Inventory listener must be not null!");
-        }
-        queryInventoryAsync(querySkuDetails, moreSkus, null, listener);
-    }
-
-    /**
-     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
-     */
-    public void queryInventoryAsync(IabHelper.QueryInventoryFinishedListener listener) {
-        checkSetupDone("queryInventoryAsync");
-        if (listener == null) {
-            throw new IllegalArgumentException("Inventory listener must be not null!");
-        }
-        queryInventoryAsync(true, null, listener);
-    }
-
-    /**
-     * For details see {@link org.onepf.oms.OpenIabHelper#queryInventoryAsync(boolean, java.util.List, java.util.List, org.onepf.oms.appstore.googleUtils.IabHelper.QueryInventoryFinishedListener)}
-     */
-    public void queryInventoryAsync(boolean querySkuDetails, IabHelper.QueryInventoryFinishedListener listener) {
-        checkSetupDone("queryInventoryAsync");
-        if (listener == null) {
-            throw new IllegalArgumentException("Inventory listener must be not null!");
-        }
-        queryInventoryAsync(querySkuDetails, null, listener);
-    }
-
-    public void consume(Purchase itemInfo) throws IabException {
+    public void consume(Purchase purchase) throws IabException {
         checkSetupDone("consume");
-        Purchase purchaseStoreSku = (Purchase) itemInfo.clone(); // TODO: use Purchase.getStoreSku()
-        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), itemInfo.getSku()));
+        Purchase purchaseStoreSku = (Purchase) purchase.clone(); // TODO: use Purchase.getStoreSku()
+        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(mAppstore.getAppstoreName(), purchase.getSku()));
         mAppstoreBillingService.consume(purchaseStoreSku);
     }
 
-    public void consumeAsync(Purchase purchase, IabHelper.OnConsumeFinishedListener listener) {
-        checkSetupDone("consumeAsync");
-        if (listener == null) {
-            throw new IllegalArgumentException("Consume listener must be not null!");
-        }
-        List<Purchase> purchases = new ArrayList<Purchase>();
-        purchases.add(purchase);
-        consumeAsyncInternal(purchases, listener, null);
+    public void consumeAsync(@NotNull final Purchase purchase,
+                             @NotNull final IabHelper.OnConsumeFinishedListener listener) {
+        consumeAsyncInternal(Arrays.asList(purchase), listener, null);
     }
 
-    public void consumeAsync(List<Purchase> purchases, IabHelper.OnConsumeMultiFinishedListener listener) {
-        checkSetupDone("consumeAsync");
+    public void consumeAsync(@NotNull final List<Purchase> purchases,
+                             @NotNull final IabHelper.OnConsumeMultiFinishedListener listener) {
+        //noinspection ConstantConditions
         if (listener == null) {
             throw new IllegalArgumentException("Consume listener must be not null!");
         }
         consumeAsyncInternal(purchases, null, listener);
     }
 
-    void consumeAsyncInternal(final List<Purchase> purchases,
-                              final IabHelper.OnConsumeFinishedListener singleListener,
-                              final IabHelper.OnConsumeMultiFinishedListener multiListener) {
+    void consumeAsyncInternal(@NotNull final List<Purchase> purchases,
+                              @Nullable final IabHelper.OnConsumeFinishedListener singleListener,
+                              @Nullable final IabHelper.OnConsumeMultiFinishedListener multiListener) {
         checkSetupDone("consume");
+        if (purchases.isEmpty()) {
+            throw new IllegalArgumentException("Nothing to consume.");
+        }
         flagStartAsync("consume");
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
                 final List<IabResult> results = new ArrayList<IabResult>();
-                for (Purchase purchase : purchases) {
+                for (final Purchase purchase : purchases) {
                     try {
                         consume(purchase);
                         results.add(new IabResult(BILLING_RESPONSE_RESULT_OK, "Successful consume of sku " + purchase.getSku()));
-                    } catch (IabException ex) {
-                        results.add(ex.getResult());
+                    } catch (IabException exception) {
+                        results.add(exception.getResult());
+                        Logger.e("consumeAsyncInternal() Error : ", exception);
                     }
                 }
 
@@ -1094,13 +1113,13 @@ public class OpenIabHelper {
                     });
                 }
             }
-        })).start();
+        }).start();
     }
 
     // Checks that setup was done; if not, throws an exception.
     void checkSetupDone(String operation) {
-        String stateToString = setupStateToString(setupState);
         if (setupState != SETUP_RESULT_SUCCESSFUL) {
+            String stateToString = setupStateToString(setupState);
             Logger.e("Illegal state for operation (", operation, "): ", stateToString);
             throw new IllegalStateException(stateToString + " Can't perform operation: " + operation);
         }
@@ -1164,11 +1183,6 @@ public class OpenIabHelper {
      */
     public static void enableDebuglLogging(boolean enabled, String tag) {
         Logger.setLoggable(enabled);
-    }
-
-    public static boolean isPackageInstaller(Context appContext, String installer) {
-        String installerPackageName = appContext.getPackageManager().getInstallerPackageName(appContext.getPackageName());
-        return installerPackageName != null && installerPackageName.equals(installer);
     }
 
     public interface OnInitListener {
