@@ -28,12 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -77,14 +76,6 @@ import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN
  * @since 16.04.13
  */
 public class OpenIabHelper {
-    /**
-     * Default timeout (in milliseconds) for check inventory in all stores.
-     * For generic stores it takes 1.5 - 3sec.
-     * <p/>
-     * SamsungApps initialization is very time consuming (from 4 to 12 seconds).
-     * TODO: Optimize: ~1sec is consumed for check account certification via account activity + ~3sec for actual setup
-     */
-    private static final int CHECK_INVENTORY_TIMEOUT = 10 * 1000;
 
     private static final String BIND_INTENT = "org.onepf.oms.openappstore.BIND";
 
@@ -357,7 +348,7 @@ public class OpenIabHelper {
         Logger.init();
     }
 
-    private Executor setupThreadPoolExecutor;
+    private ExecutorService setupExecutorService;
 
     /**
      * Discover all available stores and select the best billing service.
@@ -366,7 +357,8 @@ public class OpenIabHelper {
      *
      * @param listener - called when setup is completed
      */
-    public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+    public void startSetup(@NotNull final IabHelper.OnIabSetupFinishedListener listener) {
+        //noinspection ConstantConditions
         if (listener == null) {
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
@@ -375,40 +367,66 @@ public class OpenIabHelper {
         }
         Logger.init();
         setupState = SETUP_IN_PROGRESS;
-        setupThreadPoolExecutor = Executors.newSingleThreadExecutor();
+        setupExecutorService = Executors.newSingleThreadExecutor();
 
-        final String packageName = context.getPackageName();
         final int storeSearchStrategy = options.getStoreSearchStrategy();
+        final String packageName = context.getPackageName();
         final String packageInstaller = packageManager.getInstallerPackageName(packageName);
-        final boolean packageInstallerAvailable = !TextUtils.isEmpty(packageInstaller) && Utils.packageInstalled(context, packageInstaller);
-        if ((storeSearchStrategy == SEARCH_STRATEGY_INSTALLER || storeSearchStrategy == SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT)
-                && packageInstallerAvailable) {
-            // Package installer is not set
-            setupForPackage(listener, packageInstaller, storeSearchStrategy == SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT);
+        final boolean packageInstallerSet = !TextUtils.isEmpty(packageInstaller);
+
+        if (storeSearchStrategy == SEARCH_STRATEGY_INSTALLER) {
+            // Check only package installer
+            if (packageInstallerSet) {
+                // Check without fallback
+                setupForPackage(listener, packageInstaller, false);
+            } else {
+                // Package installer isn't available
+                finishSetup(listener);
+            }
+        } else if (storeSearchStrategy == SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT) {
+            // Check package installer then all others
+            if (packageInstallerSet) {
+                // Check with fallback
+                setupForPackage(listener, packageInstaller, true);
+            } else {
+                // Check other stores
+                setup(listener);
+            }
         } else {
             setup(listener);
         }
     }
 
-    // TODO simplify conditions
-    // TODO decompose to a separate methods?
     private void setupForPackage(final IabHelper.OnIabSetupFinishedListener listener,
                                  final String packageInstaller,
                                  final boolean withFallback) {
-        Appstore appstore = null;
+        if (!Utils.packageInstalled(context, packageInstaller)) {
+            // Package installer is no longer available
+            if (withFallback) {
+                // Check other stores
+                setup(listener);
+            } else {
+                finishSetup(listener);
+            }
+            return;
+        }
 
+        Appstore appstore = null;
         if (appstorePackageMap.containsKey(packageInstaller)) {
             // Package installer is a known appstore
             final String appstoreName = appstorePackageMap.get(packageInstaller);
-            if (!options.getAvailableStores().isEmpty()) {
+            if (options.getAvailableStores().isEmpty()) {
+                if (appstoreFactoryMap.containsKey(appstoreName)) {
+                    appstore = appstoreFactoryMap.get(appstoreName).get();
+                }
+            } else {
                 // Developer explicitly specified available stores
                 appstore = options.getAvailableStoreWithName(appstoreName);
                 if (appstore == null) {
+                    // Store is known but isn't available
                     finishSetup(listener);
                     return;
                 }
-            } else if (appstoreFactoryMap.containsKey(appstoreName)) {
-                appstore = appstoreFactoryMap.get(appstoreName).get();
             }
         }
 
@@ -429,9 +447,9 @@ public class OpenIabHelper {
         if (bindServiceIntent == null) {
             // Package installer not found
             if (withFallback) {
-                // Fallback to default algorithm
+                // Check other stores
                 setup(listener);
-            }else {
+            } else {
                 finishSetup(listener);
             }
             return;
@@ -446,22 +464,33 @@ public class OpenIabHelper {
                     if (openAppstore != null) {
                         // Found open store
                         final String openStoreName = openAppstore.getAppstoreName();
-                        if (!options.getAvailableStores().isEmpty()) {
+                        if (options.getAvailableStores().isEmpty()) {
+                            appstore = openAppstore;
+                        } else {
                             // Developer explicitly specified available stores
                             appstore = options.getAvailableStoreWithName(openStoreName);
-                        } else {
-                            appstore = openAppstore;
                         }
                     }
-                } catch (RemoteException ignore) {}
-                checkBillingAndFinish(listener, appstore);
+                } catch (RemoteException exception) {
+                    Logger.e("setupForPackage() Error binding to open store service : ", exception);
+                }
+                if (appstore == null && withFallback) {
+                    setup(listener);
+                } else {
+                    checkBillingAndFinish(listener, appstore);
+                }
             }
 
             @Override
             public void onServiceDisconnected(final ComponentName name) {}
         }, Context.BIND_AUTO_CREATE)) {
             // Can't bind to open store service
-            finishSetupWithError(listener);
+            Logger.e("setupForPackage() Error binding to open store service");
+            if (withFallback) {
+                setup(listener);
+            } else {
+                finishSetupWithError(listener);
+            }
         }
     }
 
@@ -560,23 +589,54 @@ public class OpenIabHelper {
             finishSetup(listener);
             return;
         }
-        setupThreadPoolExecutor.execute(new Runnable() {
+
+        final Callable<Appstore> callable;
+        if (options.isCheckInventory()) {
+            callable = new Callable<Appstore>() {
+                @Override
+                public Appstore call() {
+                    final List<Appstore> availableAppstores = new ArrayList<Appstore>();
+                    for (final Appstore appstore : appstores) {
+                        if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
+                            availableAppstores.add(appstore);
+                        }
+                    }
+                    Appstore checkedAppstore = checkInventory(new HashSet<Appstore>(appstores));
+                    if (checkedAppstore == null) {
+                        checkedAppstore = availableAppstores.isEmpty() ? null : availableAppstores.get(0);
+                    }
+                    return checkedAppstore;
+                }
+            };
+        } else {
+            callable = new Callable<Appstore>() {
+                @Override
+                public Appstore call() {
+                    for (final Appstore appstore : appstores) {
+                        if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
+                            return appstore;
+                        }
+                    }
+                    return null;
+                }
+            };
+        }
+
+        setupExecutorService.execute(new Runnable() {
             @Override
             public void run() {
-                Appstore checkedAppstore = null;
-                for (final Appstore appstore : appstores) {
-                    if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
-                        checkedAppstore = appstore;
-                        break;
-                    }
-                }
-                final Appstore appstore = checkedAppstore;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        finishSetup(listener, appstore);
-                    }
-                });
+                final Appstore appstore;
+                try {
+                    appstore = callable.call();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishSetup(listener, appstore);
+                        }
+                    });
+                    return;
+                } catch (Exception ignore) {}
+                finishSetup(listener);
             }
         });
     }
@@ -598,7 +658,7 @@ public class OpenIabHelper {
 
     private void finishSetupWithError(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
                                       @Nullable final Exception exception) {
-        Logger.e("finishSetupWithError() error occurred during setup: ", exception == null ? "" : exception);
+        Logger.e("finishSetupWithError() error occurred during setup", exception == null ? "" : " : " + exception);
         finishSetup(listener, new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occured, setup failed"), null);
     }
 
@@ -627,7 +687,8 @@ public class OpenIabHelper {
         final boolean setUpSuccessful = iabResult.isSuccess();
         setupState = setUpSuccessful ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         activity = null;
-        setupThreadPoolExecutor = null;
+        setupExecutorService.shutdownNow();
+        setupExecutorService = null;
         if (setUpSuccessful) {
             if (appstore == null) {
                 throw new IllegalStateException("Appstore can't be null if setup is successful");
@@ -718,7 +779,7 @@ public class OpenIabHelper {
 
     @Deprecated
     /**
-     * Use {@link discoverOpenStores(OpenStoresDiscoveredListener)} or {@link discoverOpenStores()} instead.
+     * Use {@link #discoverOpenStores(OpenStoresDiscoveredListener)} or {@link #discoverOpenStores()} instead.
      */
     public static List<Appstore> discoverOpenStores(final Context context, final List<Appstore> dest, final Options options) {
         throw new UnsupportedOperationException("This action is no longer supported.");

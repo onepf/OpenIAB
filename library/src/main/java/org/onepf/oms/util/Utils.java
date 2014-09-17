@@ -43,7 +43,7 @@ public final class Utils {
         return false;
     }
 
-    public static boolean packageInstalled(@NotNull final Context context, final String packageName) {
+    public static boolean packageInstalled(@NotNull final Context context,@NotNull final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         try {
             packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
