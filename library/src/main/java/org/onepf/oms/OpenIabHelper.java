@@ -70,6 +70,7 @@ import android.text.TextUtils;
 
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER;
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT;
+import static org.onepf.oms.OpenIabHelper.Options.VERIFY_EVERYTHING;
 
 /**
  * @author Boris Minaev, Oleg Orlov, Kirill Rozov
@@ -187,7 +188,6 @@ public class OpenIabHelper {
             }
         });
 
-        // TODO check package
         appstorePackageMap.put(NokiaStore.NOKIA_INSTALLER, NAME_NOKIA);
         appstoreFactoryMap.put(NAME_NOKIA, new AppstoreFactory() {
             @Override
@@ -535,7 +535,7 @@ public class OpenIabHelper {
                     }
                     // Add everything else
                     appstoresToCheck.addAll(allAvailableAppsotres);
-                    checkBillingAndFinish(listener, allAvailableAppsotres);
+                    checkBillingAndFinish(listener, appstoresToCheck);
                 }
             });
         }
@@ -543,26 +543,30 @@ public class OpenIabHelper {
 
     @Nullable
     private OpenAppstore getOpenAppstore(final ComponentName name,
-                                         final IBinder service, final ServiceConnection serviceConnection)
+                                         final IBinder service,
+                                         final ServiceConnection serviceConnection)
             throws RemoteException {
         final IOpenAppstore openAppstoreService = IOpenAppstore.Stub.asInterface(service);
         final String appstoreName = openAppstoreService.getAppstoreName();
         final Intent billingIntent = openAppstoreService.getBillingServiceIntent();
+        final int verifyMode = options.getVerifyMode();
+        final String publicKey = verifyMode == Options.VERIFY_SKIP
+                ? null
+                : options.getStoreKeys().get(appstoreName);
 
         if (TextUtils.isEmpty(appstoreName)) { // no name - no service
-            Logger.d("discoverOpenStores() Appstore doesn't have name. Skipped. ComponentName: ", name);
+            Logger.d("getOpenAppstore() Appstore doesn't have name. Skipped. ComponentName: ", name);
         } else if (billingIntent == null) {
-            Logger.d("discoverOpenStores(): billing is not supported by store: ", name);
+            Logger.d("getOpenAppstore(): billing is not supported by store: ", name);
+        } else if (verifyMode == Options.VERIFY_EVERYTHING && TextUtils.isEmpty(publicKey)) {
+            // don't connect to OpenStore if no key provided and verification is strict
+            Logger.e("getOpenAppstore() verification is required but publicKey is not provided: ", name);
         } else {
-            // TODO Rethink store verification
-            return new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, null, serviceConnection);
+            final OpenAppstore openAppstore =
+                    new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, serviceConnection);
+            openAppstore.componentName = name;
+            return openAppstore;
         }
-//      if ((options.verifyMode == Options.VERIFY_EVERYTHING) && !options.hasStoreKey(appstoreName)) {
-//            don't connect to OpenStore if no key provided and verification is strict
-//            Logger.e("discoverOpenStores() verification is required but publicKey is not provided: ", name);
-//      }
-//        String publicKey = options.getStoreKey(appstoreName);
-//        if (options.verifyMode == Options.VERIFY_SKIP) publicKey = null;
 
         return null;
     }
@@ -628,14 +632,16 @@ public class OpenIabHelper {
                 final Appstore appstore;
                 try {
                     appstore = callable.call();
-                    handler.post(new Runnable() {
+                    handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             finishSetup(listener, appstore);
                         }
-                    });
+                    }, 5000);
                     return;
-                } catch (Exception ignore) {}
+                } catch (Exception exception) {
+                    Logger.e("checkBillingAndFinish() unknown error : ", exception);
+                }
                 finishSetup(listener);
             }
         });
@@ -810,24 +816,9 @@ public class OpenIabHelper {
      * Check options are valid
      */
     public void checkOptions() {
+        checkGoogle();
         checkSamsung();
         checkNokia();
-        // TODO Rethink store verification strategy
-        // check publicKeys. Must be not null and valid
-//        if (options.verifyMode != Options.VERIFY_SKIP && options.storeKeys != null) {
-//            for (Entry<String, String> entry : options.storeKeys.entrySet()) {
-//                if (entry.getValue() == null) {
-//                    throw new IllegalArgumentException("Null publicKey for store: " + entry.getKey() + ", key: " + entry.getValue());
-//                }
-//
-//                try {
-//                    Security.generatePublicKey(entry.getValue());
-//                } catch (Exception e) {
-//                    throw new IllegalArgumentException("Invalid publicKey for store: "
-//                            + entry.getKey() + ", key: " + entry.getValue(), e);
-//                }
-//            }
-//        }
     }
 
     private void checkNokia() {
@@ -862,6 +853,22 @@ public class OpenIabHelper {
         }
         Logger.d("checkSamsung() ignoring Samsung wrapper");
         appstoreFactoryMap.remove(NAME_SAMSUNG);
+    }
+
+    private void checkGoogle() {
+        final boolean googleKeyProvided = options.getStoreKeys().containsKey(NAME_GOOGLE);
+        Logger.d("checkGoogle() google key available : ", googleKeyProvided);
+        if (googleKeyProvided) {
+            return;
+        }
+
+        final boolean googleRequired = options.getAvailableStoreWithName(NAME_GOOGLE) != null
+                || options.getPreferredStoreNames().contains(NAME_GOOGLE);
+        if (googleRequired && options.getVerifyMode() == VERIFY_EVERYTHING) {
+            throw new IllegalStateException("You must supply Google verification key");
+        }
+        Logger.d("checkGoogle() ignoring GooglePlay wrapper", googleKeyProvided);
+        appstoreFactoryMap.remove(NAME_GOOGLE);
     }
 
     /**
@@ -1464,8 +1471,7 @@ public class OpenIabHelper {
          * AmazonApps and SamsungApps doesn't use RSA keys for receipt verification, so you don't need
          * to specify it
          */
-        @Nullable
-        public Map<String, String> getStoreKeys() {
+        @NotNull public Map<String, String> getStoreKeys() {
             return storeKeys;
         }
 
