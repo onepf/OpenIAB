@@ -21,6 +21,7 @@ import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
 import android.content.Context;
 
@@ -35,7 +36,7 @@ import com.amazon.device.iap.PurchasingService;
  * @since 16.04.13
  */
 public class AmazonAppstore extends DefaultAppstore {
-    private static final String AMAZON_INSTALLER = "com.amazon.venezia";
+    public static final String AMAZON_INSTALLER = "com.amazon.venezia";
     
     private final Context context;
     
@@ -47,7 +48,7 @@ public class AmazonAppstore extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        final boolean amazonIsInstaller = OpenIabHelper.isPackageInstaller(context, AMAZON_INSTALLER);
+        final boolean amazonIsInstaller = Utils.isPackageInstaller(context, AMAZON_INSTALLER);
         final boolean result = amazonIsInstaller || hasAmazonClasses();
         Logger.d("isPackageInstaller() sandBox: ", PurchasingService.IS_SANDBOX_MODE);
         return PurchasingService.IS_SANDBOX_MODE || result;

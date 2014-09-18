@@ -3,6 +3,7 @@ package org.onepf.oms.util;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,5 +41,24 @@ public final class Utils {
             Logger.e(e, "Error during checking permission ", permission);
         }
         return false;
+    }
+
+    public static boolean packageInstalled(@NotNull final Context context,@NotNull final String packageName) {
+        final PackageManager packageManager = context.getPackageManager();
+        try {
+            packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException ignore) {}
+        return false;
+    }
+
+    public static boolean isPackageInstaller(@NotNull final Context context, final String packageName) {
+        final PackageManager packageManager = context.getPackageManager();
+        final String installerPackageName = packageManager.getInstallerPackageName(context.getPackageName());
+        return TextUtils.equals(installerPackageName, packageName);
+    }
+
+    public static boolean uiThread() {
+        return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
 }

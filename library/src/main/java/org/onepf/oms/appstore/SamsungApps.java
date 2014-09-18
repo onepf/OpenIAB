@@ -28,13 +28,13 @@ import android.content.pm.Signature;
 import android.text.TextUtils;
 
 import org.onepf.oms.SkuManager;
-import org.onepf.oms.SkuMappingException;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -63,7 +63,7 @@ import java.util.concurrent.CountDownLatch;
  * @since 10.10.2013
  */
 public class SamsungApps extends DefaultAppstore {
-    private static final String SAMSUNG_INSTALLER = "com.sec.android.app.samsungapps";
+    public static final String SAMSUNG_INSTALLER = "com.sec.android.app.samsungapps";
 
     private static final int IAP_SIGNATURE_HASHCODE = 0x7a7eaf4b;
     public static final String IAP_PACKAGE_NAME = "com.sec.android.iap";
@@ -85,7 +85,7 @@ public class SamsungApps extends DefaultAppstore {
 
     @Override
     public boolean isPackageInstaller(String packageName) {
-        return OpenIabHelper.isPackageInstaller(activity, SAMSUNG_INSTALLER) || isSamsungTestMode;
+        return Utils.isPackageInstaller(activity, SAMSUNG_INSTALLER) || isSamsungTestMode;
     }
 
     /**
@@ -96,7 +96,11 @@ public class SamsungApps extends DefaultAppstore {
         if (isBillingAvailable != null) {
             return isBillingAvailable;
         }
-        
+
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must no be called from UI thread.");
+        }
+
         if (isSamsungTestMode) {
             Logger.d("isBillingAvailable() billing is supported in test mode.");
             isBillingAvailable = true;

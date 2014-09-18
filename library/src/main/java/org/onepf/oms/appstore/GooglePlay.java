@@ -27,7 +27,9 @@ import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -70,7 +72,7 @@ public class GooglePlay extends DefaultAppstore {
         if (isDebugMode) {
             return true;
         }
-        return OpenIabHelper.isPackageInstaller(context, ANDROID_INSTALLER);
+        return Utils.isPackageInstaller(context, ANDROID_INSTALLER);
     }
 
     /**
@@ -90,14 +92,18 @@ public class GooglePlay extends DefaultAppstore {
             return billingAvailable; // return previosly checked result
         }
 
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must no be called from UI thread.");
+        }
+
         billingAvailable = false;
         if (packageExists(context, ANDROID_INSTALLER) || packageExists(context, GOOGLE_INSTALLER)) {
             final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
             intent.setPackage(GooglePlay.ANDROID_INSTALLER);
             final List<ResolveInfo> infoList = context.getPackageManager().queryIntentServices(intent, 0);
-            if (infoList != null && !infoList.isEmpty()) {
+            if (!CollectionUtils.isEmpty(infoList)) {
                 final CountDownLatch latch = new CountDownLatch(1);
-                context.bindService(intent, new ServiceConnection() {
+                final ServiceConnection serviceConnection = new ServiceConnection() {
                     public void onServiceConnected(ComponentName name, IBinder service) {
                         IInAppBillingService mService = IInAppBillingService.Stub.asInterface(service);
                         int response;
@@ -117,12 +123,13 @@ public class GooglePlay extends DefaultAppstore {
                     }
 
                     public void onServiceDisconnected(ComponentName name) {/*do nothing*/}
-                }, Context.BIND_AUTO_CREATE);
-                try {
-                    latch.await(TIMEOUT_BILLING_SUPPORTED, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    Logger.e("isBillingAvailable() billing is not supported. Initialization error. ", e);
+                };
+                if (context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)) {
+                    try {
+                        latch.await(TIMEOUT_BILLING_SUPPORTED, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ignore) {}
                 }
+                Logger.e("isBillingAvailable() billing is not supported. Initialization error.");
             }
         }
         return billingAvailable;
