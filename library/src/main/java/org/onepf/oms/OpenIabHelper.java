@@ -632,12 +632,12 @@ public class OpenIabHelper {
                 final Appstore appstore;
                 try {
                     appstore = callable.call();
-                    handler.postDelayed(new Runnable() {
+                    handler.post(new Runnable() {
                         @Override
                         public void run() {
                             finishSetup(listener, appstore);
                         }
-                    }, 5000);
+                    });
                     return;
                 } catch (Exception exception) {
                     Logger.e("checkBillingAndFinish() unknown error : ", exception);
