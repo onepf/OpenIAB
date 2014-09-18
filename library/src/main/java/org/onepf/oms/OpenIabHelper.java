@@ -1095,7 +1095,6 @@ public class OpenIabHelper {
         if (listener == null) {
             throw new IllegalArgumentException("Inventory listener must be not null");
         }
-        flagStartAsync("refresh inventory");
         new Thread(new Runnable() {
             public void run() {
                 IabResult result;
@@ -1107,8 +1106,6 @@ public class OpenIabHelper {
                     result = exception.getResult();
                     Logger.e("queryInventoryAsync() Error : ",exception);
                 }
-
-                flagEndAsync();
 
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
@@ -1151,7 +1148,6 @@ public class OpenIabHelper {
         if (purchases.isEmpty()) {
             throw new IllegalArgumentException("Nothing to consume.");
         }
-        flagStartAsync("consume");
         new Thread(new Runnable() {
             public void run() {
                 final List<IabResult> results = new ArrayList<IabResult>();
@@ -1165,7 +1161,6 @@ public class OpenIabHelper {
                     }
                 }
 
-                flagEndAsync();
                 if (setupState != SETUP_DISPOSED && singleListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
@@ -1191,23 +1186,6 @@ public class OpenIabHelper {
             Logger.e("Illegal state for operation (", operation, "): ", stateToString);
             throw new IllegalStateException(stateToString + " Can't perform operation: " + operation);
         }
-    }
-
-    void flagStartAsync(String operation) {
-        // TODO: why can't be called consume and queryInventory at the same time?
-//        if (mAsyncInProgress) {
-//            throw new IllegalStateException("Can't start async operation (" +
-//                    operation + ") because another async operation(" + mAsyncOperation + ") is in progress.");
-//        }
-        mAsyncOperation = operation;
-        mAsyncInProgress = true;
-        Logger.d("Starting async operation: ", operation);
-    }
-
-    void flagEndAsync() {
-        Logger.d("Ending async operation: ", mAsyncOperation);
-        mAsyncOperation = "";
-        mAsyncInProgress = false;
     }
 
     private static String setupStateToString(int setupState) {
