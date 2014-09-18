@@ -605,7 +605,7 @@ public class OpenIabHelper {
                             availableAppstores.add(appstore);
                         }
                     }
-                    Appstore checkedAppstore = checkInventory(new HashSet<Appstore>(appstores));
+                    Appstore checkedAppstore = checkInventory(new HashSet<Appstore>(availableAppstores));
                     if (checkedAppstore == null) {
                         checkedAppstore = availableAppstores.isEmpty() ? null : availableAppstores.get(0);
                     }
@@ -911,6 +911,7 @@ public class OpenIabHelper {
                             } catch (IabException exception) {
                                 Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName() + " : ", exception);
                             }
+                            billingService.dispose();
                             inventorySemaphore.release();
                         }
                     };
