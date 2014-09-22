@@ -357,7 +357,7 @@ public class OpenIabHelper {
      *
      * @param listener - called when setup is completed
      */
-    public void startSetup(@NotNull final IabHelper.OnIabSetupFinishedListener listener) {
+    public void startSetup(@NotNull final OnIabSetupFinishedListener listener) {
         //noinspection ConstantConditions
         if (listener == null) {
             throw new IllegalArgumentException("Setup listener must be not null!");
@@ -397,7 +397,7 @@ public class OpenIabHelper {
         }
     }
 
-    private void setupForPackage(final IabHelper.OnIabSetupFinishedListener listener,
+    private void setupForPackage(final OnIabSetupFinishedListener listener,
                                  final String packageInstaller,
                                  final boolean withFallback) {
         if (!Utils.packageInstalled(context, packageInstaller)) {
@@ -494,7 +494,7 @@ public class OpenIabHelper {
         }
     }
 
-    private void setup(final IabHelper.OnIabSetupFinishedListener listener) {
+    private void setup(final OnIabSetupFinishedListener listener) {
         // List of wrappers to check
         final Set<Appstore> appstoresToCheck = new LinkedHashSet<Appstore>();
 
@@ -577,7 +577,7 @@ public class OpenIabHelper {
         return bindServiceIntent;
     }
 
-    private void checkBillingAndFinish(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+    private void checkBillingAndFinish(@NotNull final OnIabSetupFinishedListener listener,
                                        @Nullable final Appstore appstore) {
         if (appstore == null) {
             finishSetup(listener);
@@ -586,7 +586,7 @@ public class OpenIabHelper {
         }
     }
 
-    private void checkBillingAndFinish(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+    private void checkBillingAndFinish(@NotNull final OnIabSetupFinishedListener listener,
                                        @NotNull final Collection<Appstore> appstores) {
         final String packageName = context.getPackageName();
         if (appstores.isEmpty()) {
@@ -594,11 +594,11 @@ public class OpenIabHelper {
             return;
         }
 
-        final Callable<Appstore> callable;
+        final Runnable checkStoresRunnable;
         if (options.isCheckInventory()) {
-            callable = new Callable<Appstore>() {
+            checkStoresRunnable = new Runnable() {
                 @Override
-                public Appstore call() {
+                public void run() {
                     final List<Appstore> availableAppstores = new ArrayList<Appstore>();
                     for (final Appstore appstore : appstores) {
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
@@ -606,45 +606,78 @@ public class OpenIabHelper {
                         }
                     }
                     Appstore checkedAppstore = checkInventory(new HashSet<Appstore>(availableAppstores));
+                    final Appstore foundAppstore;
                     if (checkedAppstore == null) {
-                        checkedAppstore = availableAppstores.isEmpty() ? null : availableAppstores.get(0);
+                        foundAppstore = availableAppstores.isEmpty() ? null : availableAppstores.get(0);
+                    } else {
+                        foundAppstore = checkedAppstore;
                     }
-                    return checkedAppstore;
+                    final OnIabSetupFinishedListener listenerWrapper = new OnIabSetupFinishedListener() {
+                        @Override
+                        public void onIabSetupFinished(final IabResult result) {
+                            // Dispose of all initialized open appstores
+                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>();
+                            if (foundAppstore != null) {
+                                appstoresToDispose.remove(foundAppstore);
+                            }
+                            dispose(appstoresToDispose);
+                            listener.onIabSetupFinished(result);
+                        }
+                    };
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishSetup(listenerWrapper, foundAppstore);
+                        }
+                    });
                 }
             };
         } else {
-            callable = new Callable<Appstore>() {
+            checkStoresRunnable = new Runnable() {
                 @Override
-                public Appstore call() {
+                public void run() {
+                    Appstore checkedAppstore = null;
                     for (final Appstore appstore : appstores) {
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
-                            return appstore;
+                            checkedAppstore = appstore;
+                            break;
                         }
                     }
-                    return null;
+                    final Appstore foundAppstore = checkedAppstore;
+                    final OnIabSetupFinishedListener listenerWrapper = new OnIabSetupFinishedListener() {
+                        @Override
+                        public void onIabSetupFinished(final IabResult result) {
+                            // Dispose of all initialized open appstores
+                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>();
+                            if (foundAppstore != null) {
+                                appstoresToDispose.remove(foundAppstore);
+                            }
+                            dispose(appstoresToDispose);
+                            if (foundAppstore != null) {
+                                foundAppstore.getInAppBillingService().startSetup(listener);
+                            } else {
+                                listener.onIabSetupFinished(result);
+                            }
+                        }
+                    };
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishSetup(listenerWrapper, foundAppstore);
+                        }
+                    });
                 }
             };
         }
 
-        setupExecutorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                final Appstore appstore;
-                try {
-                    appstore = callable.call();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            finishSetup(listener, appstore);
-                        }
-                    });
-                    return;
-                } catch (Exception exception) {
-                    Logger.e("checkBillingAndFinish() unknown error : ", exception);
-                }
-                finishSetup(listener);
-            }
-        });
+        setupExecutorService.execute(checkStoresRunnable);
+    }
+
+    private void dispose(@NotNull final Collection<Appstore> appstores) {
+        for (final Appstore appstore : appstores) {
+            final AppstoreInAppBillingService billingService = appstore.getInAppBillingService();
+            billingService.dispose();
+        }
     }
 
     private boolean versionOk(@NotNull final Appstore appstore) {
@@ -658,21 +691,21 @@ public class OpenIabHelper {
         return true;
     }
 
-    private void finishSetupWithError(@NotNull final IabHelper.OnIabSetupFinishedListener listener) {
+    private void finishSetupWithError(@NotNull final OnIabSetupFinishedListener listener) {
         finishSetupWithError(listener, null);
     }
 
-    private void finishSetupWithError(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+    private void finishSetupWithError(@NotNull final OnIabSetupFinishedListener listener,
                                       @Nullable final Exception exception) {
         Logger.e("finishSetupWithError() error occurred during setup", exception == null ? "" : " : " + exception);
         finishSetup(listener, new IabResult(BILLING_RESPONSE_RESULT_ERROR, "Error occured, setup failed"), null);
     }
 
-    private void finishSetup(@NotNull final IabHelper.OnIabSetupFinishedListener listener) {
+    private void finishSetup(@NotNull final OnIabSetupFinishedListener listener) {
         finishSetup(listener, null);
     }
 
-    private void finishSetup(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+    private void finishSetup(@NotNull final OnIabSetupFinishedListener listener,
                              @Nullable final Appstore appstore) {
         final IabResult iabResult = appstore == null
                 ? new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "No suitable appstore was found")
@@ -680,7 +713,7 @@ public class OpenIabHelper {
         finishSetup(listener, iabResult, appstore);
     }
 
-    private void finishSetup(@NotNull final IabHelper.OnIabSetupFinishedListener listener,
+    private void finishSetup(@NotNull final OnIabSetupFinishedListener listener,
                              @NotNull final IabResult iabResult,
                              @Nullable final Appstore appstore) {
         if (!Utils.uiThread()) {
@@ -703,11 +736,7 @@ public class OpenIabHelper {
             mAppstoreBillingService = appstore.getInAppBillingService();
         }
         Logger.dWithTimeFromUp("finishSetup() === SETUP DONE === result: ", iabResult, " Appstore: ", appstore);
-        if (mAppstoreBillingService == null) {
-            listener.onIabSetupFinished(iabResult);
-        } else {
-            mAppstoreBillingService.startSetup(listener);
-        }
+        listener.onIabSetupFinished(iabResult);
     }
 
     @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
@@ -911,7 +940,6 @@ public class OpenIabHelper {
                             } catch (IabException exception) {
                                 Logger.e("inventoryCheck() failed for ", appstore.getAppstoreName() + " : ", exception);
                             }
-                            billingService.dispose();
                             inventorySemaphore.release();
                         }
                     };
@@ -933,10 +961,12 @@ public class OpenIabHelper {
                 return null;
             }
             if (inventoryAppstore[0] != null) {
+                inventoryExecutor.shutdownNow();
                 return inventoryAppstore[0];
             }
         }
 
+        inventoryExecutor.shutdownNow();
         return null;
     }
 
