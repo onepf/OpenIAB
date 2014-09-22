@@ -70,9 +70,9 @@ public final class Config {
     public static final String SKU_INFINITE_GAS_AMAZON = "amazon.sku_infinite_gas";
     public static final String SKU_PREMIUM_AMAZON = "amazon.sku_premium";
 
-    public static final String SKU_GAS_YANDEX = "yandex.sku_gas";
-    public static final String SKU_INFINITE_GAS_YANDEX = "yandex.sku_infinite_gas";
-    public static final String SKU_PREMIUM_YANDEX = "yandex.sku_premium";
+    public static final String SKU_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_gas";
+    public static final String SKU_INFINITE_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_infinite_gas";
+    public static final String SKU_PREMIUM_YANDEX = "org.onepf.trivialdrivegame.sku_premium";
 
     public static final String SKU_GAS_APPLAND = "appland.sku_gas";
     public static final String SKU_INFINITE_GAS_APPLAND = "appland.sku_infinite_gas";
