@@ -1,0 +1,68 @@
+@startuml
+partition "Pick Appstore" {
+    start
+        :onStartSetup();
+        :Check Options.storeSearchStrategy;
+        if (SEARCH_STRATEGY_INSTALLER) then
+            :Check package installer|
+        elseif (SEARCH_STRATEGY_BEST_FIT) then
+            :Check all available appstores|
+        elseif (SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT) then
+            :Check package installer|
+            if (Appstore found?) then
+            else (no)
+                :Check all available appstores|
+            endif
+        endif
+        if (Appstore found?) then (yes)
+           :Appstore.startSetup();
+        endif
+        :onSetupFinished();
+    stop
+}
+@enduml
+
+@startuml
+partition "Package Installer" {
+    start
+        if (Package installer available?) then (yes)
+            if (Options.availableStores is set?) then (yes)
+                note right
+                    Check in order specified
+                    by Options.preferedStores
+                end note
+                :Check available stores;
+            else (no)
+                :Check all available wrappers;
+                :Check all open stores;
+            endif
+            if (Appstore found?) then (yes)
+                :Check Appstore.isBillingAvailable();
+            endif
+        endif
+    stop
+}
+@enduml
+
+@startuml
+partition "All available Appstores" {
+    start
+        if (Options.availableStores is set?) then (yes)
+        else (no)
+            :Discover all open stores;
+            :Check all available wrappers;
+        endif
+        :Filter not installed;
+        :Check Appstore.isBillingAvailable();
+        note
+            Check in order specified
+            by Options.preferedStores
+        end note
+        if (Options.checkInventory is set?) then (yes)
+            repeat
+                :checkInventory();
+            repeat while (Inventory is empty and there's more Appstores to check)
+        endif
+    stop
+}
+@enduml
