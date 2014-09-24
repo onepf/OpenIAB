@@ -362,7 +362,7 @@ public class OpenIabHelper {
         if (listener == null) {
             throw new IllegalArgumentException("Setup listener must be not null!");
         }
-        if (setupState != SETUP_RESULT_NOT_STARTED) {
+        if (setupState != SETUP_RESULT_NOT_STARTED && setupState != SETUP_RESULT_FAILED) {
             throw new IllegalStateException("Couldn't be set up. Current state: " + setupStateToString(setupState));
         }
         Logger.init();
@@ -588,6 +588,10 @@ public class OpenIabHelper {
 
     private void checkBillingAndFinish(@NotNull final OnIabSetupFinishedListener listener,
                                        @NotNull final Collection<Appstore> appstores) {
+        if (setupState != SETUP_IN_PROGRESS) {
+            throw new IllegalStateException("Can't check billing. Current state: " + setupStateToString(setupState));
+        }
+
         final String packageName = context.getPackageName();
         if (appstores.isEmpty()) {
             finishSetup(listener);
@@ -794,7 +798,7 @@ public class OpenIabHelper {
                     if (openAppstore != null) {
                         appstores.add(openAppstore);
                     }
-                    discoverOpenStores(listener, bindServiceIntents, appstores);
+                     discoverOpenStores(listener, bindServiceIntents, appstores);
                 }
 
                 @Override
@@ -1212,7 +1216,7 @@ public class OpenIabHelper {
 
     // Checks that setup was done; if not, throws an exception.
     void checkSetupDone(String operation) {
-        if (setupState != SETUP_RESULT_SUCCESSFUL) {
+        if (!setupSuccessful()) {
             String stateToString = setupStateToString(setupState);
             Logger.e("Illegal state for operation (", operation, "): ", stateToString);
             throw new IllegalStateException(stateToString + " Can't perform operation: " + operation);
@@ -1233,6 +1237,14 @@ public class OpenIabHelper {
             throw new IllegalStateException("Wrong setup state: " + setupState);
         }
         return state;
+    }
+
+
+    /**
+     * @return True if this OpenIabHelper instance is set up successfully.
+     */
+    public boolean setupSuccessful() {
+        return setupState == SETUP_RESULT_SUCCESSFUL;
     }
 
     /**
