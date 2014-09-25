@@ -798,7 +798,7 @@ public class OpenIabHelper {
                     if (openAppstore != null) {
                         appstores.add(openAppstore);
                     }
-                     discoverOpenStores(listener, bindServiceIntents, appstores);
+                    discoverOpenStores(listener, bindServiceIntents, appstores);
                 }
 
                 @Override
@@ -809,6 +809,8 @@ public class OpenIabHelper {
                 // Wait for open store service
                 return;
             } else {
+                // TODO It seems serviceConnection still might be called in this point hopefully this will help
+                context.unbindService(serviceConnection);
                 Logger.e("discoverOpenStores() Couldn't connect to open store: " + intent);
             }
         }
