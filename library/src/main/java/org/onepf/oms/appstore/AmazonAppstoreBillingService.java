@@ -350,6 +350,8 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
                 purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
 
+                purchase.setOrderId(requestId.toString());
+
                 final Receipt receipt = purchaseResponse.getReceipt();
                 final ProductType productType = receipt.getProductType();
 

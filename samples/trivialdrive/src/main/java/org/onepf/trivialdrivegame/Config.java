@@ -66,9 +66,9 @@ public final class Config {
     public static final String SKU_INFINITE_GAS_NOKIA_STORE = "1290302";
     public static final String SKU_PREMIUM_NOKIA_STORE = "1290315";
 
-    public static final String SKU_GAS_AMAZON = "amazon.sku_gas";
-    public static final String SKU_INFINITE_GAS_AMAZON = "amazon.sku_infinite_gas";
-    public static final String SKU_PREMIUM_AMAZON = "amazon.sku_premium";
+    public static final String SKU_GAS_AMAZON = "org.onepf.trivialdrivegame.sku_gas";
+    public static final String SKU_INFINITE_GAS_AMAZON = "org.onepf.trivialdrivegame.subscrption.sku_infinite_gas";
+    public static final String SKU_PREMIUM_AMAZON = "org.onepf.trivialdrivegame.sku_premium";
 
     public static final String SKU_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_gas";
     public static final String SKU_INFINITE_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_infinite_gas";
