@@ -17,6 +17,7 @@
 package org.onepf.oms.appstore.googleUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,5 +104,13 @@ public class Inventory {
 
     public void addPurchase(Purchase p) {
         mPurchaseMap.put(p.getSku(), p);
+    }
+
+    public Map<String, SkuDetails> getSkuMap() {
+        return Collections.unmodifiableMap(mSkuMap);
+    }
+
+    public Map<String, Purchase> getPurchaseMap() {
+        return Collections.unmodifiableMap(mPurchaseMap);
     }
 }
