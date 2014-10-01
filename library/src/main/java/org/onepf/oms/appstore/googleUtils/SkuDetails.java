@@ -89,7 +89,7 @@ public class SkuDetails {
         return mJson;
     }
     
-    void setSku(String sku) {
+    public void setSku(String sku) {
         this.mSku = sku;
     }
 

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,6 +42,8 @@ import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.OpenAppstore;
 import org.onepf.oms.appstore.SamsungApps;
 import org.onepf.oms.appstore.SamsungAppsBillingService;
+import org.onepf.oms.appstore.SkubitAppstore;
+import org.onepf.oms.appstore.SkubitTestAppstore;
 import org.onepf.oms.appstore.googleUtils.IabException;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabHelper.OnIabSetupFinishedListener;
@@ -143,6 +144,8 @@ public class OpenIabHelper {
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
     public static final String NAME_NOKIA = "com.nokia.nstore";
+    public static final String NAME_SKUBIT = "com.skubit.android";
+    public static final String NAME_SKUBIT_TEST = "net.skubit.android";
 
     // Knows open stores
     public static final String NAME_YANDEX = "com.yandex.store";
@@ -193,6 +196,22 @@ public class OpenIabHelper {
             @Override
             public Appstore get() {
                 return new NokiaStore(context);
+            }
+        });
+
+        appstorePackageMap.put(SkubitAppstore.SKUBIT_INSTALLER, NAME_SKUBIT);
+        appstoreFactoryMap.put(NAME_SKUBIT, new AppstoreFactory() {
+            @Override
+            public Appstore get() {
+                return new SkubitAppstore(context);
+            }
+        });
+
+        appstorePackageMap.put(SkubitTestAppstore.SKUBIT_INSTALLER, NAME_SKUBIT_TEST);
+        appstoreFactoryMap.put(NAME_SKUBIT_TEST, new AppstoreFactory() {
+            @Override
+            public Appstore get() {
+                return new SkubitTestAppstore(context);
             }
         });
     }
@@ -642,6 +661,8 @@ public class OpenIabHelper {
                 public void run() {
                     Appstore checkedAppstore = null;
                     for (final Appstore appstore : appstores) {
+                        System.out.println("AS: " + appstore.getAppstoreName() + ":"
+                                + appstore.isBillingAvailable(packageName) + ":" + versionOk(appstore));
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
                             checkedAppstore = appstore;
                             break;
