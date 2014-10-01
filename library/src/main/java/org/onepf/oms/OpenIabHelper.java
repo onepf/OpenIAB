@@ -661,8 +661,6 @@ public class OpenIabHelper {
                 public void run() {
                     Appstore checkedAppstore = null;
                     for (final Appstore appstore : appstores) {
-                        System.out.println("AS: " + appstore.getAppstoreName() + ":"
-                                + appstore.isBillingAvailable(packageName) + ":" + versionOk(appstore));
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
                             checkedAppstore = appstore;
                             break;
