@@ -116,10 +116,10 @@ public class OpenIabHelper {
     private int setupState = SETUP_RESULT_NOT_STARTED;
 
     /**
-     * SamsungApps requires {@link #handleActivityResult(int, int, Intent)} but it doesn't
+     * Some appstores requires {@link #handleActivityResult(int, int, Intent)} but it doesn't
      * work until setup is completed.
      */
-    private volatile SamsungApps samsungInSetup;
+    private volatile Appstore appstoreInSetup;
 
     // Is an asynchronous operation in progress?
     // (only one at a time can be in progress)
@@ -605,6 +605,7 @@ public class OpenIabHelper {
                 public void run() {
                     final List<Appstore> availableAppstores = new ArrayList<Appstore>();
                     for (final Appstore appstore : appstores) {
+                        appstoreInSetup = appstore;
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
                             availableAppstores.add(appstore);
                         }
@@ -620,7 +621,7 @@ public class OpenIabHelper {
                         @Override
                         public void onIabSetupFinished(final IabResult result) {
                             // Dispose of all initialized open appstores
-                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>();
+                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>(availableAppstores);
                             if (foundAppstore != null) {
                                 appstoresToDispose.remove(foundAppstore);
                             }
@@ -642,6 +643,7 @@ public class OpenIabHelper {
                 public void run() {
                     Appstore checkedAppstore = null;
                     for (final Appstore appstore : appstores) {
+                        appstoreInSetup = appstore;
                         if (appstore.isBillingAvailable(packageName) && versionOk(appstore)) {
                             checkedAppstore = appstore;
                             break;
@@ -652,7 +654,7 @@ public class OpenIabHelper {
                         @Override
                         public void onIabSetupFinished(final IabResult result) {
                             // Dispose of all initialized open appstores
-                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>();
+                            final Collection<Appstore> appstoresToDispose = new ArrayList<Appstore>(appstores);
                             if (foundAppstore != null) {
                                 appstoresToDispose.remove(foundAppstore);
                             }
@@ -730,6 +732,7 @@ public class OpenIabHelper {
         final boolean setUpSuccessful = iabResult.isSuccess();
         setupState = setUpSuccessful ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         activity = null;
+        appstoreInSetup = null;
         setupExecutorService.shutdownNow();
         setupExecutorService = null;
         if (setUpSuccessful) {
@@ -1024,8 +1027,8 @@ public class OpenIabHelper {
 
     public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
         Logger.dWithTimeFromUp("handleActivityResult() requestCode: ", requestCode, " resultCode: ", resultCode, " data: ", data);
-        if (requestCode == options.samsungCertificationRequestCode && samsungInSetup != null) {
-            return samsungInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
+        if (requestCode == options.samsungCertificationRequestCode && appstoreInSetup!= null) {
+            return appstoreInSetup.getInAppBillingService().handleActivityResult(requestCode, resultCode, data);
         }
         if (setupState != SETUP_RESULT_SUCCESSFUL) {
             Logger.d("handleActivityResult() setup is not done. requestCode: ", requestCode, " resultCode: ", resultCode, " data: ", data);

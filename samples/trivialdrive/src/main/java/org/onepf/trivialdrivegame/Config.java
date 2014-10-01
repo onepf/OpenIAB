@@ -70,6 +70,10 @@ public final class Config {
     public static final String SKU_INFINITE_GAS_AMAZON = "org.onepf.trivialdrivegame.subscrption.sku_infinite_gas";
     public static final String SKU_PREMIUM_AMAZON = "org.onepf.trivialdrivegame.sku_premium";
 
+    public static final String SKU_GAS_SAMSUNG = "000001003746/org.onepf.trivialdrivegame.sku_gas";
+    public static final String SKU_INFINITE_GAS_SAMSUNG = "000001003744/org.onepf.trivialdrivegame.subscrption.sku_infinite_gas";
+    public static final String SKU_PREMIUM_SAMSUNG = "000001003747/org.onepf.trivialdrivegame.sku_premium";
+
     public static final String SKU_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_gas";
     public static final String SKU_INFINITE_GAS_YANDEX = "org.onepf.trivialdrivegame.sku_infinite_gas";
     public static final String SKU_PREMIUM_YANDEX = "org.onepf.trivialdrivegame.sku_premium";
@@ -103,18 +107,21 @@ public final class Config {
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, SKU_INFINITE_GAS_AMAZON)
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_APPLAND, SKU_INFINITE_GAS_APPLAND)
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, SKU_INFINITE_GAS_SLIDEME)
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, SKU_INFINITE_GAS_SAMSUNG)
 
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_NOKIA, SKU_GAS_NOKIA_STORE)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_YANDEX, SKU_GAS_YANDEX)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, SKU_GAS_AMAZON)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, SKU_GAS_APPLAND)
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_SLIDEME, SKU_GAS_SLIDEME)
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, SKU_GAS_SAMSUNG)
 
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_NOKIA, SKU_PREMIUM_NOKIA_STORE)
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_YANDEX, SKU_PREMIUM_YANDEX)
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, SKU_PREMIUM_AMAZON)
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, SKU_PREMIUM_APPLAND)
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM_SLIDEME);
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, SKU_PREMIUM_SLIDEME)
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, SKU_PREMIUM_SAMSUNG);
     }
 
     private Config() {
