@@ -759,16 +759,20 @@ public class OpenIabHelper {
         if (!Utils.uiThread()) {
             throw new IllegalStateException("Must be called from UI thread.");
         }
-        if (setupState != SETUP_IN_PROGRESS) {
-            throw new IllegalStateException("Setup is not started or already finished.");
-        }
-
-        final boolean setUpSuccessful = iabResult.isSuccess();
-        setupState = setUpSuccessful ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         activity = null;
         appstoreInSetup = null;
         setupExecutorService.shutdownNow();
         setupExecutorService = null;
+        if (setupState == SETUP_DISPOSED) {
+            if (appstore != null) {
+                dispose(Arrays.asList(appstore));
+            }
+            return;
+        } else if (setupState != SETUP_IN_PROGRESS) {
+            throw new IllegalStateException("Setup is not started or already finished.");
+        }
+        final boolean setUpSuccessful = iabResult.isSuccess();
+        setupState = setUpSuccessful ? SETUP_RESULT_SUCCESSFUL : SETUP_RESULT_FAILED;
         if (setUpSuccessful) {
             if (appstore == null) {
                 throw new IllegalStateException("Appstore can't be null if setup is successful");
