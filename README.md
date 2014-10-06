@@ -19,7 +19,7 @@ Or download [the latest release JARS][1] or grab via Gradle:
    ```
 
 2. Map Google Play SKUs to Yandex/Amazon/etc SKUs like this:
-https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/MainActivity.java#L100
+https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/org/onepf/trivialdrivegame/Config.java#L100
 
 3. Instantiate `new OpenIabHelper`  and call `helper.startSetup()`.
 When setup is done call  `helper.queryInventory()`
