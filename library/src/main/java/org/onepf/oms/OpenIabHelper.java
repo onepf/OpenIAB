@@ -757,7 +757,7 @@ public class OpenIabHelper {
                              @NotNull final IabResult iabResult,
                              @Nullable final Appstore appstore) {
         if (setupState == SETUP_DISPOSED) {
-            Logger.e("finishSetup() called for disposed OpenIabHelper, returning.");
+            Logger.w("finishSetup() called for disposed OpenIabHelper, returning.");
             return;
         }                             
         if (!Utils.uiThread()) {
