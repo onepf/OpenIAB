@@ -37,6 +37,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.NokiaStore;
 import org.onepf.oms.appstore.OpenAppstore;
@@ -144,6 +145,7 @@ public class OpenIabHelper {
     public static final String NAME_AMAZON = "com.amazon.apps";
     public static final String NAME_SAMSUNG = "com.samsung.apps";
     public static final String NAME_NOKIA = "com.nokia.nstore";
+    public static final String NAME_FORTUMO = "com.fortumo.billing";
     public static final String NAME_SKUBIT = "com.skubit.android";
     public static final String NAME_SKUBIT_TEST = "net.skubit.android";
 
@@ -165,6 +167,13 @@ public class OpenIabHelper {
         appstorePackageMap.put("com.yandex.store", NAME_YANDEX);
         appstorePackageMap.put("cm.aptoide.pt", NAME_APTOIDE);
 
+        // Knows package independent wrappers
+        appstoreFactoryMap.put(NAME_FORTUMO, new AppstoreFactory() {
+            @Override
+            public Appstore get() {
+                return new FortumoStore(context);
+            }
+        });
 
         appstorePackageMap.put(GooglePlay.ANDROID_INSTALLER, NAME_GOOGLE);
         appstoreFactoryMap.put(NAME_GOOGLE, new AppstoreFactory() {
@@ -541,6 +550,12 @@ public class OpenIabHelper {
                                 && appstoreFactoryMap.containsKey(name)
                                 && Utils.packageInstalled(context, appstorePackage)) {
                             allAvailableAppsotres.add(appstoreFactoryMap.get(name).get());
+                        }
+                    }
+                    // All package independent wrappers
+                    for (final String appstoreName : appstoreFactoryMap.keySet()) {
+                        if (!appstorePackageMap.values().contains(appstoreName)) {
+                            allAvailableAppsotres.add(appstoreFactoryMap.get(appstoreName).get());
                         }
                     }
                     // Add available stored according to preferred stores priority

@@ -1,0 +1,54 @@
+<!-- xsd will be here https://github.com/onepf/AppDF/tree/master/specification -->
+<!-- additional Fortumo details must be in /assets/fortumo_inapps_details.xml-->
+<inapp-products>
+    <!--Zero or more repetitions:-->
+    <items>
+        <!--Zero or more repetitions:-->
+        <item id="sku_gas"
+              publish-state="published"> <!-- id: the same format as Google SKU, required; published: "published" or "unpublushed", required by the xsd, but is not actually used it the current implementation-->
+            <summary><!--encapsulates all elements related to description, required-->
+                <summary-base><!--default strings elements, required-->
+                    <title>1/4 of gas tank</title> <!-- default title, required-->
+                    <description>Some gas to go further</description> <!-- default description, required-->
+                </summary-base>
+                <!--Zero or more repetitions:-->
+                <summary-localization locale="ru_RU"> <!-- locale: [a-z]_[A-Z], required-->
+                    <title>Четверть бака бензина</title> <!-- required -->
+                    <description>Немного топлива, чтобы проехать еще</description> <!-- required -->
+                </summary-localization>
+                <summary-localization locale="en_US">
+                    <title>1/4 of gas tank</title>
+                    <description>Some gas to go further</description>
+                </summary-localization>
+            </summary>
+            <price autofill="true"> <!-- autofill: true or false, required by the xsd, but is not used in the current implementation-->
+                <price-base>1.00</price-base> <!-- default price, required-->
+                <!--Zero or more repetitions:-->
+                <price-local country="RU"> <!-- country: [A-Z][A_Z], required-->
+                    30.00</price-local>
+                <price-local country="EN">1.00</price-local>
+            </price>
+        </item>
+        <item id="sku_premium" publish-state="published">
+            <summary>
+                <summary-base>
+                    <title>Premium upgrade</title>
+                    <description>Cool red skin for your car</description>
+                </summary-base>
+                <summary-localization locale="ru_RU">
+                    <title>Premium upgrade</title>
+                    <description>Класный красный цвет для вашей машины</description>
+                </summary-localization>
+                <summary-localization locale="en_US">
+                    <title>Premium upgrade</title>
+                    <description>Cool red skin for your car</description>
+                </summary-localization>
+            </summary>
+            <price autofill="false">
+                <price-base>1.00</price-base>
+                <price-local country="RU">30.00</price-local>
+                <price-local country="EN">2.00</price-local>
+            </price>
+        </item>
+    </items>
+</inapp-products>
