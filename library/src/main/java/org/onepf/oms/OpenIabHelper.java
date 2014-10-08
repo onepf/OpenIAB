@@ -373,7 +373,6 @@ public class OpenIabHelper {
         }
 
         checkOptions();
-        Logger.init();
     }
 
     private ExecutorService setupExecutorService;
@@ -393,7 +392,6 @@ public class OpenIabHelper {
         if (setupState != SETUP_RESULT_NOT_STARTED && setupState != SETUP_RESULT_FAILED) {
             throw new IllegalStateException("Couldn't be set up. Current state: " + setupStateToString(setupState));
         }
-        Logger.init();
         setupState = SETUP_IN_PROGRESS;
         setupExecutorService = Executors.newSingleThreadExecutor();
 
@@ -1305,7 +1303,7 @@ public class OpenIabHelper {
      * Will be removed in version 1.0.
      */
     public static void enableDebugLogging(boolean enabled) {
-        Logger.setLoggable(enabled);
+        enableDebuglLogging(enabled, null);
     }
 
     /**
@@ -1314,6 +1312,7 @@ public class OpenIabHelper {
      * Will be removed in version 1.0.
      */
     public static void enableDebuglLogging(boolean enabled, String tag) {
+        Logger.setLogTag(tag);
         Logger.setLoggable(enabled);
     }
 

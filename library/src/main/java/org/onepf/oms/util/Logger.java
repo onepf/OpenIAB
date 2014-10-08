@@ -22,110 +22,18 @@ import android.util.Log;
 /**
  * Utility for log events. For log event set
  * {@link #setLoggable(boolean)} to true.
- * <p/>
- * For correct use log event with timing like {@link #dWithTimeFromUp(String)}
- * or {@link #dWithTimeFromUp(Object...)}, you must init start time via call {@link #init}.
  *
  * @author Kirill Rozov
  * @since 25.07.14
  */
 public final class Logger {
-    public static final String LOG_TAG = "OpenIabLibrary";
 
+    private Logger() {}
+
+    public static final String LOG_TAG = "OpenIAB";
+
+    private static String logTag = LOG_TAG;
     private static boolean loggable;
-
-    private static long started = System.currentTimeMillis();
-
-    private Logger() {
-    }
-
-    public static void init() {
-        started = System.currentTimeMillis();
-    }
-
-    public static void d(Object... values) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-            Log.d(LOG_TAG, TextUtils.join("", values));
-        }
-    }
-
-    public static void i(Object... values) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.INFO)) {
-            Log.i(LOG_TAG, TextUtils.join("", values));
-        }
-    }
-
-    public static void i(String msg) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.INFO)) {
-            Log.i(LOG_TAG, msg);
-        }
-    }
-
-    public static void d(String msg) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-            Log.d(LOG_TAG, msg);
-        }
-    }
-
-    public static void dWithTimeFromUp(String msg) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-            Log.d(LOG_TAG, in() + ' ' + msg);
-        }
-    }
-
-    public static void dWithTimeFromUp(Object... msgs) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-            Log.d(LOG_TAG, in() + ' ' + TextUtils.join("", msgs));
-        }
-    }
-
-    public static void e(Object... msgs) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
-            Log.e(LOG_TAG, TextUtils.join("", msgs));
-        }
-    }
-
-    public static void e(String msg, Throwable e) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
-            Log.e(LOG_TAG, msg, e);
-        }
-    }
-
-    public static void e(String msg) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
-            Log.e(LOG_TAG, msg);
-        }
-    }
-
-    public static void e(Throwable e, Object... msgs) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.ERROR)) {
-            Log.e(LOG_TAG, TextUtils.join("", msgs), e);
-        }
-    }
-
-    public static void w(String msg) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.WARN)) {
-            Log.w(LOG_TAG, msg);
-        }
-    }
-
-    public static void w(String msg, Throwable e) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.WARN)) {
-            Log.w(LOG_TAG, msg, e);
-        }
-    }
-
-    public static void v(Object... msgs) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
-            Log.v(LOG_TAG, TextUtils.join("", msgs));
-        }
-    }
-
-    public static void w(Object... values) {
-        if (loggable && Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
-            Log.w(LOG_TAG, TextUtils.join("", values));
-        }
-    }
 
     public static boolean isLoggable() {
         return loggable;
@@ -135,7 +43,92 @@ public final class Logger {
         Logger.loggable = loggable;
     }
 
-    private static String in() {
-        return "in: " + (System.currentTimeMillis() - started);
+    @Deprecated
+    public static void init() {}
+
+    public static void setLogTag(final String logTag) {
+        Logger.logTag = TextUtils.isEmpty(logTag) ? LOG_TAG : logTag;
+    }
+
+    public static void d(Object... values) {
+        if (loggable || Log.isLoggable(logTag, Log.DEBUG)) {
+            Log.d(logTag, TextUtils.join("", values));
+        }
+    }
+
+    public static void i(Object... values) {
+        if (loggable || Log.isLoggable(logTag, Log.INFO)) {
+            Log.i(logTag, TextUtils.join("", values));
+        }
+    }
+
+    public static void i(String msg) {
+        if (loggable || Log.isLoggable(logTag, Log.INFO)) {
+            Log.i(logTag, msg);
+        }
+    }
+
+    public static void d(String msg) {
+        if (loggable || Log.isLoggable(logTag, Log.DEBUG)) {
+            Log.d(logTag, msg);
+        }
+    }
+
+    @Deprecated
+    public static void dWithTimeFromUp(String msg) {
+        d(msg);
+    }
+
+    @Deprecated
+    public static void dWithTimeFromUp(Object... msgs) {
+        d(msgs);
+    }
+
+    public static void e(Object... msgs) {
+        if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
+            Log.e(logTag, TextUtils.join("", msgs));
+        }
+    }
+
+    public static void e(String msg, Throwable e) {
+        if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
+            Log.e(logTag, msg, e);
+        }
+    }
+
+
+    public static void e(String msg) {
+        if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
+            Log.e(logTag, msg);
+        }
+    }
+    public static void e(Throwable e, Object... msgs) {
+        if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
+            Log.e(logTag, TextUtils.join("", msgs), e);
+        }
+    }
+
+    public static void w(String msg) {
+        if (loggable || Log.isLoggable(logTag, Log.WARN)) {
+            Log.w(logTag, msg);
+        }
+    }
+
+    public static void w(String msg, Throwable e) {
+        if (loggable || Log.isLoggable(logTag, Log.WARN)) {
+            Log.w(logTag, msg, e);
+        }
+    }
+
+    public static void v(Object... msgs) {
+        if (loggable || Log.isLoggable(logTag, Log.VERBOSE)) {
+            Log.v(logTag, TextUtils.join("", msgs));
+        }
+    }
+
+    public static void w(Object... values) {
+        if (loggable || Log.isLoggable(logTag, Log.VERBOSE)) {
+            Log.w(logTag, TextUtils.join("", values));
+        }
     }
 }
