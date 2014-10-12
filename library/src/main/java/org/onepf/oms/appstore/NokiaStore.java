@@ -21,6 +21,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -39,6 +41,7 @@ public class NokiaStore extends DefaultAppstore {
     public static final String NOKIA_BILLING_PERMISSION = "com.nokia.payment.BILLING";
     private final Context context;
 
+    @Nullable
     private NokiaStoreHelper billingService = null;
 
     //This is the expected SHA1 finger-print in HEX format
@@ -101,6 +104,7 @@ public class NokiaStore extends DefaultAppstore {
         return OpenIabHelper.NAME_NOKIA;
     }
 
+    @Nullable
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (billingService == null) {
@@ -148,13 +152,14 @@ public class NokiaStore extends DefaultAppstore {
      * @param sku SKU for validate.
      * @throws org.onepf.oms.appstore.nokiaUtils.NokiaSkuFormatException If sku in wrong format for Nokia Store.
      */
-    public static void checkSku(String sku) {
+    public static void checkSku(@NotNull String sku) {
         if (!TextUtils.isDigitsOnly(sku)) {
             throw new NokiaSkuFormatException();
         }
     }
 
-    private static byte[] hexStringToByteArray(String s) {
+    @NotNull
+    private static byte[] hexStringToByteArray(@NotNull String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {

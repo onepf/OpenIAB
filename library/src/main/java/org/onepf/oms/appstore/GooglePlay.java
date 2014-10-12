@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import android.content.pm.ResolveInfo;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -57,6 +59,7 @@ public class GooglePlay extends DefaultAppstore {
     private Context context;
     private IabHelper mBillingService;
     private String publicKey;
+    @Nullable
     private volatile Boolean billingAvailable = null; // undefined until isBillingAvailable() is called
 
     // isDebugMode = true |-> always returns app installed via Google Play
@@ -153,7 +156,7 @@ public class GooglePlay extends DefaultAppstore {
         return OpenIabHelper.NAME_GOOGLE;
     }
 
-    private boolean packageExists(Context context, String packageName) {
+    private boolean packageExists(@NotNull Context context, String packageName) {
         try {
             context.getPackageManager().getPackageInfo(packageName, 0);
             return true;

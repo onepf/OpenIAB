@@ -19,6 +19,8 @@ package org.onepf.oms.appstore.fortumoUtils;
 
 import android.text.TextUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author akarimova@onepf.org
  * @since 17.02.14
@@ -29,7 +31,7 @@ public class InappSubscriptionProduct extends InappBaseProduct {
 
     private String period;
 
-    public InappSubscriptionProduct(InappBaseProduct otherProduct, String period) {
+    public InappSubscriptionProduct(@NotNull InappBaseProduct otherProduct, String period) {
         super(otherProduct);
         this.period = period;
     }
@@ -39,7 +41,7 @@ public class InappSubscriptionProduct extends InappBaseProduct {
         return period;
     }
 
-    public void setPeriod(String period) {
+    public void setPeriod(@NotNull String period) {
         if (!period.equals(ONE_MONTH) && !period.equals(ONE_YEAR)) {
             throw new IllegalStateException("Wrong period value!");
         }
@@ -60,6 +62,7 @@ public class InappSubscriptionProduct extends InappBaseProduct {
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "InappSubscriptionProduct{" +

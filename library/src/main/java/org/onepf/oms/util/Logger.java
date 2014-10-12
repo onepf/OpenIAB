@@ -19,6 +19,8 @@ package org.onepf.oms.util;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Utility for log events. For log event set
  * {@link #setLoggable(boolean)} to true.
@@ -32,6 +34,7 @@ public final class Logger {
 
     public static final String LOG_TAG = "OpenIAB";
 
+    @NotNull
     private static String logTag = LOG_TAG;
     private static boolean loggable;
 
@@ -50,13 +53,13 @@ public final class Logger {
         Logger.logTag = TextUtils.isEmpty(logTag) ? LOG_TAG : logTag;
     }
 
-    public static void d(Object... values) {
+    public static void d(@NotNull Object... values) {
         if (loggable || Log.isLoggable(logTag, Log.DEBUG)) {
             Log.d(logTag, TextUtils.join("", values));
         }
     }
 
-    public static void i(Object... values) {
+    public static void i(@NotNull Object... values) {
         if (loggable || Log.isLoggable(logTag, Log.INFO)) {
             Log.i(logTag, TextUtils.join("", values));
         }
@@ -84,7 +87,7 @@ public final class Logger {
         d(msgs);
     }
 
-    public static void e(Object... msgs) {
+    public static void e(@NotNull Object... msgs) {
         if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
             Log.e(logTag, TextUtils.join("", msgs));
         }
@@ -102,7 +105,7 @@ public final class Logger {
             Log.e(logTag, msg);
         }
     }
-    public static void e(Throwable e, Object... msgs) {
+    public static void e(Throwable e, @NotNull Object... msgs) {
         if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
             Log.e(logTag, TextUtils.join("", msgs), e);
         }
@@ -120,13 +123,13 @@ public final class Logger {
         }
     }
 
-    public static void v(Object... msgs) {
+    public static void v(@NotNull Object... msgs) {
         if (loggable || Log.isLoggable(logTag, Log.VERBOSE)) {
             Log.v(logTag, TextUtils.join("", msgs));
         }
     }
 
-    public static void w(Object... values) {
+    public static void w(@NotNull Object... values) {
         if (loggable || Log.isLoggable(logTag, Log.VERBOSE)) {
             Log.w(logTag, TextUtils.join("", values));
         }

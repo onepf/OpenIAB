@@ -18,6 +18,8 @@ package org.onepf.oms.appstore;
 
 import android.content.Context;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.skubitUtils.SkubitTestIabHelper;
@@ -41,6 +43,7 @@ public class SkubitTestAppstore extends SkubitAppstore {
         return Utils.isPackageInstaller(context, SKUBIT_INSTALLER);
     }
 
+    @Nullable
     @Override
     public synchronized AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -49,10 +52,12 @@ public class SkubitTestAppstore extends SkubitAppstore {
         return mBillingService;
     }
 
+    @NotNull
     public String getInstaller() {
         return SKUBIT_INSTALLER;
     }
 
+    @NotNull
     public String getAction() {
         return VENDING_ACTION;
     }

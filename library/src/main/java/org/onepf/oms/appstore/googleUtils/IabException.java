@@ -16,6 +16,8 @@
 
 package org.onepf.oms.appstore.googleUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Exception thrown when something went wrong with in-app billing.
  * An IabException has an associated IabResult (an error).
@@ -25,7 +27,7 @@ package org.onepf.oms.appstore.googleUtils;
 public class IabException extends Exception {
     IabResult mResult;
 
-    public IabException(IabResult r) {
+    public IabException(@NotNull IabResult r) {
         this(r, null);
     }
 
@@ -33,7 +35,7 @@ public class IabException extends Exception {
         this(new IabResult(response, message));
     }
 
-    public IabException(IabResult r, Exception cause) {
+    public IabException(@NotNull IabResult r, Exception cause) {
         super(r.getMessage(), cause);
         mResult = r;
     }
