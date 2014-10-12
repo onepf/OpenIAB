@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -130,15 +132,19 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     // ========================================================================
 
     private volatile boolean isBound;
+    @Nullable
     private IAPConnector mIapConnector;
     private Activity activity;
     private OpenIabHelper.Options options;
+    @Nullable
     private ServiceConnection serviceConnection;
     private String purchasingItemType;
 
+    @Nullable
     private OnIabSetupFinishedListener setupListener = null;
     // The listener registered on launchPurchaseFlow, which we have to call back when
     // the purchase finishes
+    @Nullable
     private OnIabPurchaseFinishedListener mPurchaseListener = null;
     private int mRequestCode;
     private String mItemGroupId;
@@ -160,7 +166,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
+    public Inventory queryInventory(boolean querySkuDetails, @Nullable List<String> moreItemSkus, @Nullable List<String> moreSubsSkus) throws IabException {
         Inventory inventory = new Inventory();
 
         Date date = new Date();
@@ -232,7 +238,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void launchPurchaseFlow(Activity activity, String sku, String itemType, int requestCode, OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(@NotNull Activity activity, @NotNull String sku, String itemType, int requestCode, OnIabPurchaseFinishedListener listener, String extraData) {
         String itemGroupId = getItemGroupId(sku);
         String itemId = getItemId(sku);
 
@@ -256,7 +262,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+    public boolean handleActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == options.getSamsungCertificationRequestCode()) {
             if (resultCode == Activity.RESULT_OK) {
                 bindIapService();
@@ -344,13 +350,13 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         mIapConnector = null;
     }
 
-    private String getItemGroupId(String sku) {
+    private String getItemGroupId(@NotNull String sku) {
         SamsungApps.checkSku(sku);
         String[] skuParts = sku.split("/");
         return skuParts[0];
     }
 
-    private String getItemId(String sku) {
+    private String getItemId(@NotNull String sku) {
         SamsungApps.checkSku(sku);
         String[] skuParts = sku.split("/");
         return skuParts[1];
@@ -397,7 +403,7 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
         setupListener.onIabSetupFinished(new IabResult(errorCode, errorMsg));
     }
 
-    private boolean processItemsBundle(Bundle itemsBundle, String itemGroupId, Inventory inventory, boolean querySkuDetails, boolean addPurchase, boolean addConsumable, Set<String> queryItemIds) {
+    private boolean processItemsBundle(@Nullable Bundle itemsBundle, String itemGroupId, @NotNull Inventory inventory, boolean querySkuDetails, boolean addPurchase, boolean addConsumable, @Nullable Set<String> queryItemIds) {
         if (itemsBundle == null || itemsBundle.getInt(KEY_NAME_STATUS_CODE) != IAP_ERROR_NONE) {
             return false;
         }

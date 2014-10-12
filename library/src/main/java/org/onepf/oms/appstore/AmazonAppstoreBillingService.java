@@ -33,6 +33,8 @@ import com.amazon.device.iap.model.RequestId;
 import com.amazon.device.iap.model.UserData;
 import com.amazon.device.iap.model.UserDataResponse;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
@@ -114,10 +116,11 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     /**
      * If not null will be notified from
      */
+    @Nullable
     private IabHelper.OnIabSetupFinishedListener setupListener;
 
 
-    public AmazonAppstoreBillingService(Context context) {
+    public AmazonAppstoreBillingService(@NotNull Context context) {
         this.context = context.getApplicationContext();
     }
 
@@ -161,7 +164,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     @Override
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) {
+    public Inventory queryInventory(boolean querySkuDetails, @Nullable List<String> moreItemSkus, @Nullable List<String> moreSubsSkus) {
         Logger.d("queryInventory() querySkuDetails: ", querySkuDetails, " moreItemSkus: ",
                 moreItemSkus, " moreSubsSkus: ", moreSubsSkus);
 
@@ -240,7 +243,8 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         }
     }
 
-    private Purchase getPurchase(final Receipt receipt) {
+    @NotNull
+    private Purchase getPurchase(@NotNull final Receipt receipt) {
         final String storeSku = receipt.getSku();
 
         final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
@@ -289,7 +293,8 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         }
     }
 
-    private SkuDetails getSkuDetails(final Product product) {
+    @NotNull
+    private SkuDetails getSkuDetails(@NotNull final Product product) {
         final String sku = product.getSku();
         final String price = product.getPrice().toString();
         final String title = product.getTitle();
@@ -413,7 +418,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
      * @param purchaseResponse Purchase to convert.
      * @return Generate JSON from purchase.
      */
-    private String generateOriginalJson(PurchaseResponse purchaseResponse) {
+    private String generateOriginalJson(@NotNull PurchaseResponse purchaseResponse) {
         final JSONObject json = new JSONObject();
         try {
             Receipt receipt = purchaseResponse.getReceipt();

@@ -23,6 +23,8 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.appstore.fortumoUtils.InappBaseProduct;
@@ -63,7 +65,9 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     private int activityRequestCode;
     private Context context;
     private Map<String, FortumoProduct> inappsMap;
+    @Nullable
     private IabHelper.OnIabPurchaseFinishedListener purchaseFinishedListener;
+    @Nullable
     private String developerPayload;
 
     public FortumoBillingService(Context context, boolean isNook) {
@@ -72,14 +76,14 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void startSetup(IabHelper.OnIabSetupFinishedListener listener) {
+    public void startSetup(@NotNull IabHelper.OnIabSetupFinishedListener listener) {
         final IabResult setupResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Fortumo: successful setup.");
         Logger.d("Setup result: ", setupResult);
         listener.onIabSetupFinished(setupResult);
     }
 
     @Override
-    public void launchPurchaseFlow(final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
+    public void launchPurchaseFlow(@NotNull final Activity act, String sku, String itemType, int requestCode, IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         this.purchaseFinishedListener = listener;
         this.activityRequestCode = requestCode;
         this.developerPayload = extraData;
@@ -119,7 +123,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public boolean handleActivityResult(int requestCode, int resultCode, Intent intent) {
+    public boolean handleActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
         if (activityRequestCode != requestCode) return false;
         if (intent == null) {
             Logger.d("handleActivityResult: null intent data");
@@ -153,7 +157,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
+    public Inventory queryInventory(boolean querySkuDetails, @Nullable List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException {
         Inventory inventory = new Inventory();
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
         final Map<String, ?> preferenceMap = sharedPreferences.getAll();
@@ -211,7 +215,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return inventory;
     }
 
-    private String getSkuPrice(FortumoProduct fortumoProduct) throws IabException {
+    private String getSkuPrice(@NotNull FortumoProduct fortumoProduct) throws IabException {
         String fortumoPrice = fortumoProduct.getFortumoPrice();
         if (!TextUtils.isEmpty(fortumoPrice)) {
             final String serviceId = isNook ? fortumoProduct.getNookServiceId() : fortumoProduct.getServiceId();
@@ -227,7 +231,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
     @Override
-    public void consume(Purchase itemInfo) throws IabException {
+    public void consume(@NotNull Purchase itemInfo) throws IabException {
         removePendingProduct(context, itemInfo.getSku());
     }
 
@@ -251,7 +255,8 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return true;
     }
 
-    private static Purchase purchaseFromPaymentResponse(Context context, PaymentResponse paymentResponse) {
+    @NotNull
+    private static Purchase purchaseFromPaymentResponse(@NotNull Context context, @NotNull PaymentResponse paymentResponse) {
         Purchase purchase = new Purchase(OpenIabHelper.NAME_FORTUMO);
         purchase.setSku(paymentResponse.getProductName());
         purchase.setPackageName(context.getPackageName()); //todo remove?
@@ -264,7 +269,8 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         return purchase;
     }
 
-    static Map<String, FortumoProduct> getFortumoInapps(Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {
+    @NotNull
+    static Map<String, FortumoProduct> getFortumoInapps(@NotNull Context context, boolean isNook) throws IOException, XmlPullParserException, IabException {
         final Map<String, FortumoProduct> map = new HashMap<String, FortumoProduct>();
         final InappsXMLParser inappsXMLParser = new InappsXMLParser();
         final Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse = inappsXMLParser.parse(context);
@@ -315,7 +321,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         private FortumoProductParser.FortumoDetails fortumoDetails;
         private String fortumoPrice;
 
-        public FortumoProduct(InappBaseProduct otherProduct, FortumoProductParser.FortumoDetails fortumoDetails, String fortumoPrice) {
+        public FortumoProduct(@NotNull InappBaseProduct otherProduct, FortumoProductParser.FortumoDetails fortumoDetails, String fortumoPrice) {
             super(otherProduct);
             this.fortumoDetails = fortumoDetails;
             this.fortumoPrice = fortumoPrice;
@@ -329,6 +335,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             return fortumoDetails.getServiceInAppSecret();
         }
 
+        @NotNull
         public SkuDetails toSkuDetails(String price) {
             return new SkuDetails(OpenIabHelper.ITEM_TYPE_INAPP, getProductId(), getTitle(), price, getDescription());
         }
@@ -350,6 +357,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
             return fortumoDetails.isConsumable();
         }
 
+        @NotNull
         @Override
         public String toString() {
             return "FortumoProduct{" +
@@ -360,7 +368,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
 
-    static void addPendingPayment(Context context, String productId, String messageId) {
+    static void addPendingPayment(@NotNull Context context, String productId, String messageId) {
         final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
         final SharedPreferences.Editor editor = fortumoSharedPrefs.edit();
         editor.putString(productId, messageId);
@@ -368,12 +376,12 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
         Logger.d(productId, " was added to pending");
     }
 
-    static String getMessageIdInPending(Context context, String productId) {
+    static String getMessageIdInPending(@NotNull Context context, String productId) {
         final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
         return fortumoSharedPrefs.getString(productId, null);
     }
 
-    static void removePendingProduct(Context context, String productId) {
+    static void removePendingProduct(@NotNull Context context, String productId) {
         final SharedPreferences fortumoSharedPrefs = getFortumoSharedPrefs(context);
         final SharedPreferences.Editor edit = fortumoSharedPrefs.edit();
         edit.remove(productId);
@@ -382,7 +390,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
     }
 
 
-    static SharedPreferences getFortumoSharedPrefs(Context context) {
+    static SharedPreferences getFortumoSharedPrefs(@NotNull Context context) {
         return context.getSharedPreferences(SHARED_PREFS_FORTUMO, Context.MODE_PRIVATE);
     }
 
@@ -405,7 +413,8 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
 
         }
 
-        static Map<String, FortumoDetails> parse(Context context, boolean isNook) throws XmlPullParserException, IOException {
+        @NotNull
+        static Map<String, FortumoDetails> parse(@NotNull Context context, boolean isNook) throws XmlPullParserException, IOException {
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
             XmlPullParser parser = factory.newPullParser();
@@ -523,6 +532,7 @@ public class FortumoBillingService implements AppstoreInAppBillingService {
                 return nookInAppSecret;
             }
 
+            @NotNull
             @Override
             public String toString() {
                 return "FortumoDetails{" +

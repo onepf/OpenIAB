@@ -16,6 +16,8 @@
 
 package org.onepf.oms.appstore;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.*;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.util.Logger;
@@ -39,6 +41,7 @@ public class OpenAppstore extends DefaultAppstore {
     private Context context;
     private ServiceConnection serviceConn;
     private IOpenAppstore openAppstoreService;
+    @Nullable
     private AppstoreInAppBillingService mBillingService;
 
     /**
@@ -54,18 +57,20 @@ public class OpenAppstore extends DefaultAppstore {
     /**
      * @param publicKey - used for signature verification. If <b>null</b> verification is disabled
      */
-    public OpenAppstore(Context context, String appstoreName, IOpenAppstore openAppstoreService, final Intent billingIntent, String publicKey, ServiceConnection serviceConn) {
+    public OpenAppstore(@NotNull Context context, String appstoreName, IOpenAppstore openAppstoreService, @Nullable final Intent billingIntent, String publicKey, ServiceConnection serviceConn) {
         this.context = context;
         this.appstoreName = appstoreName;
         this.openAppstoreService = openAppstoreService;
         this.serviceConn = serviceConn;
         if (billingIntent != null) {
             this.mBillingService = new IabHelper(context, publicKey, this) {
+                @Nullable
                 @Override
                 protected Intent getServiceIntent() {
                     return billingIntent;
                 }
 
+                @NotNull
                 @Override
                 protected IInAppBillingService getServiceFromBinder(IBinder service) {
                     return new IOpenInAppBillingWrapper(IOpenInAppBillingService.Stub.asInterface(service));
@@ -116,6 +121,7 @@ public class OpenAppstore extends DefaultAppstore {
         return appstoreName;
     }
 
+    @Nullable
     @Override
     public Intent getProductPageIntent(String packageName) {
         try {
@@ -126,6 +132,7 @@ public class OpenAppstore extends DefaultAppstore {
         }
     }
 
+    @Nullable
     @Override
     public Intent getRateItPageIntent(String packageName) {
         try {
@@ -136,6 +143,7 @@ public class OpenAppstore extends DefaultAppstore {
         }
     }
 
+    @Nullable
     @Override
     public Intent getSameDeveloperPageIntent(String packageName) {
         try {
@@ -156,11 +164,13 @@ public class OpenAppstore extends DefaultAppstore {
         }
     }
 
+    @Nullable
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         return mBillingService;
     }
 
+    @NotNull
     public String toString() {
         return "OpenStore {name: " + appstoreName + ", component: " + componentName + "}";
     }

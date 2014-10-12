@@ -22,7 +22,7 @@ public final class Utils {
      * @param permission Require permission.
      * @return true if permission described, otherwise - false.
      */
-    public static boolean hasRequestedPermission(@NotNull Context context, final String permission) {
+    public static boolean hasRequestedPermission(@NotNull Context context, @NotNull final String permission) {
         if (TextUtils.isEmpty(permission)) {
             throw new IllegalArgumentException("Permission can't be null or empty.");
         }

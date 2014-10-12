@@ -24,6 +24,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import com.nokia.payment.iap.aidl.INokiaIAPService;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.Appstore;
@@ -55,9 +58,12 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	private final Context mContext;
 	int mRequestCode;
 
-	private ServiceConnection                       mServiceConn      = null;
-	private INokiaIAPService                        mService          = null;
-	private IabHelper.OnIabPurchaseFinishedListener mPurchaseListener = null;
+	@Nullable
+    private ServiceConnection                       mServiceConn      = null;
+	@Nullable
+    private INokiaIAPService                        mService          = null;
+	@Nullable
+    private IabHelper.OnIabPurchaseFinishedListener mPurchaseListener = null;
 
 	public NokiaStoreHelper(final Context context, final Appstore appstore) {
 
@@ -69,7 +75,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	 * must be called in UI thread
 	 */
 	@Override
-	public void startSetup(final IabHelper.OnIabSetupFinishedListener listener) {
+	public void startSetup(@Nullable final IabHelper.OnIabSetupFinishedListener listener) {
 		Logger.i("NokiaStoreHelper.startSetup");
 
 		mServiceConn = new ServiceConnection() {
@@ -145,7 +151,8 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
         }
     }
 
-	private Intent getServiceIntent() {
+	@NotNull
+    private Intent getServiceIntent() {
 		final Intent intent = new Intent(NokiaStore.VENDING_ACTION);
 
 		intent.setPackage("com.nokia.payment.iapenabler");
@@ -173,8 +180,8 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	 */
 	@SuppressWarnings("MethodWithTooManyParameters")
 	@Override
-	public void launchPurchaseFlow(final Activity act, final String sku, final String itemType, final int requestCode,
-		final IabHelper.OnIabPurchaseFinishedListener listener, final String extraData) {
+	public void launchPurchaseFlow(@NotNull final Activity act, final String sku, @NotNull final String itemType, final int requestCode,
+		@Nullable final IabHelper.OnIabPurchaseFinishedListener listener, final String extraData) {
 
 		Logger.i("NokiaStoreHelper.launchPurchaseFlow");
 
@@ -256,7 +263,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	 */
 
 	@Override
-	public boolean handleActivityResult(final int requestCode, final int resultCode, final Intent data) {
+	public boolean handleActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
 		Logger.i("NokiaStoreHelper.handleActivityResult");
 
 		if (requestCode != mRequestCode) {
@@ -384,7 +391,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 	 * @throws org.onepf.oms.appstore.googleUtils.IabException if there is a problem during consumption.
 	 */
 	@Override
-	public void consume(final Purchase itemInfo) throws IabException {
+	public void consume(@NotNull final Purchase itemInfo) throws IabException {
 		Logger.i("NokiaStoreHelper.consume");
 
 		final String token = itemInfo.getToken();
@@ -456,7 +463,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		return inventory;
 	}
 
-	private void refreshPurchasedItems(final List<String> moreItemSkus, final Inventory inventory)
+	private void refreshPurchasedItems(@Nullable final List<String> moreItemSkus, @NotNull final Inventory inventory)
 		throws IabException {
 		Logger.i("NokiaStoreHelper.refreshPurchasedItems");
 
@@ -501,7 +508,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 	}
 
-	private void processPurchasedList(final ArrayList<String> purchasedDataList, final Inventory inventory) {
+	private void processPurchasedList(@NotNull final ArrayList<String> purchasedDataList, @NotNull final Inventory inventory) {
 		Logger.i("NokiaStoreHelper.processPurchasedList");
 
 		for (final String data : purchasedDataList) {
@@ -521,7 +528,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 	}
 
-	private void refreshItemDetails(final List<String> moreItemSkus, final Inventory inventory) throws IabException {
+	private void refreshItemDetails(@Nullable final List<String> moreItemSkus, @NotNull final Inventory inventory) throws IabException {
 		Logger.i("NokiaStoreHelper.refreshItemDetails");
 
 		final Bundle storeSkusBundle = new Bundle(32);
@@ -571,7 +578,7 @@ public class NokiaStoreHelper implements AppstoreInAppBillingService {
 		}
 	}
 
-	private void processDetailsList(final List<String> detailsList, final Inventory inventory)
+	private void processDetailsList(@NotNull final List<String> detailsList, @NotNull final Inventory inventory)
 		throws JSONException {
 
 		Logger.i("NokiaStoreHelper.processDetailsList");

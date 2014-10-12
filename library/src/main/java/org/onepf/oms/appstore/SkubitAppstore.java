@@ -28,6 +28,8 @@ import android.text.TextUtils;
 
 import com.skubit.android.billing.IBillingService;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -50,15 +52,18 @@ public class SkubitAppstore extends DefaultAppstore {
 
     public static final int TIMEOUT_BILLING_SUPPORTED = 2000;
 
+    @Nullable
     protected final Context context;
 
+    @Nullable
     protected AppstoreInAppBillingService mBillingService;
 
+    @Nullable
     private volatile Boolean billingAvailable = null;
 
     protected final boolean isDebugMode = false;
 
-    public SkubitAppstore(Context context) {
+    public SkubitAppstore(@Nullable Context context) {
         if(context == null) {
             throw new IllegalArgumentException("context is null");
         }
@@ -144,6 +149,7 @@ public class SkubitAppstore extends DefaultAppstore {
         return Appstore.PACKAGE_VERSION_UNDEFINED;
     }
 
+    @Nullable
     @Override
     public synchronized AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
@@ -157,7 +163,7 @@ public class SkubitAppstore extends DefaultAppstore {
         return OpenIabHelper.NAME_SKUBIT;
     }
 
-    private boolean packageExists(Context context, String packageName) {
+    private boolean packageExists(@NotNull Context context, String packageName) {
         try {
             context.getPackageManager().getPackageInfo(packageName, 0);
             return true;

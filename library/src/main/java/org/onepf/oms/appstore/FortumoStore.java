@@ -19,6 +19,7 @@ package org.onepf.oms.appstore;
 import android.content.Context;
 import android.os.Build;
 
+import org.jetbrains.annotations.NotNull;
 import org.onepf.oms.Appstore;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.DefaultAppstore;
@@ -55,7 +56,7 @@ public class FortumoStore extends DefaultAppstore {
     private Context context;
     private FortumoBillingService billingService;
 
-    public FortumoStore(Context context) {
+    public FortumoStore(@NotNull Context context) {
         this.context = context.getApplicationContext();
         isNookDevice = isNookDevice();
     }
@@ -108,14 +109,14 @@ public class FortumoStore extends DefaultAppstore {
     }
 
     //todo rename the method
-    public static FortumoStore initFortumoStore(Context context, final boolean checkInventory) {
+    public static FortumoStore initFortumoStore(@NotNull Context context, final boolean checkInventory) {
         final FortumoStore[] storeToReturn = {null};
         final FortumoStore fortumoStore = new FortumoStore(context);
         if (fortumoStore.isBillingAvailable(context.getPackageName())) {
             final CountDownLatch latch = new CountDownLatch(1);
             fortumoStore.getInAppBillingService().startSetup(new IabHelper.OnIabSetupFinishedListener() {
                 @Override
-                public void onIabSetupFinished(IabResult setupResult) {
+                public void onIabSetupFinished(@NotNull IabResult setupResult) {
                     if (setupResult.isSuccess()) {
                         if (checkInventory) {
                             try {

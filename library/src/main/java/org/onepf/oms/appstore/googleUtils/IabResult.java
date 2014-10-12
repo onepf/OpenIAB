@@ -16,6 +16,9 @@
 
 package org.onepf.oms.appstore.googleUtils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Represents the result of an in-app billing operation.
  * A result is composed of a response code (an integer) and possibly a
@@ -28,7 +31,7 @@ public class IabResult {
     int mResponse;
     String mMessage;
 
-    public IabResult(int response, String message) {
+    public IabResult(int response, @Nullable String message) {
         mResponse = response;
         if (message == null || message.trim().length() == 0) {
             mMessage = IabHelper.getResponseDesc(response);
@@ -53,6 +56,7 @@ public class IabResult {
         return !isSuccess();
     }
 
+    @NotNull
     public String toString() {
         return "IabResult: " + mResponse + ", " + getMessage();
     }
