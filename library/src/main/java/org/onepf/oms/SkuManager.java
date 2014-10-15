@@ -44,11 +44,13 @@ public class SkuManager {
      * <p/>
      * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
      */
+    @Nullable
     private Map<String, Map<String, String>> sku2storeSkuMappings;
 
     /**
      * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
      */
+    @Nullable
     private Map<String, Map<String, String>> storeSku2skuMappings;
 
     /**
@@ -70,7 +72,7 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see #mapSku(String, java.util.Map)
      */
-    public SkuManager mapSku(String sku, String storeName, String storeSku) {
+    public SkuManager mapSku(@NotNull String sku, @NotNull String storeName, @NotNull String storeSku) {
         checkSkuMappingParams(sku, storeName, storeSku);
 
         Map<String, String> skuMap = null;
@@ -109,7 +111,7 @@ public class SkuManager {
         return this;
     }
 
-    private static void checkSkuMappingParams(String storeName, String storeSku) {
+    private static void checkSkuMappingParams(@NotNull String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(storeName)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
@@ -127,7 +129,7 @@ public class SkuManager {
         }
     }
 
-    private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
+    private static void checkSkuMappingParams(@NotNull String sku, @NotNull String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(sku)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
@@ -150,7 +152,7 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      */
-    public SkuManager mapSku(String sku, Map<String, String> storeSkus) {
+    public SkuManager mapSku(@NotNull String sku, Map<String, String> storeSkus) {
         if (storeSkus == null) {
             throw new SkuMappingException("Store skus map can't be null.");
         }
