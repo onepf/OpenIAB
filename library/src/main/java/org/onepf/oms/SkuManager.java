@@ -44,14 +44,14 @@ public class SkuManager {
      * <p/>
      * storeName -> [ ... {app_sku1 -> store_sku1}, ... ]
      */
-    private final Map<String, Map<String, String>> sku2storeSkuMappings
-            = new ConcurrentHashMap<String, Map<String, String>>();
+    @Nullable
+    private Map<String, Map<String, String>> sku2storeSkuMappings;
 
     /**
      * storeName -> [ ... {store_sku1 -> app_sku1}, ... ]
      */
-    private final Map<String, Map<String, String>> storeSku2skuMappings
-            = new ConcurrentHashMap<String, Map<String, String>>();
+    @Nullable
+    private Map<String, Map<String, String>> storeSku2skuMappings;
 
     /**
      * Map sku and storeSku for particular store.
@@ -72,34 +72,46 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see #mapSku(String, java.util.Map)
      */
-    public SkuManager mapSku(String sku, String storeName, String storeSku) {
+    public SkuManager mapSku(@NotNull String sku, @NotNull String storeName, @NotNull String storeSku) {
         checkSkuMappingParams(sku, storeName, storeSku);
 
-        Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
+        Map<String, String> skuMap = null;
+        if (sku2storeSkuMappings != null) {
+            skuMap = sku2storeSkuMappings.get(storeName);
+        }
         if (skuMap == null) {
             skuMap = new HashMap<String, String>();
+            if (sku2storeSkuMappings == null) {
+                sku2storeSkuMappings = new ConcurrentHashMap<String, Map<String, String>>();
+            }
             sku2storeSkuMappings.put(storeName, skuMap);
         } else if (skuMap.containsKey(sku)) {
             throw new SkuMappingException("Already specified SKU. sku: "
                     + sku + " -> storeSku: " + skuMap.get(sku));
         }
+        skuMap.put(sku, storeSku);
 
-        Map<String, String> storeSkuMap = storeSku2skuMappings.get(storeName);
+        Map<String, String> storeSkuMap = null;
+        if (storeSku2skuMappings != null) {
+            storeSkuMap = storeSku2skuMappings.get(storeName);
+        }
         if (storeSkuMap == null) {
             storeSkuMap = new HashMap<String, String>();
+            if (storeSku2skuMappings == null) {
+                storeSku2skuMappings = new ConcurrentHashMap<String, Map<String, String>>();
+            }
             storeSku2skuMappings.put(storeName, storeSkuMap);
         } else if (storeSkuMap.get(storeSku) != null) {
             throw new SkuMappingException("Ambiguous SKU mapping. You try to map sku: "
                     + sku + " -> storeSku: " + storeSku
                     + ", that is already mapped to sku: " + storeSkuMap.get(storeSku));
         }
-
-        skuMap.put(sku, storeSku);
         storeSkuMap.put(storeSku, sku);
+
         return this;
     }
 
-    private static void checkSkuMappingParams(String storeName, String storeSku) {
+    private static void checkSkuMappingParams(@NotNull String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(storeName)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
@@ -112,12 +124,12 @@ public class SkuManager {
             SamsungApps.checkSku(storeSku);
         }
 
-        if (OpenIabHelper.NAME_NOKIA.equals(storeName)){
+        if (OpenIabHelper.NAME_NOKIA.equals(storeName)) {
             NokiaStore.checkSku(storeSku);
         }
     }
 
-    private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
+    private static void checkSkuMappingParams(@NotNull String sku, @NotNull String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(sku)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
@@ -140,7 +152,7 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      */
-    public SkuManager mapSku(String sku, Map<String, String> storeSkus) {
+    public SkuManager mapSku(@NotNull String sku, Map<String, String> storeSkus) {
         if (storeSkus == null) {
             throw new SkuMappingException("Store skus map can't be null.");
         }
@@ -169,11 +181,13 @@ public class SkuManager {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
 
-        Map<String, String> storeSku = sku2storeSkuMappings.get(appstoreName);
-        if (storeSku != null && storeSku.containsKey(sku)) {
-            final String s = storeSku.get(sku);
-            Logger.d("getStoreSku() using mapping for sku: ", sku, " -> ", s);
-            return s;
+        if (sku2storeSkuMappings != null) {
+            Map<String, String> storeSku = sku2storeSkuMappings.get(appstoreName);
+            if (storeSku != null && storeSku.containsKey(sku)) {
+                final String s = storeSku.get(sku);
+                Logger.d("getStoreSku() using mapping for sku: ", sku, " -> ", s);
+                return s;
+            }
         }
         return sku;
     }
@@ -188,11 +202,13 @@ public class SkuManager {
     public String getSku(@NotNull String appstoreName, @NotNull String storeSku) {
         checkSkuMappingParams(appstoreName, storeSku);
 
-        Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
-        if (skuMap != null && skuMap.containsKey(storeSku)) {
-            final String s = skuMap.get(storeSku);
-            Logger.d("getSku() restore sku from storeSku: ", storeSku, " -> ", s);
-            return s;
+        if (storeSku2skuMappings != null) {
+            Map<String, String> skuMap = storeSku2skuMappings.get(appstoreName);
+            if (skuMap != null && skuMap.containsKey(storeSku)) {
+                final String s = skuMap.get(storeSku);
+                Logger.d("getSku() restore sku from storeSku: ", storeSku, " -> ", s);
+                return s;
+            }
         }
         return storeSku;
     }
@@ -209,9 +225,13 @@ public class SkuManager {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
 
-        Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
-        return skuMap == null ? null :
-                Collections.unmodifiableList(new ArrayList<String>(skuMap.values()));
+        if (sku2storeSkuMappings == null) {
+            return null;
+        } else {
+            Map<String, String> skuMap = sku2storeSkuMappings.get(appstoreName);
+            return skuMap == null ? null :
+                    Collections.unmodifiableList(new ArrayList<String>(skuMap.values()));
+        }
     }
 
     public static SkuManager getInstance() {
