@@ -19,6 +19,9 @@ package org.onepf.oms.appstore;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.TextUtils;
 
 import com.amazon.device.iap.PurchasingListener;
 import com.amazon.device.iap.PurchasingService;
@@ -33,18 +36,31 @@ import com.amazon.device.iap.model.RequestId;
 import com.amazon.device.iap.model.UserData;
 import com.amazon.device.iap.model.UserDataResponse;
 
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.onepf.oms.AppstoreInAppBillingService;
 import org.onepf.oms.OpenIabHelper;
 import org.onepf.oms.SkuManager;
+import org.onepf.oms.appstore.amazonUtils.VerificationResponse;
 import org.onepf.oms.appstore.googleUtils.IabHelper;
 import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.SkuDetails;
 import org.onepf.oms.util.Logger;
+import org.onepf.oms.util.Utils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +69,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Amazon billing service impl
@@ -72,10 +90,18 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     public static final String JSON_KEY_USER_ID = "userId";
     public static final String JSON_KEY_RECEIPT_PURCHASE_TOKEN = "purchaseToken";
 
+    private static final String PATH_VERIFY_PURCHASE = "https://appstore-sdk.amazon.com/version/1.0/verifyReceiptId/developer/%s/user/%s/receiptId/%s";
+
     private final Map<RequestId, IabHelper.OnIabPurchaseFinishedListener> requestListeners =
             new HashMap<RequestId, IabHelper.OnIabPurchaseFinishedListener>();
 
     private final Context context;
+    private final OpenIabHelper.Options options;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final ExecutorService verificationExecutorService;
+
+    private boolean disposed = false;
 
     /**
      * Only for verification all requests are for the same user
@@ -117,8 +143,10 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     private IabHelper.OnIabSetupFinishedListener setupListener;
 
 
-    public AmazonAppstoreBillingService(Context context) {
+    public AmazonAppstoreBillingService(Context context, OpenIabHelper.Options options) {
         this.context = context.getApplicationContext();
+        this.options = options;
+        verificationExecutorService = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -334,8 +362,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
         final String requestSku = requestSkuMap.remove(requestId);
         final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
-        final IabResult result;
-        boolean shouldNotifyFulfillment = false;
+        final IabResult iabResult;
         switch (status) {
             case SUCCESSFUL:
                 final UserData userData = purchaseResponse.getUserData();
@@ -343,7 +370,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 if (!userId.equals(currentUserId)) {
                     Logger.w("onPurchaseResponse() Current UserId: ", currentUserId,
                             ", purchase UserId: ", userId);
-                    result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR,
+                    iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR,
                             "Current UserId doesn't match purchase UserId");
                     break;
                 }
@@ -366,34 +393,78 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                         : IabHelper.ITEM_TYPE_INAPP;
                 purchase.setItemType(openIabSkuType);
 
-                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
-
-                shouldNotifyFulfillment = true;
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
                 break;
             case INVALID_SKU:
-                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE, "Invalid SKU");
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE, "Invalid SKU");
                 break;
             case ALREADY_PURCHASED:
-                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Item is already purchased");
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED, "Item is already purchased");
                 break;
             case FAILED:
-                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase failed");
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ERROR, "Purchase failed");
                 break;
             case NOT_SUPPORTED:
-                result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "This call is not supported");
+                iabResult = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE, "This call is not supported");
                 break;
             default:
-                result = null;
+                iabResult = null;
         }
+
+
+        final boolean verificationRequired = options != null
+                && (options.getVerifyMode() == OpenIabHelper.Options.VERIFY_EVERYTHING
+                || (options.getVerifyMode() == OpenIabHelper.Options.VERIFY_ONLY_KNOWN && !TextUtils.isEmpty(options.getAmazonDeveloperSecret())));
+        if (iabResult.isSuccess() && verificationRequired) {
+            verifyAndHandlePurchase(purchaseResponse, purchase, iabResult);
+        } else {
+            handlePurchase(purchaseResponse, purchase, iabResult);
+        }
+    }
+
+    private void verifyAndHandlePurchase(final PurchaseResponse purchaseResponse,
+                                         final Purchase purchase,
+                                         final IabResult iabResult
+    ) {
+        final Runnable verifyPurchaseRunnable = new Runnable() {
+            @Override
+            public void run() {
+                final boolean verificationResult = verifyPurchase(purchaseResponse);
+                Logger.d("Purchase verification result: ", verificationResult);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!verificationResult) {
+                            final IabResult newIabResult = new IabResult(IabHelper.IABHELPER_VERIFICATION_FAILED, "Purchase verification failed.");
+                            handlePurchase(purchaseResponse, purchase, newIabResult);
+                        } else {
+                            handlePurchase(purchaseResponse, purchase, iabResult);
+                        }
+                    }
+                });
+            }
+        };
+        verificationExecutorService.execute(verifyPurchaseRunnable);
+    }
+
+    private void handlePurchase(final PurchaseResponse purchaseResponse,
+                                final Purchase purchase,
+                                final IabResult iabResult
+    ) {
+        final RequestId requestId = purchaseResponse.getRequestId();
         final IabHelper.OnIabPurchaseFinishedListener listener = requestListeners.remove(requestId);
         if (listener != null) {
-            listener.onIabPurchaseFinished(result, purchase);
-            if (shouldNotifyFulfillment) {
+            if (disposed) {
+                Logger.d("BillingService is disposed, aborting.");
+                return;
+            }
+            listener.onIabPurchaseFinished(iabResult, purchase);
+            if (iabResult.isSuccess()) {
                 final Receipt receipt = purchaseResponse.getReceipt();
                 PurchasingService.notifyFulfillment(receipt.getReceiptId(), FulfillmentResult.FULFILLED);
             }
         } else {
-            Logger.e("Something went wrong: PurchaseFinishedListener is not found");
+            Logger.e("Something went wrong: PurchaseFinishedListener is not found. Purchase: ", purchase);
         }
     }
 
@@ -439,6 +510,49 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         return json.toString();
     }
 
+    private HttpClient httpClient;
+
+    private boolean verifyPurchase(final PurchaseResponse purchaseResponse) {
+        if (Utils.uiThread()) {
+            throw new IllegalStateException("Must not be called from UI thread.");
+        }
+
+        final String developerSecret = options.getAmazonDeveloperSecret();
+        if (TextUtils.isEmpty(developerSecret)) {
+            Logger.e("Amazon developer secret is not set, verification failed.");
+            return false;
+        }
+        final String receiptId = purchaseResponse.getReceipt().getReceiptId();
+
+        if (httpClient == null) {
+            httpClient = new DefaultHttpClient();
+        }
+
+        try {
+            final String path = String.format(PATH_VERIFY_PURCHASE, developerSecret, currentUserId, receiptId);
+            final HttpUriRequest request = new HttpGet(path);
+            final HttpResponse response = httpClient.execute(request);
+            Logger.d("Amazon verification response: ", response);
+            final int responseCode = response.getStatusLine().getStatusCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                Logger.e("Verification failed. Response code is: ", responseCode);
+                return false;
+            }
+
+            final String responseBody = EntityUtils.toString(response.getEntity());
+            Logger.d("Amazon verification response body: ", responseBody);
+
+            final VerificationResponse verificationResponse = VerificationResponse.fromJson(responseBody);
+            return !TextUtils.isEmpty(verificationResponse.getReceiptId());
+        } catch (IOException exception) {
+            Logger.e("Verification failed: ", exception);
+        } catch (JSONException exception) {
+            Logger.e("Verification failed: ", exception);
+        }
+
+        return false;
+    }
+
     @Override
     public void consume(Purchase itemInfo) {
         // Nothing to do here
@@ -451,6 +565,8 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public void dispose() {
+        disposed = true;
+        verificationExecutorService.shutdownNow();
         setupListener = null;
     }
 

@@ -39,11 +39,21 @@ public class AmazonAppstore extends DefaultAppstore {
     public static final String AMAZON_INSTALLER = "com.amazon.venezia";
     
     private final Context context;
+    private final OpenIabHelper.Options options;
     
     private AmazonAppstoreBillingService mBillingService;
 
+    /**
+     * Consider using {@link #AmazonAppstore(Context, OpenIabHelper.Options)} instead.
+     */
+    @Deprecated
     public AmazonAppstore(Context context) {
+        this(context, null);
+    }
+
+    public AmazonAppstore(Context context, OpenIabHelper.Options options) {
         this.context = context;
+        this.options = options;
     }
 
     @Override
@@ -91,7 +101,7 @@ public class AmazonAppstore extends DefaultAppstore {
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {
-            mBillingService = new AmazonAppstoreBillingService(context);
+            mBillingService = new AmazonAppstoreBillingService(context, options);
         }
         return mBillingService;
     }

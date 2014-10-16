@@ -188,7 +188,7 @@ public class OpenIabHelper {
         appstoreFactoryMap.put(NAME_AMAZON, new AppstoreFactory() {
             @Override
             public Appstore get() {
-                return new AmazonAppstore(context);
+                return new AmazonAppstore(context, options);
             }
         });
 
@@ -893,6 +893,20 @@ public class OpenIabHelper {
         checkGoogle();
         checkSamsung();
         checkNokia();
+        checkAmazon();
+    }
+
+    private void checkAmazon() {
+        final boolean hasDeveloperSecret = !TextUtils.isEmpty(options.getAmazonDeveloperSecret());
+        Logger.d("checkAmazon() has developer secret: ", hasDeveloperSecret);
+        if (!hasDeveloperSecret && options.getVerifyMode() == VERIFY_EVERYTHING) {
+            if (options.getAvailableStoreWithName(NAME_AMAZON) != null
+                    || options.getPreferredStoreNames().contains(NAME_AMAZON)) {
+                throw new IllegalStateException("Amazon developer secret can't be null with verifyMode set to VERIFY_EVERYTHING");
+            }
+            Logger.d("");
+            appstoreFactoryMap.remove(NAME_AMAZON);
+        }
     }
 
     private void checkNokia() {
@@ -1412,6 +1426,8 @@ public class OpenIabHelper {
          */
         public final int samsungCertificationRequestCode;
 
+        private final String amazonDeveloperSecret;
+
         /**
          * @deprecated Use {@link Builder} instead.
          */
@@ -1422,6 +1438,7 @@ public class OpenIabHelper {
             this.preferredStoreNames = Collections.emptySet();
             this.verifyMode = VERIFY_SKIP;
             this.samsungCertificationRequestCode = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+            amazonDeveloperSecret = null;
             this.storeSearchStrategy = SEARCH_STRATEGY_INSTALLER;
         }
 
@@ -1431,6 +1448,7 @@ public class OpenIabHelper {
                         final @MagicConstant(intValues = {VERIFY_EVERYTHING, VERIFY_ONLY_KNOWN, VERIFY_SKIP}) int verifyMode,
                         final Set<String> preferredStoreNames,
                         final int samsungCertificationRequestCode,
+                        final String amazonDeveloperSecret,
                         final int storeSearchStrategy) {
             this.checkInventory = checkInventory;
             this.availableStores = availableStores;
@@ -1438,6 +1456,7 @@ public class OpenIabHelper {
             this.preferredStoreNames = preferredStoreNames;
             this.verifyMode = verifyMode;
             this.samsungCertificationRequestCode = samsungCertificationRequestCode;
+            this.amazonDeveloperSecret = amazonDeveloperSecret;
             this.storeSearchStrategy = storeSearchStrategy;
         }
 
@@ -1448,6 +1467,14 @@ public class OpenIabHelper {
          */
         public int getSamsungCertificationRequestCode() {
             return samsungCertificationRequestCode;
+        }
+
+        /**
+         * Used for verification of Amazon purchases.
+         * @return Amazon developer secret if one was supplied, null otherwise.
+         */
+        public @Nullable String getAmazonDeveloperSecret() {
+            return amazonDeveloperSecret;
         }
 
         /**
@@ -1534,7 +1561,7 @@ public class OpenIabHelper {
          * AmazonApps and SamsungApps doesn't use RSA keys for receipt verification, so you don't need
          * to specify it
          */
-        @NotNull public Map<String, String> getStoreKeys() {
+        public @NotNull Map<String, String> getStoreKeys() {
             return storeKeys;
         }
 
@@ -1564,6 +1591,7 @@ public class OpenIabHelper {
             private boolean checkInventory = false;
             private int samsungCertificationRequestCode
                     = SamsungAppsBillingService.REQUEST_CODE_IS_ACCOUNT_CERTIFICATION;
+            private String amazonDeveloperSecret;
 
             @MagicConstant(intValues = {VERIFY_EVERYTHING, VERIFY_ONLY_KNOWN, VERIFY_SKIP})
             private int verifyMode = VERIFY_EVERYTHING;
@@ -1730,6 +1758,17 @@ public class OpenIabHelper {
             }
 
             /**
+             * Set Amazon developer secret to verify Amazon purchases
+             *
+             * @param amazonDeveloperSecret might be empty or null
+             * @see Options#getAmazonDeveloperSecret()
+             */
+            public Builder setAmazonDeveloperSecret(@Nullable final String amazonDeveloperSecret) {
+                this.amazonDeveloperSecret = amazonDeveloperSecret;
+                return this;
+            }
+
+            /**
              * @return Create new instance of {@link Options}.
              */
             public Options build() {
@@ -1740,6 +1779,7 @@ public class OpenIabHelper {
                         verifyMode,
                         Collections.unmodifiableSet(preferredStoreNames),
                         samsungCertificationRequestCode,
+                        amazonDeveloperSecret,
                         storeSearchStrategy);
             }
         }
