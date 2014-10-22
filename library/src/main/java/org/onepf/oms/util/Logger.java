@@ -20,17 +20,20 @@ import android.text.TextUtils;
 import android.util.Log;
 
 /**
- * Simple logger.
+ * Simple wrapper for {@link android.util.Log}.
+ * <br/>
+ * To enable logging, call {@link org.onepf.oms.util.Logger#setLoggable(boolean)} or use <code>adb shell setprop log.tag.YOUR_TAG<code>.
  *
  * @author Kirill Rozov
  * @since 25.07.14
  */
 public final class Logger {
 
-    private Logger() {}
+    private Logger() {
+    }
 
     /**
-     * Default LOG TAG. To change use {@link org.onepf.oms.util.Logger#setLogTag(String)}
+     * Default log tag. To change the tag value, use {@link org.onepf.oms.util.Logger#setLogTag(String)}.
      */
     public static final String LOG_TAG = "OpenIAB";
 
@@ -39,7 +42,8 @@ public final class Logger {
     private static boolean loggable;
 
     /**
-     * Checks if logging is enabled.
+     * Checks whether logging is enabled.
+     *
      * @return true if logging is enabled.
      */
     public static boolean isLoggable() {
@@ -47,20 +51,21 @@ public final class Logger {
     }
 
     /**
-     * enable/disable logging
+     * Enables/disables logging.
      */
     public static void setLoggable(boolean loggable) {
         Logger.loggable = loggable;
     }
 
     @Deprecated
-    public static void init() {}
+    public static void init() {
+    }
 
     /**
      * Sets the log tag.
-     * @param logTag The tag to be set.
+     *
+     * @param logTag The new tag value.
      */
-    //todo check length of the tag
     public static void setLogTag(final String logTag) {
         Logger.logTag = TextUtils.isEmpty(logTag) ? LOG_TAG : logTag;
     }
@@ -117,6 +122,7 @@ public final class Logger {
             Log.e(logTag, msg);
         }
     }
+
     public static void e(Throwable e, Object... msgs) {
         if (loggable || Log.isLoggable(logTag, Log.ERROR)) {
             Log.e(logTag, TextUtils.join("", msgs), e);
