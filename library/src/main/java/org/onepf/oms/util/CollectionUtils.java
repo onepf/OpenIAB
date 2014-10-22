@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Checks for collections and primitive arrays.
+ * Utility class for collections and primitive arrays.
  *
  * @author Kirill Rozov
  */
