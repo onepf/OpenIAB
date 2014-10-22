@@ -67,7 +67,7 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/
 
     ```xml
     <!--all-->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <!--Google Play-->
     <uses-permission android:name="com.android.vending.BILLING" />
     <!--Open Store-->
@@ -76,12 +76,14 @@ https://github.com/onepf/OpenIAB/blob/master/samples/trivialdrive/src/main/java/
     <!--Samsung Apps-->
     <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
     <!--Nokia-->
-    <uses-permission android:name="com.nokia.payment.BILLING"/>
+    <uses-permission android:name="com.nokia.payment.BILLING" />
     <!--Fortumo-->
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <!--Skubit-->
+    <uses-permission android:name="com.skubit.BILLING" />
     <!--SlideME-->
     <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
     ```
