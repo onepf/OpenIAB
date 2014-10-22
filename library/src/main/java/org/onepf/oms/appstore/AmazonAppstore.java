@@ -28,10 +28,8 @@ import android.content.Context;
 import com.amazon.device.iap.PurchasingService;
 
 /**
- * Analize whether app is installed from Amazon Appstore.
- * <p>
- * Uses {@link #hasAmazonClasses()} to determine it techically
- * 
+ * Helper class to work with the Amazon Appstore application.
+ *
  * @author Oleg Orlov
  * @since 16.04.13
  */

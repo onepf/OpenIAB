@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Base entity to manage SKUs.
+ * Helper to manage SKUs.
+ * <p/>
  * Created by krozov on 7/27/14.
  */
 public class SkuManager {
@@ -52,20 +53,20 @@ public class SkuManager {
             = new ConcurrentHashMap<String, Map<String, String>>();
 
     /**
-     * Maps a store-specific SKU to a internal base SKU.
+     * Maps a store-specific SKU to an internal base SKU.
      * The best approach is to use SKU like <code>com.companyname.application.item</code>.
-     * Such SKU fit most of stores, so it doesn't need to be mapped.
-     * If this approach is not applicable use an internal application SKU in the code (usually it is a SKU for Google Play)
+     * Such SKU fits most of stores, so it doesn't need to be mapped.
+     * If this approach is not applicable, use an internal application SKU in the code (usually it is a SKU for Google Play)
      * and map SKU from other stores using this method. OpenIAB will map SKU in both directions,
      * so you can use only your internal SKU
      *
      * @param sku       - The internal SKU
-     * @param storeSku  - The store-specific SKY. Shouldn't duplicate already mapped values
+     * @param storeSku  - The store-specific SKU. Shouldn't duplicate already mapped values
      * @param storeName - @see {@link IOpenAppstore#getAppstoreName()}
      *                  or {@link org.onepf.oms.OpenIabHelper#NAME_AMAZON}
      *                  {@link org.onepf.oms.OpenIabHelper#NAME_GOOGLE}
      * @return Instance of {@link org.onepf.oms.SkuManager}.
-     * @throws org.onepf.oms.SkuMappingException If mapping can't done.
+     * @throws org.onepf.oms.SkuMappingException If mapping can't be done.
      * @see #mapSku(String, java.util.Map)
      */
     public SkuManager mapSku(String sku, String storeName, String storeSku) {
@@ -121,15 +122,15 @@ public class SkuManager {
     }
 
     /**
-     * Maps a base SKU and a store SKU.
+     * Maps a base internal SKU to a store-specific SKU.
      * The best approach is to use SKU like <code>com.companyname.application.item</code>.
-     * Such SKU fit most of stores so it doesn't need to be mapped.
-     * If this approach is not applicable use application internal SKU in the code (usually it is a SKU for Google Play)
+     * Such SKU fits most of stores so it doesn't need to be mapped.
+     * If this approach is not applicable, use application internal SKU in the code (usually it is a SKU for Google Play)
      * and map SKU from other stores using this method. OpenIAB will map SKU in both directions,
      * so you can use only your internal SKU
      *
-     * @param sku       - application inner SKU
-     * @param storeSkus - Map of "store name -> sku id in store"
+     * @param sku       - The application internal SKU.
+     * @param storeSkus - The map of "store name -> sku id in store"
      * @return Instance of {@link org.onepf.oms.SkuManager}.
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
@@ -146,11 +147,11 @@ public class SkuManager {
     }
 
     /**
-     * Returns a store-specific SKU by a store-specific SKU.
+     * Returns a store-specific SKU by the base internal SKU.
      *
-     * @param appstoreName Name of app store.
-     * @param sku          Inner SKU
-     * @return SKU used in store for specified inner SKU
+     * @param appstoreName The name of an app store.
+     * @param sku          The internal SKU.
+     * @return store-specific SKU by a base internal one.
      * @throws java.lang.IllegalArgumentException When appstoreName or sku param is empty or null value.
      * @see #mapSku(String, String, String)
      */
@@ -173,9 +174,9 @@ public class SkuManager {
     }
 
     /**
-     * Return a base internal SKU by a store-specific SKU.
+     * Returns a base internal SKU by a store-specific SKU.
      *
-     * @throws java.lang.IllegalArgumentException If the store name or the store SKU  is empty or null.
+     * @throws java.lang.IllegalArgumentException If the store name or a store SKU is empty or null.
      * @see #mapSku(String, String, String)
      */
     @NotNull
@@ -192,10 +193,10 @@ public class SkuManager {
     }
 
     /**
-     * Returns all SKU for a store.
+     * Returns a list of SKU for a store.
      *
      * @param appstoreName The app store name.
-     * @return  list of SKU that have mapping to the store. Null if the store has no mapped SKUs.
+     * @return list of SKU that mapped to the store. Null if the store has no mapped SKUs.
      * @throws java.lang.IllegalArgumentException If the store name is null or empty.
      * @see #mapSku(String, String, String)
      */
@@ -211,7 +212,6 @@ public class SkuManager {
     }
 
     /**
-     * Only one instance of {@link org.onepf.oms.SkuManager} for an application.
      * @return the current instance of {@link org.onepf.oms.SkuManager}.
      */
     public static SkuManager getInstance() {

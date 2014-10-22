@@ -28,15 +28,16 @@ import org.onepf.oms.appstore.googleUtils.Purchase;
 import java.util.List;
 
 /**
- * 
+ * Helper class to work with billing.
+ *
  * @author Oleg Orlov, Boris Minaev
  * @since 16.04.13
  */
 public interface AppstoreInAppBillingService {
     /**
-     * Establish connection to service.  
-     * 
-     * @param listener - called in UI-thread when initialization is completed  
+     * Establishes service connection.
+     *
+     * @param listener - The listener is called in the UI thread when initialization is completed
      */
     void startSetup(final IabHelper.OnIabSetupFinishedListener listener);
 
@@ -45,15 +46,13 @@ public interface AppstoreInAppBillingService {
     boolean handleActivityResult(int requestCode, int resultCode, Intent data);
 
     /**
-     * Blocking request, must not be called from UI thread.
+     * Blocking request, must not be called from the UI thread.
      *
-     * @param querySkuDetails
-     * @param moreItemSkus
-     * @param moreSubsSkus
      * @return relevant for current user inventory object, or null if request was interrupted.
      * @throws IabException
      */
-    @Nullable Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
+    @Nullable
+    Inventory queryInventory(boolean querySkuDetails, List<String> moreItemSkus, List<String> moreSubsSkus) throws IabException;
 
     void consume(Purchase itemInfo) throws IabException;
 
