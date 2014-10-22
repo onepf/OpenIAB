@@ -22,36 +22,36 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Different utils for arrays, collections and maps.
+ * Checks for collections and primitive arrays.
  *
  * @author Kirill Rozov
  */
 public final class CollectionUtils {
     /**
-     * Verify does map null or empty.
+     * Checks if a map is empty or null.
      *
-     * @param map Map to verify.
-     * @return Does map null or empty.
+     * @param map The map to test.
+     * @return true if the map is empty or null.
      */
     public static boolean isEmpty(@Nullable Map<?, ?> map) {
         return map == null || map.isEmpty();
     }
 
     /**
-     * Verify does collection null or empty.
+     * Checks if a collection of Objects is empty or null.
      *
-     * @param collection Collection to verify.
-     * @return Does collection null or empty.
+     * @param collection The collection to test.
+     * @return true if the collection is empty or null.
      */
     public static boolean isEmpty(@Nullable Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
     /**
-     * Verify does array null or empty.
+     * Checks if an array of Objects is empty or null.
      *
-     * @param array Array to verify.
-     * @return Does array null or empty.
+     * @param array The array to test.
+     * @return true if the array is empty or null.
      */
     public static boolean isEmpty(@Nullable Object[] array) {
         return array == null || array.length == 0;

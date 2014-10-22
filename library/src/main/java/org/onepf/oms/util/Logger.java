@@ -20,8 +20,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 /**
- * Utility for log events. For log event set
- * {@link #setLoggable(boolean)} to true.
+ * Simple logger.
  *
  * @author Kirill Rozov
  * @since 25.07.14
@@ -30,15 +29,26 @@ public final class Logger {
 
     private Logger() {}
 
+    /**
+     * Default LOG TAG. To change use {@link org.onepf.oms.util.Logger#setLogTag(String)}
+     */
     public static final String LOG_TAG = "OpenIAB";
 
     private static String logTag = LOG_TAG;
+
     private static boolean loggable;
 
+    /**
+     * Checks if logging is enabled.
+     * @return true if logging is enabled.
+     */
     public static boolean isLoggable() {
         return loggable;
     }
 
+    /**
+     * enable/disable logging
+     */
     public static void setLoggable(boolean loggable) {
         Logger.loggable = loggable;
     }
@@ -46,6 +56,11 @@ public final class Logger {
     @Deprecated
     public static void init() {}
 
+    /**
+     * Sets the log tag.
+     * @param logTag The tag to be set.
+     */
+    //todo check length of the tag
     public static void setLogTag(final String logTag) {
         Logger.logTag = TextUtils.isEmpty(logTag) ? LOG_TAG : logTag;
     }

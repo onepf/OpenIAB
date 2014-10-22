@@ -16,11 +16,10 @@ public final class Utils {
     }
 
     /**
-     * Verify does AndroidManifest contains permission.
+     * Checks if the AndroidManifest contains a permission.
      *
-     * @param context    Context of application. Need for access to {@link android.content.pm.PackageManager}.
-     * @param permission Require permission.
-     * @return true if permission described, otherwise - false.
+     * @param permission The permission to test.
+     * @return true if the permission is requested by the application.
      */
     public static boolean hasRequestedPermission(@NotNull Context context, final String permission) {
         if (TextUtils.isEmpty(permission)) {
@@ -43,6 +42,11 @@ public final class Utils {
         return false;
     }
 
+    /**
+     * Checks if an application is installed.
+     *
+     * @return true if the current thread it the UI thread.
+     */
     public static boolean packageInstalled(@NotNull final Context context,@NotNull final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         try {
@@ -52,12 +56,23 @@ public final class Utils {
         return false;
     }
 
+    /**
+     * Checks if an application with the passed name is the installer of the calling app.
+     *
+     * @param  packageName The package name of the tested application.
+     * @return true if the application with the passed package is the installer.
+     */
     public static boolean isPackageInstaller(@NotNull final Context context, final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         final String installerPackageName = packageManager.getInstallerPackageName(context.getPackageName());
         return TextUtils.equals(installerPackageName, packageName);
     }
 
+    /**
+     * Checks if a thread is the UI thread.
+     *
+     * @return true if the current thread it the UI thread.
+     */
     public static boolean uiThread() {
         return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
