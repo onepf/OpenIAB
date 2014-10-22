@@ -25,28 +25,38 @@ import android.content.Intent;
 
 public interface Appstore {
 
-    /**
-     * If Appstore cannot determine version of published app on it's server
-     */
     public static final int PACKAGE_VERSION_UNDEFINED = -1;
 
     /**
-     * Returns true only if actual installer for specified app
+     * Checks whether the store is the package installer of an application with the specified name.
+     *
+     * @param packageName The package of the app to test.
+     * @return true if the store is the package installer of the application.
      */
     boolean isPackageInstaller(String packageName);
-    
+
     /**
-     * Tells whether in-app billing is ready to work with specified app
-     * For OpenStore app: if any in-app item for this app published in store
+     * Checks if billing is supported for an application with the specified name.
+     * <br/>
+     * Note for Open Store: if any in-app item for the app is published in the store.
+     *
+     * @param packageName The package name of the application to test.
+     * @return true if billing is supported for the specified package.
      */
     boolean isBillingAvailable(String packageName);
 
     /**
-     * Returns <code>android:versionCode</code> package. If there are several builds for one package
-     * versionCode of the most approptiate to be used  
+     * Supported only for Open Stores.
+     *
+     * @param packageName The package of the app to check.
+     * @return package version that is available for the current store.
      */
     int getPackageVersion(String packageName);
-    
+
+    /**
+     * Returns the unique name for a store. Don't be confused with packages! E.g. name Appland is valid for several stores.
+     * @return app store name. E.g. {@link org.onepf.oms.OpenIabHelper#NAME_AMAZON}.
+     */
     String getAppstoreName();
 
     Intent getProductPageIntent(String packageName);
@@ -58,7 +68,7 @@ public interface Appstore {
     boolean areOutsideLinksAllowed();
 
     /**
-     * @return helper to interact with store billing service and perform purchases
+     * @return helper to work with a billing service of the store
      */
     AppstoreInAppBillingService getInAppBillingService();
 
