@@ -18,18 +18,24 @@ package org.onepf.oms;
 
 import android.content.Intent;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public abstract class DefaultAppstore implements Appstore {
 
+    @Nullable
     @Override
     public Intent getProductPageIntent(String packageName) {
         return null;
     }
 
+    @Nullable
     @Override
     public Intent getRateItPageIntent(String packageName) {
         return null;
     }
 
+    @Nullable
     @Override
     public Intent getSameDeveloperPageIntent(String packageName) {
         return null;
@@ -40,11 +46,13 @@ public abstract class DefaultAppstore implements Appstore {
         return false;
     }
 
+    @Nullable
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         return null;
     }
     
+    @NotNull
     public String toString() {
         return "Store {name: " + getAppstoreName() + "}";
     }

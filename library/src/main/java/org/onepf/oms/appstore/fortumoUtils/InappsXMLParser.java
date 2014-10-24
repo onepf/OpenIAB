@@ -19,6 +19,7 @@ package org.onepf.oms.appstore.fortumoUtils;
 import android.content.Context;
 import android.util.Pair;
 
+import org.jetbrains.annotations.NotNull;
 import org.onepf.oms.appstore.FortumoStore;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -71,7 +72,8 @@ public class InappsXMLParser {
      * @throws org.xmlpull.v1.XmlPullParserException
      * @throws java.io.IOException
      */
-    public Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse(Context context) throws XmlPullParserException, IOException {
+    @NotNull
+    public Pair<List<InappBaseProduct>, List<InappSubscriptionProduct>> parse(@NotNull Context context) throws XmlPullParserException, IOException {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         factory.setNamespaceAware(true);
         XmlPullParser parser = factory.newPullParser();

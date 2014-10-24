@@ -69,7 +69,8 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't be done.
      * @see #mapSku(String, java.util.Map)
      */
-    public SkuManager mapSku(String sku, String storeName, String storeSku) {
+    @NotNull
+    public SkuManager mapSku(String sku, String storeName, @NotNull String storeSku) {
         checkSkuMappingParams(sku, storeName, storeSku);
 
         Map<String, String> skuMap = sku2storeSkuMappings.get(storeName);
@@ -96,7 +97,7 @@ public class SkuManager {
         return this;
     }
 
-    private static void checkSkuMappingParams(String storeName, String storeSku) {
+    private static void checkSkuMappingParams(String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(storeName)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_STORE_NAME);
         }
@@ -114,7 +115,7 @@ public class SkuManager {
         }
     }
 
-    private static void checkSkuMappingParams(String sku, String storeName, String storeSku) {
+    private static void checkSkuMappingParams(String sku, String storeName, @NotNull String storeSku) {
         if (TextUtils.isEmpty(sku)) {
             throw SkuMappingException.newInstance(SkuMappingException.REASON_SKU);
         }
@@ -135,7 +136,8 @@ public class SkuManager {
      * @throws org.onepf.oms.SkuMappingException If mapping can't done.
      * @see org.onepf.oms.SkuManager#mapSku(String, String, String)
      */
-    public SkuManager mapSku(String sku, Map<String, String> storeSkus) {
+    @NotNull
+    public SkuManager mapSku(String sku, @Nullable Map<String, String> storeSkus) {
         if (storeSkus == null) {
             throw new SkuMappingException("Store skus map can't be null.");
         }
@@ -214,6 +216,7 @@ public class SkuManager {
     /**
      * @return the current instance of {@link org.onepf.oms.SkuManager}.
      */
+    @NotNull
     public static SkuManager getInstance() {
         return InstanceHolder.SKU_MANAGER;
     }

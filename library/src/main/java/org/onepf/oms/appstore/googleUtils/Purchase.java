@@ -16,6 +16,8 @@
 
 package org.onepf.oms.appstore.googleUtils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,9 +43,10 @@ public class Purchase implements Cloneable {
     String mToken;
     String mOriginalJson;
     String mSignature;
+    @Nullable
     String appstoreName;
 
-    public Purchase(String appstoreName) {
+    public Purchase(@Nullable String appstoreName) {
         if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
         this.appstoreName = appstoreName;
     }
@@ -147,10 +150,12 @@ public class Purchase implements Cloneable {
         return mSignature;
     }
 
+    @Nullable
     public String getAppstoreName() {
         return appstoreName;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "PurchaseInfo(type:" + mItemType + "): "

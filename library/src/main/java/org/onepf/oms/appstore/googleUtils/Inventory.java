@@ -16,6 +16,8 @@
 
 package org.onepf.oms.appstore.googleUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,6 +78,7 @@ public class Inventory {
     /**
      * Returns a list of all owned product IDs.
      */
+    @NotNull
     public List<String> getAllOwnedSkus() {
         return new ArrayList<String>(mPurchaseMap.keySet());
     }
@@ -83,6 +86,7 @@ public class Inventory {
     /**
      * Returns a list of all owned product IDs of a given type
      */
+    @NotNull
     public List<String> getAllOwnedSkus(String itemType) {
         List<String> result = new ArrayList<String>();
         for (Purchase p : mPurchaseMap.values()) {
@@ -94,15 +98,16 @@ public class Inventory {
     /**
      * Returns a list of all purchases.
      */
+    @NotNull
     public List<Purchase> getAllPurchases() {
         return new ArrayList<Purchase>(mPurchaseMap.values());
     }
 
-    public void addSkuDetails(SkuDetails d) {
+    public void addSkuDetails(@NotNull SkuDetails d) {
         mSkuMap.put(d.getSku(), d);
     }
 
-    public void addPurchase(Purchase p) {
+    public void addPurchase(@NotNull Purchase p) {
         mPurchaseMap.put(p.getSku(), p);
     }
 

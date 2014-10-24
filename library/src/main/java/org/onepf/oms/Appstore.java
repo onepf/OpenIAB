@@ -18,6 +18,8 @@ package org.onepf.oms;
 
 import android.content.Intent;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Author: Ruslan Sayfutdinov
  * Date: 16.04.13
@@ -59,10 +61,13 @@ public interface Appstore {
      */
     String getAppstoreName();
 
+    @Nullable
     Intent getProductPageIntent(String packageName);
 
+    @Nullable
     Intent getRateItPageIntent(String packageName);
 
+    @Nullable
     Intent getSameDeveloperPageIntent(String packageName);
 
     boolean areOutsideLinksAllowed();
@@ -70,6 +75,7 @@ public interface Appstore {
     /**
      * @return helper to work with a billing service of the store
      */
+    @Nullable
     AppstoreInAppBillingService getInAppBillingService();
 
 

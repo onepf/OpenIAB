@@ -21,7 +21,7 @@ public final class Utils {
      * @param permission The permission to test.
      * @return true if the permission is requested by the application.
      */
-    public static boolean hasRequestedPermission(@NotNull Context context, final String permission) {
+    public static boolean hasRequestedPermission(@NotNull Context context, @NotNull final String permission) {
         if (TextUtils.isEmpty(permission)) {
             throw new IllegalArgumentException("Permission can't be null or empty.");
         }
