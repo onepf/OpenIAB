@@ -213,7 +213,7 @@ public class OpenIabHelper {
 
     //Store, chosen as the billing provider
     @Nullable
-    private Appstore appStore;
+    private Appstore appstore;
 
     //billing service of the chosen store
     @Nullable
@@ -462,9 +462,12 @@ public class OpenIabHelper {
             storeNames.remove(appstore.getAppstoreName());
         }
         // Instantiate and add all known wrappers
+        final List<Appstore> instantiatedAppstores = new ArrayList<Appstore>();
         for (final String storeName : options.getAvailableStoreNames()) {
             if (appStoreFactoryMap.containsKey(storeName)) {
-                availableAppstores.add(appStoreFactoryMap.get(storeName).get());
+                final Appstore appstore = appStoreFactoryMap.get(storeName).get();
+                instantiatedAppstores.add(appstore);
+                availableAppstores.add(appstore);
                 storeNames.remove(storeName);
             }
         }
@@ -485,13 +488,24 @@ public class OpenIabHelper {
                             }
                         }
                     }
-                    setupWithStrategy(listener);
+                    setupWithStrategy(new OnIabSetupFinishedListener() {
+                        @Override
+                        public void onIabSetupFinished(final IabResult result) {
+                            listener.onIabSetupFinished(result);
+                            instantiatedAppstores.remove(OpenIabHelper.this.appstore);
+                            for (final Appstore appstore : instantiatedAppstores) {
+                                final AppstoreInAppBillingService billingService;
+                                if ((billingService = appstore.getInAppBillingService()) != null) {
+                                    billingService.dispose();
+                                }
+                            }
+                        }
+                    });
                 }
             });
-            return;
+        } else {
+            setupWithStrategy(listener);
         }
-
-        setupWithStrategy(listener);
     }
 
     private void setupWithStrategy(@NotNull final OnIabSetupFinishedListener listener) {
@@ -878,7 +892,7 @@ public class OpenIabHelper {
             if (appstore == null) {
                 throw new IllegalStateException("Appstore can't be null if setup is successful");
             }
-            appStore = appstore;
+            this.appstore = appstore;
             appStoreBillingService = appstore.getInAppBillingService();
         }
         Logger.dWithTimeFromUp("finishSetup() === SETUP DONE === result: ", iabResult, " Appstore: ", appstore);
@@ -886,9 +900,9 @@ public class OpenIabHelper {
     }
 
     private @Nullable Appstore getAvailableStoreByName(@NotNull final String name) {
-        for (final Appstore a : availableAppstores) {
-            if (name.equals(a.getAppstoreName())) {
-                return a;
+        for (final Appstore appstore : availableAppstores) {
+            if (name.equals(appstore.getAppstoreName())) {
+                return appstore;
             }
         }
         return null;
@@ -1012,8 +1026,8 @@ public class OpenIabHelper {
     public
     @Nullable
     String getConnectedAppstoreName() {
-        if (appStore == null) return null;
-        return appStore.getAppstoreName();
+        if (appstore == null) return null;
+        return appstore.getAppstoreName();
     }
 
     /**
@@ -1152,7 +1166,7 @@ public class OpenIabHelper {
         if (appStoreBillingService != null) {
             appStoreBillingService.dispose();
         }
-        appStore = null;
+        appstore = null;
         appStoreBillingService = null;
         activity = null;
         setupState = SETUP_DISPOSED;
@@ -1186,7 +1200,7 @@ public class OpenIabHelper {
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
         appStoreBillingService.launchPurchaseFlow(act,
-                SkuManager.getInstance().getStoreSku(appStore.getAppstoreName(), sku),
+                SkuManager.getInstance().getStoreSku(appstore.getAppstoreName(), sku),
                 itemType,
                 requestCode,
                 listener,
@@ -1245,7 +1259,7 @@ public class OpenIabHelper {
         if (moreItemSkus != null) {
             moreItemStoreSkus = new ArrayList<String>(moreItemSkus.size());
             for (String sku : moreItemSkus) {
-                moreItemStoreSkus.add(skuManager.getStoreSku(appStore.getAppstoreName(), sku));
+                moreItemStoreSkus.add(skuManager.getStoreSku(appstore.getAppstoreName(), sku));
             }
         } else {
             moreItemStoreSkus = null;
@@ -1255,7 +1269,7 @@ public class OpenIabHelper {
         if (moreSubsSkus != null) {
             moreSubsStoreSkus = new ArrayList<String>(moreSubsSkus.size());
             for (String sku : moreSubsSkus) {
-                moreSubsStoreSkus.add(skuManager.getStoreSku(appStore.getAppstoreName(), sku));
+                moreSubsStoreSkus.add(skuManager.getStoreSku(appstore.getAppstoreName(), sku));
             }
         } else {
             moreSubsStoreSkus = null;
@@ -1335,7 +1349,7 @@ public class OpenIabHelper {
     public void consume(@NotNull Purchase purchase) throws IabException {
         checkSetupDone("consume");
         Purchase purchaseStoreSku = (Purchase) purchase.clone(); // TODO: use Purchase.getStoreSku()
-        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(appStore.getAppstoreName(), purchase.getSku()));
+        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(appstore.getAppstoreName(), purchase.getSku()));
         appStoreBillingService.consume(purchaseStoreSku);
     }
 
