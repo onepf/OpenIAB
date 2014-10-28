@@ -213,7 +213,7 @@ public class OpenIabHelper {
 
     //Store, chosen as the billing provider
     @Nullable
-    private Appstore appStore;
+    private Appstore appstore;
 
     //billing service of the chosen store
     @Nullable
@@ -221,6 +221,9 @@ public class OpenIabHelper {
 
     //Object to store developer's settings (available stores, preferred stores, store search strategy, etc)
     private final Options options;
+
+    //Complete list of Appstores to check. Used if options.getAvailableStores() or options.getAvailableStoreNames is not empty.
+    private final Set<Appstore> availableAppstores = new LinkedHashSet<Appstore>();
 
     @Nullable
     private ExecutorService setupExecutorService;
@@ -449,6 +452,63 @@ public class OpenIabHelper {
         setupState = SETUP_IN_PROGRESS;
         setupExecutorService = Executors.newSingleThreadExecutor();
 
+        // Compose full list of available stores to check billing for
+        availableAppstores.clear();
+        // Add all manually supplied Appstores
+        availableAppstores.addAll(options.getAvailableStores());
+        final List<String> storeNames = new ArrayList<String>(options.getAvailableStoreNames());
+        // Remove already added stores
+        for (final Appstore appstore : availableAppstores) {
+            storeNames.remove(appstore.getAppstoreName());
+        }
+        // Instantiate and add all known wrappers
+        final List<Appstore> instantiatedAppstores = new ArrayList<Appstore>();
+        for (final String storeName : options.getAvailableStoreNames()) {
+            if (appStoreFactoryMap.containsKey(storeName)) {
+                final Appstore appstore = appStoreFactoryMap.get(storeName).get();
+                instantiatedAppstores.add(appstore);
+                availableAppstores.add(appstore);
+                storeNames.remove(storeName);
+            }
+        }
+        // Look among open stores for specified store names
+        if (!storeNames.isEmpty()) {
+            discoverOpenStores(new OpenStoresDiscoveredListener() {
+                @Override
+                public void openStoresDiscovered(@NotNull final List<Appstore> appStores) {
+                    // Add all specified open stores
+                    for (final Appstore appstore : appStores) {
+                        final String name = appstore.getAppstoreName();
+                        if (storeNames.contains(name)) {
+                            availableAppstores.add(appstore);
+                        } else {
+                            final AppstoreInAppBillingService billingService;
+                            if ((billingService = appstore.getInAppBillingService()) != null) {
+                                billingService.dispose();
+                            }
+                        }
+                    }
+                    setupWithStrategy(new OnIabSetupFinishedListener() {
+                        @Override
+                        public void onIabSetupFinished(final IabResult result) {
+                            listener.onIabSetupFinished(result);
+                            instantiatedAppstores.remove(OpenIabHelper.this.appstore);
+                            for (final Appstore appstore : instantiatedAppstores) {
+                                final AppstoreInAppBillingService billingService;
+                                if ((billingService = appstore.getInAppBillingService()) != null) {
+                                    billingService.dispose();
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            setupWithStrategy(listener);
+        }
+    }
+
+    private void setupWithStrategy(@NotNull final OnIabSetupFinishedListener listener) {
         final int storeSearchStrategy = options.getStoreSearchStrategy();
         final String packageName = context.getPackageName();
         final String packageInstaller = packageManager.getInstallerPackageName(packageName);
@@ -495,13 +555,13 @@ public class OpenIabHelper {
         if (appStorePackageMap.containsKey(packageInstaller)) {
             // Package installer is a known appstore
             final String appstoreName = appStorePackageMap.get(packageInstaller);
-            if (options.getAvailableStores().isEmpty()) {
+            if (this.availableAppstores.isEmpty()) {
                 if (appStoreFactoryMap.containsKey(appstoreName)) {
                     appstore = appStoreFactoryMap.get(appstoreName).get();
                 }
             } else {
                 // Developer explicitly specified available stores
-                appstore = options.getAvailableStoreByName(appstoreName);
+                appstore = getAvailableStoreByName(appstoreName);
                 if (appstore == null) {
                     // Store is known but isn't available
                     finishSetup(listener);
@@ -544,11 +604,11 @@ public class OpenIabHelper {
                     if (openAppstore != null) {
                         // Found open store
                         final String openStoreName = openAppstore.getAppstoreName();
-                        if (options.getAvailableStores().isEmpty()) {
+                        if (OpenIabHelper.this.availableAppstores.isEmpty()) {
                             appstore = openAppstore;
                         } else {
                             // Developer explicitly specified available stores
-                            appstore = options.getAvailableStoreByName(openStoreName);
+                            appstore = getAvailableStoreByName(openStoreName);
                         }
                     }
                 } catch (RemoteException exception) {
@@ -580,11 +640,11 @@ public class OpenIabHelper {
         final Set<Appstore> appstoresToCheck = new LinkedHashSet<Appstore>();
 
         final Set<Appstore> availableStores;
-        if (!(availableStores = options.getAvailableStores()).isEmpty()) {
+        if (!(availableStores = this.availableAppstores).isEmpty()) {
             // Use only stores specified explicitly
             for (final String name : options.getPreferredStoreNames()) {
                 // Add available stored according to preferred stores priority
-                final Appstore appstore = options.getAvailableStoreByName(name);
+                final Appstore appstore = getAvailableStoreByName(name);
                 if (appstore != null) {
                     appstoresToCheck.add(appstore);
                 }
@@ -832,11 +892,20 @@ public class OpenIabHelper {
             if (appstore == null) {
                 throw new IllegalStateException("Appstore can't be null if setup is successful");
             }
-            appStore = appstore;
+            this.appstore = appstore;
             appStoreBillingService = appstore.getInAppBillingService();
         }
         Logger.dWithTimeFromUp("finishSetup() === SETUP DONE === result: ", iabResult, " Appstore: ", appstore);
         listener.onIabSetupFinished(iabResult);
+    }
+
+    private @Nullable Appstore getAvailableStoreByName(@NotNull final String name) {
+        for (final Appstore appstore : availableAppstores) {
+            if (name.equals(appstore.getAppstoreName())) {
+                return appstore;
+            }
+        }
+        return null;
     }
 
     @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
@@ -957,8 +1026,8 @@ public class OpenIabHelper {
     public
     @Nullable
     String getConnectedAppstoreName() {
-        if (appStore == null) return null;
-        return appStore.getAppstoreName();
+        if (appstore == null) return null;
+        return appstore.getAppstoreName();
     }
 
     /**
@@ -1097,7 +1166,7 @@ public class OpenIabHelper {
         if (appStoreBillingService != null) {
             appStoreBillingService.dispose();
         }
-        appStore = null;
+        appstore = null;
         appStoreBillingService = null;
         activity = null;
         setupState = SETUP_DISPOSED;
@@ -1131,7 +1200,7 @@ public class OpenIabHelper {
                                    IabHelper.OnIabPurchaseFinishedListener listener, String extraData) {
         checkSetupDone("launchPurchaseFlow");
         appStoreBillingService.launchPurchaseFlow(act,
-                SkuManager.getInstance().getStoreSku(appStore.getAppstoreName(), sku),
+                SkuManager.getInstance().getStoreSku(appstore.getAppstoreName(), sku),
                 itemType,
                 requestCode,
                 listener,
@@ -1190,7 +1259,7 @@ public class OpenIabHelper {
         if (moreItemSkus != null) {
             moreItemStoreSkus = new ArrayList<String>(moreItemSkus.size());
             for (String sku : moreItemSkus) {
-                moreItemStoreSkus.add(skuManager.getStoreSku(appStore.getAppstoreName(), sku));
+                moreItemStoreSkus.add(skuManager.getStoreSku(appstore.getAppstoreName(), sku));
             }
         } else {
             moreItemStoreSkus = null;
@@ -1200,7 +1269,7 @@ public class OpenIabHelper {
         if (moreSubsSkus != null) {
             moreSubsStoreSkus = new ArrayList<String>(moreSubsSkus.size());
             for (String sku : moreSubsSkus) {
-                moreSubsStoreSkus.add(skuManager.getStoreSku(appStore.getAppstoreName(), sku));
+                moreSubsStoreSkus.add(skuManager.getStoreSku(appstore.getAppstoreName(), sku));
             }
         } else {
             moreSubsStoreSkus = null;
@@ -1280,7 +1349,7 @@ public class OpenIabHelper {
     public void consume(@NotNull Purchase purchase) throws IabException {
         checkSetupDone("consume");
         Purchase purchaseStoreSku = (Purchase) purchase.clone(); // TODO: use Purchase.getStoreSku()
-        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(appStore.getAppstoreName(), purchase.getSku()));
+        purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(appstore.getAppstoreName(), purchase.getSku()));
         appStoreBillingService.consume(purchaseStoreSku);
     }
 
@@ -1464,6 +1533,8 @@ public class OpenIabHelper {
          */
         public final Set<Appstore> availableStores;
 
+        private final Set<String> availableStoreNames;
+
         /**
          * @deprecated Use {@link #getPreferredStoreNames()}
          * Will be private since 1.0.
@@ -1514,6 +1585,7 @@ public class OpenIabHelper {
         public Options() {
             this.checkInventory = false;
             this.availableStores = Collections.emptySet();
+            this.availableStoreNames = Collections.emptySet();
             this.storeKeys = Collections.emptyMap();
             this.preferredStoreNames = Collections.emptySet();
             this.verifyMode = VERIFY_SKIP;
@@ -1522,6 +1594,7 @@ public class OpenIabHelper {
         }
 
         private Options(final Set<Appstore> availableStores,
+                        final Set<String> availableStoresNames,
                         final Map<String, String> storeKeys,
                         final boolean checkInventory,
                         final @MagicConstant(intValues = {VERIFY_EVERYTHING, VERIFY_ONLY_KNOWN, VERIFY_SKIP}) int verifyMode,
@@ -1530,6 +1603,7 @@ public class OpenIabHelper {
                         final int storeSearchStrategy) {
             this.checkInventory = checkInventory;
             this.availableStores = availableStores;
+            this.availableStoreNames = availableStoresNames;
             this.storeKeys = storeKeys;
             this.preferredStoreNames = preferredStoreNames;
             this.verifyMode = verifyMode;
@@ -1589,11 +1663,10 @@ public class OpenIabHelper {
             return 0;
         }
 
-
         /**
-         * Returns a list of available stores.
-         *
          * @return a list of objects of available stores.
+         *
+         * @see Builder#addAvailableStores(java.util.Collection)
          */
         public
         @NotNull
@@ -1601,6 +1674,14 @@ public class OpenIabHelper {
             return availableStores;
         }
 
+        /**
+         * @return list of available stores names.
+         *
+         * @see Builder#addAvailableStoreNames(java.util.Collection)
+         */
+        public Set<String> getAvailableStoreNames() {
+            return availableStoreNames;
+        }
 
         /**
          * Returns the preferred store names.
@@ -1612,7 +1693,6 @@ public class OpenIabHelper {
         Set<String> getPreferredStoreNames() {
             return preferredStoreNames;
         }
-
 
         /**
          * Returns the store key map [app store name -> publicKeyBase64]. Only for Open Stores and Google Play
@@ -1650,6 +1730,7 @@ public class OpenIabHelper {
 
             private final Set<String> preferredStoreNames = new LinkedHashSet<String>();
             private final Set<Appstore> availableStores = new HashSet<Appstore>();
+            private final Set<String> availableStoresNames = new LinkedHashSet<String>();
             private final Map<String, String> storeKeys = new HashMap<String, String>();
             private boolean checkInventory = false;
             private int samsungCertificationRequestCode
@@ -1662,11 +1743,9 @@ public class OpenIabHelper {
             private int storeSearchStrategy = SEARCH_STRATEGY_INSTALLER;
 
             /**
-             * Add stores to {@link org.onepf.oms.OpenIabHelper.Options.Builder#availableStores} to the internal Options object.
-             * Only the available stores are checked for the billing provider. No other stores are considered.
+             * Same as {@link #addAvailableStores(java.util.Collection)}
              *
              * @param stores The store(s) to be added to the available ones.
-             * @see #addAvailableStores(Collection)
              * @see Options#getAvailableStores()
              */
             @NotNull
@@ -1676,7 +1755,8 @@ public class OpenIabHelper {
             }
 
             /**
-             * Adds a collection of stores as {@link org.onepf.oms.OpenIabHelper.Options.Builder#availableStores} to the internal Options object.
+             * If set, only the available stores and stores set by {@link #addAvailableStoreNames(java.util.Collection)} are checked for the billing.
+             * No other stores are considered.
              *
              * @param stores The stores to be added to the available ones.
              * @see Options#getAvailableStores()
@@ -1684,6 +1764,31 @@ public class OpenIabHelper {
             @NotNull
             public Builder addAvailableStores(@NotNull final Collection<Appstore> stores) {
                 this.availableStores.addAll(stores);
+                return this;
+            }
+
+            /**
+             * Same as {@link #addAvailableStoreNames(java.util.Collection)}
+             *
+             * @param storesNames Store names to be added to available ones.
+             * @see Options#getAvailableStoreNames()
+             */
+            @NotNull
+            public Builder addAvailableStoreNames(@NotNull final String... storesNames) {
+                addAvailableStoreNames(Arrays.asList(storesNames));
+                return this;
+            }
+
+            /**
+             * If set, only stores specified by name and stores set buy {@link #addAvailableStores(java.util.Collection)} are checked for the billing.
+             * No other stores are considered.
+             *
+             * @param storesNames Store names to be added to available ones.
+             * @see Options#getAvailableStoreNames()
+             */
+            @NotNull
+            public Builder addAvailableStoreNames(@NotNull final Collection<String> storesNames) {
+                this.availableStoresNames.addAll(storesNames);
                 return this;
             }
 
@@ -1855,6 +1960,7 @@ public class OpenIabHelper {
             public Options build() {
                 return new Options(
                         Collections.unmodifiableSet(availableStores),
+                        Collections.unmodifiableSet(availableStoresNames),
                         Collections.unmodifiableMap(storeKeys),
                         checkInventory,
                         verifyMode,
