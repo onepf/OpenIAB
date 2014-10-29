@@ -14,67 +14,66 @@
   limitations under the License.
 -->
 
-<manifest
-    package="org.onepf.trivialdrivegame"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.opf.sample.trivialdrive">
 
     <uses-feature
         android:name="android.hardware.telephony"
-        android:required="false"/>
+        android:required="false" />
 
-    <uses-permission android:name="com.android.vending.BILLING"/>
-    <uses-permission android:name="com.nokia.payment.BILLING"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="com.tmoney.vending.INBILLING"/>
-    <uses-permission android:name="com.sec.android.iap.permission.BILLING"/>
-    <uses-permission android:name="org.onepf.openiab.permission.BILLING"/>
-    <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING"/>
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="com.nokia.payment.BILLING" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="com.tmoney.vending.INBILLING" />
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
+    <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
     <uses-permission android:name="com.skubit.BILLING" />
-
-    <permission android:name="com.tmoney.vending.INBILLING"/>
 
     <application
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:name="org.onepf.sample.trivialdrive.MyApp">
         <meta-data
             android:name="iap:api_version"
-            android:value="13"/>
+            android:value="13" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="org.onepf.sample.trivialdrive.MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name = "com.amazon.device.iap.ResponseReceiver" >
+        <receiver android:name="com.amazon.device.iap.ResponseReceiver">
             <intent-filter>
-                <action android:name = "com.amazon.inapp.purchasing.NOTIFY"
-                    android:permission = "com.amazon.inapp.purchasing.Permission.NOTIFY" />
+                <action
+                    android:name="com.amazon.inapp.purchasing.NOTIFY"
+                    android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY" />
             </intent-filter>
         </receiver>
 
         <!--Fortumo start-->
         <receiver android:name="mp.MpSMSReceiver">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
-        <service android:name="mp.MpService"/>
-        <service android:name="mp.StatusUpdateService"/>
+        <service android:name="mp.MpService" />
+        <service android:name="mp.StatusUpdateService" />
 
         <activity
             android:name="mp.MpActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!--Fortumo end-->
     </application>
 </manifest>
