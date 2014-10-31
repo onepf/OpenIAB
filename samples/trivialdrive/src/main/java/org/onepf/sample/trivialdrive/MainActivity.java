@@ -13,14 +13,7 @@
  * limitations under the License.
  */
 
-package org.onepf.trivialdrivegame;
-
-import org.onepf.oms.OpenIabHelper;
-import org.onepf.oms.appstore.AmazonAppstore;
-import org.onepf.oms.appstore.googleUtils.IabHelper;
-import org.onepf.oms.appstore.googleUtils.IabResult;
-import org.onepf.oms.appstore.googleUtils.Inventory;
-import org.onepf.oms.appstore.googleUtils.Purchase;
+package org.onepf.sample.trivialdrive;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,6 +24,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import org.onepf.oms.OpenIabHelper;
+import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.googleUtils.IabHelper;
+import org.onepf.oms.appstore.googleUtils.IabResult;
+import org.onepf.oms.appstore.googleUtils.Inventory;
+import org.onepf.oms.appstore.googleUtils.Purchase;
+import org.opf.sample.trivialdrive.R;
 
 
 /**
@@ -89,7 +90,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-    // Debug tag, for logging
+    // Debug tag for logging
     static final String TAG = "TrivialDrive";
 
     // Does the user have the premium upgrade?
@@ -115,7 +116,7 @@ public class MainActivity extends Activity {
     OpenIabHelper mHelper;
 
     /**
-     * is bililng setup is completed
+     * is billing setup completed
      */
     private Boolean setupDone;
 
@@ -139,12 +140,12 @@ public class MainActivity extends Activity {
              */
 
                     // Do we have the premium upgrade?
-                    Purchase premiumPurchase = inventory.getPurchase(Config.SKU_PREMIUM);
+                    Purchase premiumPurchase = inventory.getPurchase(InAppConfig.SKU_PREMIUM);
                     mIsPremium = premiumPurchase != null && verifyDeveloperPayload(premiumPurchase);
                     Log.d(TAG, "User is " + (mIsPremium ? "PREMIUM" : "NOT PREMIUM"));
 
                     // Do we have the infinite gas plan?
-                    Purchase infiniteGasPurchase = inventory.getPurchase(Config.SKU_INFINITE_GAS);
+                    Purchase infiniteGasPurchase = inventory.getPurchase(InAppConfig.SKU_INFINITE_GAS);
                     mSubscribedToInfiniteGas = (infiniteGasPurchase != null &&
                             verifyDeveloperPayload(infiniteGasPurchase));
                     Log.d(TAG, "User " + (mSubscribedToInfiniteGas ? "HAS" : "DOES NOT HAVE")
@@ -152,10 +153,10 @@ public class MainActivity extends Activity {
                     if (mSubscribedToInfiniteGas) mTank = TANK_MAX;
 
                     // Check for gas delivery -- if we own gas, we should fill up the tank immediately
-                    Purchase gasPurchase = inventory.getPurchase(Config.SKU_GAS);
+                    Purchase gasPurchase = inventory.getPurchase(InAppConfig.SKU_GAS);
                     if (gasPurchase != null && verifyDeveloperPayload(gasPurchase)) {
                         Log.d(TAG, "We have gas. Consuming it.");
-                        mHelper.consumeAsync(inventory.getPurchase(Config.SKU_GAS),
+                        mHelper.consumeAsync(inventory.getPurchase(InAppConfig.SKU_GAS),
                                 mConsumeFinishedListener);
                         return;
                     }
@@ -196,8 +197,9 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Creating IAB helper.");
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
+                .setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT)
                 .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
-                .addStoreKeys(Config.STORE_KEYS_MAP);
+                .addStoreKeys(InAppConfig.STORE_KEYS_MAP);
         mHelper = new OpenIabHelper(this, builder.build());
 
         // enable debug logging (for a production application, you should set this to false).
@@ -258,7 +260,7 @@ public class MainActivity extends Activity {
          *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
          *        an empty string, but on a production app you should carefully generate this. */
         String payload = "";
-        mHelper.launchPurchaseFlow(this, Config.SKU_GAS, RC_REQUEST, mPurchaseFinishedListener, payload);
+        mHelper.launchPurchaseFlow(this, InAppConfig.SKU_GAS, RC_REQUEST, mPurchaseFinishedListener, payload);
     }
 
     // User clicked the "Upgrade to Premium" button.
@@ -282,7 +284,7 @@ public class MainActivity extends Activity {
          *        an empty string, but on a production app you should carefully generate this. */
         String payload = "";
 
-        mHelper.launchPurchaseFlow(this, Config.SKU_PREMIUM, RC_REQUEST,
+        mHelper.launchPurchaseFlow(this, InAppConfig.SKU_PREMIUM, RC_REQUEST,
                 mPurchaseFinishedListener, payload);
     }
 
@@ -312,7 +314,7 @@ public class MainActivity extends Activity {
         setWaitScreen(true);
         Log.d(TAG, "Launching purchase flow for infinite gas subscription.");
         mHelper.launchPurchaseFlow(this,
-                Config.SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
+                InAppConfig.SKU_INFINITE_GAS, IabHelper.ITEM_TYPE_SUBS,
                 RC_REQUEST, mPurchaseFinishedListener, payload);
     }
 
@@ -386,18 +388,18 @@ public class MainActivity extends Activity {
 
             Log.d(TAG, "Purchase successful.");
 
-            if (purchase.getSku().equals(Config.SKU_GAS)) {
+            if (purchase.getSku().equals(InAppConfig.SKU_GAS)) {
                 // bought 1/4 tank of gas. So consume it.
                 Log.d(TAG, "Purchase is gas. Starting gas consumption.");
                 mHelper.consumeAsync(purchase, mConsumeFinishedListener);
-            } else if (purchase.getSku().equals(Config.SKU_PREMIUM)) {
+            } else if (purchase.getSku().equals(InAppConfig.SKU_PREMIUM)) {
                 // bought the premium upgrade!
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
                 alert("Thank you for upgrading to premium!");
                 mIsPremium = true;
                 updateUi();
                 setWaitScreen(false);
-            } else if (purchase.getSku().equals(Config.SKU_INFINITE_GAS)) {
+            } else if (purchase.getSku().equals(InAppConfig.SKU_INFINITE_GAS)) {
                 // bought the infinite gas subscription
                 Log.d(TAG, "Infinite gas subscription purchased.");
                 alert("Thank you for subscribing to infinite gas!");

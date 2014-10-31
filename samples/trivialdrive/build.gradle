@@ -7,10 +7,10 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 17
-        versionName '0.9.7.2'
+        versionCode 20
+        versionName '0.9.8'
 
-        applicationId 'org.onepf.trivialdrivegame'
+        applicationId 'org.onepf.sample.trivialdrive'
     }
 
     signingConfigs {

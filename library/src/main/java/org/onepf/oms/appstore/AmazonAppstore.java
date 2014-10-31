@@ -47,9 +47,7 @@ public class AmazonAppstore extends DefaultAppstore {
     @Override
     public boolean isPackageInstaller(String packageName) {
         final boolean amazonIsInstaller = Utils.isPackageInstaller(context, AMAZON_INSTALLER);
-        final boolean result = amazonIsInstaller || hasAmazonClasses();
-        Logger.d("isPackageInstaller() sandBox: ", PurchasingService.IS_SANDBOX_MODE);
-        return PurchasingService.IS_SANDBOX_MODE || result;
+        return amazonIsInstaller || hasAmazonClasses();
     }
 
     /** 
