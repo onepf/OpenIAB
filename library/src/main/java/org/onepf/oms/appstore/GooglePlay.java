@@ -54,8 +54,6 @@ public class GooglePlay extends DefaultAppstore {
     private static final String GOOGLE_INSTALLER = "com.google.vending";
     public static final String VENDING_ACTION = "com.android.vending.billing.InAppBillingService.BIND";
 
-    public static final int TIMEOUT_BILLING_SUPPORTED = 2000;
-
     private Context context;
     private IabHelper mBillingService;
     private String publicKey;
@@ -99,43 +97,51 @@ public class GooglePlay extends DefaultAppstore {
             throw new IllegalStateException("Must no be called from UI thread.");
         }
 
-        billingAvailable = false;
-        if (packageExists(context, ANDROID_INSTALLER) || packageExists(context, GOOGLE_INSTALLER)) {
-            final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
-            intent.setPackage(GooglePlay.ANDROID_INSTALLER);
-            final List<ResolveInfo> infoList = context.getPackageManager().queryIntentServices(intent, 0);
-            if (!CollectionUtils.isEmpty(infoList)) {
-                final CountDownLatch latch = new CountDownLatch(1);
-                final ServiceConnection serviceConnection = new ServiceConnection() {
-                    public void onServiceConnected(ComponentName name, IBinder service) {
-                        IInAppBillingService mService = IInAppBillingService.Stub.asInterface(service);
-                        int response;
-                        try {
-                            response = mService.isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_INAPP);
-                            if (response == IabHelper.BILLING_RESPONSE_RESULT_OK) {
-                                billingAvailable = true;
-                            } else {
-                                Logger.d("isBillingAvailable() Google Play billing unavaiable");
-                            }
-                        } catch (RemoteException e) {
-                            Logger.e("isBillingAvailable() RemoteException while setting up in-app billing", e);
-                        } finally {
-                            latch.countDown();
-                            context.unbindService(this);
-                        }
-                    }
-
-                    public void onServiceDisconnected(ComponentName name) {/*do nothing*/}
-                };
-                if (context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)) {
-                    try {
-                        latch.await(TIMEOUT_BILLING_SUPPORTED, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException ignore) {}
-                }
-                Logger.e("isBillingAvailable() billing is not supported. Initialization error.");
-            }
+        if (!packageExists(context, ANDROID_INSTALLER) && !packageExists(context, GOOGLE_INSTALLER)) {
+            Logger.d("isBillingAvailable() Google Play is not available.");
+            // don't set billingAvailable variable in case Google Play gets installed later
+            return false;
         }
-        return billingAvailable;
+
+        final Intent intent = new Intent(GooglePlay.VENDING_ACTION);
+        intent.setPackage(GooglePlay.ANDROID_INSTALLER);
+        final List<ResolveInfo> infoList = context.getPackageManager().queryIntentServices(intent, 0);
+        if (CollectionUtils.isEmpty(infoList)) {
+            Logger.e("isBillingAvailable() billing service is not available, even though Google Play application seems to be installed.");
+            return false;
+        }
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final boolean[] result = new boolean[1];
+        final ServiceConnection serviceConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                final IInAppBillingService mService = IInAppBillingService.Stub.asInterface(service);
+                try {
+                    final int response = mService.isBillingSupported(3, packageName, IabHelper.ITEM_TYPE_INAPP);
+                    result[0] = response == IabHelper.BILLING_RESPONSE_RESULT_OK;
+                } catch (RemoteException e) {
+                    result[0] = false;
+                    Logger.e("isBillingAvailable() RemoteException while setting up in-app billing", e);
+                } finally {
+                    latch.countDown();
+                    context.unbindService(this);
+                }
+                Logger.d("isBillingAvailable() Google Play result: ", result[0]);
+            }
+
+            public void onServiceDisconnected(ComponentName name) {/*do nothing*/}
+        };
+        if (context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)) {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                Logger.e("isBillingAvailable() InterruptedException while setting up in-app billing", e);
+            }
+        } else {
+            result[0] = false;
+            Logger.e("isBillingAvailable() billing is not supported. Initialization error.");
+        }
+        return (billingAvailable = result[0]);
     }
 
     @Override
