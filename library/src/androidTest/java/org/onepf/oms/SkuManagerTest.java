@@ -46,7 +46,7 @@ public class SkuManagerTest {
     }
 
     @Test
-    public void testMapNokiaStoreSku(){
+    public void testMapNokiaStoreSku() {
         SkuManager sm = SkuManager.getInstance();
         sm.mapSku(ITEM_SKU, OpenIabHelper.NAME_NOKIA, STORE_SKU_NOKIA);
 

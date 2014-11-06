@@ -57,6 +57,7 @@ public interface Appstore {
 
     /**
      * Returns the unique name for a store. Don't be confused with packages! E.g. name Appland is valid for several stores.
+     *
      * @return app store name. E.g. {@link org.onepf.oms.OpenIabHelper#NAME_AMAZON}.
      */
     String getAppstoreName();

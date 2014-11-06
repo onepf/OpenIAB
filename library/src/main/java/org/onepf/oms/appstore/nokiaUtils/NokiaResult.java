@@ -21,12 +21,12 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 
 public class NokiaResult extends IabResult {
 
-	public static final int RESULT_NO_SIM = 9;
+    public static final int RESULT_NO_SIM = 9;
 
-	public NokiaResult(final int response, final String message) {
+    public NokiaResult(final int response, final String message) {
 
-		super(
-			response == RESULT_NO_SIM ? IabHelper.BILLING_RESPONSE_RESULT_ERROR : response,
-			response == RESULT_NO_SIM ? "No sim. " + message : message);
-	}
+        super(
+                response == RESULT_NO_SIM ? IabHelper.BILLING_RESPONSE_RESULT_ERROR : response,
+                response == RESULT_NO_SIM ? "No sim. " + message : message);
+    }
 }

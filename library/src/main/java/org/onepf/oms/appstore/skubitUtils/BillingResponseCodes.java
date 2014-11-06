@@ -19,28 +19,28 @@ package org.onepf.oms.appstore.skubitUtils;
 public class BillingResponseCodes {
 
     public static final int RESULT_BILLING_UNAVAILABLE = 3;// - this billing API
-                                                           // version is not
-                                                           // supported for the
-                                                           // type requested
+    // version is not
+    // supported for the
+    // type requested
 
     public static final int RESULT_DEVELOPER_ERROR = 5;// - invalid arguments
-                                                       // provided to the API
+    // provided to the API
 
     public static final int RESULT_ERROR = 6;// - Fatal error during the API
-                                             // action
+    // action
 
     public static final int RESULT_ITEM_ALREADY_OWNED = 7;// - Failure to
-                                                          // purchase since
-                                                          // item is
-                                                          // already owned
+    // purchase since
+    // item is
+    // already owned
 
     public static final int RESULT_ITEM_NOT_OWNED = 8;// - Failure to consume
-                                                      // since item is not
-                                                      // owned
+    // since item is not
+    // owned
 
     public static final int RESULT_ITEM_UNAVAILABLE = 4;// - requested SKU is
-                                                        // not available for
-                                                        // purchase
+    // not available for
+    // purchase
 
     public static final int RESULT_NOT_PROMO_ELIGIBLE = 10;
 
@@ -51,7 +51,7 @@ public class BillingResponseCodes {
     public static final int RESULT_SERVICE_UNAVAILABLE = 2;
 
     public static final int RESULT_USER_CANCELED = 1;// - user pressed back or
-                                                     // canceled a dialog
+    // canceled a dialog
 
     public static final int RESULT_INSUFFICIENT_FUNDS = 100;
 

@@ -40,7 +40,7 @@ import org.onepf.oms.util.Logger;
  * purchases as verified.
  */
 public class Security {
-    
+
     private static final String KEY_FACTORY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
 
@@ -49,17 +49,18 @@ public class Security {
      * the verified purchase. The data is in JSON format and signed
      * with a private key. The data also contains the {@link com.amazon.inapp.purchasing.PurchaseResponse.PurchaseRequestStatus}
      * and product ID of the purchase.
+     *
      * @param base64PublicKey the base64-encoded public key to use for verifying.
-     * @param signedData the signed JSON string (signed, not encrypted)
-     * @param signature the signature for the data, signed with the private key
+     * @param signedData      the signed JSON string (signed, not encrypted)
+     * @param signature       the signature for the data, signed with the private key
      */
     public static boolean verifyPurchase(@NotNull String base64PublicKey, @NotNull String signedData, @NotNull String signature) {
-        if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey) 
+        if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey)
                 || TextUtils.isEmpty(signature)) {
-            Logger.e( "Purchase verification failed: missing data.");
+            Logger.e("Purchase verification failed: missing data.");
             return false;
         }
-        
+
         PublicKey key = Security.generatePublicKey(base64PublicKey);
         return Security.verify(key, signedData, signature);
     }
@@ -91,9 +92,9 @@ public class Security {
      * Verifies that the signature from the server matches the computed
      * signature on the data.  Returns true if the data is correctly signed.
      *
-     * @param publicKey public key associated with the developer account
+     * @param publicKey  public key associated with the developer account
      * @param signedData signed data from server
-     * @param signature server signature
+     * @param signature  server signature
      * @return true if the data and signature match
      */
     public static boolean verify(PublicKey publicKey, @NotNull String signedData, @NotNull String signature) {
@@ -103,18 +104,18 @@ public class Security {
             sig.initVerify(publicKey);
             sig.update(signedData.getBytes());
             if (!sig.verify(Base64.decode(signature))) {
-                Logger.e( "Signature verification failed.");
+                Logger.e("Signature verification failed.");
                 return false;
             }
             return true;
         } catch (NoSuchAlgorithmException e) {
-            Logger.e( "NoSuchAlgorithmException.");
+            Logger.e("NoSuchAlgorithmException.");
         } catch (InvalidKeyException e) {
-            Logger.e( "Invalid key specification.");
+            Logger.e("Invalid key specification.");
         } catch (SignatureException e) {
-            Logger.e( "Signature exception.");
+            Logger.e("Signature exception.");
         } catch (Base64DecoderException e) {
-            Logger.e( "Base64 decoding failed.");
+            Logger.e("Base64 decoding failed.");
         }
         return false;
     }

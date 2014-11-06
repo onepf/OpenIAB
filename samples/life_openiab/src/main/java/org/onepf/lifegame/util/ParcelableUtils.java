@@ -25,20 +25,20 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class ParcelableUtils {
 
-    private ParcelableUtils(){
+    private ParcelableUtils() {
 
     }
 
-    public static void writeArray(@NotNull Parcel out, boolean[][] array){
+    public static void writeArray(@NotNull Parcel out, boolean[][] array) {
         out.writeInt(array.length);
         for (boolean[] booleans : array) {
             out.writeBooleanArray(booleans);
         }
     }
 
-    public static boolean[][] readArray(@NotNull Parcel in){
+    public static boolean[][] readArray(@NotNull Parcel in) {
         boolean[][] array = new boolean[in.readInt()][];
-        if(array.length > 0){
+        if (array.length > 0) {
             for (int i = 0; i < array.length; i++) {
                 array[i] = in.createBooleanArray();
             }

@@ -88,7 +88,7 @@ public class SkuDetails {
     public String getJson() {
         return mJson;
     }
-    
+
     public void setSku(String sku) {
         this.mSku = sku;
     }

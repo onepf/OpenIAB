@@ -64,7 +64,7 @@ public class SkubitAppstore extends DefaultAppstore {
     protected final boolean isDebugMode = false;
 
     public SkubitAppstore(@Nullable Context context) {
-        if(context == null) {
+        if (context == null) {
             throw new IllegalArgumentException("context is null");
         }
         this.context = context;
@@ -100,7 +100,7 @@ public class SkubitAppstore extends DefaultAppstore {
             throw new IllegalStateException("Must no be called from UI thread.");
         }
 
-        if(TextUtils.isEmpty(packageName)) {
+        if (TextUtils.isEmpty(packageName)) {
             throw new IllegalArgumentException("packageName is null");
         }
 

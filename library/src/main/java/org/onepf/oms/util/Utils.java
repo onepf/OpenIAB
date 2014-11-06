@@ -47,19 +47,20 @@ public final class Utils {
      *
      * @return true if the current thread it the UI thread.
      */
-    public static boolean packageInstalled(@NotNull final Context context,@NotNull final String packageName) {
+    public static boolean packageInstalled(@NotNull final Context context, @NotNull final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         try {
             packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
             return true;
-        } catch (PackageManager.NameNotFoundException ignore) {}
+        } catch (PackageManager.NameNotFoundException ignore) {
+        }
         return false;
     }
 
     /**
      * Checks if an application with the passed name is the installer of the calling app.
      *
-     * @param  packageName The package name of the tested application.
+     * @param packageName The package name of the tested application.
      * @return true if the application with the passed package is the installer.
      */
     public static boolean isPackageInstaller(@NotNull final Context context, final String packageName) {

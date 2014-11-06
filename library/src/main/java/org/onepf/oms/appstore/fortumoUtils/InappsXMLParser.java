@@ -67,6 +67,7 @@ public class InappsXMLParser {
 
     /**
      * Make sure that {@link org.onepf.oms.appstore.FortumoStore#IN_APP_PRODUCTS_FILE_NAME} is present in the assets folder.
+     *
      * @param context to get access to assets
      * @return a set of items and subscriptions
      * @throws org.xmlpull.v1.XmlPullParserException

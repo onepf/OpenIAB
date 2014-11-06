@@ -35,9 +35,9 @@ import com.amazon.device.iap.PurchasingService;
  */
 public class AmazonAppstore extends DefaultAppstore {
     public static final String AMAZON_INSTALLER = "com.amazon.venezia";
-    
+
     private final Context context;
-    
+
     private AmazonAppstoreBillingService mBillingService;
 
     public AmazonAppstore(Context context) {
@@ -50,11 +50,11 @@ public class AmazonAppstore extends DefaultAppstore {
         return amazonIsInstaller || hasAmazonClasses();
     }
 
-    /** 
+    /**
      * Tries to load Amazon <code>com.amazon.android.Kiwi</code> class.
-     * <p>
+     * <p/>
      * Submitted .apk is not published to Amazon as is. It is re-packed with several Amazon-specific
-     * classes. We examine such classes to understand whether app is delivered by Amazon 
+     * classes. We examine such classes to understand whether app is delivered by Amazon
      */
     public static boolean hasAmazonClasses() {
         boolean result;
@@ -78,12 +78,12 @@ public class AmazonAppstore extends DefaultAppstore {
     public boolean isBillingAvailable(String packageName) {
         return isPackageInstaller(packageName);
     }
-    
+
     @Override
     public int getPackageVersion(String packageName) {
         return Appstore.PACKAGE_VERSION_UNDEFINED;
     }
-    
+
     @Override
     public AppstoreInAppBillingService getInAppBillingService() {
         if (mBillingService == null) {

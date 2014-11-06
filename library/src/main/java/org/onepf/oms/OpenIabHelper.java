@@ -898,7 +898,9 @@ public class OpenIabHelper {
         listener.onIabSetupFinished(iabResult);
     }
 
-    private @Nullable Appstore getAvailableStoreByName(@NotNull final String name) {
+    private
+    @Nullable
+    Appstore getAvailableStoreByName(@NotNull final String name) {
         for (final Appstore appstore : availableAppstores) {
             if (name.equals(appstore.getAppstoreName())) {
                 return appstore;
@@ -1664,7 +1666,6 @@ public class OpenIabHelper {
 
         /**
          * @return a list of objects of available stores.
-         *
          * @see Builder#addAvailableStores(java.util.Collection)
          */
         public
@@ -1675,7 +1676,6 @@ public class OpenIabHelper {
 
         /**
          * @return list of available stores names.
-         *
          * @see Builder#addAvailableStoreNames(java.util.Collection)
          */
         public Set<String> getAvailableStoreNames() {

@@ -362,7 +362,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
                 final String storeSku = receipt.getSku();
                 final String sku = SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON,
-                        productType == ProductType.SUBSCRIPTION ? requestSku :storeSku
+                        productType == ProductType.SUBSCRIPTION ? requestSku : storeSku
                 );
                 purchase.setSku(sku);
 

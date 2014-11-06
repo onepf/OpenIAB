@@ -23,13 +23,13 @@ import org.json.JSONObject;
 
 /**
  * Represents an in-app billing purchase.
- *
+ * <p/>
  * Purchase contains all data from receipt, including signature.
- * <p>
+ * <p/>
  * To verify signature manually - use {@link #getOriginalJson()} and {@link #getSignature()}
  * Appstore name purchase was done through can be accessed via {@link #getAppstoreName()}
- *
- * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere 
+ * <p/>
+ * <p><b>TODO</b>: keep google.Purchase untouched and use extender everywhere
  * <p><b>TODO</b>: add getStoreSku() to use mapped value in Appstore's inner code
  */
 public class Purchase implements Cloneable {
@@ -47,10 +47,11 @@ public class Purchase implements Cloneable {
     String appstoreName;
 
     public Purchase(@Nullable String appstoreName) {
-        if (appstoreName == null) throw new IllegalArgumentException("appstoreName must be defined");
+        if (appstoreName == null)
+            throw new IllegalArgumentException("appstoreName must be defined");
         this.appstoreName = appstoreName;
     }
-    
+
     public void setOriginalJson(String originalJson) {
         mOriginalJson = originalJson;
     }

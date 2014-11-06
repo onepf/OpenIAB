@@ -41,12 +41,12 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * <p>
- * {@link #isPackageInstaller(String)} - there is no known reliable way to understand 
- * SamsungApps is installer of Application   
+ * {@link #isPackageInstaller(String)} - there is no known reliable way to understand
+ * SamsungApps is installer of Application
  * If you want SamsungApps to be used for purhases specify it in preffered stores by
  * {@link OpenIabHelper#OpenIabHelper(android.content.Context, org.onepf.oms.OpenIabHelper.Options)}  </p>
- * 
- * Supported purchase details   
+ * <p/>
+ * Supported purchase details
  * <pre>
  * PurchaseInfo(type:inapp): {
  *     "orderId"            :TPMTID20131011RUI0515895,    // Samsung's payment id
@@ -73,10 +73,10 @@ public class SamsungApps extends DefaultAppstore {
     private AppstoreInAppBillingService billingService;
     private Activity activity;
     private OpenIabHelper.Options options;
-    
+
     // isSamsungTestMode = true -> always returns Samsung Apps is installer and billing is available
     public static boolean isSamsungTestMode;
-    
+
     private Boolean isBillingAvailable;
 
     public SamsungApps(Activity activity, OpenIabHelper.Options options) {
@@ -109,7 +109,7 @@ public class SamsungApps extends DefaultAppstore {
         }
 
         boolean iapInstalled = false;
-        
+
         try {
             PackageManager pm = activity.getPackageManager();
             pm.getApplicationInfo(IAP_PACKAGE_NAME, PackageManager.GET_META_DATA);
@@ -118,7 +118,7 @@ public class SamsungApps extends DefaultAppstore {
                 iapInstalled = true;
             }
         } catch (Exception e) {
-           Logger.d("isBillingAvailable() Samsung IAP Service is not installed");
+            Logger.d("isBillingAvailable() Samsung IAP Service is not installed");
         }
 
         isBillingAvailable = false;
