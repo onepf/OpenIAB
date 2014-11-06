@@ -8,23 +8,22 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
-        classpath 'org.robolectric:robolectric-gradle-plugin:0.12.+'
+        classpath 'com.android.tools.build:gradle:0.14.0'
+        classpath 'org.robolectric:robolectric-gradle-plugin:0.13.2'
     }
 }
 
 allprojects {
     repositories {
-//        maven {
-//            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-//        }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        maven { url 'https://raw.githubusercontent.com/onepf/OPF-mvn-repo/master/' }
         jcenter()
     }
 
     ext {
-        compileSdkVersion = 19
-        buildToolsVersion = "20.0.0"
-        minSdkVersion = 8
-        targetSdkVersion = 19
+        compileSdkVersion = 21
+        buildToolsVersion = "21.1"
+        minSdkVersion = 10
+        targetSdkVersion = 21
     }
 }
