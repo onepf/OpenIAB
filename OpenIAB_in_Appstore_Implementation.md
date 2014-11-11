@@ -1,27 +1,27 @@
 Introduction. Key Features of OpenIAB protocol
 -------------
 
-**Reliability.** Acquired Items are stored on Appstore side and can be retrieved by application at any time using mHelper.queryInventory(). If application is stopped by the system or crashed during item purchasing and cannot retrieve result you will find all purchased items next time when request Inventory from Appstore
+**Reliability.** Acquired Items are stored on the app store side and can be retrieved by an application at any time using mHelper.queryInventory(). If the application is stopped by the system or crashed during item purchasing and cannot retrieve result you will find all purchased items next time when requesting inventory from the app store
 
-**RSA Verification.** In addition to server side API for receipt verification, public and private RSA keys are used in OpenIAB protocol to sign receipt data. It allows to verify purchase is healthy right in application code without any server-to-server interaction
+**RSA Verification.** In addition to the server side API for receipt verification, public and private RSA keys are used in the OpenIAB protocol to sign receipt data. It allows to verify purchase in the application code without any server-to-server interaction.
 
-To support OpenIAB in your Appstore, you need to to following steps:
+To support OpenIAB in your app store, you need to to following steps:
 * Step 1. Native Client. Add bindable services to your native client to integrate with third-party applications.
 * Step 2. Support on Backend. Your backend must be able to provide necessary information to services defined on step 1.
 * Step 3. Server API for purchases and subscription verification. To provide developers ability verify purchases with their security server.
 
-Step 1. Native Client. (If you have no native client, OpenIAB cannot be integrated)
+Step 1. Native Client.
 -------------
 
-To support OpenIAB in your native application two bindable services must be implemented with  following AIDL interfaces:
+To support OpenIAB in your native application two bindable services must be implemented with the following AIDL interfaces:
  
-**IOpenAppstore.aidl** - interface to discover your store application by OpenIAB and connect developer’s application with your store.
+**IOpenAppstore.aidl** - the interface to discover your store application by OpenIAB and connect developer’s application to your store.
 
 
-**IOpenInAppBillingService.aidl** - interface for in-app billing requests and managing in-app billing transactions.
+**IOpenInAppBillingService.aidl** - the interface for in-app billing requests and managing in-app billing transactions.
 
 
-These interfaces can be found at Library project(org.onepf.oms package) in OpenIAB repository on [GitHub](https://github.com/onepf/OpenIAB)
+These interfaces can be found int the Library project(org.onepf.oms package) in OpenIAB repository on [GitHub](https://github.com/onepf/OpenIAB)
 
 
 Implementation of IOpenAppstore.aidl interface
@@ -29,35 +29,35 @@ Implementation of IOpenAppstore.aidl interface
 
 Store application must provide a bindable service that handles `org.onepf.oms.openappstore.BIND` intent and implement API described in [IOpenAppstore.aidl](../library/src/org/onepf/oms/IOpenAppstore.aidl) file.
 
-Following methods must be implemented to work with the OpenIAB correctly:
+Following methods must be implemented to work with OpenIAB correctly:
 
 #### String getAppstoreName();
-Every OpenStore implementation must provide their unique name. It is required for OpenId to map developer’s In-App items (SKU) to specific market.  
+Every Open Store implementation must provide its unique name. It is required for OpenId to map developer’s In-App items (SKU) to specific market.  
 
-**Uniqueness.** It is strictly required to have unique name here to OpenIAB works properly, so it is recomended to use name like `com.companyname.storename`.
+**Uniqueness.** It is strictly required to have unique name here to OpenIAB works properly, so it is recommended to use name like `com.companyname.storename`.
 
 #### boolean isPackageInstaller(String packageName);
-Must return `true` if OpenStore is installer of package described by packageName. By installer means that package was installed or updated by Store application. 
+Must return `true` if Open Store is the installer of the package described by packageName. By the installer means that package was installed or updated by a store application. 
 
 #### boolean isBillingAvailable(String packageName);
-Must return `true` if application with packageName is listed on OpenStore backend and In-App items for app are published  and ready for use. 
+Must return `true` if an application with the packageName is listed on the Open Store backend and In-App items for app are published and ready for use. 
 
 #### int getPackageVersion(String packageName);
-Must return version of application with packageName is listed on OpenStore backend for current device.
+Must return the version of an application with the packageName is listed on the Open Store backend for current device.
 
 ####Intent getBillingServiceIntent();
 Should return intent to be used for binding IOpenInAppBillingService. 
 
-**Null Intent.** This method returns `null` means that Store doesn’t support In-App billing. In that case any call of `isBillingAvailable()` must return `false`;  
+**Null Intent.** This method returns `null` means that store doesn’t support In-App billing. In that case any call of `isBillingAvailable()` must return `false`.  
 
 #### Intent getProductPageIntent(String packageName); 
-Should return intent to show application page in Store Application. This method is optional, return `null` if you don’t need to implement this feature.
+Should return intent to show the application page in the store application. This method is optional, return `null` if you don’t need to implement this feature.
 
 #### Intent getRateItPageIntent(String packageName);
-should return intent to show rate application UI in Store Application. This method is optional, return `null` if you don’t need to implement this feature.
+should return intent to show rate application UI in the store application. This method is optional, return `null` if you don’t need to implement this feature.
 
 #### Intent getSameDeveloperPageIntent(String packageName)
-should return intent to show developer’s page UI in Store Application. This method is optional, return `null` if you don’t need to implement this feature.
+should return intent to show the developer’s page UI in the store application. This method is optional, return `null` if you don’t need to implement this feature.
 
 
 Implementation of IOpenInAppBillingService.aidl interface.
@@ -181,9 +181,9 @@ Must return 0 if consumption succeeded. Appropriate error values for failures.
 
 Step 2. Support on BackEnd
 -------------
-When developer register new application private/public RSA keys need to be generated. Every purchase need to be signed using private key. Public key should be provided to a developer of the application to verify purchase.
+When a developer registers new application, private and public RSA keys need to be generated. Every purchase needs to be signed with a private key. Public key should be provided to the developer of the application to verify purchase.
 
-Appstore backend should provide enough information to Native Client to implement services defined on Step 1.  
+App store backend should provide enough information to the native client to implement services defined on Step 1.  
 
 Step 3. Server API for purchases and subscriptions verification
 -------------
@@ -220,7 +220,7 @@ If successful, this method should return response as JSON string in the followin
 
 |name|value|description|
 |----|-----|-----------|
-|kind|string|This kind represents a inappPurchase object in the Appstore|
+|kind|string|This kind represents a inappPurchase object in the app store|
 |purchaseTime|long|The time the product was purchased, in millis since the epoch (Jan 1, 1970).|
 |purchaseState|int|Purchase state. Possible values: 0 - Purchases, 1 - Canceled|
 |consuptionState|int|Consumption state. Possible values: 0 - Consumed, 1 - to be consumed|
@@ -256,7 +256,7 @@ GET https://<Your API server address>/{packageName}/subscriptions/{subscriptionI
 
 |name|value|description|
 |----|-----|-----------|
-|kind|string|This kind represents a subscriptionPurchase object in the Appstore|
+|kind|string|This kind represents a subscriptionPurchase object in the app store|
 |initiationTimestampMsec|long|Time at which the subscription was granted, in milliseconds since Epoch.|
 |validUntilTimestampMsec|long|Time at which the subscription will expire, in milliseconds since Epoch.|
 |autoRenewing|boolean|Whether the subscription will automatically be renewed when it reaches its current expiry time.|
@@ -281,7 +281,7 @@ POST https://<Your API server address>/{packageName}/subscriptions/{subscription
 If successful, this method should returns an empty response body.
 
 #### Authorization
-Methods are desribed above must require authorization. Appstore should provide
+Methods are desribed above must require authorization. App store should provide
 developer token to use as authorization token.
 
 Two possible ways of using token must be supported:
