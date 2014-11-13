@@ -3,6 +3,6 @@
     <string name="app_name">TrivialDrive</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">TrivialDrive</string>
+    <string name="title_activity_main">OPF Trivial Drive</string>
 
 </resources>

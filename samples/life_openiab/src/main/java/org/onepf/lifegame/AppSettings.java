@@ -67,11 +67,11 @@ public final class AppSettings {
         SharedPreferencesEditorCompat.apply(editor);
     }
 
-    public int getChangesCount(){
+    public int getChangesCount() {
         return prefs.getInt(KEY_CHANGES_COUNT, DEFAULT_CHANGES_COUNT);
     }
 
-    public void setChangesCount(int changesCount){
+    public void setChangesCount(int changesCount) {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(KEY_CHANGES_COUNT, changesCount);
         SharedPreferencesEditorCompat.apply(editor);

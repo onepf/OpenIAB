@@ -1,14 +1,14 @@
 Summary
 -------------
 
-Open Mobile Services is API that Android appstores implement in order to abstract appstore specific services like in-app billing, licensing, pish, etc from Android apps. So that Android apps can use such services from their code without taking care which appstore will handle it.
+Open Mobile Services is API that Android appstores implement in order to abstract app store specific services like in-app billing, licensing, push, etc from Android apps. So that Android apps can use such services from their code without taking care which app store will handle it.
 
-There could be several appstores installed on a device. So an app should first determine which of them installed this app.
-The Android app gets all OMS appstore services by requesting all services that handle a particual intent. Then it checks which appstore to work with (by checking which appstore installed this app, etc). 
+There could be several app stores installed on a device. So an app should first determine which of them installed this app.
+The Android app gets all OMS appstore services by requesting all services that handle a particual intent. Then it checks which app store to work with (by checking which app store installed this app, etc). 
 
 APIs
 -------------
-OpenAppstore API  - general top-level API to check which appstore to work with and request other service APIs.
+OpenAppstore API  - general top-level API to check which app store to work with and request other service APIs.
 
 OpenIAB API (Open In-App Billing API) - [short description here]
 

@@ -16,47 +16,47 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-            android:id="@+id/menu_buy_changes"
-            android:icon="@drawable/ic_menu_fifty_changes"
-            android:title="@string/menu_buy_changes"
-            android:showAsAction="always"/>
+        android:id="@+id/menu_buy_changes"
+        android:icon="@drawable/ic_menu_fifty_changes"
+        android:title="@string/menu_buy_changes"
+        android:showAsAction="always" />
     <item
-            android:id="@+id/menu_buy_orange_cells"
-            android:icon="@drawable/ic_menu_brush"
-            android:title="@string/menu_buy_orange_cells"
-            android:showAsAction="always"/>
+        android:id="@+id/menu_buy_orange_cells"
+        android:icon="@drawable/ic_menu_brush"
+        android:title="@string/menu_buy_orange_cells"
+        android:showAsAction="always" />
     <item
-            android:id="@+id/menu_buy_figures"
-            android:icon="@drawable/ic_menu_buy_figures"
-            android:title="@string/menu_buy_figures"
-            android:showAsAction="always"/>
+        android:id="@+id/menu_buy_figures"
+        android:icon="@drawable/ic_menu_buy_figures"
+        android:title="@string/menu_buy_figures"
+        android:showAsAction="always" />
     <group
-            android:id="@+id/menu_group_figures"
-            android:visible="false">
+        android:id="@+id/menu_group_figures"
+        android:visible="false">
         <item
-                android:id="@+id/menu_empty_field"
-                android:icon="@drawable/ic_menu_empty"
-                android:title="@string/menu_empty_field"
-                android:showAsAction="ifRoom"/>
+            android:id="@+id/menu_empty_field"
+            android:icon="@drawable/ic_menu_empty"
+            android:title="@string/menu_empty_field"
+            android:showAsAction="ifRoom" />
         <item
-                android:id="@+id/menu_glider"
-                android:icon="@drawable/ic_menu_social_send"
-                android:title="@string/menu_glider"
-                android:showAsAction="ifRoom"/>
+            android:id="@+id/menu_glider"
+            android:icon="@drawable/ic_menu_social_send"
+            android:title="@string/menu_glider"
+            android:showAsAction="ifRoom" />
         <item
-                android:id="@+id/menu_big_glider"
-                android:icon="@drawable/ic_menu_airplane"
-                android:title="@string/menu_big_glider"
-                android:showAsAction="ifRoom"/>
+            android:id="@+id/menu_big_glider"
+            android:icon="@drawable/ic_menu_airplane"
+            android:title="@string/menu_big_glider"
+            android:showAsAction="ifRoom" />
         <item
-                android:id="@+id/menu_periodic"
-                android:icon="@drawable/ic_menu_replay"
-                android:title="@string/menu_periodic"
-                android:showAsAction="ifRoom"/>
+            android:id="@+id/menu_periodic"
+            android:icon="@drawable/ic_menu_replay"
+            android:title="@string/menu_periodic"
+            android:showAsAction="ifRoom" />
         <item
-                android:id="@+id/menu_robot"
-                android:icon="@drawable/ic_menu_social_person"
-                android:title="@string/menu_robot"
-                android:showAsAction="ifRoom"/>
+            android:id="@+id/menu_robot"
+            android:icon="@drawable/ic_menu_social_person"
+            android:title="@string/menu_robot"
+            android:showAsAction="ifRoom" />
     </group>
 </menu>
