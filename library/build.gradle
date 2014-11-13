@@ -15,7 +15,7 @@
  */
 
 apply plugin: 'com.android.library'
-apply plugin: 'robolectric'
+//apply plugin: 'robolectric'
 
 android {
     compileSdkVersion project.compileSdkVersion
@@ -35,17 +35,17 @@ android {
     }
 }
 
-robolectric {
+//robolectric {
     // configure the set of classes for JUnit tests
-    include '**/*Test.class'
-    exclude '**/espresso/**/*.class'
+    //include '**/*Test.class'
+    //exclude '**/espresso/**/*.class'
 
     // configure max heap size of the test JVM
-    maxHeapSize = '2048m'
+    //maxHeapSize = '2048m'
 
     // configure whether failing tests should fail the build
-    ignoreFailures true
-}
+    //ignoreFailures true
+//}
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
