@@ -73,6 +73,7 @@ import android.text.TextUtils;
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER;
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT;
 import static org.onepf.oms.OpenIabHelper.Options.VERIFY_EVERYTHING;
+import static org.onepf.oms.OpenIabHelper.Options.VERIFY_SKIP;
 
 /**
  * @author Boris Minaev, Oleg Orlov, Kirill Rozov
@@ -256,7 +257,9 @@ public class OpenIabHelper {
             @NotNull
             @Override
             public Appstore get() {
-                final String googleKey = options.getStoreKeys().get(NAME_GOOGLE);
+                final String googleKey = options.getVerifyMode() != VERIFY_SKIP
+                        ? options.getStoreKeys().get(NAME_GOOGLE)
+                        : null;
                 return new GooglePlay(context, googleKey);
             }
         });
