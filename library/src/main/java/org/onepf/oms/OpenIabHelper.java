@@ -1078,6 +1078,11 @@ public class OpenIabHelper {
     }
 
     private void checkGoogle() {
+        Logger.d("checkGoogle() verify mode: " + options.getVerifyMode());
+        if (options.getVerifyMode() == VERIFY_SKIP) {
+            return;
+        }
+
         final boolean googleKeyProvided = options.getStoreKeys().containsKey(NAME_GOOGLE);
         Logger.d("checkGoogle() google key available : ", googleKeyProvided);
         if (googleKeyProvided) {
