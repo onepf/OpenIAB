@@ -445,6 +445,9 @@ public class OpenIabHelper {
      * @param listener The listener to call when setup is completed
      */
     public void startSetup(@NotNull final OnIabSetupFinishedListener listener) {
+        if (options != null) {
+            Logger.d("startSetup() options = ", options);
+        }
         //noinspection ConstantConditions
         if (listener == null) {
             throw new IllegalArgumentException("Setup listener must be not null!");
@@ -488,6 +491,7 @@ public class OpenIabHelper {
                             final AppstoreInAppBillingService billingService;
                             if ((billingService = appstore.getInAppBillingService()) != null) {
                                 billingService.dispose();
+                                Logger.d("startSetup() billing service disposed for ", appstore.getAppstoreName());
                             }
                         }
                     }
@@ -500,6 +504,7 @@ public class OpenIabHelper {
                                 final AppstoreInAppBillingService billingService;
                                 if ((billingService = appstore.getInAppBillingService()) != null) {
                                     billingService.dispose();
+                                    Logger.d("startSetup() billing service disposed for ", appstore.getAppstoreName());
                                 }
                             }
                         }
@@ -513,8 +518,11 @@ public class OpenIabHelper {
 
     private void setupWithStrategy(@NotNull final OnIabSetupFinishedListener listener) {
         final int storeSearchStrategy = options.getStoreSearchStrategy();
+        Logger.d("setupWithStrategy() store search strategy = ", storeSearchStrategy);
         final String packageName = context.getPackageName();
+        Logger.d("setupWithStrategy() package name = ", packageName);
         final String packageInstaller = packageManager.getInstallerPackageName(packageName);
+        Logger.d("setupWithStrategy() package installer = ", packageInstaller);
         final boolean packageInstallerSet = !TextUtils.isEmpty(packageInstaller);
 
         if (storeSearchStrategy == SEARCH_STRATEGY_INSTALLER) {
@@ -657,25 +665,25 @@ public class OpenIabHelper {
             discoverOpenStores(new OpenStoresDiscoveredListener() {
                 @Override
                 public void openStoresDiscovered(@NotNull final List<Appstore> appstores) {
-                    final List<Appstore> allAvailableAppsotres = new ArrayList<Appstore>(appstores);
+                    final List<Appstore> allAvailableAppstores = new ArrayList<Appstore>(appstores);
                     // Add all available wrappers
                     for (final String appstorePackage : appStorePackageMap.keySet()) {
                         final String name = appStorePackageMap.get(appstorePackage);
                         if (!TextUtils.isEmpty(name)
                                 && appStoreFactoryMap.containsKey(name)
                                 && Utils.packageInstalled(context, appstorePackage)) {
-                            allAvailableAppsotres.add(appStoreFactoryMap.get(name).get());
+                            allAvailableAppstores.add(appStoreFactoryMap.get(name).get());
                         }
                     }
                     // All package independent wrappers
                     for (final String appstoreName : appStoreFactoryMap.keySet()) {
                         if (!appStorePackageMap.values().contains(appstoreName)) {
-                            allAvailableAppsotres.add(appStoreFactoryMap.get(appstoreName).get());
+                            allAvailableAppstores.add(appStoreFactoryMap.get(appstoreName).get());
                         }
                     }
                     // Add available stored according to preferred stores priority
                     for (final String name : options.getPreferredStoreNames()) {
-                        for (final Appstore appstore : allAvailableAppsotres) {
+                        for (final Appstore appstore : allAvailableAppstores) {
                             if (TextUtils.equals(appstore.getAppstoreName(), name)) {
                                 appstoresToCheck.add(appstore);
                                 break;
@@ -683,7 +691,7 @@ public class OpenIabHelper {
                         }
                     }
                     // Add everything else
-                    appstoresToCheck.addAll(allAvailableAppsotres);
+                    appstoresToCheck.addAll(allAvailableAppstores);
                     checkBillingAndFinish(listener, appstoresToCheck);
                 }
             });
@@ -706,7 +714,7 @@ public class OpenIabHelper {
         if (TextUtils.isEmpty(appstoreName)) { // no name - no service
             Logger.d("getOpenAppstore() Appstore doesn't have name. Skipped. ComponentName: ", name);
         } else if (billingIntent == null) {
-            Logger.d("getOpenAppstore(): billing is not supported by store: ", name);
+            Logger.d("getOpenAppstore() billing is not supported by store: ", name);
         } else if (verifyMode == Options.VERIFY_EVERYTHING && TextUtils.isEmpty(publicKey)) {
             // don't connect to OpenStore if no key provided and verification is strict
             Logger.e("getOpenAppstore() verification is required but publicKey is not provided: ", name);
@@ -714,6 +722,7 @@ public class OpenIabHelper {
             final OpenAppstore openAppstore =
                     new OpenAppstore(context, appstoreName, openAppstoreService, billingIntent, publicKey, serviceConnection);
             openAppstore.componentName = name;
+            Logger.d("getOpenAppstore() returns ", openAppstore.getAppstoreName());
             return openAppstore;
         }
 
@@ -833,6 +842,7 @@ public class OpenIabHelper {
         for (final Appstore appstore : appstores) {
             final AppstoreInAppBillingService billingService = appstore.getInAppBillingService();
             billingService.dispose();
+            Logger.d("dispose() was called for ", appstore.getAppstoreName());
         }
     }
 
@@ -1038,6 +1048,7 @@ public class OpenIabHelper {
      * Check options are valid. Google, Samsung and Nokia are supported.
      */
     public void checkOptions() {
+        Logger.d("checkOptions() ", options);
         checkGoogle();
         checkSamsung();
         checkNokia();
@@ -1045,7 +1056,7 @@ public class OpenIabHelper {
 
     private void checkNokia() {
         final boolean hasPermission = Utils.hasRequestedPermission(context, NokiaStore.NOKIA_BILLING_PERMISSION);
-        Logger.d("checkNokia() has permission : ", hasPermission);
+        Logger.d("checkNokia() has permission = ", hasPermission);
         if (hasPermission) {
             return;
         }
@@ -1059,7 +1070,7 @@ public class OpenIabHelper {
     }
 
     private void checkSamsung() {
-        Logger.d("checkSamsung() activity is : ", activity);
+        Logger.d("checkSamsung() activity = ", activity);
         if (activity != null) {
             return;
         }
@@ -1078,13 +1089,13 @@ public class OpenIabHelper {
     }
 
     private void checkGoogle() {
-        Logger.d("checkGoogle() verify mode: " + options.getVerifyMode());
+        Logger.d("checkGoogle() verify mode = " + options.getVerifyMode());
         if (options.getVerifyMode() == VERIFY_SKIP) {
             return;
         }
 
         final boolean googleKeyProvided = options.getStoreKeys().containsKey(NAME_GOOGLE);
-        Logger.d("checkGoogle() google key available : ", googleKeyProvided);
+        Logger.d("checkGoogle() google key available = ", googleKeyProvided);
         if (googleKeyProvided) {
             return;
         }
@@ -1975,6 +1986,22 @@ public class OpenIabHelper {
                         samsungCertificationRequestCode,
                         storeSearchStrategy);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "Options={" +
+                    "availableStores=" + availableStores +
+                    ", availableStoreNames=" + availableStoreNames +
+                    ", preferredStoreNames=" + preferredStoreNames +
+                    ", discoveryTimeoutMs=" + discoveryTimeoutMs +
+                    ", checkInventory=" + checkInventory +
+                    ", checkInventoryTimeoutMs=" + checkInventoryTimeoutMs +
+                    ", verifyMode=" + verifyMode +
+                    ", storeSearchStrategy=" + storeSearchStrategy +
+                    ", storeKeys=" + storeKeys +
+                    ", samsungCertificationRequestCode=" + samsungCertificationRequestCode +
+                    '}';
         }
     }
 
