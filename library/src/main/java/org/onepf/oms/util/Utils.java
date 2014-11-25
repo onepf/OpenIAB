@@ -22,6 +22,7 @@ public final class Utils {
      * @return true if the permission is requested by the application.
      */
     public static boolean hasRequestedPermission(@NotNull Context context, @NotNull final String permission) {
+        boolean hasRequestedPermission = false;
         if (TextUtils.isEmpty(permission)) {
             throw new IllegalArgumentException("Permission can't be null or empty.");
         }
@@ -32,14 +33,16 @@ public final class Utils {
             if (!CollectionUtils.isEmpty(info.requestedPermissions)) {
                 for (String requestedPermission : info.requestedPermissions) {
                     if (permission.equals(requestedPermission)) {
-                        return true;
+                        hasRequestedPermission = true;
+                        break;
                     }
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {
             Logger.e(e, "Error during checking permission ", permission);
         }
-        return false;
+        Logger.d("hasRequestedPermission() is ", hasRequestedPermission, " for ", permission);
+        return hasRequestedPermission;
     }
 
     /**
@@ -49,12 +52,14 @@ public final class Utils {
      */
     public static boolean packageInstalled(@NotNull final Context context, @NotNull final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
+        boolean result = false;
         try {
             packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-            return true;
+            result = true;
         } catch (PackageManager.NameNotFoundException ignore) {
         }
-        return false;
+        Logger.d("packageInstalled() is ", result, " for ", packageName);
+        return result;
     }
 
     /**
@@ -66,7 +71,9 @@ public final class Utils {
     public static boolean isPackageInstaller(@NotNull final Context context, final String packageName) {
         final PackageManager packageManager = context.getPackageManager();
         final String installerPackageName = packageManager.getInstallerPackageName(context.getPackageName());
-        return TextUtils.equals(installerPackageName, packageName);
+        boolean isPackageInstaller = TextUtils.equals(installerPackageName, packageName);
+        Logger.d("isPackageInstaller() is ", isPackageInstaller, " for ", packageName);
+        return isPackageInstaller;
     }
 
     /**
