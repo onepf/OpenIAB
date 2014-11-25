@@ -1444,6 +1444,8 @@ public class OpenIabHelper {
             state = "IAB helper is set up.";
         } else if (setupState == SETUP_RESULT_FAILED) {
             state = "IAB helper setup failed.";
+        } else if (setupState == SETUP_IN_PROGRESS) {
+            state = "IAB helper setup is in progress.";
         } else {
             throw new IllegalStateException("Wrong setup state: " + setupState);
         }
