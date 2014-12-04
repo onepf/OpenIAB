@@ -229,6 +229,9 @@ public class OpenIabHelper {
     @Nullable
     private ExecutorService setupExecutorService;
 
+    @NotNull
+    private ExecutorService inventoryExecutor = Executors.newSingleThreadExecutor();
+
     //For internal use only. Do not make it public!
     private static interface AppstoreFactory {
         @Nullable
@@ -1124,7 +1127,7 @@ public class OpenIabHelper {
         }
 
         final Semaphore inventorySemaphore = new Semaphore(0);
-        final ExecutorService inventoryExecutor = Executors.newSingleThreadExecutor();
+
         final Appstore[] inventoryAppstore = new Appstore[1];
 
         for (final Appstore appstore : availableStores) {
@@ -1172,12 +1175,10 @@ public class OpenIabHelper {
                 return null;
             }
             if (inventoryAppstore[0] != null) {
-                inventoryExecutor.shutdownNow();
                 return inventoryAppstore[0];
             }
         }
 
-        inventoryExecutor.shutdownNow();
         return null;
     }
 
