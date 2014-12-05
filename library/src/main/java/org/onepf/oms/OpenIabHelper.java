@@ -653,10 +653,10 @@ public class OpenIabHelper {
         // List of wrappers to check
         final Set<Appstore> appstoresToCheck = new LinkedHashSet<Appstore>();
 
-        final Set<String> preferredStoreNames = options.getPreferredStoreNames();
-        if (!this.availableAppstores.isEmpty() || !preferredStoreNames.isEmpty()) {
+        final Set<String> availableStoreNames = options.getAvailableStoreNames();
+        if (!this.availableAppstores.isEmpty() || !availableStoreNames.isEmpty()) {
             // Use only stores specified explicitly
-            for (final String name : preferredStoreNames) {
+            for (final String name : availableStoreNames) {
                 // Add available stored according to preferred stores priority
                 final Appstore appstore = getAvailableStoreByName(name);
                 if (appstore != null) {
@@ -686,7 +686,7 @@ public class OpenIabHelper {
                         }
                     }
                     // Add available stored according to preferred stores priority
-                    for (final String name : preferredStoreNames) {
+                    for (final String name : availableStoreNames) {
                         for (final Appstore appstore : allAvailableAppstores) {
                             if (TextUtils.equals(appstore.getAppstoreName(), name)) {
                                 appstoresToCheck.add(appstore);
