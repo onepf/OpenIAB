@@ -567,7 +567,11 @@ public class OpenIabHelper {
                 appstore = getAvailableStoreByName(appstoreName);
                 if (appstore == null) {
                     // Store is known but isn't available
-                    finishSetup(listener);
+                    if (withFallback) {
+                        setup(listener);
+                    } else {
+                        finishSetup(listener);
+                    }
                     return;
                 }
             }
