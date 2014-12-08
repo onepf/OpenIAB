@@ -127,6 +127,7 @@ public class MainActivity extends Activity {
                 public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
                     Log.d(TAG, "Query inventory finished.");
                     if (result.isFailure()) {
+                        updateUi();
                         complain("Failed to query inventory: " + result);
                         return;
                     }
@@ -215,6 +216,7 @@ public class MainActivity extends Activity {
                 if (!result.isSuccess()) {
                     // Oh noes, there was a problem.
                     setupDone = false;
+                    updateUi();
                     complain("Problem setting up in-app billing: " + result);
                     return;
                 }

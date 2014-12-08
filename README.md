@@ -13,4 +13,5 @@ OpenIAB supports the following stores:
   * Nokia Store
 
 
-For detailed instructions, please visit [our wiki](https://github.com/onepf/OpenIAB/wiki). 
+For detailed instructions, please visit [our wiki](https://github.com/onepf/OpenIAB/wiki).    
+Contact akarimova@onepf.org if you have any comments or questions about the library. 
