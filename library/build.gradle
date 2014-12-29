@@ -49,8 +49,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
     compile 'com.intellij:annotations:12.0'
-    compile 'com.amazon:in-app-purchasing:2.0.1'
-    compile 'com.braintree:fortumo-in-app:9.1.2'
+    provided 'com.amazon:in-app-purchasing:2.0.1'
+    provided 'com.braintree:fortumo-in-app:9.1.2'
 
     androidTestCompile 'org.robolectric:robolectric:2.3'
     androidTestCompile 'junit:junit:4.11'

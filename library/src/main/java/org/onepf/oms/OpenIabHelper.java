@@ -1060,6 +1060,8 @@ public class OpenIabHelper {
         checkGoogle();
         checkSamsung();
         checkNokia();
+        checkFortumo();
+        checkAmazon();
     }
 
     private void checkNokia() {
@@ -1069,6 +1071,7 @@ public class OpenIabHelper {
             return;
         }
         if (options.getAvailableStoreByName(NAME_NOKIA) != null
+                || options.getAvailableStoreNames().contains(NAME_NOKIA)
                 || options.getPreferredStoreNames().contains(NAME_NOKIA)) {
             throw new IllegalStateException("Nokia permission \"" +
                     NokiaStore.NOKIA_BILLING_PERMISSION + "\" NOT REQUESTED");
@@ -1083,6 +1086,7 @@ public class OpenIabHelper {
             return;
         }
         if (options.getAvailableStoreByName(NAME_SAMSUNG) != null
+                || options.getAvailableStoreNames().contains(NAME_SAMSUNG)
                 || options.getPreferredStoreNames().contains(NAME_SAMSUNG)) {
             // Unfortunately, SamsungApps requires to launch their own "Certification Activity"
             // in order to connect to billing service. So it's also needed for OpenIAB.
@@ -1109,12 +1113,59 @@ public class OpenIabHelper {
         }
 
         final boolean googleRequired = options.getAvailableStoreByName(NAME_GOOGLE) != null
+                || options.getAvailableStoreNames().contains(NAME_GOOGLE)
                 || options.getPreferredStoreNames().contains(NAME_GOOGLE);
         if (googleRequired && options.getVerifyMode() == VERIFY_EVERYTHING) {
             throw new IllegalStateException("You must supply Google verification key");
         }
-        Logger.d("checkGoogle() ignoring GooglePlay wrapper", googleKeyProvided);
+        Logger.d("checkGoogle() ignoring GooglePlay wrapper.");
         appStoreFactoryMap.remove(NAME_GOOGLE);
+    }
+
+    private void checkFortumo() {
+        boolean fortumoAvailable = false;
+        try {
+            final ClassLoader classLoader = OpenIabHelper.class.getClassLoader();
+            classLoader.loadClass("mp.PaymentRequest");
+            fortumoAvailable = true;
+        } catch (ClassNotFoundException ignore) {}
+        Logger.d("checkFortumo() fortumo sdk available: ", fortumoAvailable);
+        if (fortumoAvailable) {
+            return;
+        }
+
+        final boolean fortumoRequired = options.getAvailableStoreByName(NAME_FORTUMO) != null
+                || options.getAvailableStoreNames().contains(NAME_FORTUMO)
+                || options.getPreferredStoreNames().contains(NAME_FORTUMO);
+        Logger.d("checkFortumo() fortumo billing required: ", fortumoRequired);
+        if (fortumoRequired) {
+            throw new IllegalStateException("You must satisfy fortumo sdk dependency.");
+        }
+        Logger.d("checkFortumo() ignoring fortumo wrapper.");
+        appStoreFactoryMap.remove(NAME_FORTUMO);
+    }
+
+    private void checkAmazon() {
+        boolean amazonAvailable = false;
+        try {
+            final ClassLoader classLoader = OpenIabHelper.class.getClassLoader();
+            classLoader.loadClass("com.amazon.device.iap.PurchasingService");
+            amazonAvailable = true;
+        } catch (ClassNotFoundException ignore) {}
+        Logger.d("checkAmazon() amazon sdk available: ", amazonAvailable);
+        if (amazonAvailable) {
+            return;
+        }
+
+        final boolean amazonRequired = options.getAvailableStoreByName(NAME_AMAZON) != null
+                || options.getAvailableStoreNames().contains(NAME_AMAZON)
+                || options.getPreferredStoreNames().contains(NAME_AMAZON);
+        Logger.d("checkAmazon() amazon billing required: ", amazonRequired);
+        if (amazonRequired) {
+            throw new IllegalStateException("You must satisfy amazon sdk dependency.");
+        }
+        Logger.d("checkAmazon() ignoring amazon wrapper.");
+        appStoreFactoryMap.remove(NAME_AMAZON);
     }
 
     /**
