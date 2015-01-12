@@ -21,14 +21,24 @@
         android:name="android.hardware.telephony"
         android:required="false" />
 
-    <uses-permission android:name="com.android.vending.BILLING" />
-    <uses-permission android:name="com.nokia.payment.BILLING" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.tmoney.vending.INBILLING" />
-    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+
+    <!--Open Stores-->
     <uses-permission android:name="org.onepf.openiab.permission.BILLING" />
+    <!--Google-->
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <!--Nokia-->
+    <uses-permission android:name="com.nokia.payment.BILLING" />
+    <!--Samsung-->
+    <uses-permission android:name="com.sec.android.iap.permission.BILLING" />
+    <!--Fortumo-->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--SlideME-->
     <uses-permission android:name="com.slideme.sam.manager.inapp.permission.BILLING" />
+    <!--Skubit-->
     <uses-permission android:name="com.skubit.BILLING" />
 
     <application
@@ -52,6 +62,7 @@
             </intent-filter>
         </activity>
 
+        <!--Amazon start-->
         <receiver android:name="com.amazon.device.iap.ResponseReceiver">
             <intent-filter>
                 <action
@@ -59,6 +70,7 @@
                     android:permission="com.amazon.inapp.purchasing.Permission.NOTIFY" />
             </intent-filter>
         </receiver>
+        <!--Amazon end-->
 
         <!--Fortumo start-->
         <receiver android:name="mp.MpSMSReceiver">
