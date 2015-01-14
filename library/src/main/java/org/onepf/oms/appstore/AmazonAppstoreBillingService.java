@@ -249,6 +249,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
         final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
         purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
+        purchase.setToken(receipt.getReceiptId());
 
         switch (receipt.getProductType()) {
             case CONSUMABLE:
@@ -338,9 +339,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 ", reqId: ", requestId);
 
         final String requestSku = requestSkuMap.remove(requestId);
-        final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+        final Receipt receipt = purchaseResponse.getReceipt();
+        final Purchase purchase = getPurchase(receipt);
         final IabResult result;
-        boolean shouldNotifyFulfillment = false;
         switch (status) {
             case SUCCESSFUL:
                 final UserData userData = purchaseResponse.getUserData();
@@ -354,12 +355,9 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
                 }
 
                 purchase.setOriginalJson(generateOriginalJson(purchaseResponse));
-
                 purchase.setOrderId(requestId.toString());
 
-                final Receipt receipt = purchaseResponse.getReceipt();
                 final ProductType productType = receipt.getProductType();
-
                 final String storeSku = receipt.getSku();
                 final String sku = SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON,
                         productType == ProductType.SUBSCRIPTION ? requestSku : storeSku
@@ -373,7 +371,6 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
                 result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_OK, "Success");
 
-                shouldNotifyFulfillment = true;
                 break;
             case INVALID_SKU:
                 result = new IabResult(IabHelper.BILLING_RESPONSE_RESULT_ITEM_UNAVAILABLE, "Invalid SKU");
@@ -393,10 +390,6 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
         final IabHelper.OnIabPurchaseFinishedListener listener = requestListeners.remove(requestId);
         if (listener != null) {
             listener.onIabPurchaseFinished(result, purchase);
-            if (shouldNotifyFulfillment) {
-                final Receipt receipt = purchaseResponse.getReceipt();
-                PurchasingService.notifyFulfillment(receipt.getReceiptId(), FulfillmentResult.FULFILLED);
-            }
         } else {
             Logger.e("Something went wrong: PurchaseFinishedListener is not found");
         }
@@ -446,7 +439,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
 
     @Override
     public void consume(Purchase itemInfo) {
-        // Nothing to do here
+        PurchasingService.notifyFulfillment(itemInfo.getToken(), FulfillmentResult.FULFILLED);
     }
 
     @Override
