@@ -110,7 +110,7 @@ public class OpenIabHelper {
 
     @MagicConstant(intValues = {SETUP_DISPOSED, SETUP_IN_PROGRESS,
             SETUP_RESULT_FAILED, SETUP_RESULT_NOT_STARTED, SETUP_RESULT_SUCCESSFUL})
-    private int setupState = SETUP_RESULT_NOT_STARTED;
+    private volatile int setupState = SETUP_RESULT_NOT_STARTED;
 
     // To handle {@link #handleActivityResult(int, int, Intent)} during setup.
     @Nullable
@@ -214,11 +214,11 @@ public class OpenIabHelper {
 
     //Store, chosen as the billing provider
     @Nullable
-    private Appstore appstore;
+    private volatile Appstore appstore;
 
     //billing service of the chosen store
     @Nullable
-    private AppstoreInAppBillingService appStoreBillingService;
+    private volatile AppstoreInAppBillingService appStoreBillingService;
 
     //Object to store developer's settings (available stores, preferred stores, store search strategy, etc)
     private final Options options;
@@ -230,7 +230,7 @@ public class OpenIabHelper {
     private ExecutorService setupExecutorService;
 
     @NotNull
-    private ExecutorService inventoryExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService inventoryExecutor = Executors.newSingleThreadExecutor();
 
     //For internal use only. Do not make it public!
     private static interface AppstoreFactory {
@@ -1251,6 +1251,9 @@ public class OpenIabHelper {
 
     public boolean subscriptionsSupported() {
         checkSetupDone("subscriptionsSupported");
+        if (setupState != SETUP_RESULT_SUCCESSFUL) {
+            throw new IllegalStateException("OpenIabHelper is not set up.");
+        }
         return appStoreBillingService.subscriptionsSupported();
     }
 
@@ -1320,16 +1323,21 @@ public class OpenIabHelper {
      *                        Ignored if null or if querySkuDetails is false.
      * @throws IabException if a problem occurs while refreshing the inventory.
      */
-    public
     @Nullable
-    Inventory queryInventory(final boolean querySkuDetails,
+    public Inventory queryInventory(final boolean querySkuDetails,
                              @Nullable final List<String> moreItemSkus,
                              @Nullable final List<String> moreSubsSkus)
             throws IabException {
         if (Utils.uiThread()) {
             throw new IllegalStateException("Must not be called from the UI thread");
         }
-        checkSetupDone("queryInventory");
+        final Appstore appstore = this.appstore;
+        final AppstoreInAppBillingService appStoreBillingService = this.appStoreBillingService;
+        if (setupState != SETUP_RESULT_SUCCESSFUL
+                || appstore == null
+                || appStoreBillingService == null) {
+            return null;
+        }
 
         final List<String> moreItemStoreSkus;
         final SkuManager skuManager = SkuManager.getInstance();
@@ -1412,19 +1420,25 @@ public class OpenIabHelper {
 
                 final IabResult result_f = result;
                 final Inventory inv_f = inv;
-                if (setupState != SETUP_DISPOSED) {
-                    handler.post(new Runnable() {
-                        public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        if (setupState == SETUP_RESULT_SUCCESSFUL) {
                             listener.onQueryInventoryFinished(result_f, inv_f);
                         }
-                    });
-                }
+                    }
+                });
             }
         }).start();
     }
 
     public void consume(@NotNull Purchase purchase) throws IabException {
-        checkSetupDone("consume");
+        final Appstore appstore = this.appstore;
+        final AppstoreInAppBillingService appStoreBillingService = this.appStoreBillingService;
+        if (setupState != SETUP_RESULT_SUCCESSFUL
+                || appstore == null
+                || appStoreBillingService == null) {
+            return;
+        }
         Purchase purchaseStoreSku = (Purchase) purchase.clone(); // TODO: use Purchase.getStoreSku()
         purchaseStoreSku.setSku(SkuManager.getInstance().getStoreSku(appstore.getAppstoreName(), purchase.getSku()));
         appStoreBillingService.consume(purchaseStoreSku);
@@ -1445,8 +1459,8 @@ public class OpenIabHelper {
     }
 
     void consumeAsyncInternal(@NotNull final List<Purchase> purchases,
-                              @Nullable final IabHelper.OnConsumeFinishedListener singleListener,
-                              @Nullable final IabHelper.OnConsumeMultiFinishedListener multiListener) {
+                              @Nullable final IabHelper.OnConsumeFinishedListener consumeListener,
+                              @Nullable final IabHelper.OnConsumeMultiFinishedListener consumeMultiListener) {
         checkSetupDone("consume");
         if (purchases.isEmpty()) {
             throw new IllegalArgumentException("Nothing to consume.");
@@ -1464,17 +1478,21 @@ public class OpenIabHelper {
                     }
                 }
 
-                if (setupState != SETUP_DISPOSED && singleListener != null) {
+                if (consumeListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
-                            singleListener.onConsumeFinished(purchases.get(0), results.get(0));
+                            if (setupState == SETUP_RESULT_SUCCESSFUL) {
+                                consumeListener.onConsumeFinished(purchases.get(0), results.get(0));
+                            }
                         }
                     });
                 }
-                if (setupState != SETUP_DISPOSED && multiListener != null) {
+                if (consumeMultiListener != null) {
                     handler.post(new Runnable() {
                         public void run() {
-                            multiListener.onConsumeMultiFinished(purchases, results);
+                            if (setupState == SETUP_RESULT_SUCCESSFUL) {
+                                consumeMultiListener.onConsumeMultiFinished(purchases, results);
+                            }
                         }
                     });
                 }
