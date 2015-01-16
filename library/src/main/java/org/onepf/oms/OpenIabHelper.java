@@ -64,6 +64,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -1146,12 +1147,20 @@ public class OpenIabHelper {
     }
 
     private void checkAmazon() {
+        // As of Amazon In-App 2.0.1 PurchasingService.getUserData() crashes on Android API 21
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Logger.d("checkAmazon() Android Lollipop not supported, ignoring amazon wrapper.");
+            appStoreFactoryMap.remove(NAME_AMAZON);
+            return;
+        }
+
         boolean amazonAvailable = false;
         try {
             final ClassLoader classLoader = OpenIabHelper.class.getClassLoader();
             classLoader.loadClass("com.amazon.device.iap.PurchasingService");
             amazonAvailable = true;
-        } catch (ClassNotFoundException ignore) {}
+        } catch (ClassNotFoundException ignore) {
+        }
         Logger.d("checkAmazon() amazon sdk available: ", amazonAvailable);
         if (amazonAvailable) {
             return;
