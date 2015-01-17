@@ -64,7 +64,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -1878,6 +1877,18 @@ public class OpenIabHelper {
              * @see Options#getAvailableStoreNames()
              */
             @NotNull
+            public Builder addAvailableStoreNames(@NotNull final Object... storesNames) {
+                addAvailableStoreNames(Arrays.copyOf(storesNames, storesNames.length, String[].class));
+                return this;
+            }
+
+            /**
+             * Same as {@link #addAvailableStoreNames(java.util.Collection)}
+             *
+             * @param storesNames Store names to be added to available ones.
+             * @see Options#getAvailableStoreNames()
+             */
+            @NotNull
             public Builder addAvailableStoreNames(@NotNull final String... storesNames) {
                 addAvailableStoreNames(Arrays.asList(storesNames));
                 return this;
@@ -2006,6 +2017,20 @@ public class OpenIabHelper {
                             SEARCH_STRATEGY_BEST_FIT,
                             SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT}) int storeSearchStrategy) {
                 this.storeSearchStrategy = storeSearchStrategy;
+                return this;
+            }
+
+            /**
+             * Adds stores to {@link org.onepf.oms.OpenIabHelper.Options.Builder#preferredStoreNames} of the internal Options object.
+             * Selection priority is given in the order that the stores were added.
+             *
+             * @param storeNames The names - not packages! - of the preferred stores. E.g. {@link org.onepf.oms.OpenIabHelper#NAME_APPLAND}.
+             * @see #addPreferredStoreName(java.util.Collection)
+             * @see Options#getPreferredStoreNames()
+             */
+            @NotNull
+            public Builder addPreferredStoreName(@NotNull final Object... storeNames) {
+                addPreferredStoreName(Arrays.copyOf(storeNames, storeNames.length, String[].class));
                 return this;
             }
 
