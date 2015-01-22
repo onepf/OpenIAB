@@ -244,10 +244,13 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     }
 
     @NotNull
-    private Purchase getPurchase(@NotNull final Receipt receipt) {
-        final String storeSku = receipt.getSku();
-
+    private Purchase getPurchase(@Nullable final Receipt receipt) {
         final Purchase purchase = new Purchase(OpenIabHelper.NAME_AMAZON);
+        if (receipt == null) {
+            return purchase;
+        }
+
+        final String storeSku = receipt.getSku();
         purchase.setSku(SkuManager.getInstance().getSku(OpenIabHelper.NAME_AMAZON, storeSku));
         purchase.setToken(receipt.getReceiptId());
 
