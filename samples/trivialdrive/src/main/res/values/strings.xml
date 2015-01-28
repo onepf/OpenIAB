@@ -1,8 +1,12 @@
 <resources>
 
     <string name="app_name">TrivialDrive</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
     <string name="title_activity_main">OPF Trivial Drive</string>
-
+    <string name="error_msg">Error: </string>
+    <string name="spent_gas_msg">Vroooom, you drove a few miles.</string>
+    <string name="out_of_gas_msg">Oh, no! You are out of gas! Try buying some!</string>
+    <string name="premium_msg">Thank you for upgrading to premium!</string>
+    <string name="subscription_msg">Thank you for subscribing to infinite gas!</string>
+    <string name="tank_status_msg">You filled 1/4 tank. Your tank is now %d/4 full!</string>
+    
 </resources>

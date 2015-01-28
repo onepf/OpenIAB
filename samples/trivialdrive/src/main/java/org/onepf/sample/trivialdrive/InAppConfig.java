@@ -82,9 +82,9 @@ public final class InAppConfig {
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SLIDEME, "slideme.sku_premium")
                 .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SLIDEME, "slideme.sku_infinite_gas")
                         //Samsung
-                .mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "000001003746/org.onepf.trivialdrivegame.sku_gas")
-                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "000001003747/org.onepf.trivialdrivegame.sku_premium")
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "000001003744/org.onepf.trivialdrivegame.subscrption.sku_infinite_gas");
+                .mapSku(SKU_GAS, OpenIabHelper.NAME_SAMSUNG, "100000104947/org.onepf.trivialdrivegame.sku_gas")
+                .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_SAMSUNG, "100000104947/org.onepf.trivialdrivegame.sku_premium")
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_SAMSUNG, "100000104947/org.onepf.trivialdrivegame.sku_infinite_gas");
     }
 
     private InAppConfig() {
