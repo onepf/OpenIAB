@@ -119,13 +119,6 @@ public class MainActivity extends Activity {
      * is billing setup completed
      */
     private Boolean setupDone;
-    
-    private String mErrorMsg;
-    private String mSpentGasMsg;
-    private String mOutOfGasMsg;
-    private String mPremiumMsg;
-    private String mSubscriptionMsg;
-    private String mTankStatusMsg;
 
     // Listener that's called when we finish querying the items and subscriptions we own
     private IabHelper.QueryInventoryFinishedListener mGotInventoryListener =
@@ -179,8 +172,6 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        initStringResources();
         
         // load game data
         loadData();
@@ -406,14 +397,14 @@ public class MainActivity extends Activity {
             } else if (purchase.getSku().equals(InAppConfig.SKU_PREMIUM)) {
                 // bought the premium upgrade!
                 Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
-                alert(mPremiumMsg);
+                alert(R.string.premium_msg);
                 mIsPremium = true;
                 updateUi();
                 setWaitScreen(false);
             } else if (purchase.getSku().equals(InAppConfig.SKU_INFINITE_GAS)) {
                 // bought the infinite gas subscription
                 Log.d(TAG, "Infinite gas subscription purchased.");
-                alert(mSubscriptionMsg);
+                alert(R.string.subscription_msg);
                 mSubscribedToInfiniteGas = true;
                 mTank = TANK_MAX;
                 updateUi();
@@ -436,7 +427,7 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "Consumption successful. Provisioning.");
                 mTank = mTank == TANK_MAX ? TANK_MAX : mTank + 1;
                 saveData();
-                alert(String.format(mTankStatusMsg, mTank));
+                alert(R.string.tank_status_msg, mTank);
             } else {
                 complain("Error while consuming: " + result);
             }
@@ -450,11 +441,11 @@ public class MainActivity extends Activity {
     public void onDriveButtonClicked(View arg0) {
         Log.d(TAG, "Drive button clicked.");
         if (!mSubscribedToInfiniteGas && mTank <= 0)
-            alert(mOutOfGasMsg);
+            alert(R.string.out_of_gas_msg);
         else {
             if (!mSubscribedToInfiniteGas) --mTank;
             saveData();
-            alert(mSpentGasMsg);
+            alert(R.string.spent_gas_msg);
             updateUi();
             Log.d(TAG, "Vrooom. Tank is now " + mTank);
         }
@@ -503,10 +494,22 @@ public class MainActivity extends Activity {
         if (AmazonAppstore.hasAmazonClasses()) { // Amazon moderators don't allow alert dialogs for in-apps
             Toast.makeText(this, "Welcome back, Driver!", Toast.LENGTH_SHORT).show();
         } else {
-            alert(mErrorMsg + message);
+            alert(R.string.error_msg, message);
         }
     }
 
+    void alert(int stringId) {
+        alert(getResources().getString(stringId));
+    }
+
+    void alert(int stringId, int formatArg) {
+        alert(String.format(getResources().getString(stringId), formatArg));
+    }
+
+    void alert(int stringId, String text) {
+        alert(getResources().getString(stringId) + text);
+    }
+    
     void alert(String message) {
         AlertDialog.Builder bld = new AlertDialog.Builder(this);
         bld.setMessage(message);
@@ -533,14 +536,5 @@ public class MainActivity extends Activity {
         SharedPreferences sp = getPreferences(MODE_PRIVATE);
         mTank = sp.getInt("tank", 2);
         Log.d(TAG, "Loaded data: tank = " + String.valueOf(mTank));
-    }
-    
-    private void initStringResources() {
-        mErrorMsg          = getResources().getString(R.string.error_msg);
-        mSpentGasMsg       = getResources().getString(R.string.spent_gas_msg);
-        mOutOfGasMsg       = getResources().getString(R.string.out_of_gas_msg);
-        mPremiumMsg        = getResources().getString(R.string.premium_msg);
-        mSubscriptionMsg   = getResources().getString(R.string.subscription_msg);
-        mTankStatusMsg     = getResources().getString(R.string.tank_status_msg);
     }
 }
