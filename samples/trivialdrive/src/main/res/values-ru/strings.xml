@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TrivialDrive</string>
+    <string name="title_activity_main">OPF Trivial Drive</string>
+    <string name="error_msg">Ошибка: </string>
+    <string name="spent_gas_msg">Вруууум, вы проехали пару километров.</string>
+    <string name="out_of_gas_msg">О, нет! У вас закончился бензин! Попробуйте прикупить немного!</string>
+    <string name="premium_msg">Благодарим вас за приобретение премиум версии!</string>
+    <string name="subscription_msg">Благодарим вас за покупку бесконечного бензина на месяц</string>
+    <string name="tank_status_msg">Вы заполнили 1/4 бака. Бак теперь заполнен на %d/4!</string>
+
+</resources>
