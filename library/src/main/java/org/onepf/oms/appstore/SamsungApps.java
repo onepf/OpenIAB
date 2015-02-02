@@ -102,12 +102,6 @@ public class SamsungApps extends DefaultAppstore {
             throw new IllegalStateException("Must no be called from UI thread.");
         }
 
-        if (isSamsungTestMode) {
-            Logger.d("isBillingAvailable() billing is supported in test mode.");
-            isBillingAvailable = true;
-            return true;
-        }
-
         boolean iapInstalled = false;
 
         try {
@@ -121,11 +115,17 @@ public class SamsungApps extends DefaultAppstore {
             Logger.d("isBillingAvailable() Samsung IAP Service is not installed");
         }
 
-        isBillingAvailable = false;
         if (!iapInstalled) {
             return false;
         }
 
+        if (isSamsungTestMode) {
+            Logger.d("isBillingAvailable() billing is supported in test mode.");
+            isBillingAvailable = true;
+            return true;
+        }
+
+        isBillingAvailable = false;
         final CountDownLatch mainLatch = new CountDownLatch(1);
         getInAppBillingService().startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(@NotNull final IabResult result) {
