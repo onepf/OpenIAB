@@ -12,6 +12,24 @@ OpenIAB supports the following stores:
   * Samsung Apps
   * Nokia Store
 
+For detailed instructions, please visit [our wiki](https://github.com/onepf/OpenIAB/wiki). 
+Contact akarimova@onepf.org if you have any business comments or questions about the library.
 
-For detailed instructions, please visit [our wiki](https://github.com/onepf/OpenIAB/wiki).    
-Contact akarimova@onepf.org if you have any comments or questions about the library. 
+##Rules for bug reports
+
+1. Do not write directly to the team members.
+2. Check [FAQ](https://github.com/onepf/OpenIAB/wiki/FAQ) for your question/issue.
+3. Give details. As many as possible but DO NOT SHARE YOUR PUBLIC KEY for in-app verification.  
+The following details could be really helpful:
+
+* OS. Could be Android, iOS, WP 
+* Package. Could be native OpenIAB jar, Unity plugin, Cordove plugin or Marmalade plugin.
+* Version of the library, e.g. 0.9.8.4
+* Affected stores.
+* Logs.
+* Screenshots.
+
+
+ 
+
+
