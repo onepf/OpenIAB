@@ -11,6 +11,7 @@ OpenIAB supports the following stores:
   * Google Play
   * Samsung Apps
   * Nokia Store
+  * Amazon AppStore (not supported for Android 5.0 + due to technical issues of Amazon IAP SDK)
 
 For detailed instructions, please visit [our wiki](https://github.com/onepf/OpenIAB/wiki). 
 Contact akarimova@onepf.org if you have any business comments or questions about the library.
