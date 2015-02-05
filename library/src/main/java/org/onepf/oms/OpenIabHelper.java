@@ -58,6 +58,7 @@ import org.onepf.oms.util.Utils;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -273,7 +274,27 @@ public class OpenIabHelper {
             @NotNull
             @Override
             public Appstore get() {
-                return new AmazonAppstore(context);
+                    return new AmazonAppstore(new ContextWrapper(context.getApplicationContext()){
+                        @Override
+                        public Context getApplicationContext() {
+                            return this;
+                        }
+
+                        @Override
+                        public ComponentName startService(final Intent intent) {
+                            final List<ResolveInfo> infos = getPackageManager().queryIntentServices(intent, 0);
+                            if (infos.isEmpty()) {
+                                return super.startService(intent);
+                            }
+                            final ResolveInfo serviceInfo = infos.get(0);
+                            final String packageName = serviceInfo.serviceInfo.packageName;
+                            final String className = serviceInfo.serviceInfo.name;
+                            final ComponentName component = new ComponentName(packageName, className);
+                            final Intent explicitIntent = new Intent(intent);
+                            explicitIntent.setComponent(component);
+                            return super.startService(explicitIntent);
+                        }
+                    });
             }
         });
 
@@ -1148,11 +1169,11 @@ public class OpenIabHelper {
 
     private void checkAmazon() {
         // As of Amazon In-App 2.0.1 PurchasingService.getUserData() crashes on Android API 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Logger.d("checkAmazon() Android Lollipop not supported, ignoring amazon wrapper.");
-            appStoreFactoryMap.remove(NAME_AMAZON);
-            return;
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            Logger.d("checkAmazon() Android Lollipop not supported, ignoring amazon wrapper.");
+//            appStoreFactoryMap.remove(NAME_AMAZON);
+//            return;
+//        }
 
         boolean amazonAvailable = false;
         try {
