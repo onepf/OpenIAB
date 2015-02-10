@@ -52,6 +52,7 @@ import org.onepf.oms.appstore.googleUtils.IabResult;
 import org.onepf.oms.appstore.googleUtils.Inventory;
 import org.onepf.oms.appstore.googleUtils.Purchase;
 import org.onepf.oms.appstore.googleUtils.Security;
+import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 import org.onepf.oms.util.Utils;
 
@@ -283,7 +284,7 @@ public class OpenIabHelper {
                         @Override
                         public ComponentName startService(final Intent intent) {
                             final List<ResolveInfo> infos = getPackageManager().queryIntentServices(intent, 0);
-                            if (infos.isEmpty()) {
+                            if (CollectionUtils.isEmpty(infos)) {
                                 return super.startService(intent);
                             }
                             final ResolveInfo serviceInfo = infos.get(0);
