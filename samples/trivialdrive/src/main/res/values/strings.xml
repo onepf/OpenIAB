@@ -2,7 +2,7 @@
 
     <string name="app_name">TrivialDrive</string>
     <string name="title_activity_main">OPF Trivial Drive</string>
-    <string name="error_msg">Error: </string>
+    <string name="error_msg">Error: \u0020</string>
     <string name="spent_gas_msg">Vroooom, you drove a few miles.</string>
     <string name="out_of_gas_msg">Oh, no! You are out of gas! Try buying some!</string>
     <string name="premium_msg">Thank you for upgrading to premium!</string>

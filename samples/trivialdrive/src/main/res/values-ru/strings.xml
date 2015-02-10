@@ -3,7 +3,7 @@
 
     <string name="app_name">TrivialDrive</string>
     <string name="title_activity_main">OPF Trivial Drive</string>
-    <string name="error_msg">Ошибка: </string>
+    <string name="error_msg">Ошибка: \u0020</string>
     <string name="spent_gas_msg">Вруууум, вы проехали пару километров.</string>
     <string name="out_of_gas_msg">О, нет! У вас закончился бензин! Попробуйте прикупить немного!</string>
     <string name="premium_msg">Благодарим вас за приобретение премиум версии!</string>
