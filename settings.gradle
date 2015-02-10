@@ -1,7 +1,5 @@
 include ':OpenIab Library'
 include ':Trivial Drive Sample'
-include ':Life Sample'
 
 project(':Trivial Drive Sample').projectDir = file('samples/trivialdrive')
-project(':Life Sample').projectDir = file('samples/life_openiab')
 project(':OpenIab Library').projectDir = file('library')
