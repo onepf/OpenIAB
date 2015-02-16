@@ -20,7 +20,7 @@ Contact akarimova@onepf.org if you have any business comments or questions about
 
 1. Do not write directly to the team members.
 2. Check [FAQ](https://github.com/onepf/OpenIAB/wiki/FAQ) for your question/issue.
-3. Choose a correct queue of issuess.  
+3. Choose a correct queue of issuess  
  * https://github.com/onepf/OpenIAB-Unity-Plugin/issues for Unity devs
  * https://github.com/onepf/OpenIAB/issues for Android Java devs
  * https://github.com/onepf/OpenIAB-Cordova-Plugin/issues for Cordova devs
