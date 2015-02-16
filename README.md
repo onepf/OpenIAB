@@ -20,7 +20,8 @@ Contact akarimova@onepf.org if you have any business comments or questions about
 
 1. Do not write directly to the team members.
 2. Check [FAQ](https://github.com/onepf/OpenIAB/wiki/FAQ) for your question/issue.
-3. Give details. As many as possible but DO NOT SHARE YOUR PUBLIC KEY for in-app verification.  
+3. Choose a correct queue of issuess. Issues for the Unity plugin users - https://github.com/onepf/OpenIAB-Unity-Plugin/issues, issues for the Android (Java) OpenIAB users - https://github.com/onepf/OpenIAB/issues, for the Cordova plugin - https://github.com/onepf/OpenIAB-Cordova-Plugin, for the Marmalede plugin  - https://github.com/onepf/OpenIAB-Marmalade-Plugin.
+4. Give details. As many as possible but DO NOT SHARE YOUR PUBLIC KEY for in-app verification.  
 The following details could be really helpful:
 
 * OS. Could be Android, iOS, WP 
