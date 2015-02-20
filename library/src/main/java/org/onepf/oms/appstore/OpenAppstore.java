@@ -57,7 +57,7 @@ public class OpenAppstore extends DefaultAppstore {
     /**
      * @param publicKey - used for signature verification. If <b>null</b> verification is disabled
      */
-    public OpenAppstore(@NotNull Context context, String appstoreName, IOpenAppstore openAppstoreService, @Nullable final Intent billingIntent, String publicKey, ServiceConnection serviceConn) {
+    public OpenAppstore(@NotNull final Context context, final String appstoreName, final IOpenAppstore openAppstoreService, @Nullable final Intent billingIntent, String publicKey, final ServiceConnection serviceConn) {
         this.context = context;
         this.appstoreName = appstoreName;
         this.openAppstoreService = openAppstoreService;
@@ -79,7 +79,11 @@ public class OpenAppstore extends DefaultAppstore {
                 @Override
                 public void dispose() {
                     super.dispose();
-                    OpenAppstore.this.context.unbindService(OpenAppstore.this.serviceConn);
+                    try {
+                        context.unbindService(serviceConn);
+                    } catch (Exception e) {
+                        Logger.e("Failed to unbind service: ", appstoreName);
+                    }
                 }
 
             };

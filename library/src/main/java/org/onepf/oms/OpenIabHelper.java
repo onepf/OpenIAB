@@ -521,11 +521,9 @@ public class OpenIabHelper {
                             }
                         }
                     }
-                    setupWithStrategy(new OnIabSetupFinishedListener() {
+                    final Runnable cleanup = new Runnable() {
                         @Override
-                        public void onIabSetupFinished(final IabResult result) {
-                            listener.onIabSetupFinished(result);
-                            instantiatedAppstores.remove(OpenIabHelper.this.appstore);
+                        public void run() {
                             for (final Appstore appstore : instantiatedAppstores) {
                                 final AppstoreInAppBillingService billingService;
                                 if ((billingService = appstore.getInAppBillingService()) != null) {
@@ -533,6 +531,18 @@ public class OpenIabHelper {
                                     Logger.d("startSetup() billing service disposed for ", appstore.getAppstoreName());
                                 }
                             }
+                        }
+                    };
+                    if (setupState != SETUP_IN_PROGRESS) {
+                        cleanup.run();
+                        return;
+                    }
+                    setupWithStrategy(new OnIabSetupFinishedListener() {
+                        @Override
+                        public void onIabSetupFinished(final IabResult result) {
+                            listener.onIabSetupFinished(result);
+                            instantiatedAppstores.remove(OpenIabHelper.this.appstore);
+                            cleanup.run();
                         }
                     });
                 }
@@ -1008,23 +1018,30 @@ public class OpenIabHelper {
                                     @NotNull final List<Appstore> appstores) {
         while (!bindServiceIntents.isEmpty()) {
             final Intent intent = bindServiceIntents.poll();
+            // Avoid leaking listener to annonimous ServiceConnection
+            final OpenStoresDiscoveredListener[] listeners = new OpenStoresDiscoveredListener[]{listener};
             final ServiceConnection serviceConnection = new ServiceConnection() {
+
                 @Override
                 public void onServiceConnected(final ComponentName name, final IBinder service) {
-                    Appstore openAppstore = null;
-                    try {
-                        openAppstore = getOpenAppstore(name, service, this);
-                    } catch (RemoteException exception) {
-                        Logger.w("onServiceConnected() Error creating appsotre: ", exception);
+                    if (listeners[0] != null) {
+                        Appstore openAppstore = null;
+                        try {
+                            openAppstore = getOpenAppstore(name, service, this);
+                        } catch (RemoteException exception) {
+                            Logger.w("onServiceConnected() Error creating appsotre: ", exception);
+                        }
+                        if (openAppstore != null) {
+                            appstores.add(openAppstore);
+                        }
+                        discoverOpenStores(listeners[0], bindServiceIntents, appstores);
+                        listeners[0] = null;
                     }
-                    if (openAppstore != null) {
-                        appstores.add(openAppstore);
-                    }
-                    discoverOpenStores(listener, bindServiceIntents, appstores);
                 }
 
                 @Override
                 public void onServiceDisconnected(final ComponentName name) {
+                    Logger.d("onServiceDisconnected(): ", name);
                 }
             };
 
