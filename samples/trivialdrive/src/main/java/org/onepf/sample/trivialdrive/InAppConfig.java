@@ -75,7 +75,7 @@ public final class InAppConfig {
                         //Amazon
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.sample.trivialdrive.sku_gas")
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_AMAZON, "org.onepf.sample.trivialdrive.sku_premium")
-                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.sample.trivialdrive.sku_infinite_gas")
+                .mapSku(SKU_INFINITE_GAS, OpenIabHelper.NAME_AMAZON, "org.onepf.sample.trivialdrive.subscription.sku_infinite_gas")
                         //Appland
                 .mapSku(SKU_GAS, OpenIabHelper.NAME_APPLAND, "appland.sku_gas")
                 .mapSku(SKU_PREMIUM, OpenIabHelper.NAME_APPLAND, "appland.sku_premium")
