@@ -16,22 +16,21 @@
 
 package org.onepf.oms;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
+import android.text.TextUtils;
 
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -56,22 +55,22 @@ import org.onepf.oms.util.CollectionUtils;
 import org.onepf.oms.util.Logger;
 import org.onepf.oms.util.Utils;
 
-import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.os.Build;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
-import android.os.RemoteException;
-import android.text.TextUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER;
 import static org.onepf.oms.OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT;
@@ -266,7 +265,27 @@ public class OpenIabHelper {
                 final String googleKey = options.getVerifyMode() != VERIFY_SKIP
                         ? options.getStoreKeys().get(NAME_GOOGLE)
                         : null;
-                return new GooglePlay(context, googleKey);
+                return new GooglePlay(new ContextWrapper(context.getApplicationContext()) {
+                    @Override
+                    public Context getApplicationContext() {
+                        return this;
+                    }
+
+                    @Override
+                    public boolean bindService(final Intent service, final ServiceConnection conn, final int flags) {
+                        final List<ResolveInfo> infos = getPackageManager().queryIntentServices(service, 0);
+                        if (CollectionUtils.isEmpty(infos)) {
+                            return super.bindService(service, conn, flags);
+                        }
+                        final ResolveInfo serviceInfo = infos.get(0);
+                        final String packageName = serviceInfo.serviceInfo.packageName;
+                        final String className = serviceInfo.serviceInfo.name;
+                        final ComponentName component = new ComponentName(packageName, className);
+                        final Intent explicitIntent = new Intent(service);
+                        explicitIntent.setComponent(component);
+                        return super.bindService(explicitIntent, conn, flags);
+                    }
+                }, googleKey);
             }
         });
 
@@ -1148,7 +1167,8 @@ public class OpenIabHelper {
             final ClassLoader classLoader = OpenIabHelper.class.getClassLoader();
             classLoader.loadClass("mp.PaymentRequest");
             fortumoAvailable = true;
-        } catch (ClassNotFoundException ignore) {}
+        } catch (ClassNotFoundException ignore) {
+        }
         Logger.d("checkFortumo() fortumo sdk available: ", fortumoAvailable);
         if (fortumoAvailable) {
             return;
@@ -1353,8 +1373,8 @@ public class OpenIabHelper {
      */
     @Nullable
     public Inventory queryInventory(final boolean querySkuDetails,
-                             @Nullable final List<String> moreItemSkus,
-                             @Nullable final List<String> moreSubsSkus)
+                                    @Nullable final List<String> moreItemSkus,
+                                    @Nullable final List<String> moreSubsSkus)
             throws IabException {
         if (Utils.uiThread()) {
             throw new IllegalStateException("Must not be called from the UI thread");
