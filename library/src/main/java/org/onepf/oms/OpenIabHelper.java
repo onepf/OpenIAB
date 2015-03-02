@@ -275,27 +275,7 @@ public class OpenIabHelper {
             @NotNull
             @Override
             public Appstore get() {
-                    return new AmazonAppstore(new ContextWrapper(context.getApplicationContext()){
-                        @Override
-                        public Context getApplicationContext() {
-                            return this;
-                        }
-
-                        @Override
-                        public ComponentName startService(final Intent intent) {
-                            final List<ResolveInfo> infos = getPackageManager().queryIntentServices(intent, 0);
-                            if (CollectionUtils.isEmpty(infos)) {
-                                return super.startService(intent);
-                            }
-                            final ResolveInfo serviceInfo = infos.get(0);
-                            final String packageName = serviceInfo.serviceInfo.packageName;
-                            final String className = serviceInfo.serviceInfo.name;
-                            final ComponentName component = new ComponentName(packageName, className);
-                            final Intent explicitIntent = new Intent(intent);
-                            explicitIntent.setComponent(component);
-                            return super.startService(explicitIntent);
-                        }
-                    });
+                return new AmazonAppstore(context);
             }
         });
 
