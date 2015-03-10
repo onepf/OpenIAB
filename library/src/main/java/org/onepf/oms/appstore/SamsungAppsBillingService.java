@@ -47,6 +47,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -379,8 +380,20 @@ public class SamsungAppsBillingService implements AppstoreInAppBillingService {
             public void onServiceDisconnected(ComponentName name) {
             }
         };
-        Intent serviceIntent = new Intent(IAP_SERVICE_NAME);
-        isBound = activity.getApplicationContext().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+
+        final Intent implicitIntent = new Intent(IAP_SERVICE_NAME);
+        final List<ResolveInfo> infoList = activity.getPackageManager().queryIntentServices(implicitIntent, 0);
+        if (!CollectionUtils.isEmpty(infoList)) {
+            final ResolveInfo serviceInfo = infoList.get(0);
+            final String packageName = serviceInfo.serviceInfo.packageName;
+            final String className = serviceInfo.serviceInfo.name;
+            final ComponentName component = new ComponentName(packageName, className);
+            final Intent serviceIntent = new Intent(implicitIntent);
+            serviceIntent.setComponent(component);
+            isBound = activity.getApplicationContext().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            isBound = false;
+        }
     }
 
 
