@@ -2115,18 +2115,38 @@ public class OpenIabHelper {
 
         @Override
         public String toString() {
-            return "Options={" +
-                    "availableStores=" + availableStores +
-                    ", availableStoreNames=" + availableStoreNames +
-                    ", preferredStoreNames=" + preferredStoreNames +
-                    ", discoveryTimeoutMs=" + discoveryTimeoutMs +
-                    ", checkInventory=" + checkInventory +
-                    ", checkInventoryTimeoutMs=" + checkInventoryTimeoutMs +
-                    ", verifyMode=" + verifyMode +
-                    ", storeSearchStrategy=" + storeSearchStrategy +
-                    ", storeKeys=" + storeKeys +
-                    ", samsungCertificationRequestCode=" + samsungCertificationRequestCode +
-                    '}';
+            final StringBuilder builder = new StringBuilder();
+            builder.append("{availableStores=")
+                    .append(availableStores)
+                    .append(", availableStoreNames=")
+                    .append(availableStoreNames)
+                    .append(", preferredStoreNames=")
+                    .append(preferredStoreNames)
+                    .append(", discoveryTimeoutMs=")
+                    .append(discoveryTimeoutMs)
+                    .append(", checkInventory=")
+                    .append(checkInventory)
+                    .append(", checkInventoryTimeoutMs=")
+                    .append(checkInventoryTimeoutMs)
+                    .append(", verifyMode=")
+                    .append(verifyMode)
+                    .append(", storeSearchStrategy=")
+                    .append(storeSearchStrategy)
+                    .append(", storeKeys=[");
+            final StringBuilder storeKeysBuilder = new StringBuilder();
+            for (final Map.Entry<String, String> entry : storeKeys.entrySet()) {
+                if (!TextUtils.isEmpty(entry.getValue())) {
+                    if (!TextUtils.isEmpty(storeKeysBuilder.toString())) {
+                        storeKeysBuilder.append(", ");
+                    }
+                    storeKeysBuilder.append(entry.getKey());
+                }
+            }
+            builder.append(storeKeysBuilder)
+                    .append("]\n, samsungCertificationRequestCode=")
+                    .append(samsungCertificationRequestCode)
+                    .append('}');
+            return builder.toString();
         }
     }
 
