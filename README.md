@@ -1,3 +1,5 @@
+**Please consider trying out [OPFIab](https://github.com/onepf/OPFIab) as it's intended to replase OpenIAB. Library is still in development, but your feedback might be extremely usefull.**  
+
 OpenIAB is an open source library which provides an easy way for the developers to develop their apps/games in a way that one APK will work in all the stores and automatically use the right in-app purchase API under each store. OpenIAB also provides an open in-app billing API that stores could implement to support all the built APK files using this library. Currently there are already 5 stores that support the Open API: Yandex.Store, SlideME, Appland, Aptoide and AppMall. The open stores don't need extra libraries to be included with your project, only the OpenIAB core is required to support all of them. 
 
 OpenIAB supports the following stores:
