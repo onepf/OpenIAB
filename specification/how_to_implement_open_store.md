@@ -3,7 +3,7 @@ Introduction. Key Features of OpenIAB protocol
 
 **Reliability.** Acquired Items are stored on Appstore side and can be retrieved by application at any time using mHelper.queryInventory(). If application is stopped by the system or crashed during item purchasing and cannot retrieve result you will find all purchased items next time when request Inventory from Appstore
 
-**RSA Verification.** In addition to server side API for receipt verification, public and private RSA keys are used in OpenIAB protocol to sign receipt data. It allows to verify purchase is healthy right in application code without any server-to-server interaction
+**RSA Verification.** In addition to server side API for receipt verification, public and private RSA keys are used in OpenIAB protocol to sign receipt data with SHA1 digest algorithm. It allows to verify purchase is healthy right in application code without any server-to-server interaction
 
 To support OpenIAB in your Appstore, you need to to following steps:
 * Step 1. Native Client. Add bindable services to your native client to integrate with third-party applications.
