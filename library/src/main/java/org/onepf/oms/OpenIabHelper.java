@@ -986,7 +986,7 @@ public class OpenIabHelper {
             @Override
             public void openStoresDiscovered(@NotNull final List<Appstore> appstores) {
                 openAppstores.addAll(appstores);
-                countDownLatch.notify();
+                countDownLatch.countDown();
             }
         });
         try {
