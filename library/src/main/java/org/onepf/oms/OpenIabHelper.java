@@ -586,17 +586,6 @@ public class OpenIabHelper {
     private void setupForPackage(@NotNull final OnIabSetupFinishedListener listener,
                                  @NotNull final String packageInstaller,
                                  final boolean withFallback) {
-        if (!Utils.packageInstalled(context, packageInstaller)) {
-            // Package installer is no longer available
-            if (withFallback) {
-                // Check other stores
-                setup(listener);
-            } else {
-                finishSetup(listener);
-            }
-            return;
-        }
-
         Appstore appstore = null;
         if (appStorePackageMap.containsKey(packageInstaller)) {
             // Package installer is a known appstore
