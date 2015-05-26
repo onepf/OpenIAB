@@ -1,4 +1,4 @@
-**Please consider trying out [OPFIab](https://github.com/onepf/OPFIab) as it's intended to replase OpenIAB. Library is still in development, but your feedback might be extremely usefull.**  
+**Please consider trying out [OPFIab](https://github.com/onepf/OPFIab) as it's intended to replace OpenIAB. Library is still in development, but your feedback might be extremely usefull.**  
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Open%20In--App%20Billing-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/383)
 
