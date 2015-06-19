@@ -198,8 +198,8 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Creating IAB helper.");
         //Only map SKUs for stores that using purchase with SKUs different from described in store console.
         OpenIabHelper.Options.Builder builder = new OpenIabHelper.Options.Builder()
-                .setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER_THEN_BEST_FIT)
-                .setVerifyMode(OpenIabHelper.Options.VERIFY_EVERYTHING)
+                .setStoreSearchStrategy(OpenIabHelper.Options.SEARCH_STRATEGY_INSTALLER)
+                .setVerifyMode(OpenIabHelper.Options.VERIFY_ONLY_KNOWN)
                 .addStoreKeys(InAppConfig.STORE_KEYS_MAP);
         mHelper = new OpenIabHelper(this, builder.build());
 
