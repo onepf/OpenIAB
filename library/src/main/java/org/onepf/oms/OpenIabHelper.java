@@ -36,6 +36,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.onepf.oms.appstore.AmazonAppstore;
+import org.onepf.oms.appstore.CafeBazaar;
 import org.onepf.oms.appstore.FortumoStore;
 import org.onepf.oms.appstore.GooglePlay;
 import org.onepf.oms.appstore.NokiaStore;
@@ -204,6 +205,11 @@ public class OpenIabHelper {
      */
     public static final String NAME_APTOIDE = "cm.aptoide.pt";
 
+    /**
+     * Internal library name for the CafeBazaar store.
+     */
+    public static final String NAME_CAFEBAZAAR = "com.farsitel.bazaar";
+
     private final PackageManager packageManager;
 
     private final Context context;
@@ -331,6 +337,38 @@ public class OpenIabHelper {
             @Override
             public Appstore get() {
                 return new SkubitTestAppstore(context);
+            }
+        });
+
+        appStorePackageMap.put(CafeBazaar.ANDROID_INSTALLER, NAME_CAFEBAZAAR);
+        appStoreFactoryMap.put(NAME_CAFEBAZAAR, new AppstoreFactory() {
+            @NotNull
+            @Override
+            public Appstore get() {
+                final String cafebazaarKey = options.getVerifyMode() != VERIFY_SKIP
+                        ? options.getStoreKeys().get(NAME_CAFEBAZAAR)
+                        : null;
+                return new CafeBazaar(new ContextWrapper(context.getApplicationContext()) {
+                    @Override
+                    public Context getApplicationContext() {
+                        return this;
+                    }
+
+                    @Override
+                    public boolean bindService(final Intent service, final ServiceConnection conn, final int flags) {
+                        final List<ResolveInfo> infos = getPackageManager().queryIntentServices(service, 0);
+                        if (CollectionUtils.isEmpty(infos)) {
+                            return super.bindService(service, conn, flags);
+                        }
+                        final ResolveInfo serviceInfo = infos.get(0);
+                        final String packageName = serviceInfo.serviceInfo.packageName;
+                        final String className = serviceInfo.serviceInfo.name;
+                        final ComponentName component = new ComponentName(packageName, className);
+                        final Intent explicitIntent = new Intent(service);
+                        explicitIntent.setComponent(component);
+                        return super.bindService(explicitIntent, conn, flags);
+                    }
+                }, cafebazaarKey);
             }
         });
     }
