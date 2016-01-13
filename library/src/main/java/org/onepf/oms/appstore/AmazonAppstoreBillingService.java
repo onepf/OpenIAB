@@ -300,7 +300,7 @@ public class AmazonAppstoreBillingService implements AppstoreInAppBillingService
     @NotNull
     private SkuDetails getSkuDetails(@NotNull final Product product) {
         final String sku = product.getSku();
-        final String price = product.getPrice().toString();
+        final String price = product.getPrice();
         final String title = product.getTitle();
         final String description = product.getDescription();
         final ProductType productType = product.getProductType();
