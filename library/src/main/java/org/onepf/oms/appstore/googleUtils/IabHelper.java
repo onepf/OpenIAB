@@ -229,6 +229,44 @@ public class IabHelper implements AppstoreInAppBillingService {
                 mService = getServiceFromBinder(service);
                 componentName = name;
                 String packageName = mContext.getPackageName();
+
+                final Handler handler = new Handler();
+                flagStartAsync("startSetup");
+                startSetupIabAsync(packageName, new OnIabSetupFinishedListener() {
+                    @Override public void onIabSetupFinished(final IabResult result) {
+                        handler.post(new Runnable() {
+                            @Override public void run() {
+                                flagEndAsync();
+                                listener.onIabSetupFinished(result);
+                            }
+                        });
+                    }
+                });
+            }
+        };
+
+        Intent serviceIntent = getServiceIntent();
+        final List<ResolveInfo> infoList = mContext.getPackageManager().queryIntentServices(serviceIntent, 0);
+        if (infoList != null && !infoList.isEmpty()) {
+            // service available to handle that Intent
+            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+        } else {
+            // no service available to handle that Intent
+            if (listener != null) {
+                listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
+                        "Billing service unavailable on device."));
+                Logger.d("Billing service unavailable on device.");
+            }
+        }
+    }
+    
+    /**
+     * Performs Iab setup with the mService object which must 
+     * be properly connected before calling this method.
+     */
+    private void startSetupIabAsync(final String packageName, final OnIabSetupFinishedListener listener) {
+        new Thread(new Runnable() {
+            @Override public void run() {
                 try {
                     Logger.d("Checking for in-app billing 3 support.");
 
@@ -268,21 +306,7 @@ public class IabHelper implements AppstoreInAppBillingService {
                     Logger.d("Setup successful.");
                 }
             }
-        };
-
-        Intent serviceIntent = getServiceIntent();
-        final List<ResolveInfo> infoList = mContext.getPackageManager().queryIntentServices(serviceIntent, 0);
-        if (infoList != null && !infoList.isEmpty()) {
-            // service available to handle that Intent
-            mContext.bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
-        } else {
-            // no service available to handle that Intent
-            if (listener != null) {
-                listener.onIabSetupFinished(new IabResult(BILLING_RESPONSE_RESULT_BILLING_UNAVAILABLE,
-                        "Billing service unavailable on device."));
-                Logger.d("Billing service unavailable on device.");
-            }
-        }
+        }).start();
     }
 
     /**
