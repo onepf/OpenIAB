@@ -891,6 +891,10 @@ public class OpenIabHelper {
     private void finishSetup(@NotNull final OnIabSetupFinishedListener listener,
                              @NotNull final IabResult iabResult,
                              @Nullable final Appstore appstore) {
+        if (setupState == SETUP_DISPOSED) {
+            Logger.w("finishSetup() called for disposed OpenIabHelper, returning.");
+            return;
+        }                             
         if (!Utils.uiThread()) {
             throw new IllegalStateException("Must be called from UI thread.");
         }
